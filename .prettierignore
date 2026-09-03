@@ -1,0 +1,20 @@
+.changeset
+.claude
+.github
+.vscode
+
+pnpm-lock.yaml
+package.json
+
+## Messes up spacing
+**.md
+**.mdx
+
+# Adds trailing commas but shouldn't
+**.jsonc
+
+# Images
+**.jpg
+**.png
+**.jpeg
+**.gif

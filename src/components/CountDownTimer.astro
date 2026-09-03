@@ -1,0 +1,80 @@
+---
+const timerTime = 120;
+const seconds1stDigit = [5, 4, 3, 2, 1, 0];
+const seconds2ndDigit = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
+---
+
+<div
+  class="grid max-w-fit grid-cols-2 gap-1 text-4xl tabular-nums md:text-6xl lg:text-8xl"
+>
+  <div
+    class="grid max-w-fit grid-cols-2 gap-1 border p-2"
+    style={`--timer-time: ${timerTime};`}
+  >
+    <div class="grid max-w-fit overflow-clip [grid-area-template:stack]">
+      <div class="a[grid-area:stack]">0</div>
+    </div>
+    <div class="grid max-w-fit overflow-clip [grid-area-template:stack]">
+      <div class="a[grid-area:stack]">0</div>
+    </div>
+  </div>
+  <div
+    class="grid max-w-fit grid-cols-2 gap-1 border p-2"
+    style={`--timer-time: ${timerTime};`}
+  >
+    <div class="grid max-w-fit overflow-clip [grid-area-template:stack]">
+      {/* Start animation with 0 showing */}
+      <div
+        class="animate-[slideDown10sStart_60s_linear_0s_1_forwards] [grid-area:stack]"
+        style="--timer-seconds-no: 6;"
+      >
+        0
+      </div>
+      {/* All other numbers use the same animation */}
+      {
+        seconds1stDigit.map((sec) => (
+          <div
+            class="-translate-y-full animate-[slideDown10s_60s_linear_calc((10*(5-var(--timer-seconds-no))+1)*1s)_calc(var(--timer-time)/60)_forwards] [grid-area:stack]"
+            style={`--timer-seconds-no: ${sec};`}
+          >
+            {sec}
+          </div>
+        ))
+      }
+      {/* End animation with 0 showing */}
+      <div
+        class="-translate-y-full animate-[slideDown10sEnd_60s_linear_calc((var(--timer-time)-10)*1s)_1_forwards] [grid-area:stack]"
+        style="--timer-seconds-no: 0;"
+      >
+        0
+      </div>
+    </div>
+    <div class="grid max-w-fit overflow-clip [grid-area-template:stack]">
+      {/* Start animation with 0 showing */}
+      <div
+        class="animate-[slideDown1sStart_10s_linear_calc((10-var(--timer-seconds-no))*1s)_1_forwards] [grid-area:stack]"
+        style="--timer-seconds-no: 10;"
+      >
+        0
+      </div>
+      {/* All other numbers use the same animation */}
+      {
+        seconds2ndDigit.map((sec) => (
+          <div
+            class="-translate-y-full animate-[slideDown1s_10s_linear_calc((10-var(--timer-seconds-no))*1s)_calc(var(--timer-time)/10)_forwards] [grid-area:stack]"
+            style={`--timer-seconds-no: ${sec};`}
+          >
+            {sec}
+          </div>
+        ))
+      }
+      {/* End animation with 0 showing */}
+      <div
+        class="-translate-y-full animate-[slideDown1sEnd_10s_linear_calc(var(--timer-time)*1s)_1_forwards] [grid-area:stack]"
+        style="--timer-seconds-no: 0;"
+      >
+        0
+      </div>
+    </div>
+  </div>
+</div>

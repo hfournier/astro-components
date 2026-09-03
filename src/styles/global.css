@@ -1,0 +1,152 @@
+@import "tailwindcss";
+
+:root {
+  --timer-time: 60;
+}
+
+@keyframes slideDown1sStart {
+  0%,
+  6% {
+    translate: 0 0;
+  }
+  10%,
+  100% {
+    translate: 0 100%;
+  }
+}
+
+@keyframes slideDown1s {
+  0% {
+    translate: 0 -100%;
+  }
+  4%,
+  6% {
+    translate: 0 0;
+  }
+  10%,
+  100% {
+    translate: 0 100%;
+  }
+}
+
+@keyframes slideDown1sEnd {
+  0% {
+    translate: 0 -100%;
+  }
+  4%,
+  100% {
+    translate: 0 0;
+  }
+}
+
+@keyframes slideDown10sStart {
+  0%,
+  1% {
+    translate: 0 0;
+  }
+  1.67%,
+  100% {
+    translate: 0 100%;
+  }
+}
+
+@keyframes slideDown10s {
+  0% {
+    translate: 0 -100%;
+  }
+  0.67%,
+  16% {
+    translate: 0 0;
+  }
+  16.67%,
+  100% {
+    translate: 0 100%;
+  }
+}
+
+@keyframes slideDown10sEnd {
+  0% {
+    translate: 0 -100%;
+  }
+  0.67%,
+  100% {
+    translate: 0 0;
+  }
+}
+
+@keyframes slideDown1Secs {
+  0%,
+  1% {
+    translate: 0 -1000%;
+  }
+  9%,
+  11% {
+    translate: 0 -900%;
+  }
+  19%,
+  21% {
+    translate: 0 -800%;
+  }
+  29%,
+  31% {
+    translate: 0 -700%;
+  }
+  39%,
+  41% {
+    translate: 0 -600%;
+  }
+  49%,
+  51% {
+    translate: 0 -500%;
+  }
+  59%,
+  61% {
+    translate: 0 -400%;
+  }
+  69%,
+  71% {
+    translate: 0 -300%;
+  }
+  79%,
+  81% {
+    translate: 0 -200%;
+  }
+  89%,
+  91% {
+    translate: 0 -100%;
+  }
+  99%,
+  100% {
+    translate: 0 0;
+  }
+}
+
+@keyframes slideDown10Secs {
+  0% {
+    translate: 0 -600%;
+  }
+  1.59%,
+  16.71% {
+    translate: 0 -500%;
+  }
+  18.18%,
+  33.38% {
+    translate: 0 -400%;
+  }
+  34.88%,
+  50.05% {
+    translate: 0 -300%;
+  }
+  51.62%,
+  66.72% {
+    translate: 0 -200%;
+  }
+  68.29%,
+  83.39% {
+    translate: 0 -100%;
+  }
+  84.96%,
+  100% {
+    translate: 0 0;
+  }
+}
