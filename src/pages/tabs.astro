@@ -1,0 +1,67 @@
+---
+import Tabs from "../components/tab/Tabs.astro";
+import Tab from "../components/tab/Tab.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout>
+  <h2 class="text-4xl font-bold">Tabs</h2>
+  <Tabs>
+    <Tab label="Tab 1">
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae
+      sapiente debitis quidem quasi cupiditate laborum tenetur voluptates omnis
+      illo sint doloremque dolorem natus impedit eligendi, nesciunt ea
+      laboriosam, reprehenderit soluta.
+    </Tab>
+    <Tab label="Tab 2">
+      Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore officia
+      nesciunt laudantium ex corrupti earum vitae, eaque, ad reiciendis debitis
+      quod similique enim sunt facere eos rem blanditiis id esse.
+    </Tab>
+    <Tab label="Tab 3">
+      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad, vel
+      suscipit! Itaque sint odit beatae delectus modi ratione a temporibus atque
+      eveniet ipsa doloribus ducimus aut quae, sit quos in?
+    </Tab>
+  </Tabs>
+
+  <h2 class="text-4xl font-bold">Tabs with slide-in animation</h2>
+  <Tabs>
+    <Tab label="Tab 1" animation="slide-left">
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae
+      sapiente debitis quidem quasi cupiditate laborum tenetur voluptates omnis
+      illo sint doloremque dolorem natus impedit eligendi, nesciunt ea
+      laboriosam, reprehenderit soluta.
+    </Tab>
+    <Tab label="Tab 2" animation="slide-left">
+      Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore officia
+      nesciunt laudantium ex corrupti earum vitae, eaque, ad reiciendis debitis
+      quod similique enim sunt facere eos rem blanditiis id esse.
+    </Tab>
+    <Tab label="Tab 3" animation="slide-left">
+      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad, vel
+      suscipit! Itaque sint odit beatae delectus modi ratione a temporibus atque
+      eveniet ipsa doloribus ducimus aut quae, sit quos in?
+    </Tab>
+  </Tabs>
+
+  <h2 class="text-4xl font-bold">Tabs with fade-up animation</h2>
+  <Tabs>
+    <Tab label="Tab 1" animation="fade-up">
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae
+      sapiente debitis quidem quasi cupiditate laborum tenetur voluptates omnis
+      illo sint doloremque dolorem natus impedit eligendi, nesciunt ea
+      laboriosam, reprehenderit soluta.
+    </Tab>
+    <Tab label="Tab 2" animation="fade-up">
+      Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore officia
+      nesciunt laudantium ex corrupti earum vitae, eaque, ad reiciendis debitis
+      quod similique enim sunt facere eos rem blanditiis id esse.
+    </Tab>
+    <Tab label="Tab 3" animation="fade-up">
+      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad, vel
+      suscipit! Itaque sint odit beatae delectus modi ratione a temporibus atque
+      eveniet ipsa doloribus ducimus aut quae, sit quos in?
+    </Tab>
+  </Tabs>
+</BaseLayout>

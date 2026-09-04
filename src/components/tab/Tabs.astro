@@ -1,0 +1,147 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { parse, walk, ELEMENT_NODE, render, DOCUMENT_NODE } from "ultrahtml";
+import crypto from "node:crypto";
+import TabList from "./TabList.astro";
+import TabPanels from "./TabPanels.astro";
+
+type Props = HTMLAttributes<"section"> & {};
+
+const { class: classList, ...attrs } = Astro.props;
+
+const slot = await Astro.slots.render("default");
+
+let tabIndex = 0;
+const randomId = crypto.randomUUID();
+const tabLabels: string[] = [];
+const tabContents: string[] = [];
+const ast = parse(slot);
+// walk through the top level AST (from slot) and find all the Tab components
+// and extract their labels and contents
+// assign each Tab an incremental tabpanel number starting from 1
+await walk(ast, async (node, parent) => {
+  if (
+    (!parent || parent.type === DOCUMENT_NODE) &&
+    node.type === ELEMENT_NODE &&
+    node.name === "div" &&
+    node.attributes["data-hfdev-tabpanel"] !== undefined
+  ) {
+    // connect the tabpanel to the tab button
+    tabIndex++;
+    node.attributes["id"] = `tabpanel-${randomId}-${tabIndex}`;
+    if (tabIndex !== 1) {
+      node.attributes["hidden"] = "true";
+    }
+    node.attributes["aria-labelledby"] = `tab-${randomId}-${tabIndex}`;
+    // build an array of tab labels, then strip the build-time marker attributes
+    tabLabels.push(node.attributes["data-hfdev-tab-label"] || "");
+    delete node.attributes["data-hfdev-tab-label"];
+    delete node.attributes["data-hfdev-tabpanel"];
+    // build an array of tab contents
+    tabContents.push(await render(node));
+  }
+});
+---
+
+<section
+  class:list={["flex flex-col gap-4", classList]}
+  data-hfdev-tablist-container
+  {...attrs}
+>
+  <TabList labels={tabLabels} {randomId} />
+
+  <TabPanels>
+    {tabContents.map((content) => <Fragment set:html={content} />)}
+  </TabPanels>
+</section>
+
+<script>
+  const allTabsContainers = document.querySelectorAll<HTMLDivElement>(
+    "[data-hfdev-tablist-container]"
+  );
+
+  allTabsContainers.forEach((tabsContainer) => {
+    const tabList = tabsContainer.querySelector<HTMLDivElement>(
+      ":scope > [role='tablist']"
+    );
+    const tabs = Array.from(
+      tabList!.querySelectorAll<HTMLButtonElement>(":scope > [role='tab']")
+    );
+    const tabPanelsContainer = tabsContainer.querySelector<HTMLDivElement>(
+      ":scope > [data-hfdev-tabpanels-container]"
+    );
+    const tabPanels = Array.from(
+      tabPanelsContainer!.querySelectorAll<HTMLDivElement>(
+        ":scope > [role='tabpanel']"
+      )
+    );
+
+    tabList!.addEventListener("keydown", (e) => {
+      const currentTab = e.target as HTMLButtonElement;
+      const currentIndex = tabs.indexOf(currentTab);
+      if (currentIndex === -1) return; // Exit if the focused element is not a tab
+      let newIndex: number;
+
+      switch (e.key) {
+        case "ArrowRight":
+          newIndex = (currentIndex + 1) % tabs.length;
+          break;
+        case "ArrowLeft":
+          newIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+          break;
+        case "Home":
+          newIndex = 0;
+          break;
+        case "End":
+          newIndex = tabs.length - 1;
+          break;
+        default:
+          return; // Exit if the key is not recognized
+      }
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      // roving tabindex: the focused tab is the only tab stop
+      tabs.forEach((tab, index) => {
+        tab.tabIndex = index === newIndex ? 0 : -1;
+      });
+      tabs[newIndex]!.focus();
+    });
+
+    const showTab = (targetTab: HTMLButtonElement) => {
+      // Unselect other tabs and set this tab as selected
+      for (const tab of tabs) {
+        if (tab === targetTab) continue;
+        tab.setAttribute("aria-selected", "false");
+        tab.tabIndex = -1;
+      }
+      targetTab.setAttribute("aria-selected", "true");
+      targetTab.tabIndex = 0;
+
+      // Hide other tab panels and show the selected panel
+      const targetTabPanel = document.getElementById(
+        targetTab.getAttribute("aria-controls")!
+      ) as HTMLDivElement;
+      for (const panel of tabPanels) {
+        if (panel === targetTabPanel) continue;
+        panel.hidden = true;
+      }
+      targetTabPanel.hidden = false;
+    };
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", (e) => {
+        showTab(e.target as HTMLButtonElement);
+      });
+
+      tab.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          e.stopPropagation();
+          showTab(e.target as HTMLButtonElement);
+        }
+      });
+    });
+  });
+</script>

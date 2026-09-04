@@ -1,0 +1,35 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import type { TabAnimationTypes } from "../../types.js";
+
+type Props = HTMLAttributes<"div"> & {
+  animation?: TabAnimationTypes;
+  label: string;
+};
+
+const { animation = "none", label, class: classList, ...attrs } = Astro.props;
+
+const animationClasses = {
+  none: "motion-safe:transition-[display,opacity] motion-safe:transition-discrete motion-safe:duration-300 motion-safe:starting:opacity-0",
+  "fade-up":
+    "motion-safe:transition-[display,opacity,translate] motion-safe:transition-discrete motion-safe:duration-500 motion-safe:starting:translate-y-full motion-safe:starting:opacity-0",
+  "slide-left":
+    "motion-safe:transition-[display,opacity,translate] motion-safe:transition-discrete motion-safe:duration-500 motion-safe:starting:translate-x-full motion-safe:starting:opacity-0",
+}[animation];
+---
+
+<div
+  class:list={[
+    "[grid-area:stack] [[hidden]]:opacity-0",
+    "focus-visible:outline-2 focus-visible:outline-offset-2",
+    animationClasses,
+    classList,
+  ]}
+  tabindex="0"
+  role="tabpanel"
+  data-hfdev-tabpanel
+  data-hfdev-tab-label={label}
+  {...attrs}
+>
+  <slot />
+</div>

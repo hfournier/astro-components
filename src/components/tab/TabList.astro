@@ -1,0 +1,53 @@
+---
+type Props = {
+  randomId: string;
+  labels: string[];
+};
+
+const { randomId, labels } = Astro.props;
+---
+
+<div
+  class="border-grayish-200 flex border-b-2"
+  role="tablist"
+  style={`--hfdev-anchorname-tab-hover: --anchorname-${randomId}-tab-hover; --hfdev-anchorname-tab-selected: --anchorname-${randomId}-tab-selected;`}
+>
+  {
+    labels.map((label, index) => (
+      <button
+        class:list={[
+          "focus-visible:border-grayish-200 hover:text-primary-600 cursor-pointer rounded-t-md border-2 border-transparent px-6 font-semibold outline-none select-none hover:[anchor-name:var(--hfdev-anchorname-tab-hover)]",
+          "aria-selected:text-primary-700 aria-selected:focus-visible:border-primary-600 aria-selected:cursor-default aria-selected:[anchor-name:var(--hfdev-anchorname-tab-selected)]",
+          "motion-safe:transition-colors",
+        ]}
+        id={`tab-${randomId}-${index + 1}`}
+        type="button"
+        role="tab"
+        aria-selected={index === 0}
+        aria-controls={`tabpanel-${randomId}-${index + 1}`}
+        tabindex={index === 0 ? "0" : "-1"}
+      >
+        {label}
+      </button>
+    ))
+  }
+
+  {
+    [
+      "[position-anchor:var(--hfdev-anchorname-tab-hover)]",
+      "[position-anchor:var(--hfdev-anchorname-tab-selected)]",
+    ].map((positionAnchor) => (
+      <div
+        class:list={[
+          "pointer-events-none h-1",
+          "absolute right-[anchor(right)] bottom-[calc(anchor(bottom)-1px)] left-[anchor(left)]",
+          "motion-safe:transition-[left,right] motion-safe:duration-300",
+          positionAnchor.includes("hover")
+            ? "bg-primary-500"
+            : "bg-primary-600",
+          positionAnchor,
+        ]}
+      />
+    ))
+  }
+</div>
