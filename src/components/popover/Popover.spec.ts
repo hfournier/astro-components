@@ -69,6 +69,10 @@ test.describe('Popover', () => {
     await activate(page.getByRole('button', { name: 'Open Popover 1' }));
     await expect(popover).toBeVisible();
     await expect(popover).toHaveCSS('transition-duration', '0s');
+
+    await page.keyboard.press('Escape');
+    await expect(popover).toBeHidden();
+    await expect(popover).toHaveCSS('transition-duration', '0s');
   });
 
   test('wrapper rounding resolves to the container radius token, flat at every width', async ({ page }) => {
