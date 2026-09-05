@@ -1,5 +1,6 @@
 ---
 import type { ButtonPropsType } from "../../types.js";
+import { twMerge } from "tailwind-merge";
 import Dialog from "./Dialog.astro";
 import Button from "../button/Button.astro";
 
@@ -14,14 +15,18 @@ const { id, title, buttonConfirm, buttonCancel } = Astro.props;
 ---
 
 <Dialog {id} aria-labelledby={`${id}-title`}>
-  <h3 class="text-lg font-medium" id={`${id}-title`} slot="header">
+  <h3
+    class:list={twMerge("font-title text-(length:--font-size-title)")}
+    id={`${id}-title`}
+    slot="header"
+  >
     {title}
   </h3>
 
   <slot />
 
   <form
-    class="flex items-center justify-end gap-2"
+    class:list={twMerge("flex items-center justify-end gap-2")}
     method="dialog"
     slot="footer"
   >
