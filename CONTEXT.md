@@ -12,6 +12,10 @@ _Avoid_: variable, design value
 A token that a whole derived scale is computed from via `calc()` (or an equivalent CSS function), rather than a value declared independently. `--color-primary` (the whole primary/secondary/grayish scale derives from it) and `--radius` (the radius scale derives from it) are base tokens; `--font-weight-semibold` is not, since it isn't derived from anything.
 _Avoid_: root token, primary token (ambiguous with the `primary` color role)
 
+**Role token**:
+A token named for the situation it's used in (`--font-weight-nav`, `--radius-container`) rather than its literal step (`--font-weight-semibold`, `--radius-xl`), defined via `var()` onto a value-layer token of the same property. Lets a component author pick by intent instead of by magnitude. Distinct from a [[Base token]]: a base token is what a scale derives *from*, a role token is a second name layered *on top of* an already-derived scale.
+_Avoid_: semantic token, alias (too generic — every token is technically a CSS alias)
+
 **Theme**:
 The complete set of token values active for a given site — what you get by editing `src/styles/global.css`. Swapping a theme changes appearance only; it never changes a component's markup, props, or behavior.
 _Avoid_: skin, style
@@ -31,6 +35,14 @@ _Avoid_: base component, headless component
 **Pattern component**:
 A component built on top of one or more primitives that adds the actual visual styling and public API a consumer reaches for (`Dialog`, `Popover`, `Tab`). This is what gets copy-pasted.
 _Avoid_: composite component, styled component
+
+**Component title**:
+A heading-tagged (`<h1>`–`<h6>`) piece of UI chrome scoped to one component's own visual weight — the tag exists only so assistive tech has a landmark to jump to, not to place it in a page's own heading hierarchy. `DialogConfirm`'s `<h3>` is the current example, styled from `--font-weight-title`/`--font-size-title`.
+_Avoid_: heading (ambiguous with [[Document heading]]), title (too generic alone)
+
+**Document heading**:
+An `<h1>`–`<h6>` element belonging to a page's own content hierarchy, styled from its own scale (`--font-weight-heading-sm`/`-lg`, `--font-size-heading-sm`/`-lg`) rather than a [[Component title]]'s. The two must never be conflated just because they share an HTML tag — no component currently renders one.
+_Avoid_: heading level, page title
 
 **Copy-paste component**:
 A component distributed as source a consumer copies directly into their own project, rather than installed as a package dependency. The copied source is theirs to edit; there is no upstream link to keep in sync.

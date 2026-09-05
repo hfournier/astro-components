@@ -45,6 +45,43 @@
   --color-grayish-800: hsl(from var(--color-primary) h 10% 20%);
   --color-grayish-900: hsl(from var(--color-primary) h 10% 10%);
   --color-grayish-950: hsl(from var(--color-primary) h 10% 5%);
+
+  /* radius: single dial, rest of the scale derives from it (ADR-0005) */
+  --radius: 0.5rem;
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.5);
+
+  --radius-control: var(--radius-sm);
+  --radius-tab: var(--radius-md);
+  --radius-container: var(--radius-xl);
+
+  /* border-width: no Tailwind namespace, hand-rolled (ADR-0005) */
+  --border-width-thin: 1px;
+  --border-width-md: 2px;
+
+  --border-width-boundary: var(--border-width-md);
+  --border-width-divider: var(--border-width-thin);
+
+  /* font-weight: Tailwind's native namespace, role layer on top (ADR-0005) */
+  --font-weight-control: var(--font-weight-medium);
+  --font-weight-title: var(--font-weight-medium);
+  --font-weight-nav: var(--font-weight-semibold);
+  --font-weight-heading-sm: var(--font-weight-semibold);
+  --font-weight-heading-lg: var(--font-weight-bold);
+
+  /* font-size: static roles alias Tailwind's scale; title/heading roles are fluid (ADR-0005) */
+  --font-size-control: var(--text-base);
+  --font-size-nav: var(--text-base);
+  --font-size-title: clamp(1rem, 0.95rem + 0.5vw, 1.25rem);
+  --font-size-heading-sm: clamp(1.125rem, 1rem + 1vw, 1.375rem);
+  --font-size-heading-lg: clamp(1.5rem, 1.25rem + 2vw, 2.25rem);
+
+  /* focus-ring: dedicated color token, independent of any component's color role (ADR-0005) */
+  --color-focus-ring: var(--color-primary-600);
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
 }
 
 @keyframes slideDown1sStart {
