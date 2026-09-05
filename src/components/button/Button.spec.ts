@@ -46,6 +46,14 @@ test.describe('Button', () => {
     await expect(outlineSecondary).toHaveCSS('color', secondary);
   });
 
+  for (const name of COMBINATIONS) {
+    test(`hovering "${name}" passes color contrast`, async ({ page }) => {
+      await page.getByRole('button', { name }).hover();
+      // The a11y fixture's automatic axe scan (ADR-0002) runs after this test body,
+      // while this button is still hovered, and catches any hover-state contrast violation.
+    });
+  }
+
   test('focus ring resolves to the dedicated tokens regardless of color', async ({ page }) => {
     const expectedColor = await resolvedColor(page, 'var(--color-focus-ring)');
     const [expectedWidth, expectedOffset] = await page.evaluate(() => {
