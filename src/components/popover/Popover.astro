@@ -1,5 +1,6 @@
 ---
 import type { ComponentProps } from "astro/types";
+import { twMerge } from "tailwind-merge";
 import BaseOverlay from "../BaseOverlay.astro";
 import Icon from "../Icon.astro";
 
@@ -14,10 +15,10 @@ const { id, class: classList, showCloseX = false, ...attrs } = Astro.props;
 
 <BaseOverlay
   as="div"
-  class:list={[
-    "m-4 rounded-xl bg-white p-4 md:m-5 md:mx-6 md:rounded-2xl md:p-6 lg:m-6 lg:mx-8 lg:rounded-3xl lg:p-8",
-    classList,
-  ]}
+  class:list={twMerge(
+    "m-4 rounded-container bg-white p-4 md:m-5 md:mx-6 md:p-6 lg:m-6 lg:mx-8 lg:p-8",
+    classList
+  )}
   {id}
   popover
   {...attrs}
@@ -27,14 +28,15 @@ const { id, class: classList, showCloseX = false, ...attrs } = Astro.props;
   {
     showCloseX && (
       <button
-        class:list={[
-          "group/close border-grayish-200 bg-grayish-50 grid size-10 cursor-pointer place-items-center rounded-full border md:size-11 lg:size-12",
+        class:list={twMerge(
+          "group/close border-grayish-200 bg-grayish-50 grid size-10 cursor-pointer place-items-center rounded-full border-(length:--border-width-divider) md:size-11 lg:size-12",
+          "focus-visible:outline-focus-ring focus-visible:outline-(length:--focus-ring-width) focus-visible:outline-offset-(--focus-ring-offset)",
           "fixed top-[calc(anchor(top)-1rem)] right-[calc(anchor(right)-1rem)] md:top-[calc(anchor(top)-1.125rem)] md:right-[calc(anchor(right)-1.125rem)] lg:top-[calc(anchor(top)-1.25rem)] lg:right-[calc(anchor(right)-1.25rem)]",
-          "[position-anchor:var(--hfdev-anchorname-overlay)]",
-        ]}
+          "[position-anchor:var(--hfdev-anchorname-overlay)]"
+        )}
         type="button"
         commandfor={id}
-        command="close"
+        command="hide-popover"
         aria-label="Close"
       >
         <Icon
