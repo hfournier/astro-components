@@ -1,0 +1,50 @@
+---
+import type { ButtonPropsType } from "../../types.js";
+import Dialog from "./Dialog.astro";
+import Button from "../button/Button.astro";
+
+type Props = {
+  id: string;
+  title: string;
+  buttonConfirm: ButtonPropsType;
+  buttonCancel?: ButtonPropsType;
+};
+
+const { id, title, buttonConfirm, buttonCancel } = Astro.props;
+---
+
+<Dialog {id} aria-labelledby={`${id}-title`}>
+  <h3 class="text-lg font-medium" id={`${id}-title`} slot="header">
+    {title}
+  </h3>
+
+  <slot />
+
+  <form
+    class="flex items-center justify-end gap-2"
+    method="dialog"
+    slot="footer"
+  >
+    <Button
+      command="close"
+      commandfor={id}
+      id={buttonConfirm.id}
+      value={buttonConfirm.value}
+    >
+      {buttonConfirm.text}
+    </Button>
+    {
+      buttonCancel && (
+        <Button
+          command="request-close"
+          commandfor={id}
+          id={buttonCancel.id}
+          value={buttonCancel.value}
+          variant="outline"
+        >
+          {buttonCancel.text}
+        </Button>
+      )
+    }
+  </form>
+</Dialog>

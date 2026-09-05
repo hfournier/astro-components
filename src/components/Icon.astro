@@ -1,0 +1,19 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { importSvg, type SvgIconNameTypes } from "../svgs";
+
+type Props = HTMLAttributes<"svg"> & {
+  name: SvgIconNameTypes;
+  label?: string;
+};
+
+const { name, label, class: classList, ...attrs } = Astro.props;
+
+const Tag = await importSvg(name);
+
+const a11yAttrs = label
+  ? ({ "aria-label": label } as const)
+  : ({ "aria-hidden": "true" } as const);
+---
+
+<Tag class={classList} {...attrs} {...a11yAttrs} />

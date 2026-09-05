@@ -1,0 +1,54 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Popover from "../components/popover/Popover.astro";
+import Button from "../components/button/Button.astro";
+---
+
+<BaseLayout>
+  <h1 class="text-4xl font-bold">Popovers</h1>
+
+  <p>
+    Popovers are floating elements that appear on demand, typically triggered by
+    user actions like clicking a button. They provide additional information or
+    functionality without cluttering the main interface.
+  </p>
+
+  <h2 class="text-3xl font-semibold">Popovers with fading</h2>
+
+  <Button command="show-popover" commandfor="popover-1">
+    Open Popover 1
+  </Button>
+
+  <Popover id="popover-1">
+    <p>
+      lorem ipsum dolor sit amet, consectetur adipisicing elit. Quisquam,
+      voluptatum!
+    </p>
+  </Popover>
+
+  <h2 class="text-3xl font-semibold">Popovers with scaling</h2>
+
+  <Button command="show-popover" commandfor="popover-2">
+    Open Popover 2
+  </Button>
+
+  <Popover id="popover-2" transition="fade-scale">
+    <p>
+      lorem ipsum dolor sit amet, consectetur adipisicing elit. Quisquam,
+      voluptatum!
+    </p>
+  </Popover>
+
+  <h2 class="text-3xl font-semibold">Popovers with close button</h2>
+
+  <Button command="show-popover" commandfor="popover-3">
+    Open Popover 3
+  </Button>
+
+  <Popover id="popover-3" transition="fade-scale" showCloseX={true}>
+    <p>
+      lorem ipsum dolor sit amet, consectetur adipisicing elit. Quisquam,
+      voluptatum!
+    </p>
+  </Popover>
+</BaseLayout>

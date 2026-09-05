@@ -1,30 +1,31 @@
 ---
 import type { HTMLAttributes } from "astro/types";
-import type { TabAnimationTypes } from "../../types.js";
+import { twMerge } from "tailwind-merge";
+import type { TabTransitionType } from "../../types.js";
 
 type Props = HTMLAttributes<"div"> & {
-  animation?: TabAnimationTypes;
+  transition?: TabTransitionType;
   label: string;
 };
 
-const { animation = "none", label, class: classList, ...attrs } = Astro.props;
+const { transition = "none", label, class: classList, ...attrs } = Astro.props;
 
-const animationClasses = {
+const transitionClasses = {
   none: "motion-safe:transition-[display,opacity] motion-safe:transition-discrete motion-safe:duration-300 motion-safe:starting:opacity-0",
   "fade-up":
     "motion-safe:transition-[display,opacity,translate] motion-safe:transition-discrete motion-safe:duration-500 motion-safe:starting:translate-y-full motion-safe:starting:opacity-0",
   "slide-left":
     "motion-safe:transition-[display,opacity,translate] motion-safe:transition-discrete motion-safe:duration-500 motion-safe:starting:translate-x-full motion-safe:starting:opacity-0",
-}[animation];
+}[transition];
 ---
 
 <div
-  class:list={[
+  class:list={twMerge(
     "[grid-area:stack] [[hidden]]:opacity-0",
     "focus-visible:outline-2 focus-visible:outline-offset-2",
-    animationClasses,
-    classList,
-  ]}
+    transitionClasses,
+    classList
+  )}
   tabindex="0"
   role="tabpanel"
   data-hfdev-tabpanel

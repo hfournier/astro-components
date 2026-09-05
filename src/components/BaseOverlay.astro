@@ -1,0 +1,47 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import crypto from "node:crypto";
+import type { OverlayTransitionType } from "../types.js";
+
+type Props = Omit<HTMLAttributes<"dialog" | "div">, "id"> & {
+  as?: "dialog" | "div";
+  id: string;
+  transition?: OverlayTransitionType;
+};
+
+const {
+  as: Tag = "dialog",
+  id,
+  transition = "fade",
+  class: classList,
+  ...attrs
+} = Astro.props;
+
+const transitionClasses = {
+  fade: "opacity-0 transition-[display,opacity,overlay] open:opacity-100 starting:open:opacity-0",
+  "fade-scale":
+    "opacity-0 scale-70 transition-[display,opacity,overlay,scale] open:opacity-100 open:scale-100 starting:open:opacity-0 starting:open:scale-70",
+}[transition];
+
+const randomId = crypto.randomUUID();
+---
+
+<Tag
+  class:list={twMerge(
+    "m-auto min-w-xs overscroll-contain bg-transparent",
+    "transition-discrete duration-300 ease-out",
+    "backdrop:bg-black/30 backdrop:opacity-0 backdrop:backdrop-blur-xs open:backdrop:opacity-100 starting:open:backdrop:opacity-0",
+    "backdrop:transition-[display,opacity,overlay] backdrop:transition-discrete backdrop:duration-300 backdrop:ease-out",
+    transitionClasses
+  )}
+  {id}
+  style={`--hfdev-anchorname-overlay: --anchorname-${randomId}-overlay`}
+  {...attrs}
+>
+  <div
+    class:list={["[anchor-name:var(--hfdev-anchorname-overlay)]", classList]}
+  >
+    <slot />
+  </div>
+</Tag>

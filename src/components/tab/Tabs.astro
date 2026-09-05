@@ -2,6 +2,7 @@
 import type { HTMLAttributes } from "astro/types";
 import { parse, walk, ELEMENT_NODE, render, DOCUMENT_NODE } from "ultrahtml";
 import crypto from "node:crypto";
+import { twMerge } from "tailwind-merge";
 import TabList from "./TabList.astro";
 import TabPanels from "./TabPanels.astro";
 
@@ -44,7 +45,7 @@ await walk(ast, async (node, parent) => {
 ---
 
 <section
-  class:list={["flex flex-col gap-4", classList]}
+  class:list={twMerge("flex flex-col gap-4", classList)}
   data-hfdev-tablist-container
   {...attrs}
 >

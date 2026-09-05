@@ -1,0 +1,55 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Dialog from "../components/dialog/Dialog.astro";
+import DialogConfirm from "../components/dialog/DialogConfirm.astro";
+import Button from "../components/button/Button.astro";
+---
+
+<BaseLayout>
+  <h1 class="text-4xl font-bold">Dialogs</h1>
+
+  <p>
+    Dialogs are modal windows that appear on top of the main content, typically
+    used to display important information or to prompt the user for input.
+  </p>
+
+  <h2 class="text-3xl font-semibold">Dialog</h2>
+
+  <Button command="show-modal" commandfor="dialog-1"> Open Dialog 1 </Button>
+
+  <Dialog id="dialog-1">
+    <p>
+      lorem ipsum dolor sit amet, consectetur adipisicing elit. Quisquam,
+      voluptatum!
+    </p>
+  </Dialog>
+
+  <h2 class="text-3xl font-semibold">Confirm Dialog</h2>
+
+  <Button command="show-modal" commandfor="dialog-2">
+    Open Confirm Dialog
+  </Button>
+
+  <DialogConfirm
+    id="dialog-2"
+    title="Confirm Action"
+    buttonConfirm={{ text: "Yes", value: "yes" }}
+    buttonCancel={{ text: "No", value: "no" }}
+  >
+    <p>Are you sure?</p>
+  </DialogConfirm>
+
+  <h2 class="text-3xl font-semibold">Notification Dialog</h2>
+
+  <Button command="show-modal" commandfor="dialog-4">
+    Open Notification Dialog
+  </Button>
+
+  <DialogConfirm
+    id="dialog-4"
+    title="Notification"
+    buttonConfirm={{ text: "Close", value: "close" }}
+  >
+    <p>This is a notification dialog.</p>
+  </DialogConfirm>
+</BaseLayout>

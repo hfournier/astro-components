@@ -1,0 +1,46 @@
+---
+import type { ComponentProps } from "astro/types";
+import Icon from "../Icon.astro";
+import BaseOverlay from "../BaseOverlay.astro";
+
+type BaseOverlayProps = ComponentProps<typeof BaseOverlay>;
+
+type Props = BaseOverlayProps;
+
+const { id, class: classList, ...attrs } = Astro.props;
+---
+
+<BaseOverlay
+  class:list={["rounded-xl bg-white md:rounded-2xl lg:rounded-3xl", classList]}
+  {id}
+  {...attrs}
+>
+  <header
+    class="border-grayish-200 bg-grayish-50 flex items-center justify-between rounded-t-xl border-b p-4 md:rounded-t-2xl md:px-6 lg:rounded-t-3xl"
+  >
+    <slot name="header" />
+
+    <button
+      class:list={["group/close bg-grayish-50 cursor-pointer"]}
+      type="button"
+      commandfor={id}
+      command="close"
+      aria-label="Close"
+    >
+      <Icon
+        class="text-grayish-500 size-4 group-hover/close:text-black md:size-5"
+        name="close"
+      />
+    </button>
+  </header>
+
+  <div class="min-h-16 p-4 md:px-6">
+    <slot />
+  </div>
+
+  <footer
+    class="border-grayish-200 bg-grayish-50 rounded-b-xl border-t p-4 md:rounded-b-2xl md:px-6 lg:rounded-b-3xl"
+  >
+    <slot name="footer" />
+  </footer>
+</BaseOverlay>
