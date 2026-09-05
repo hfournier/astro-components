@@ -8,6 +8,10 @@ An open-source library of copy-paste Astro + Tailwind components. This context c
 A single named design decision (a color step, a radius, a border width, a font weight) exposed as a CSS custom property consumed through Tailwind's `@theme`, so changing one value anywhere restyles every component that uses it.
 _Avoid_: variable, design value
 
+**Base token**:
+A token that a whole derived scale is computed from via `calc()` (or an equivalent CSS function), rather than a value declared independently. `--color-primary` (the whole primary/secondary/grayish scale derives from it) and `--radius` (the radius scale derives from it) are base tokens; `--font-weight-semibold` is not, since it isn't derived from anything.
+_Avoid_: root token, primary token (ambiguous with the `primary` color role)
+
 **Theme**:
 The complete set of token values active for a given site — what you get by editing `src/styles/global.css`. Swapping a theme changes appearance only; it never changes a component's markup, props, or behavior.
 _Avoid_: skin, style
