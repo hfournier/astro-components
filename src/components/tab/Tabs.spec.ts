@@ -80,7 +80,7 @@ test.describe('Tabs', () => {
     await expect(tab1).toBeFocused();
   });
 
-  test("selecting a tab shows its panel and hides the others", async ({ page }) => {
+  test('selecting a tab shows its panel and hides the others', async ({ page }) => {
     const group = page.locator('[data-hfdev-tablist-container]').first();
     const tabs = group.getByRole('tab');
     // getByRole('tabpanel') excludes panels hidden via [hidden] from the accessibility tree, so a
@@ -127,7 +127,7 @@ test.describe('Tabs', () => {
     await page.mouse.move(0, 0);
   });
 
-  test("tab labels resolve to the nav font tokens", async ({ page }) => {
+  test('tab labels resolve to the nav font tokens', async ({ page }) => {
     const expectedWeight = await resolvedStyle(page, 'font-weight', 'var(--font-weight-nav)');
     const expectedSize = await resolvedStyle(page, 'font-size', 'var(--font-size-nav)');
 
@@ -136,7 +136,7 @@ test.describe('Tabs', () => {
     await expect(tab).toHaveCSS('font-size', expectedSize);
   });
 
-  test("tab focus ring resolves to the dedicated focus-ring tokens", async ({ page }) => {
+  test('tab focus ring resolves to the dedicated focus-ring tokens', async ({ page }) => {
     const expectedColor = await resolvedStyle(page, 'outline-color', 'var(--color-focus-ring)');
     const expectedWidth = await resolvedStyle(page, 'outline-width', 'var(--focus-ring-width)');
     const expectedOffset = await resolvedStyle(page, 'outline-offset', 'var(--focus-ring-offset)');
@@ -148,7 +148,7 @@ test.describe('Tabs', () => {
     await expect(tab).toHaveCSS('outline-offset', expectedOffset);
   });
 
-  test("container rule resolves to the divider border-width token", async ({ page }) => {
+  test('container rule resolves to the divider border-width token', async ({ page }) => {
     const expectedWidth = await resolvedStyle(page, 'border-bottom-width', 'var(--border-width-divider)');
     const tablist = page.getByRole('tablist').first();
     await expect(tablist).toHaveCSS('border-bottom-width', expectedWidth);
