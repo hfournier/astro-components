@@ -82,6 +82,18 @@
   --color-focus-ring: var(--color-primary-600);
   --focus-ring-width: 2px;
   --focus-ring-offset: 2px;
+
+  /* duration: no Tailwind namespace, hand-rolled literal steps (ADR-0006) */
+  --duration-fast: 150ms;
+  --duration-base: 300ms;
+  --duration-slow: 500ms;
+
+  --duration-feedback: var(--duration-fast);
+  --duration-overlay: var(--duration-base);
+  --duration-content-swap: var(--duration-slow);
+
+  /* easing: Tailwind's native namespace, role layer on top (ADR-0006) */
+  --ease-overlay: var(--ease-out);
 }
 
 @keyframes slideDown1sStart {
