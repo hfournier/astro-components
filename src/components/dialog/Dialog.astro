@@ -1,5 +1,6 @@
 ---
 import type { ComponentProps } from "astro/types";
+import { twMerge } from "tailwind-merge";
 import Icon from "../Icon.astro";
 import BaseOverlay from "../BaseOverlay.astro";
 
@@ -11,17 +12,22 @@ const { id, class: classList, ...attrs } = Astro.props;
 ---
 
 <BaseOverlay
-  class:list={["rounded-xl bg-white md:rounded-2xl lg:rounded-3xl", classList]}
+  class:list={twMerge("rounded-container bg-white", classList)}
   {id}
   {...attrs}
 >
   <header
-    class="border-grayish-200 bg-grayish-50 flex items-center justify-between rounded-t-xl border-b p-4 md:rounded-t-2xl md:px-6 lg:rounded-t-3xl"
+    class:list={twMerge(
+      "border-grayish-200 bg-grayish-50 flex items-center justify-between rounded-t-container border-b-(length:--border-width-divider) p-4 md:px-6"
+    )}
   >
     <slot name="header" />
 
     <button
-      class:list={["group/close bg-grayish-50 cursor-pointer"]}
+      class:list={twMerge(
+        "group/close bg-grayish-50 cursor-pointer",
+        "focus-visible:outline-focus-ring focus-visible:outline-(length:--focus-ring-width) focus-visible:outline-offset-(--focus-ring-offset)"
+      )}
       type="button"
       commandfor={id}
       command="close"
@@ -39,7 +45,9 @@ const { id, class: classList, ...attrs } = Astro.props;
   </div>
 
   <footer
-    class="border-grayish-200 bg-grayish-50 rounded-b-xl border-t p-4 md:rounded-b-2xl md:px-6 lg:rounded-b-3xl"
+    class:list={twMerge(
+      "border-grayish-200 bg-grayish-50 rounded-b-container border-t-(length:--border-width-divider) p-4 md:px-6"
+    )}
   >
     <slot name="footer" />
   </footer>
