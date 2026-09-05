@@ -120,11 +120,9 @@ test.describe('Tabs', () => {
 
     await waitForIndicatorToTrack(page, 'hover', tab3);
 
-    // Move the pointer off the tab before the test ends: the automatic axe scan runs against
-    // whatever is currently rendered, and a lingering :hover flips the tab into its
-    // hover:text-primary-600 style, which fails contrast against white - a pre-existing gap in
-    // TabList's hover color unrelated to this retrofit's token scope.
-    await page.mouse.move(0, 0);
+    // Leave the pointer on the tab: the automatic axe scan (ADR-0002) runs after this test
+    // body while it's still hovered, and doubles as the regression check for #25's hover
+    // color-contrast fix.
   });
 
   test('tab labels resolve to the nav font tokens', async ({ page }) => {
