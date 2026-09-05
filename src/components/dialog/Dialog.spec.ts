@@ -74,6 +74,10 @@ test.describe('Dialog', () => {
     await activate(page.getByRole('button', { name: 'Open Dialog 1' }));
     await expect(dialog).toBeVisible();
     await expect(dialog).toHaveCSS('transition-duration', '0s');
+
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(dialog).toHaveCSS('transition-duration', '0s');
   });
 
   test('wrapper and header rounding resolve to the container radius token, flat at every width', async ({
