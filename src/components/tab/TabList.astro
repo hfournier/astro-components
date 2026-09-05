@@ -1,4 +1,6 @@
 ---
+import { twMerge } from "tailwind-merge";
+
 type Props = {
   randomId: string;
   labels: string[];
@@ -8,18 +10,21 @@ const { randomId, labels } = Astro.props;
 ---
 
 <div
-  class="border-grayish-200 flex border-b-2"
+  class:list={twMerge(
+    "border-grayish-200 flex border-b-(length:--border-width-divider)"
+  )}
   role="tablist"
   style={`--hfdev-anchorname-tab-hover: --anchorname-${randomId}-tab-hover; --hfdev-anchorname-tab-selected: --anchorname-${randomId}-tab-selected;`}
 >
   {
     labels.map((label, index) => (
       <button
-        class:list={[
-          "focus-visible:border-grayish-200 hover:text-primary-600 cursor-pointer rounded-t-md border-2 border-transparent px-6 font-semibold outline-none select-none hover:[anchor-name:var(--hfdev-anchorname-tab-hover)]",
-          "aria-selected:text-primary-700 aria-selected:focus-visible:border-primary-600 aria-selected:cursor-default aria-selected:[anchor-name:var(--hfdev-anchorname-tab-selected)]",
-          "motion-safe:transition-colors",
-        ]}
+        class:list={twMerge(
+          "hover:text-primary-600 cursor-pointer rounded-t-md border-(length:--border-width-boundary) border-transparent px-6 font-nav text-(length:--font-size-nav) select-none hover:[anchor-name:var(--hfdev-anchorname-tab-hover)]",
+          "aria-selected:text-primary-700 aria-selected:cursor-default aria-selected:[anchor-name:var(--hfdev-anchorname-tab-selected)]",
+          "focus-visible:outline-focus-ring focus-visible:outline-(length:--focus-ring-width) focus-visible:outline-offset-(--focus-ring-offset)",
+          "motion-safe:transition-colors motion-safe:duration-(--duration-feedback)"
+        )}
         id={`tab-${randomId}-${index + 1}`}
         type="button"
         role="tab"
@@ -38,15 +43,15 @@ const { randomId, labels } = Astro.props;
       "[position-anchor:var(--hfdev-anchorname-tab-selected)]",
     ].map((positionAnchor) => (
       <div
-        class:list={[
+        class:list={twMerge(
           "pointer-events-none h-1",
           "absolute right-[anchor(right)] bottom-[calc(anchor(bottom)-1px)] left-[anchor(left)]",
-          "motion-safe:transition-[left,right] motion-safe:duration-300",
+          "motion-safe:transition-[left,right] motion-safe:duration-(--duration-overlay)",
           positionAnchor.includes("hover")
             ? "bg-primary-500"
             : "bg-primary-600",
-          positionAnchor,
-        ]}
+          positionAnchor
+        )}
       />
     ))
   }
