@@ -19,9 +19,9 @@ const {
 } = Astro.props;
 
 const transitionClasses = {
-  fade: "opacity-0 transition-[display,opacity,overlay] open:opacity-100 starting:open:opacity-0",
+  fade: "opacity-0 motion-safe:transition-[display,opacity,overlay] open:opacity-100 motion-safe:starting:open:opacity-0",
   "fade-scale":
-    "opacity-0 scale-70 transition-[display,opacity,overlay,scale] open:opacity-100 open:scale-100 starting:open:opacity-0 starting:open:scale-70",
+    "opacity-0 scale-70 motion-safe:transition-[display,opacity,overlay,scale] open:opacity-100 open:scale-100 motion-safe:starting:open:opacity-0 motion-safe:starting:open:scale-70",
 }[transition];
 
 const randomId = crypto.randomUUID();
@@ -30,9 +30,9 @@ const randomId = crypto.randomUUID();
 <Tag
   class:list={twMerge(
     "m-auto min-w-xs overscroll-contain bg-transparent",
-    "transition-discrete duration-300 ease-out",
-    "backdrop:bg-black/30 backdrop:opacity-0 backdrop:backdrop-blur-xs open:backdrop:opacity-100 starting:open:backdrop:opacity-0",
-    "backdrop:transition-[display,opacity,overlay] backdrop:transition-discrete backdrop:duration-300 backdrop:ease-out",
+    "motion-safe:transition-discrete motion-safe:duration-(--duration-overlay) motion-safe:ease-overlay",
+    "backdrop:bg-black/30 backdrop:opacity-0 backdrop:backdrop-blur-xs open:backdrop:opacity-100 motion-safe:starting:open:backdrop:opacity-0",
+    "motion-safe:backdrop:transition-[display,opacity,overlay] motion-safe:backdrop:transition-discrete motion-safe:backdrop:duration-(--duration-overlay) motion-safe:backdrop:ease-overlay",
     transitionClasses
   )}
   {id}
