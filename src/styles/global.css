@@ -56,12 +56,28 @@
   --font-weight-heading-sm: var(--font-weight-semibold);
   --font-weight-heading-lg: var(--font-weight-bold);
 
-  /* font-size: static roles alias Tailwind's scale; title/heading roles are fluid (ADR-0005) */
-  --font-size-control: var(--text-base);
-  --font-size-nav: var(--text-base);
-  --font-size-title: clamp(1rem, 0.95rem + 0.5vw, 1.25rem);
-  --font-size-heading-sm: clamp(1.125rem, 1rem + 1vw, 1.375rem);
-  --font-size-heading-lg: clamp(1.5rem, 1.25rem + 2vw, 2.25rem);
+  /* font-size: Tailwind's native --text-* namespace, role layer on top, each paired with an
+     explicit --text-<role>--line-height (ADR-0008, correcting ADR-0005's non-namespace treatment) */
+  --text-control: var(--text-base);
+  --text-control--line-height: var(--text-base--line-height);
+  --text-nav: var(--text-base);
+  --text-nav--line-height: var(--text-base--line-height);
+  --text-title: clamp(1rem, 0.95rem + 0.5vw, 1.25rem);
+  --text-title--line-height: 1.3;
+
+  /* document-heading font-size: one role per level, named by magnitude not tag (ADR-0008) */
+  --text-heading-xs: clamp(1rem, 0.95rem + 0.5vw, 1.125rem);
+  --text-heading-xs--line-height: 1.4;
+  --text-heading-sm: clamp(1.125rem, 1.05rem + 0.75vw, 1.25rem);
+  --text-heading-sm--line-height: 1.35;
+  --text-heading-md: clamp(1.25rem, 1.15rem + 1vw, 1.5rem);
+  --text-heading-md--line-height: 1.3;
+  --text-heading-lg: clamp(1.5rem, 1.3rem + 1.5vw, 1.875rem);
+  --text-heading-lg--line-height: 1.25;
+  --text-heading-xl: clamp(1.75rem, 1.45rem + 2vw, 2.25rem);
+  --text-heading-xl--line-height: 1.2;
+  --text-heading-2xl: clamp(2rem, 1.6rem + 3vw, 3rem);
+  --text-heading-2xl--line-height: 1.15;
 
   /* focus-ring: dedicated color token, independent of any component's color role (ADR-0005) */
   --color-focus-ring: var(--color-primary-control);

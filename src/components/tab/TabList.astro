@@ -20,7 +20,7 @@ const { randomId, labels } = Astro.props;
     labels.map((label, index) => (
       <button
         class:list={twMerge(
-          "hover:text-primary-control font-nav cursor-pointer rounded-t-md border-(length:--border-width-boundary) border-transparent px-6 text-(length:--font-size-nav) select-none hover:[anchor-name:var(--hfdev-anchorname-tab-hover)]",
+          "hover:text-primary-control font-nav cursor-pointer rounded-t-md border-(length:--border-width-boundary) border-transparent px-6 text-nav select-none hover:[anchor-name:var(--hfdev-anchorname-tab-hover)]",
           "aria-selected:text-primary-control aria-selected:cursor-default aria-selected:[anchor-name:var(--hfdev-anchorname-tab-selected)]",
           "focus-visible:outline-focus-ring focus-visible:outline-(length:--focus-ring-width) focus-visible:outline-offset-(--focus-ring-offset)",
           "motion-safe:transition-colors motion-safe:duration-(--duration-feedback)"

@@ -1,0 +1,32 @@
+# Font-size roles move to Tailwind's native `--text-*` namespace; document heading gets a six-step scale
+
+Supersedes the font-size portion of ADR-0005 in full — not just the two-role heading count, but the underlying mechanism choice all four font-size roles (`control`, `nav`, `title`, `heading-*`) were built on. Font-weight's heading roles (`--font-weight-heading-sm`/`-lg`) and everything else in ADR-0005 stand unchanged.
+
+ADR-0005 put font-size in with border-width and duration as a hand-rolled, non-namespaced custom property, consumed via Tailwind's arbitrary-value syntax (`text-(length:--font-size-control)`). That was a misclassification against the test ADR-0004 itself set: Tailwind v4 *does* have a native `--text-*` theme namespace — the one that already backs `text-sm`/`text-lg`/etc. — exactly the "native-namespace tokens... no departure needed" category ADR-0004 gave radius, font-weight, and easing. Font-size should have gotten the same treatment `--font-weight-*` did; instead every consumer (`Button`, `TabList`, `DialogConfirm`, and now the document-heading work) writes the arbitrary-value form instead of a plain utility class, and none of them get line-height bundled the way every native Tailwind `text-*` size does. This surfaced while adding document-heading roles for #31: six new `--font-size-heading-*` tokens would have meant `text-(length:--font-size-heading-lg)` everywhere `text-heading-lg` should just work.
+
+- **Rename all four font-size roles onto `--text-*`**: `--text-control`, `--text-nav`, `--text-title`, `--text-heading-xs/sm/md/lg/xl/2xl`. Tailwind auto-generates a `text-<name>` utility for every `--text-*` entry in `@theme`, the same mechanism `--font-weight-heading-lg` already gets a free `font-heading-lg` from — so `Heading.astro` (and any future consumer) writes `text-heading-lg`, not an arbitrary-value expression.
+- **Each role also gets a paired `--text-<role>--line-height`.** This is Tailwind v4's actual mechanism for bundling line-height into a `text-*` utility — `--text-lg`/`--text-lg--line-height` is how Tailwind's own default scale does it — not a new convention invented here. `control`/`nav` alias `--text-base--line-height` (unchanged value; these two were already `--text-base`-sized, they just never had an explicit line-height applied before — previously inherited from the surrounding page, now set explicitly by the utility). `title` gets `1.3` (unitless, a short one-to-two-line component heading). The six heading roles get a decreasing ratio as size increases — `1.4/1.35/1.3/1.25/1.2/1.15` for `xs` through `2xl` — standard practice for a fluid heading scale (larger display text needs proportionally less line-height to avoid looking loose).
+- **The six-step heading scale itself is unchanged from the original draft of this ADR**: one role per level, named by magnitude (`xs`/`sm`/`md`/`lg`/`xl`/`2xl`) rather than by tag, mapped `h1→2xl, h2→xl, h3→lg, h4→md, h5→sm, h6→xs` in `Heading.astro`. See the values table below.
+- **Each step stays an independent `clamp()` literal**, not a `calc()`-derived multiple of a base token — same reasoning as the original draft: a `calc()`-multiplier scale would still need each step individually checked for legibility, so a shared formula buys nothing over six hand-tuned literals.
+- **Font-weight's boundary does not move.** `--font-weight-heading-sm` (semibold, h4-h6) / `-lg` (bold, h1-h3) stays exactly as ADR-0005 defined it; size alone carries the six-way distinction.
+- **Values**:
+
+  | Token | `clamp()` | Min → max | line-height | Mapped level |
+  |---|---|---|---|---|
+  | `--text-heading-xs` | `clamp(1rem, 0.95rem + 0.5vw, 1.125rem)` | 16px → 18px | 1.4 | h6 |
+  | `--text-heading-sm` | `clamp(1.125rem, 1.05rem + 0.75vw, 1.25rem)` | 18px → 20px | 1.35 | h5 |
+  | `--text-heading-md` | `clamp(1.25rem, 1.15rem + 1vw, 1.5rem)` | 20px → 24px | 1.3 | h4 |
+  | `--text-heading-lg` | `clamp(1.5rem, 1.3rem + 1.5vw, 1.875rem)` | 24px → 30px | 1.25 | h3 |
+  | `--text-heading-xl` | `clamp(1.75rem, 1.45rem + 2vw, 2.25rem)` | 28px → 36px | 1.2 | h2 |
+  | `--text-heading-2xl` | `clamp(2rem, 1.6rem + 3vw, 3rem)` | 32px → 48px | 1.15 | h1 |
+
+  Chosen to stay monotonically increasing at both the min and max end of every step, and to roughly bracket ADR-0005's old range (old `heading-sm` 18-22px, old `heading-lg` 24-36px) rather than invent a disconnected new range.
+
+This is hard to reverse once every consumer is on the native-utility form (reintroducing an arbitrary-value indirection later means touching every call site again), surprising without knowing Tailwind only bundles line-height automatically when a `--text-<name>--line-height` companion exists next to `--text-<name>` — omit it and the utility silently sets font-size alone, no error — and reflects a real trade-off: six roles × a line-height decision each, vs. the four roles × font-size-only ADR-0005 shipped. That's more upfront tuning per role, bought back by every consumer writing a plain utility class instead of an arbitrary-value expression, and by line-height finally being an explicit, reviewable decision instead of whatever inherited from context.
+
+## Consequences
+
+- **Mechanical retrofit ships in the same PR** (no design decision involved, unlike the heading-level mapping below): `Button.astro`, `TabList.astro`, and `DialogConfirm.astro` move from `text-(length:--font-size-control)` / `-nav` / `-title` to the plain `text-control` / `text-nav` / `text-title` utilities. `Dialog.spec.ts` and `Tabs.spec.ts` are updated to assert against `var(--text-title)` / `var(--text-nav)`.
+- Button and Tab labels now get an explicit line-height for the first time (via `--text-control--line-height` / `--text-nav--line-height`, both aliasing `--text-base--line-height`). No visible change expected — this matches the line-height either element would already compute by inheritance — but it's worth knowing the underlying CSS property is now set explicitly rather than inherited, if either component's line-height is ever overridden downstream.
+- `Heading.astro` is **not** retrofitted here — mapping which of the six roles each `level` uses is the actual design decision or original draft deferred to issue #31, and stays deferred; only the token names that issue references have changed (updated in the issue body).
+- No visual change ships for `--text-heading-*` from this ticket alone (nothing consumes it yet); the visible six-way size distinction lands with the `Heading.astro` retrofit in #31.

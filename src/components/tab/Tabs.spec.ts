@@ -127,7 +127,7 @@ test.describe('Tabs', () => {
 
   test('tab labels resolve to the nav font tokens', async ({ page }) => {
     const expectedWeight = await resolvedStyle(page, 'font-weight', 'var(--font-weight-nav)');
-    const expectedSize = await resolvedStyle(page, 'font-size', 'var(--font-size-nav)');
+    const expectedSize = await resolvedStyle(page, 'font-size', 'var(--text-nav)');
 
     const tab = page.getByRole('tablist').first().getByRole('tab').first();
     await expect(tab).toHaveCSS('font-weight', expectedWeight);
