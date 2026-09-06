@@ -1,5 +1,7 @@
 # Theming mechanism, class-merge convention & dark-mode readiness
 
+> **Superseded in part by ADR-0007**: the "one base token derives a numbered 50-950 scale via `hsl(from ...)`" piece of this decision was replaced — the numbered scale is gone, replaced by curated semantic tokens derived via `oklch(from ...)`. Everything else below (the `@theme` mechanism itself, `calc()`-derived scales in general, the class-merge convention, and dark-mode readiness) still stands.
+
 Color tokens already work via `@theme` + one base `--color-primary` token deriving a full scale via CSS relative-color syntax. This decision confirms/extends that pattern project-wide, resolves an existing class-merge inconsistency, and settles how the mechanism stays dark-mode-ready without designing a dark mode that doesn't exist yet.
 
 - **Native-namespace tokens** (radius, font-weight, easing): extend the existing `@theme` block exactly like color — Tailwind v4 gives each an official namespace with real `var()` indirection, no departure needed.

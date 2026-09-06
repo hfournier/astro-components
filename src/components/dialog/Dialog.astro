@@ -18,14 +18,14 @@ const { id, class: classList, ...attrs } = Astro.props;
 >
   <header
     class:list={twMerge(
-      "border-grayish-200 bg-grayish-50 flex items-center justify-between rounded-t-container border-b-(length:--border-width-divider) p-4 md:px-6"
+      "border-divider bg-container flex items-center justify-between rounded-t-container border-b-(length:--border-width-divider) p-4 md:px-6"
     )}
   >
     <slot name="header" />
 
     <button
       class:list={twMerge(
-        "group/close bg-grayish-50 cursor-pointer",
+        "group/close bg-container cursor-pointer",
         "focus-visible:outline-focus-ring focus-visible:outline-(length:--focus-ring-width) focus-visible:outline-offset-(--focus-ring-offset)"
       )}
       type="button"
@@ -34,7 +34,7 @@ const { id, class: classList, ...attrs } = Astro.props;
       aria-label="Close"
     >
       <Icon
-        class="text-grayish-500 size-4 group-hover/close:text-black md:size-5"
+        class="text-icon size-4 group-hover/close:text-black md:size-5"
         name="close"
       />
     </button>
@@ -46,7 +46,7 @@ const { id, class: classList, ...attrs } = Astro.props;
 
   <footer
     class:list={twMerge(
-      "border-grayish-200 bg-grayish-50 rounded-b-container border-t-(length:--border-width-divider) p-4 md:px-6"
+      "border-divider bg-container rounded-b-container border-t-(length:--border-width-divider) p-4 md:px-6"
     )}
   >
     <slot name="footer" />

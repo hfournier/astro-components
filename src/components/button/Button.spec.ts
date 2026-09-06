@@ -26,16 +26,16 @@ test.describe('Button', () => {
   });
 
   test('solid variant resolves the color-role background', async ({ page }) => {
-    const primary = await resolvedColor(page, 'var(--color-primary-700)');
-    const secondary = await resolvedColor(page, 'var(--color-secondary-600)');
+    const primary = await resolvedColor(page, 'var(--color-primary-control)');
+    const secondary = await resolvedColor(page, 'var(--color-secondary-control)');
 
     await expect(page.getByRole('button', { name: 'Solid Primary' })).toHaveCSS('background-color', primary);
     await expect(page.getByRole('button', { name: 'Solid Secondary' })).toHaveCSS('background-color', secondary);
   });
 
   test('outline variant resolves the color-role border and text', async ({ page }) => {
-    const primary = await resolvedColor(page, 'var(--color-primary-700)');
-    const secondary = await resolvedColor(page, 'var(--color-secondary-600)');
+    const primary = await resolvedColor(page, 'var(--color-primary-control)');
+    const secondary = await resolvedColor(page, 'var(--color-secondary-control)');
 
     const outlinePrimary = page.getByRole('button', { name: 'Outline Primary' });
     await expect(outlinePrimary).toHaveCSS('border-color', primary);

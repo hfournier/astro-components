@@ -29,7 +29,7 @@ const { id, class: classList, showCloseX = false, ...attrs } = Astro.props;
     showCloseX && (
       <button
         class:list={twMerge(
-          "group/close border-grayish-200 bg-grayish-50 grid size-10 cursor-pointer place-items-center rounded-full border-(length:--border-width-divider) md:size-11 lg:size-12",
+          "group/close border-divider bg-container grid size-10 cursor-pointer place-items-center rounded-full border-(length:--border-width-divider) md:size-11 lg:size-12",
           "focus-visible:outline-focus-ring focus-visible:outline-(length:--focus-ring-width) focus-visible:outline-offset-(--focus-ring-offset)",
           "fixed top-[calc(anchor(top)-1rem)] right-[calc(anchor(right)-1rem)] md:top-[calc(anchor(top)-1.125rem)] md:right-[calc(anchor(right)-1.125rem)] lg:top-[calc(anchor(top)-1.25rem)] lg:right-[calc(anchor(right)-1.25rem)]",
           "[position-anchor:var(--hfdev-anchorname-overlay)]"
@@ -40,7 +40,7 @@ const { id, class: classList, showCloseX = false, ...attrs } = Astro.props;
         aria-label="Close"
       >
         <Icon
-          class="text-grayish-500 size-4 group-hover/close:text-black md:size-5"
+          class="text-icon size-4 group-hover/close:text-black md:size-5"
           name="close"
         />
       </button>
