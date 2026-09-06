@@ -22,9 +22,12 @@
   --color-secondary-control-hover: oklch(from var(--color-primary) var(--control-lightness-hover) c calc(h + 180));
 
   /* decorative/UI-only roles (WCAG 1.4.11 non-text contrast, not 4.5:1 text contrast) - same
-     hue as primary, low chroma (ADR-0007) */
+     hue as primary, low chroma (ADR-0007). --color-container uses a much lower chroma
+     fraction than the others: near-white surfaces show a color tint far more readily than
+     mid/dark tones do at the same chroma, so 0.12 read as a visible peach rather than a
+     neutral panel background. */
   --color-divider: oklch(from var(--color-primary) 0.85 calc(c * 0.12) h);
-  --color-container: oklch(from var(--color-primary) 0.96 calc(c * 0.12) h);
+  --color-container: oklch(from var(--color-primary) 0.96 calc(c * 0.03) h);
   --color-icon: oklch(from var(--color-primary) 0.55 calc(c * 0.12) h);
   --color-body: oklch(from var(--color-primary) 0.2 calc(c * 0.12) h);
 
