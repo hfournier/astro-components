@@ -41,7 +41,7 @@ A heading-tagged (`<h1>`–`<h6>`) piece of UI chrome scoped to one component's 
 _Avoid_: heading (ambiguous with [[Document heading]]), title (too generic alone)
 
 **Document heading**:
-An `<h1>`–`<h6>` element belonging to a page's own content hierarchy, styled from its own scale (`--font-weight-heading-sm`/`-lg`, `--font-size-heading-sm`/`-lg`) rather than a [[Component title]]'s. The two must never be conflated just because they share an HTML tag — no component currently renders one.
+An `<h1>`–`<h6>` element belonging to a page's own content hierarchy, styled from its own scale (`--font-weight-heading-sm`/`-lg`; `--font-size-heading-xs`/`-sm`/`-md`/`-lg`/`-xl`/`-2xl`, one step per level, mapped `h1→2xl … h6→xs`) rather than a [[Component title]]'s. The two must never be conflated just because they share an HTML tag — no component currently renders one.
 _Avoid_: heading level, page title
 
 **Copy-paste component**:
