@@ -148,7 +148,7 @@ test.describe('DialogConfirm', () => {
     await activate(page.getByRole('button', { name: 'Open Confirm Dialog' }));
 
     const expectedWeight = await resolvedStyle(page, 'font-weight', 'var(--font-weight-title)');
-    const expectedSize = await resolvedStyle(page, 'font-size', 'var(--font-size-title)');
+    const expectedSize = await resolvedStyle(page, 'font-size', 'var(--text-title)');
 
     const title = page.getByText('Confirm Action');
     await expect(title).toHaveCSS('font-weight', expectedWeight);

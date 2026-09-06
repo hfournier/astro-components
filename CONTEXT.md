@@ -37,11 +37,11 @@ A component built on top of one or more primitives that adds the actual visual s
 _Avoid_: composite component, styled component
 
 **Component title**:
-A heading-tagged (`<h1>`–`<h6>`) piece of UI chrome scoped to one component's own visual weight — the tag exists only so assistive tech has a landmark to jump to, not to place it in a page's own heading hierarchy. `DialogConfirm`'s `<h3>` is the current example, styled from `--font-weight-title`/`--font-size-title`.
+A heading-tagged (`<h1>`–`<h6>`) piece of UI chrome scoped to one component's own visual weight — the tag exists only so assistive tech has a landmark to jump to, not to place it in a page's own heading hierarchy. `DialogConfirm`'s `<h3>` is the current example, styled from `--font-weight-title`/`--text-title`.
 _Avoid_: heading (ambiguous with [[Document heading]]), title (too generic alone)
 
 **Document heading**:
-An `<h1>`–`<h6>` element belonging to a page's own content hierarchy, styled from its own scale (`--font-weight-heading-sm`/`-lg`; `--font-size-heading-xs`/`-sm`/`-md`/`-lg`/`-xl`/`-2xl`, one step per level, mapped `h1→2xl … h6→xs`) rather than a [[Component title]]'s. The two must never be conflated just because they share an HTML tag — no component currently renders one.
+An `<h1>`–`<h6>` element belonging to a page's own content hierarchy, styled from its own scale (`--font-weight-heading-sm`/`-lg`; `--text-heading-xs`/`-sm`/`-md`/`-lg`/`-xl`/`-2xl`, one step per level, mapped `h1→2xl … h6→xs`) rather than a [[Component title]]'s. The two must never be conflated just because they share an HTML tag — no component currently renders one.
 _Avoid_: heading level, page title
 
 **Copy-paste component**:

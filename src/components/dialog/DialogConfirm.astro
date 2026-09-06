@@ -16,7 +16,7 @@ const { id, title, buttonConfirm, buttonCancel } = Astro.props;
 
 <Dialog {id} aria-labelledby={`${id}-title`}>
   <h3
-    class:list={twMerge("font-title text-(length:--font-size-title)")}
+    class:list={twMerge("font-title text-title")}
     id={`${id}-title`}
     slot="header"
   >
