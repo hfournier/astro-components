@@ -8,43 +8,28 @@
   /* change the primary color to customize your color scheme */
   --color-primary: #cc5500;
 
-  --color-primary-50: hsl(from var(--color-primary) h s 95%);
-  --color-primary-100: hsl(from var(--color-primary) h s 90%);
-  --color-primary-200: hsl(from var(--color-primary) h s 80%);
-  --color-primary-300: hsl(from var(--color-primary) h s 70%);
-  --color-primary-400: hsl(from var(--color-primary) h s 60%);
-  --color-primary-500: hsl(from var(--color-primary) h s 50%);
-  --color-primary-600: hsl(from var(--color-primary) h s 40%);
-  --color-primary-700: hsl(from var(--color-primary) h s 30%);
-  --color-primary-800: hsl(from var(--color-primary) h s 20%);
-  --color-primary-900: hsl(from var(--color-primary) h s 10%);
-  --color-primary-950: hsl(from var(--color-primary) h s 5%);
+  /* control-lightness: one OKLCH dial shared by every color family and role, so a role's
+     contrast character can't drift between colors (ADR-0007). Verified for the current
+     --color-primary to clear 4.5:1 against white for both primary and secondary hues; the
+     hover-state a11y tests remain the actual guarantee if --color-primary ever changes. */
+  --control-lightness-resting: 0.45;
+  --control-lightness-hover: 0.35;
 
-  --color-secondary: hsl(from var(--color-primary) calc(180 + h) s 50%);
+  --color-primary-control: oklch(from var(--color-primary) var(--control-lightness-resting) c h);
+  --color-primary-control-hover: oklch(from var(--color-primary) var(--control-lightness-hover) c h);
 
-  --color-secondary-50: hsl(from var(--color-primary) calc(180 + h) s 95%);
-  --color-secondary-100: hsl(from var(--color-primary) calc(180 + h) s 90%);
-  --color-secondary-200: hsl(from var(--color-primary) calc(180 + h) s 80%);
-  --color-secondary-300: hsl(from var(--color-primary) calc(180 + h) s 70%);
-  --color-secondary-400: hsl(from var(--color-primary) calc(180 + h) s 60%);
-  --color-secondary-500: hsl(from var(--color-primary) calc(180 + h) s 50%);
-  --color-secondary-600: hsl(from var(--color-primary) calc(180 + h) s 40%);
-  --color-secondary-700: hsl(from var(--color-primary) calc(180 + h) s 30%);
-  --color-secondary-800: hsl(from var(--color-primary) calc(180 + h) s 20%);
-  --color-secondary-900: hsl(from var(--color-primary) calc(180 + h) s 10%);
-  --color-secondary-950: hsl(from var(--color-primary) calc(180 + h) s 5%);
+  --color-secondary-control: oklch(from var(--color-primary) var(--control-lightness-resting) c calc(h + 180));
+  --color-secondary-control-hover: oklch(from var(--color-primary) var(--control-lightness-hover) c calc(h + 180));
 
-  --color-grayish-50: hsl(from var(--color-primary) h 10% 95%);
-  --color-grayish-100: hsl(from var(--color-primary) h 10% 90%);
-  --color-grayish-200: hsl(from var(--color-primary) h 10% 80%);
-  --color-grayish-300: hsl(from var(--color-primary) h 10% 70%);
-  --color-grayish-400: hsl(from var(--color-primary) h 10% 60%);
-  --color-grayish-500: hsl(from var(--color-primary) h 10% 50%);
-  --color-grayish-600: hsl(from var(--color-primary) h 10% 40%);
-  --color-grayish-700: hsl(from var(--color-primary) h 10% 30%);
-  --color-grayish-800: hsl(from var(--color-primary) h 10% 20%);
-  --color-grayish-900: hsl(from var(--color-primary) h 10% 10%);
-  --color-grayish-950: hsl(from var(--color-primary) h 10% 5%);
+  /* decorative/UI-only roles (WCAG 1.4.11 non-text contrast, not 4.5:1 text contrast) - same
+     hue as primary, low chroma (ADR-0007). --color-container uses a much lower chroma
+     fraction than the others: near-white surfaces show a color tint far more readily than
+     mid/dark tones do at the same chroma, so 0.12 read as a visible peach rather than a
+     neutral panel background. */
+  --color-divider: oklch(from var(--color-primary) 0.85 calc(c * 0.12) h);
+  --color-container: oklch(from var(--color-primary) 0.96 calc(c * 0.03) h);
+  --color-icon: oklch(from var(--color-primary) 0.55 calc(c * 0.12) h);
+  --color-body: oklch(from var(--color-primary) 0.2 calc(c * 0.12) h);
 
   /* radius: single dial, rest of the scale derives from it (ADR-0005) */
   --radius: 0.5rem;
@@ -79,7 +64,7 @@
   --font-size-heading-lg: clamp(1.5rem, 1.25rem + 2vw, 2.25rem);
 
   /* focus-ring: dedicated color token, independent of any component's color role (ADR-0005) */
-  --color-focus-ring: var(--color-primary-600);
+  --color-focus-ring: var(--color-primary-control);
   --focus-ring-width: 2px;
   --focus-ring-offset: 2px;
 
