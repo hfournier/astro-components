@@ -1,8 +1,8 @@
 ---
 import type { ComponentProps } from "astro/types";
 import { twMerge } from "tailwind-merge";
-import BaseOverlay from "../BaseOverlay.astro";
-import Icon from "../Icon.astro";
+import BaseOverlay from "../base-overlay/BaseOverlay.astro";
+import Icon from "../icon/Icon.astro";
 
 type BaseOverlayProps = ComponentProps<typeof BaseOverlay>;
 
@@ -16,7 +16,7 @@ const { id, class: classList, showCloseX = false, ...attrs } = Astro.props;
 <BaseOverlay
   as="div"
   class:list={twMerge(
-    "m-4 rounded-container bg-white p-4 md:m-5 md:mx-6 md:p-6 lg:m-6 lg:mx-8 lg:p-8",
+    "rounded-container m-4 bg-white p-4 md:m-5 md:mx-6 md:p-6 lg:m-6 lg:mx-8 lg:p-8",
     classList
   )}
   {id}

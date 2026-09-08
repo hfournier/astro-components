@@ -1,0 +1,14 @@
+---
+title: DialogConfirm
+description: The following example shows how to use the DialogConfirm component in its most basic form, specifying only the required `id`, `title`, and `buttonConfirm` properties.
+---
+
+<Button command="show-modal" commandfor="dialog-confirm-usage">Open Confirm Dialog</Button>
+
+<DialogConfirm
+  id="dialog-confirm-usage"
+  title="Confirm Title"
+  buttonConfirm={{ text: "Confirm", value: "confirm" }}
+>
+  Dialog confirm content
+</DialogConfirm>

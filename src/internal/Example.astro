@@ -1,0 +1,36 @@
+---
+import { render, type CollectionEntry } from "astro:content";
+import { marked } from "marked";
+import { components as mdxComponents } from "../mdx";
+import { Code } from "astro:components";
+import Heading from "../components/heading/Heading.astro";
+import CodePreview from "./CodePreview.astro";
+
+type Props = {
+  example: CollectionEntry<"examples">;
+};
+
+const { example } = Astro.props;
+
+const { Content } = await render(example);
+---
+
+<Heading level="h3">{example.data.title}</Heading>
+
+<p set:html={marked.parse(example.data.description)} />
+
+<CodePreview>
+  {
+    example.body && (
+      <Code
+        class="p-4"
+        code={example.body}
+        lang="jsx"
+        theme="github-light"
+        slot="code"
+      />
+    )
+  }
+
+  <Content components={{ ...mdxComponents }} slot="preview" />
+</CodePreview>

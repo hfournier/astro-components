@@ -1,0 +1,62 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { marked } from "marked";
+import Heading from "../components/heading/Heading.astro";
+import Link from "../components/link/Link.astro";
+
+type Props = {
+  slots: CollectionEntry<"components">["data"]["slots"];
+};
+
+const { slots } = Astro.props;
+---
+
+<Heading level="h2">Slots</Heading>
+
+<p>
+  Slots are used to provide content to the component. They can contain plain
+  text, HTML elements, or other components. Slots can be named by using the <code
+    >name</code
+  > property, whereas a slot without a{" "}
+  <code>name</code> property is the default slot.
+</p>
+
+<p>The following slots are defined for this component:</p>
+
+{
+  slots &&
+    slots.map((slot) => (
+      <>
+        <Heading level="h3">{slot.name}</Heading>
+        <dl class="grid max-w-fit grid-cols-[auto_minmax(0,1fr)] gap-3 pl-8">
+          <dt class="font-medium">Accepts</dt>
+          <dd>
+            {slot.kind === "text" ? (
+              "text only"
+            ) : slot.kind === "component" ? (
+              slot.multiple ? (
+                <>
+                  one or more{" "}
+                  <Link href={`/components/${slot.component.toLowerCase()}`}>
+                    {slot.component}
+                  </Link>{" "}
+                  components
+                </>
+              ) : (
+                <>
+                  a single{" "}
+                  <Link href={`/components/${slot.component.toLowerCase()}`}>
+                    {slot.component}
+                  </Link>{" "}
+                  component
+                </>
+              )
+            ) : (
+              "any kind of content"
+            )}
+          </dd>
+        </dl>
+        <p set:html={marked.parse(slot.description)} />
+      </>
+    ))
+}

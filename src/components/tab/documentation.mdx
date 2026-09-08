@@ -1,0 +1,27 @@
+---
+name: Tab
+description: A single tab panel within a Tabs component, holding one tab's label and content.
+role: pattern
+meta:
+  title: Tab | astro-components HenriFournier.dev
+  description: A single tab panel within a Tabs component, holding one tab's label and content.
+extends:
+  kind: element
+  tag: [div]
+parents: [Tabs]
+props:
+  - name: label
+    type: string
+    required: true
+    default: null
+    description: The text shown on this tab's button in the tab list.
+  - name: transition
+    type: '"fade" | "fade-up" | "slide-left"'
+    required: false
+    default: '"fade"'
+    description: Which transition to play when this tab's panel swaps into view. The `fade` transition is a simple fade-in/fade-out, while the `fade-up` animates the panel fading in from below, and the `slide-left` animates the panel fading in and sliding from the right.
+slots:
+  - name: default
+    description: The content to display when this tab is selected.
+    kind: any
+---

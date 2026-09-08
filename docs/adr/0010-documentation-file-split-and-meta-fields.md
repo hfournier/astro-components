@@ -1,0 +1,25 @@
+# Component documentation splits into three files; frontmatter gains SEO meta fields
+
+> **Supersedes part of ADR-0009**: point 1 (one `documentation.mdx` file) is replaced by a three-file convention, and point 4's frontmatter schema gains a required `meta` object and renames `title` to `name`. Everything else in ADR-0009 (points 2-3, 5-9, 11, the `components` collection rename in point 10) still stands.
+
+Implementing ADR-0009 surfaced a need it didn't anticipate: an example's source code has to work as two different things — a live rendered `<Content>` preview and a displayed code block showing the source that produced it (`src/internal/Example.astro`/`Usage.astro` render both from the same MDX entry, via Astro's `render()` for the preview and the entry's raw `.body` string for the `<Code>` block). That dual rendering needs each example to be its own content-collection document with its own `.body` — a single `documentation.mdx` body holding several examples end-to-end, plus the props table content above it, can't be sliced back into one clean string per example.
+
+We decided:
+
+1. **`documentation.mdx`'s body is now empty; prose and examples move to two sibling files.** `documentation.mdx` holds only frontmatter — the structured, machine-checkable facts ADR-0009 §4 already defined (`name`, `description`, `role`, `props`, `slots`, `cssProps`, `extends`, `parents`). A component folder also gets:
+   - **One `usage.mdx`**: frontmatter `title`, `description`, and `show: "both" | "code-only" | "preview-only" | "none"`; an MDX body showing the component's baseline usage. `show` picks how `src/internal/Usage.astro` renders the body: as a Preview/Code tab pair (`both`), the rendered `<Content>` alone (`preview-only`), the raw source alone via `<Code>` (`code-only`), or neither (`none`).
+   - **One or more `example-NN-<slug>.mdx`**: same `title`/`description` frontmatter, one file per named variant or scenario (e.g. Button's `example-01-variant-solid.mdx`). `src/internal/Example.astro` always renders these as a Preview/Code tab pair — there's no `show` field, since an example's whole purpose is showing both.
+
+   This reopens ADR-0009 §1's "splitting invites the same content to be filed inconsistently" concern; the answer is that `usage.mdx`/`example-*.mdx` aren't the rejected examples/docs split (prose-for-humans vs. facts-for-agents) — they're single-purpose, one-example-per-file documents whose whole reason to exist is being an independently renderable content-collection entry, not a home for open-ended prose that could just as easily have gone in `documentation.mdx`.
+
+2. **Two new content collections**, alongside the `components` collection ADR-0009 §10 already renamed: `usage` (`glob: "**/usage.mdx"`) and `examples` (`glob: "**/example-*.mdx"`), both under `src/content.config.ts`.
+
+3. **Frontmatter gains a required `meta` object, distinct from the top-level `description`**: `meta: { title: string (max 60 chars), description: string (max 160 chars) }`. The top-level `name`/`description` are for a human or agent reading the manifest — no length constraint, written to actually explain the component. `meta.title`/`meta.description` feed the rendered page's `<title>` and meta-description tags and are capped to what search engines actually display (~60/~160 characters) — a different consumer with a different constraint, not a duplicate of the top-level fields. They read as near-identical today only because `meta` was authored by summarizing the top-level fields down to size; nothing requires them to stay in lockstep, and a `description` written past 160 characters is expected to diverge from `meta.description` rather than get truncated to match.
+
+4. **§4's `title` field is renamed to `name`.** Freeing `title` avoids it colliding with `meta.title` under one word while meaning something different (component identity vs. page `<title>`).
+
+## Consequences
+
+`src/content.config.ts` carries all three collections (`components`, `usage`, `examples`) and the `meta` schema addition. The route files ADR-0009's Consequences named as `src/pages/examples/{index,[id]}.astro` are `src/pages/components/index.astro` and `src/pages/components/[id].astro` instead, matching the `components` collection name rather than the superseded `examples` one — a correction to that ADR's text, not a further decision.
+
+Prop-manifest fast-follow work that ADR-0009's Consequences deferred ("retrofitting the other three components... stays out of scope") was completed for `BaseOverlay`, `TabList`, `TabPanels`, `DialogConfirm`, `Button`, `Popover`, `Heading`, `Icon`, `Link`, and `Tab` as part of this same pass — ahead of the separate-fast-follow framing ADR-0009 set, not a scope violation of this ADR. `CountdownTimer` is mid-retrofit in a new WIP folder with no `documentation.mdx`/`usage.mdx`/`example-*.mdx` yet, so it's absent from all three collections and the component listing for now. The TypeScript-compiler-API drift check (ADR-0009 point 11) is still undone.

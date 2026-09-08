@@ -1,0 +1,27 @@
+---
+name: Button
+description: A custom Button component that extends HTML's `<button>` element by adding properties that allow for styling and accessibility that is consistent with the design system
+role: pattern
+meta:
+  title: Button | astro-components HenriFournier.dev
+  description: A custom Button component that extends HTML's `<button>` element
+extends:
+  kind: element
+  tag: [button]
+props:
+  - name: variant
+    type: '"solid" | "outline"'
+    required: false
+    default: "solid"
+    description: Controls the button's appearance. The `solid` variant renders a filled button, while the `outline` variant renders a bordered button.
+  - name: color
+    type: '"primary" | "secondary"'
+    required: false
+    default: "primary"
+    description: The color scheme of the button. The `primary` button color is based on the chosen theme's primary color and adjusted for accessibility. Likewise, the `secondary` button color is based on the chosen theme's secondary color (180 deg from the primary) and also adjusted for accessibility.
+slots:
+  - name: default
+    description: The text to display inside the button.
+    kind: text
+---
+

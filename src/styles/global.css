@@ -15,11 +15,19 @@
   --control-lightness-resting: 0.45;
   --control-lightness-hover: 0.35;
 
-  --color-primary-control: oklch(from var(--color-primary) var(--control-lightness-resting) c h);
-  --color-primary-control-hover: oklch(from var(--color-primary) var(--control-lightness-hover) c h);
+  --color-primary-control: oklch(
+    from var(--color-primary) var(--control-lightness-resting) c h
+  );
+  --color-primary-control-hover: oklch(
+    from var(--color-primary) var(--control-lightness-hover) c h
+  );
 
-  --color-secondary-control: oklch(from var(--color-primary) var(--control-lightness-resting) c calc(h + 180));
-  --color-secondary-control-hover: oklch(from var(--color-primary) var(--control-lightness-hover) c calc(h + 180));
+  --color-secondary-control: oklch(
+    from var(--color-primary) var(--control-lightness-resting) c calc(h + 180)
+  );
+  --color-secondary-control-hover: oklch(
+    from var(--color-primary) var(--control-lightness-hover) c calc(h + 180)
+  );
 
   /* decorative/UI-only roles (WCAG 1.4.11 non-text contrast, not 4.5:1 text contrast) - same
      hue as primary, low chroma (ADR-0007). --color-container uses a much lower chroma
@@ -27,7 +35,7 @@
      mid/dark tones do at the same chroma, so 0.12 read as a visible peach rather than a
      neutral panel background. */
   --color-divider: oklch(from var(--color-primary) 0.85 calc(c * 0.12) h);
-  --color-container: oklch(from var(--color-primary) 0.96 calc(c * 0.03) h);
+  --color-container: oklch(from var(--color-primary) 0.97 calc(c * 0.03) h);
   --color-icon: oklch(from var(--color-primary) 0.55 calc(c * 0.12) h);
   --color-body: oklch(from var(--color-primary) 0.2 calc(c * 0.12) h);
 
@@ -95,6 +103,12 @@
 
   /* easing: Tailwind's native namespace, role layer on top (ADR-0006) */
   --ease-overlay: var(--ease-out);
+}
+
+code:not(pre code) {
+  background-color: var(--color-container);
+  padding-inline: 0.3em;
+  border-radius: 0.3em;
 }
 
 @keyframes slideDown1sStart {

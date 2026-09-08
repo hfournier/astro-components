@@ -1,0 +1,24 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+type Props = HTMLAttributes<"h1"> & {
+  level: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+};
+
+const { class: classList, level, ...attrs } = Astro.props;
+
+const headingClasses = {
+  h1: "text-heading-2xl font-heading-lg",
+  h2: "text-heading-xl font-heading-lg",
+  h3: "text-heading-lg font-heading-lg",
+  h4: "text-heading-md font-heading-sm",
+  h5: "text-heading-sm font-heading-sm",
+  h6: "text-heading-xs font-heading-sm",
+}[level];
+
+const Tag = level;
+---
+
+<Tag class:list={[headingClasses, classList]} {...attrs}>
+  <slot />
+</Tag>
