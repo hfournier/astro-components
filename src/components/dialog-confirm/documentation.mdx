@@ -1,0 +1,33 @@
+---
+name: DialogConfirm
+description: A ready-made confirmation dialog built on Dialog, with a title, a body slot, and a footer of confirm/cancel buttons wired to close the dialog via the `command`/`commandfor` API.
+role: pattern
+meta:
+  title: DialogConfirm | astro-components HenriFournier.dev
+  description: A ready-made confirmation dialog built on Dialog, with a title and a footer of confirm/cancel buttons wired to close it.
+props:
+  - name: id
+    type: string
+    required: true
+    default: null
+    description: Unique id for the dialog, forwarded to the underlying Dialog and used to wire up its title's `aria-labelledby`.
+  - name: title
+    type: string
+    required: true
+    default: null
+    description: The text shown in the dialog's header.
+  - name: buttonConfirm
+    type: '{ id?: string; text: string; value: string }'
+    required: true
+    default: null
+    description: Config for the confirm button — id (also usable as a command/commandfor target from outside), text (button label), and value (the dialog's returnValue when this button closes it).
+  - name: buttonCancel
+    type: '{ id?: string; text: string; value: string }'
+    required: false
+    default: null
+    description: Config for an optional cancel button, rendered with the outline variant. Omit to show only the confirm button.
+slots:
+  - name: default
+    description: The dialog's body content.
+    kind: any
+---

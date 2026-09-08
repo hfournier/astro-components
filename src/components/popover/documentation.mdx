@@ -1,0 +1,22 @@
+---
+name: Popover
+description: A custom Popover component that extends HTML's `<div>` element with a `popover` attribute
+role: pattern
+meta:
+  title: Popover | astro-components HenriFournier.dev
+  description: A custom Popover component that extends HTML's `<div>` element with a `popover` attribute
+extends:
+  kind: component
+  name: BaseOverlay
+props:
+  - name: showCloseX
+    type: boolean
+    required: false
+    default: "false"
+    description: Shows a close button positioned over the popover's corner.
+slots:
+  - name: default
+    description: The content to display inside the popover.
+    kind: any
+---
+

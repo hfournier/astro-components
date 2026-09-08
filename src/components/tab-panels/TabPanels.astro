@@ -1,0 +1,15 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+type Props = HTMLAttributes<"div">;
+
+const { class: classList, ...attrs } = Astro.props;
+---
+
+<div
+  class:list={["grid overflow-x-clip [grid-template-areas:'stack']", classList]}
+  {...attrs}
+  data-hfdev-tabpanels-container
+>
+  <slot />
+</div>

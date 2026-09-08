@@ -1,0 +1,14 @@
+---
+const props = Astro.props;
+
+// remove leading and trailing newlines
+const content = (await Astro.slots.render("default"))
+  .replace(/^\n/, "")
+  .replace(/\n$/, "");
+---
+
+<blockquote
+  class="mx-5 border-l-4 border-gray-300 pl-5 whitespace-pre-line"
+  {...props}
+  set:html={content}
+/>

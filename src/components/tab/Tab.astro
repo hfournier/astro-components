@@ -8,10 +8,10 @@ type Props = HTMLAttributes<"div"> & {
   label: string;
 };
 
-const { transition = "none", label, class: classList, ...attrs } = Astro.props;
+const { transition = "fade", label, class: classList, ...attrs } = Astro.props;
 
 const transitionClasses = {
-  none: "motion-safe:transition-[display,opacity] motion-safe:transition-discrete motion-safe:duration-(--duration-content-swap) motion-safe:starting:opacity-0",
+  fade: "motion-safe:transition-[display,opacity] motion-safe:transition-discrete motion-safe:duration-(--duration-content-swap) motion-safe:starting:opacity-0",
   "fade-up":
     "motion-safe:transition-[display,opacity,translate] motion-safe:transition-discrete motion-safe:duration-(--duration-content-swap) motion-safe:starting:translate-y-full motion-safe:starting:opacity-0",
   "slide-left":

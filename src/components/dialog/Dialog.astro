@@ -1,8 +1,8 @@
 ---
 import type { ComponentProps } from "astro/types";
 import { twMerge } from "tailwind-merge";
-import Icon from "../Icon.astro";
-import BaseOverlay from "../BaseOverlay.astro";
+import Icon from "../icon/Icon.astro";
+import BaseOverlay from "../base-overlay/BaseOverlay.astro";
 
 type BaseOverlayProps = ComponentProps<typeof BaseOverlay>;
 
@@ -12,16 +12,16 @@ const { id, class: classList, ...attrs } = Astro.props;
 ---
 
 <BaseOverlay
-  class:list={twMerge("rounded-container bg-white", classList)}
+  class:list={twMerge("rounded-container min-w-xs bg-white", classList)}
   {id}
   {...attrs}
 >
   <header
     class:list={twMerge(
-      "border-divider bg-container flex items-center justify-between rounded-t-container border-b-(length:--border-width-divider) p-4 md:px-6"
+      "border-divider bg-container rounded-t-container flex items-center justify-between border-b-(length:--border-width-divider) p-4 md:px-6"
     )}
   >
-    <slot name="header" />
+    {Astro.slots.has("header") ? <slot name="header" /> : <>&nbsp;</>}
 
     <button
       class:list={twMerge(
@@ -44,11 +44,15 @@ const { id, class: classList, ...attrs } = Astro.props;
     <slot />
   </div>
 
-  <footer
-    class:list={twMerge(
-      "border-divider bg-container rounded-b-container border-t-(length:--border-width-divider) p-4 md:px-6"
-    )}
-  >
-    <slot name="footer" />
-  </footer>
+  {
+    Astro.slots.has("footer") && (
+      <footer
+        class:list={twMerge(
+          "border-divider bg-container rounded-b-container border-t-(length:--border-width-divider) p-4 md:px-6"
+        )}
+      >
+        <slot name="footer" />
+      </footer>
+    )
+  }
 </BaseOverlay>

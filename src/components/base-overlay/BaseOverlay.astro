@@ -2,7 +2,7 @@
 import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import crypto from "node:crypto";
-import type { OverlayTransitionType } from "../types.js";
+import type { OverlayTransitionType } from "../../types.js";
 
 type Props = Omit<HTMLAttributes<"dialog" | "div">, "id"> & {
   as?: "dialog" | "div";
@@ -29,10 +29,10 @@ const randomId = crypto.randomUUID();
 
 <Tag
   class:list={twMerge(
-    "m-auto min-w-xs overscroll-contain bg-transparent",
-    "motion-safe:transition-discrete motion-safe:duration-(--duration-overlay) motion-safe:ease-overlay",
+    "m-auto overscroll-contain bg-transparent",
+    "motion-safe:ease-overlay motion-safe:transition-discrete motion-safe:duration-(--duration-overlay)",
     "backdrop:bg-black/30 backdrop:opacity-0 backdrop:backdrop-blur-xs open:backdrop:opacity-100 motion-safe:starting:open:backdrop:opacity-0",
-    "motion-safe:backdrop:transition-[display,opacity,overlay] motion-safe:backdrop:transition-discrete motion-safe:backdrop:duration-(--duration-overlay) motion-safe:backdrop:ease-overlay",
+    "motion-safe:backdrop:ease-overlay motion-safe:backdrop:transition-[display,opacity,overlay] motion-safe:backdrop:transition-discrete motion-safe:backdrop:duration-(--duration-overlay)",
     transitionClasses
   )}
   {id}

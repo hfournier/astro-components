@@ -3,8 +3,8 @@ import type { HTMLAttributes } from "astro/types";
 import { parse, walk, ELEMENT_NODE, render, DOCUMENT_NODE } from "ultrahtml";
 import crypto from "node:crypto";
 import { twMerge } from "tailwind-merge";
-import TabList from "./TabList.astro";
-import TabPanels from "./TabPanels.astro";
+import TabList from "../tab-list/TabList.astro";
+import TabPanels from "../tab-panels/TabPanels.astro";
 
 type Props = HTMLAttributes<"section"> & {};
 

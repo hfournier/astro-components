@@ -1,0 +1,33 @@
+---
+const hasCodeSlot = (await Astro.slots.render("code")).trim() !== "";
+const hasPreviewSlot = (await Astro.slots.render("preview")).trim() !== "";
+---
+
+<section
+  class:list={["border-divider grid border-(length:--border-width-boundary)"]}
+>
+  {
+    hasCodeSlot && (
+      <div>
+        <slot name="code" />
+      </div>
+    )
+  }
+
+  {
+    hasPreviewSlot && (
+      <div
+        class:list={[
+          "bg-container flex flex-col gap-1 p-4",
+          hasCodeSlot &&
+            "border-divider border-t-(length:--border-width-divider)",
+        ]}
+      >
+        <div class="text-sm font-semibold">Preview</div>
+        <div class="border-divider border-(length:--border-width-divider) bg-white p-4">
+          <slot name="preview" />
+        </div>
+      </div>
+    )
+  }
+</section>

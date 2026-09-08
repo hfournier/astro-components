@@ -1,0 +1,22 @@
+---
+name: Icon
+description: Renders one of the library's inline SVG icons, sized and colored via CSS like any other inline SVG.
+role: pattern
+meta:
+  title: Icon | astro-components HenriFournier.dev
+  description: Renders one of the library's inline SVG icons, sized and colored via CSS like any other inline SVG.
+extends:
+  kind: element
+  tag: [svg]
+props:
+  - name: name
+    type: '"close"'
+    required: true
+    default: null
+    description: Which icon to render.
+  - name: label
+    type: string
+    required: false
+    default: null
+    description: Accessible label for the icon. When provided, it's set as the icon's `aria-label` and the icon is exposed to assistive tech; when omitted, the icon is marked `aria-hidden` as decorative.
+---

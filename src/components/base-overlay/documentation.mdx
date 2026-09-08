@@ -1,0 +1,31 @@
+---
+name: BaseOverlay
+description: A primitive overlay component that renders as a native `<dialog>` or `<div popover>` element, providing shared open/close transition behavior for pattern components like Dialog and Popover.
+role: primitive
+meta:
+  title: BaseOverlay | astro-components HenriFournier.dev
+  description: A primitive overlay component rendering as a native `<dialog>` or `<div popover>`, providing shared open/close transitions for Dialog and Popover.
+extends:
+  kind: element
+  tag: [dialog, div]
+props:
+  - name: as
+    type: '"dialog" | "div"'
+    required: false
+    default: '"dialog"'
+    description: Which HTML element to render the overlay as.
+  - name: id
+    type: string
+    required: true
+    default: null
+    description: Unique id for the overlay element, used to wire up command/commandfor triggers that open and close it. This is the native element's `id` attribute, but marked as required, instead of optional.
+  - name: transition
+    type: '"fade" | "fade-scale"'
+    required: false
+    default: '"fade"'
+    description: Which enter/exit transition to apply when the overlay opens and closes. The `fade` transition is a simple fade-in/fade-out, while the `fade-scale` transition includes a scaling animation.
+slots:
+  - name: default
+    description: The content to display inside the overlay.
+    kind: any
+---

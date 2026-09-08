@@ -1,0 +1,7 @@
+---
+const props = Astro.props;
+---
+
+<li class="list-item [&>ol]:ml-5 [&>ul]:ml-5" {...props}>
+  <slot />
+</li>

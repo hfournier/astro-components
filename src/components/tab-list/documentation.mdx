@@ -1,0 +1,20 @@
+---
+name: TabList
+description: Renders the row of tab buttons for the Tabs component, from a list of labels and their generated ids. Not an independently reusable component — its props are shaped entirely by Tabs' own internal build-time logic.
+role: internal
+meta:
+  title: TabList | astro-components HenriFournier.dev
+  description: Renders the row of tab buttons for the Tabs component, from a list of labels and their generated ids.
+parents: [Tabs]
+props:
+  - name: randomId
+    type: string
+    required: true
+    default: null
+    description: Id fragment shared with the tab panels it controls, used to derive each tab button's id and aria-controls linkage. Generated and passed in by the parent Tabs component.
+  - name: labels
+    type: string[]
+    required: true
+    default: null
+    description: The label text for each tab button to render, extracted by the parent Tabs component from its Tab children.
+---

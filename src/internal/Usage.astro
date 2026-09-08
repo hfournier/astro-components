@@ -1,0 +1,43 @@
+---
+import { render, type CollectionEntry } from "astro:content";
+import { marked } from "marked";
+import { components as mdxComponents } from "../mdx";
+import { Code } from "astro:components";
+import Heading from "../components/heading/Heading.astro";
+import CodePreview from "./CodePreview.astro";
+
+type Props = {
+  usage: CollectionEntry<"usage">;
+};
+
+const { usage } = Astro.props;
+
+const { Content } = await render(usage);
+
+console.log("Usage show: ", usage.data.show);
+---
+
+<Heading level="h2">Usage</Heading>
+
+<p set:html={marked.parse(usage.data.description)} />
+
+{
+  usage.data.show !== "none" && (
+    <>
+      <CodePreview>
+        {usage.data.show !== "preview-only" && usage.body && (
+          <Code
+            class="p-4"
+            code={usage.body}
+            lang="jsx"
+            theme="github-light"
+            slot="code"
+          />
+        )}
+        {usage.data.show !== "code-only" && (
+          <Content components={{ ...mdxComponents }} slot="preview" />
+        )}
+      </CodePreview>
+    </>
+  )
+}

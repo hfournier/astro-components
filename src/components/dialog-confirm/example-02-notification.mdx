@@ -1,0 +1,14 @@
+---
+title: DialogConfirm as Notification
+description: A DialogConfirm component with a single close button
+---
+
+<Button command="show-modal" commandfor="dialog-close-button">Open Notification Dialog</Button>
+
+<DialogConfirm
+    id="dialog-close-button"
+    title="Notification"
+    buttonConfirm={{ text: "Close", value: "close" }}
+    >
+    This is a notification dialog with a single close button.
+</DialogConfirm>

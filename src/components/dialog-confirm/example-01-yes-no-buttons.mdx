@@ -1,0 +1,16 @@
+---
+title: DialogConfirm with Yes/No Buttons
+description: A custom DialogConfirm component with Yes/No buttons
+---
+
+<Button command="show-modal" commandfor="dialog-yes-no">Open Confirm Dialog</Button>
+
+<DialogConfirm
+    id="dialog-yes-no"
+    title="Confirm Action"
+    buttonConfirm={{ text: "Yes", value: "yes" }}
+    buttonCancel={{ text: "No", value: "no" }}
+    >
+    Are you sure?
+</DialogConfirm>
+

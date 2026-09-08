@@ -1,0 +1,9 @@
+---
+import Link from "../../components/link/Link.astro";
+
+const { href, ...props } = Astro.props;
+---
+
+<Link {href} {...props}>
+  <slot />
+</Link>

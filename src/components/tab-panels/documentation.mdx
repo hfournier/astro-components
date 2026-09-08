@@ -1,0 +1,17 @@
+---
+name: TabPanels
+description: Wraps the rendered tab panel content for the Tabs component, providing the grid container each panel stacks into for its show/hide transition.
+role: internal
+meta:
+  title: TabPanels | astro-components HenriFournier.dev
+  description: Wraps the rendered tab panel content for the Tabs component, providing the grid container each panel stacks into for its show/hide transition.
+parents: [Tabs]
+extends:
+  kind: element
+  tag: [div]
+props: []
+slots:
+  - name: default
+    description: The rendered tab panel elements, assembled by the parent Tabs component from its Tab children.
+    kind: any
+---

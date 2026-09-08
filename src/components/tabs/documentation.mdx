@@ -1,0 +1,19 @@
+---
+name: Tabs
+description: A custom Tabs component that extends HTML's `<section>` element
+role: pattern
+meta:
+  title: Tabs | astro-components HenriFournier.dev
+  description: A custom Tabs component that extends HTML's `<section>` element
+extends:
+  kind: element
+  tag: [section]
+props: []
+slots:
+  - name: default
+    description: The set of tabs to render.
+    kind: component
+    component: Tab
+    multiple: true
+---
+

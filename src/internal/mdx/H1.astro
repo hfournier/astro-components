@@ -1,0 +1,9 @@
+---
+import Heading from "../../components/heading/Heading.astro";
+
+const props = Astro.props;
+---
+
+<Heading class="mb-[0.5em] not-first:mt-[1em]" level="h1" {...props}>
+  <slot />
+</Heading>
