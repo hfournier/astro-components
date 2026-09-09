@@ -2,6 +2,8 @@
 
 :root {
   --timer-time: 60;
+
+  interpolate-size: allow-keywords;
 }
 
 @theme {
