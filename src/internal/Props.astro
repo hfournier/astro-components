@@ -64,8 +64,12 @@ const { extendsInfo, props } = Astro.props;
           <dt class="font-medium">Required</dt>
           <dd>{prop.required ? "Yes" : "No"}</dd>
 
-          <dt class="font-medium">Default</dt>
-          <dd>{prop.default}</dd>
+          {prop.default && (
+            <>
+              <dt class="font-medium">Default</dt>
+              <dd>{prop.default}</dd>
+            </>
+          )}
         </dl>
         <p set:html={marked.parse(prop.description)} />
       </>

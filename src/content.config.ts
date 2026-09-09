@@ -6,7 +6,7 @@ const propSchema = z.object({
   name: z.string(),
   type: z.string(),
   required: z.boolean(),
-  default: z.string().nullable(),
+  default: z.string().nullable().optional(),
   description: z.string(),
 });
 

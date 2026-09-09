@@ -8,7 +8,7 @@ const hasPreviewSlot = (await Astro.slots.render("preview")).trim() !== "";
 >
   {
     hasCodeSlot && (
-      <div>
+      <div class="overflow-x-auto" tabindex="0">
         <slot name="code" />
       </div>
     )
@@ -24,7 +24,10 @@ const hasPreviewSlot = (await Astro.slots.render("preview")).trim() !== "";
         ]}
       >
         <div class="text-sm font-semibold">Preview</div>
-        <div class="border-divider border-(length:--border-width-divider) bg-white p-4">
+        <div
+          class="border-divider overflow-x-auto border-(length:--border-width-divider) bg-white p-4"
+          tabindex="0"
+        >
           <slot name="preview" />
         </div>
       </div>

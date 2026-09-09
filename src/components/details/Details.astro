@@ -1,0 +1,53 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import type { SvgIconNameTypes } from "../../svgs";
+import Icon from "../icon/Icon.astro";
+import { twMerge } from "tailwind-merge";
+
+type Props = HTMLAttributes<"details"> & {
+  label: string;
+  icon?: SvgIconNameTypes;
+};
+
+const { label, icon, class: classList, ...attrs } = Astro.props;
+---
+
+<details
+  class:list={twMerge(
+    "group/details overflow-hidden",
+    "details-content:h-0 motion-safe:details-content:transition-[height,content-visibility] motion-safe:details-content:transition-discrete motion-safe:details-content:duration-(--duration-overlay) details-content:starting:h-0",
+    "open:details-content:h-auto",
+    "open:border-divider open:border-(length:--border-width-boundary) open:details-content:p-2",
+    classList
+  )}
+  {...attrs}
+>
+  <summary
+    class:list={[
+      "grid cursor-pointer list-none p-2",
+      "not-open:border-divider not-open:border-(length:--border-width-boundary)",
+      "group-open/details:border-0",
+    ]}
+  >
+    <div class="flex h-full items-center justify-between gap-2">
+      {
+        icon ? (
+          <span class="flex items-center gap-2">
+            <Icon class:list={["size-4 shrink-0"]} name={icon} />
+            <span class="text-pretty">{label}</span>
+          </span>
+        ) : (
+          <span class="text-pretty">{label}</span>
+        )
+      }
+      <Icon
+        class:list={[
+          "text-icon size-5 shrink-0",
+          "group-open/details:rotate-180 motion-safe:transition-[rotate] motion-safe:duration-(--duration-overlay)",
+        ]}
+        name="chevron-down"
+      />
+    </div>
+  </summary>
+  <slot />
+</details>
