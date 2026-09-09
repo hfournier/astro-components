@@ -14,6 +14,7 @@ import P from "./internal/mdx/P.astro";
 import Ul from "./internal/mdx/Ul.astro";
 
 import Button from "./components/button/Button.astro";
+import Details from "./components/details/Details.astro";
 import Dialog from "./components/dialog/Dialog.astro";
 import DialogConfirm from "./components/dialog-confirm/DialogConfirm.astro";
 import Heading from "./components/heading/Heading.astro";
@@ -37,6 +38,7 @@ export const components = {
   p: P,
   ul: Ul,
   Button,
+  Details,
   Dialog,
   DialogConfirm,
   Heading,

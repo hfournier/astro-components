@@ -1,0 +1,24 @@
+---
+name: Details
+description: A custom Details component that extends HTML's `<details>` element with a styled summary, a leading icon, and an animated chevron that rotates on toggle.
+role: pattern
+meta:
+  title: Details | astro-components HenriFournier.dev
+  description: A custom Details component that extends HTML's `<details>` element with a styled summary and animated chevron toggle.
+extends:
+  kind: element
+  tag: [details]
+props:
+  - name: label
+    type: string
+    required: true
+    description: Text shown in the summary.
+  - name: icon
+    type: SvgIconNameTypes
+    required: false
+    description: Icon displayed at the start of the summary, before the label text.
+slots:
+  - name: default
+    description: The content revealed when the details is expanded.
+    kind: any
+---

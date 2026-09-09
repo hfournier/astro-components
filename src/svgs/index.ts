@@ -1,6 +1,6 @@
-export const svgIconNames = ["close"] as const;
+import type { SvgIconNameTypes } from "./icon-names";
 
-export type SvgIconNameTypes = (typeof svgIconNames)[number];
+export { svgIconNames, type SvgIconNameTypes } from "./icon-names";
 
 const svgs = import.meta.glob<typeof import(".svg")>(
   "/src/assets/svgs/**/*.svg"
