@@ -24,23 +24,33 @@ async function activate(locator: Locator): Promise<void> {
 }
 
 test.describe('Popover', () => {
+  // The demo now lives on the shared doc page at /components/popover: the Usage block
+  // (#popover-usage) plus example-01 (#popover-fade-scale) and example-02
+  // (#popover-close-button, which sets showCloseX). Every trigger shares the label
+  // "Open Popover", so it is scoped through the CodePreview <section> that also holds
+  // its popover; the source block beside each preview is highlighted <pre> text.
+  const previewFor = (page: Page, id: string) =>
+    page.locator('section').filter({ has: page.locator(`#${id}`) });
+  const triggerFor = (page: Page, id: string) =>
+    previewFor(page, id).getByRole('button', { name: 'Open Popover', exact: true });
+
   test.beforeEach(async ({ page }) => {
-    await page.goto('/popovers');
+    await page.goto('/components/popover');
   });
 
   test('opens via its trigger without moving focus off it', async ({ page }) => {
-    const trigger = page.getByRole('button', { name: 'Open Popover 1' });
+    const trigger = triggerFor(page, 'popover-usage');
     await activate(trigger);
 
-    await expect(page.locator('#popover-1')).toBeVisible();
+    await expect(page.locator('#popover-usage')).toBeVisible();
     await expect(trigger).toBeFocused();
   });
 
   test('closes via its close button and returns focus to the trigger', async ({ page }) => {
-    const trigger = page.getByRole('button', { name: 'Open Popover 3' });
+    const trigger = triggerFor(page, 'popover-close-button');
     await activate(trigger);
 
-    const popover = page.locator('#popover-3');
+    const popover = page.locator('#popover-close-button');
     await activate(popover.getByRole('button', { name: 'Close' }));
 
     await expect(popover).toBeHidden();
@@ -48,10 +58,10 @@ test.describe('Popover', () => {
   });
 
   test('closes via Escape and returns focus to the trigger', async ({ page }) => {
-    const trigger = page.getByRole('button', { name: 'Open Popover 1' });
+    const trigger = triggerFor(page, 'popover-usage');
     await activate(trigger);
 
-    const popover = page.locator('#popover-1');
+    const popover = page.locator('#popover-usage');
     await expect(popover).toBeVisible();
 
     await page.keyboard.press('Escape');
@@ -63,10 +73,10 @@ test.describe('Popover', () => {
   test('shows no visible motion on open/close when prefers-reduced-motion is set', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
 
-    const popover = page.locator('#popover-1');
+    const popover = page.locator('#popover-usage');
     await expect(popover).toHaveCSS('transition-duration', '0s');
 
-    await activate(page.getByRole('button', { name: 'Open Popover 1' }));
+    await activate(triggerFor(page, 'popover-usage'));
     await expect(popover).toBeVisible();
     await expect(popover).toHaveCSS('transition-duration', '0s');
 
@@ -76,11 +86,11 @@ test.describe('Popover', () => {
   });
 
   test('wrapper rounding resolves to the container radius token, flat at every width', async ({ page }) => {
-    await activate(page.getByRole('button', { name: 'Open Popover 1' }));
+    await activate(triggerFor(page, 'popover-usage'));
 
     const expectedRadius = await resolvedStyle(page, 'border-radius', 'var(--radius-container)');
 
-    const wrapper = page.locator('#popover-1 > div');
+    const wrapper = page.locator('#popover-usage > div');
     for (const width of [400, 900, 1400]) {
       await page.setViewportSize({ width, height: 800 });
       await expect(wrapper).toHaveCSS('border-top-left-radius', expectedRadius);
@@ -88,9 +98,9 @@ test.describe('Popover', () => {
   });
 
   test('close button keeps rounded-full regardless of the container radius token', async ({ page }) => {
-    await activate(page.getByRole('button', { name: 'Open Popover 3' }));
+    await activate(triggerFor(page, 'popover-close-button'));
 
-    const closeButton = page.locator('#popover-3').getByRole('button', { name: 'Close' });
+    const closeButton = page.locator('#popover-close-button').getByRole('button', { name: 'Close' });
     const radius = await closeButton.evaluate((el) => parseFloat(getComputedStyle(el).borderTopLeftRadius));
     // rounded-full resolves to an effectively-infinite radius (browsers differ on the exact huge
     // number), well past --radius-container - it just needs to stay a pill, not the container radius.
@@ -98,21 +108,21 @@ test.describe('Popover', () => {
   });
 
   test("close button's edge resolves to the divider border-width token", async ({ page }) => {
-    await activate(page.getByRole('button', { name: 'Open Popover 3' }));
+    await activate(triggerFor(page, 'popover-close-button'));
 
     const expectedWidth = await resolvedStyle(page, 'border-top-width', 'var(--border-width-divider)');
-    const closeButton = page.locator('#popover-3').getByRole('button', { name: 'Close' });
+    const closeButton = page.locator('#popover-close-button').getByRole('button', { name: 'Close' });
     await expect(closeButton).toHaveCSS('border-top-width', expectedWidth);
   });
 
   test('close button focus ring resolves to the dedicated focus-ring tokens', async ({ page }) => {
-    await activate(page.getByRole('button', { name: 'Open Popover 3' }));
+    await activate(triggerFor(page, 'popover-close-button'));
 
     const expectedColor = await resolvedStyle(page, 'outline-color', 'var(--color-focus-ring)');
     const expectedWidth = await resolvedStyle(page, 'outline-width', 'var(--focus-ring-width)');
     const expectedOffset = await resolvedStyle(page, 'outline-offset', 'var(--focus-ring-offset)');
 
-    const closeButton = page.locator('#popover-3').getByRole('button', { name: 'Close' });
+    const closeButton = page.locator('#popover-close-button').getByRole('button', { name: 'Close' });
     await closeButton.focus();
     await expect(closeButton).toHaveCSS('outline-color', expectedColor);
     await expect(closeButton).toHaveCSS('outline-width', expectedWidth);

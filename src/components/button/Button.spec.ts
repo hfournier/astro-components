@@ -3,6 +3,13 @@ import { test, expect } from '../../test/a11y-fixture';
 
 const COMBINATIONS = ['Solid Primary', 'Solid Secondary', 'Outline Primary', 'Outline Secondary'];
 
+// The demo now lives on the shared doc page at /components/button: the Usage block
+// plus example-01 (solid) and example-02 (outline). Every live button sits inside a
+// CodePreview <section>; the source block beside each preview is highlighted <pre>
+// text, not real controls, so locators are scoped through <section>.
+const button = (page: Page, name: string) =>
+  page.locator('section').getByRole('button', { name, exact: true });
+
 async function resolvedColor(page: Page, cssValue: string): Promise<string> {
   return page.evaluate((value) => {
     const probe = document.createElement('div');
@@ -16,12 +23,12 @@ async function resolvedColor(page: Page, cssValue: string): Promise<string> {
 
 test.describe('Button', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/buttons');
+    await page.goto('/components/button');
   });
 
   test('renders every variant/color combination via the color prop', async ({ page }) => {
     for (const name of COMBINATIONS) {
-      await expect(page.getByRole('button', { name })).toBeVisible();
+      await expect(button(page, name)).toBeVisible();
     }
   });
 
@@ -29,26 +36,26 @@ test.describe('Button', () => {
     const primary = await resolvedColor(page, 'var(--color-primary-control)');
     const secondary = await resolvedColor(page, 'var(--color-secondary-control)');
 
-    await expect(page.getByRole('button', { name: 'Solid Primary' })).toHaveCSS('background-color', primary);
-    await expect(page.getByRole('button', { name: 'Solid Secondary' })).toHaveCSS('background-color', secondary);
+    await expect(button(page, 'Solid Primary')).toHaveCSS('background-color', primary);
+    await expect(button(page, 'Solid Secondary')).toHaveCSS('background-color', secondary);
   });
 
   test('outline variant resolves the color-role border and text', async ({ page }) => {
     const primary = await resolvedColor(page, 'var(--color-primary-control)');
     const secondary = await resolvedColor(page, 'var(--color-secondary-control)');
 
-    const outlinePrimary = page.getByRole('button', { name: 'Outline Primary' });
+    const outlinePrimary = button(page, 'Outline Primary');
     await expect(outlinePrimary).toHaveCSS('border-color', primary);
     await expect(outlinePrimary).toHaveCSS('color', primary);
 
-    const outlineSecondary = page.getByRole('button', { name: 'Outline Secondary' });
+    const outlineSecondary = button(page, 'Outline Secondary');
     await expect(outlineSecondary).toHaveCSS('border-color', secondary);
     await expect(outlineSecondary).toHaveCSS('color', secondary);
   });
 
   for (const name of COMBINATIONS) {
     test(`hovering "${name}" passes color contrast`, async ({ page }) => {
-      await page.getByRole('button', { name }).hover();
+      await button(page, name).hover();
       // The a11y fixture's automatic axe scan (ADR-0002) runs after this test body,
       // while this button is still hovered, and catches any hover-state contrast violation.
     });
@@ -65,11 +72,11 @@ test.describe('Button', () => {
     });
 
     for (const name of COMBINATIONS) {
-      const button = page.getByRole('button', { name });
-      await button.focus();
-      await expect(button).toHaveCSS('outline-color', expectedColor);
-      await expect(button).toHaveCSS('outline-width', expectedWidth);
-      await expect(button).toHaveCSS('outline-offset', expectedOffset);
+      const target = button(page, name);
+      await target.focus();
+      await expect(target).toHaveCSS('outline-color', expectedColor);
+      await expect(target).toHaveCSS('outline-width', expectedWidth);
+      await expect(target).toHaveCSS('outline-offset', expectedOffset);
     }
   });
 });
