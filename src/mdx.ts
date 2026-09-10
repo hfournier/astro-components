@@ -13,16 +13,7 @@ import Ol from "./internal/mdx/Ol.astro";
 import P from "./internal/mdx/P.astro";
 import Ul from "./internal/mdx/Ul.astro";
 
-import Button from "./components/button/Button.astro";
-import Details from "./components/details/Details.astro";
-import Dialog from "./components/dialog/Dialog.astro";
-import DialogConfirm from "./components/dialog-confirm/DialogConfirm.astro";
-import Heading from "./components/heading/Heading.astro";
-import Icon from "./components/icon/Icon.astro";
-import Link from "./components/link/Link.astro";
-import Popover from "./components/popover/Popover.astro";
-import Tab from "./components/tab/Tab.astro";
-import Tabs from "./components/tabs/Tabs.astro";
+import * as componentList from "./component-list.js";
 
 export const components = {
   a: A,
@@ -37,14 +28,5 @@ export const components = {
   ol: Ol,
   p: P,
   ul: Ul,
-  Button,
-  Details,
-  Dialog,
-  DialogConfirm,
-  Heading,
-  Icon,
-  Link,
-  Popover,
-  Tab,
-  Tabs,
+  ...componentList,
 };
