@@ -1,6 +1,6 @@
 ---
-const hasCodeSlot = (await Astro.slots.render("code")).trim() !== "";
-const hasPreviewSlot = (await Astro.slots.render("preview")).trim() !== "";
+const hasCodeSlot = Astro.slots.has("code");
+const hasPreviewSlot = Astro.slots.has("preview");
 ---
 
 <section
