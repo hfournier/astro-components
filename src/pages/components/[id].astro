@@ -1,5 +1,10 @@
 ---
-import { getCollection, getEntry, render } from "astro:content";
+import {
+  getCollection,
+  getEntry,
+  render,
+  type CollectionEntry,
+} from "astro:content";
 import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
 import { marked } from "marked";
 import { components as mdxComponents } from "../../mdx";
@@ -9,6 +14,13 @@ import Usage from "../../internal/Usage.astro";
 import Slots from "../../internal/Slots.astro";
 import Props from "../../internal/Props.astro";
 import Example from "../../internal/Example.astro";
+import TableOfContents from "../../internal/TableOfContents.astro";
+import type {
+  PropWithHeadingType,
+  SlotWithHeadingType,
+  ToCHeadingType,
+} from "../../types";
+import GithubSlugger from "github-slugger";
 
 export const getStaticPaths = (async () => {
   const components = await getCollection("components");
@@ -31,49 +43,129 @@ const usage = await getEntry(
 const examples = await getCollection("examples", (entry) =>
   entry.id.startsWith(component.id.replace("/documentation", "/"))
 );
+
+// Build the table of contents and, in the same pass, attach each generated
+// heading id directly to the item it belongs to (prop/slot/example). Ids are
+// assigned here once and threaded down as data, rather than re-derived
+// downstream by matching on display text - text isn't a unique key (two
+// props/slots/examples can share a name), so a second lookup can silently
+// wire a heading to the wrong id.
+const slugger = new GithubSlugger();
+const headings: ToCHeadingType[] = [];
+
+headings.push({ id: "top", text: "Overview", level: 1 });
+
+let usageHeadingId: string | undefined;
+if (usage) {
+  usageHeadingId = slugger.slug("Usage");
+  headings.push({ id: usageHeadingId, text: "Usage", level: 2 });
+}
+
+let propsHeadingId: string | undefined;
+let propsWithIds: PropWithHeadingType[] = [];
+if (component.data.props) {
+  propsHeadingId = slugger.slug("Properties");
+  headings.push({ id: propsHeadingId, text: "Properties", level: 2 });
+
+  propsWithIds = component.data.props.map((prop) => {
+    const headingId = slugger.slug(prop.name);
+    headings.push({ id: headingId, text: prop.name, level: 3 });
+    return { ...prop, headingId };
+  });
+}
+
+let slotsHeadingId: string | undefined;
+let slotsWithIds: SlotWithHeadingType[] = [];
+if (component.data.slots && component.data.slots.length > 0) {
+  slotsHeadingId = slugger.slug("Slots");
+  headings.push({ id: slotsHeadingId, text: "Slots", level: 2 });
+
+  slotsWithIds = component.data.slots.map((slot) => {
+    const headingId = slugger.slug(slot.name);
+    headings.push({ id: headingId, text: slot.name, level: 3 });
+    return { slot, headingId };
+  });
+}
+
+let examplesHeadingId: string | undefined;
+const examplesWithIds: {
+  example: CollectionEntry<"examples">;
+  headingId: string;
+}[] = [];
+if (examples && examples.length > 0) {
+  examplesHeadingId = slugger.slug("Examples");
+  headings.push({ id: examplesHeadingId, text: "Examples", level: 2 });
+
+  examples.forEach((example) => {
+    const headingId = slugger.slug(example.data.title);
+    headings.push({ id: headingId, text: example.data.title, level: 3 });
+    examplesWithIds.push({ example, headingId });
+  });
+}
 ---
 
 <BaseLayout
   title={component.data.meta.title}
   description={component.data.meta.description}
+  classListHtml="scroll-pt-15 lg:scroll-pt-0"
 >
-  <Heading level="h1">{component.data.name} Component</Heading>
+  <main
+    class:list={[
+      "relative grid gap-4 md:gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,360px)] lg:gap-8",
+    ]}
+  >
+    <TableOfContents {headings} />
 
-  <p set:html={marked.parse(component.data.description)} />
+    <article class="space-y-8">
+      <Heading level="h1">{component.data.name} Component</Heading>
 
-  {
-    component.data.role !== "internal" &&
-      component.data.parents &&
-      component.data.parents.length > 0 && (
-        <p>
-          Note: The <code>{component.data.name}</code> component should only be
-          used in the slot of a {component.data.parents.join(", ")}{" "}
-          {component.data.parents.length > 1 ? "components" : "component"}.
-        </p>
-      )
-  }
+      <p set:html={marked.parse(component.data.description)} />
 
-  {usage && <Usage {usage} />}
+      {
+        component.data.role !== "internal" &&
+          component.data.parents &&
+          component.data.parents.length > 0 && (
+            <p>
+              Note: The <code>{component.data.name}</code> component should only
+              be used in the slot of a {component.data.parents.join(", ")}{" "}
+              {component.data.parents.length > 1 ? "components" : "component"}.
+            </p>
+          )
+      }
 
-  {component.data.props && <Props props={component.data.props} {extendsInfo} />}
+      {usage && <Usage headingId={usageHeadingId} {usage} />}
 
-  {
-    component.data.slots && component.data.slots.length > 0 && (
-      <Slots slots={component.data.slots} />
-    )
-  }
+      {
+        component.data.props && (
+          <Props
+            headingId={propsHeadingId}
+            {extendsInfo}
+            props={propsWithIds}
+          />
+        )
+      }
 
-  {
-    examples && examples.length > 0 && (
-      <>
-        <Heading level="h2">Examples</Heading>
+      {
+        component.data.slots && component.data.slots.length > 0 && (
+          <Slots headingId={slotsHeadingId} slots={slotsWithIds} />
+        )
+      }
 
-        {examples.map((example) => (
-          <Example {example} />
-        ))}
-      </>
-    )
-  }
+      {
+        examples && examples.length > 0 && (
+          <>
+            <Heading id={examplesHeadingId} level="h2">
+              Examples
+            </Heading>
 
-  <Content components={{ ...mdxComponents }} />
+            {examplesWithIds.map(({ example, headingId }) => (
+              <Example headingId={headingId} {example} />
+            ))}
+          </>
+        )
+      }
+
+      <Content components={{ ...mdxComponents }} />
+    </article>
+  </main>
 </BaseLayout>

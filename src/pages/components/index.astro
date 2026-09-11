@@ -8,18 +8,22 @@ const components = await getCollection("components");
 ---
 
 <BaseLayout title="Astro Components" description="Astro Components">
-  <Heading level="h1">Components</Heading>
-  <ul>
-    {
-      components.map((component) => (
-        <li>
-          <Link
-            href={`/components/${component.id.replace("/documentation", "")}`}
-          >
-            {component.data.name}
-          </Link>
-        </li>
-      ))
-    }
-  </ul>
+  <main>
+    <Heading level="h1">Components</Heading>
+    <nav aria-label="Components">
+      <ul>
+        {
+          components.map((component) => (
+            <li>
+              <Link
+                href={`/components/${component.id.replace("/documentation", "")}`}
+              >
+                {component.data.name}
+              </Link>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </main>
 </BaseLayout>

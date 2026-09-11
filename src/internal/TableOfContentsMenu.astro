@@ -1,0 +1,35 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import type { ToCHeadingType } from "../types";
+
+type Props = HTMLAttributes<"ul"> & {
+  headings: ToCHeadingType[];
+};
+
+const { headings, class: classList, ...attrs } = Astro.props;
+---
+
+{
+  headings && headings.length > 0 && (
+    <ul class:list={["[scroll-target-group:auto]", classList]} {...attrs}>
+      <>
+        {headings.map((heading) => (
+          <li class="my-2">
+            <a
+              class:list={[
+                "[&:target-current]:text-primary-control [&:target-current]:underline [&:target-current]:decoration-1 [&:target-current]:underline-offset-2",
+                "[&:target-current]:hover:text-primary-control-hover [&:target-current]:hover:decoration-2 [&:target-current]:hover:underline-offset-4",
+                "hover:text-primary-control-hover hover:underline hover:decoration-2 hover:underline-offset-4",
+                heading.level === 2 && "pl-4",
+                heading.level === 3 && "pl-8",
+              ]}
+              href={`#${heading.id}`}
+            >
+              {heading.text}
+            </a>
+          </li>
+        ))}
+      </>
+    </ul>
+  )
+}

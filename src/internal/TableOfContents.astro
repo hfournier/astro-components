@@ -1,0 +1,72 @@
+---
+import Heading from "../components/heading/Heading.astro";
+import Icon from "../components/icon/Icon.astro";
+import Popover from "../components/popover/Popover.astro";
+import type { ToCHeadingType } from "../types";
+import TableOfContentsMenu from "./TableOfContentsMenu.astro";
+
+type Props = {
+  headings: ToCHeadingType[];
+};
+
+const { headings } = Astro.props;
+---
+
+<aside
+  class="border-divider bg-surface/95 lg:bg-surface sticky top-0 border-(length:--border-width-boundary) p-2 lg:static lg:top-auto lg:order-2 lg:p-4"
+>
+  <nav class="group/toc lg:hidden">
+    <button
+      class:list={[
+        "flex cursor-pointer list-none items-center gap-2 p-2",
+        "[anchor-name:--hfdev-anchorname-toc-button]",
+      ]}
+      type="button"
+      command="show-popover"
+      commandfor="table-of-contents"
+      aria-expanded="false"
+      >On this page
+      <Icon
+        class:list={[
+          "text-icon size-4 shrink-0",
+          "group-has-[#table-of-contents:popover-open]/toc:rotate-180 motion-safe:transition-[rotate] motion-safe:duration-(--duration-overlay)",
+        ]}
+        name="chevron-down"
+      />
+    </button>
+
+    <Popover
+      class:list={[
+        "border-divider m-0! border-(length:--border-width-boundary)",
+      ]}
+      overlayClass="m-0 top-[anchor(bottom)] left-[anchor(left)] [position-anchor:--hfdev-anchorname-toc-button]"
+      id="table-of-contents"
+      showBlur={false}
+    >
+      <TableOfContentsMenu {headings} />
+    </Popover>
+  </nav>
+
+  <nav class="sticky top-0 hidden lg:block">
+    <Heading class="text-xl" level="h2">On this page</Heading>
+
+    <TableOfContentsMenu {headings} />
+  </nav>
+</aside>
+
+<script>
+  const toc = document.getElementById("table-of-contents");
+  const tocButton = document.querySelector('[commandfor="table-of-contents"]');
+
+  toc?.addEventListener("click", (e) => {
+    if (e.target instanceof Element && e.target.closest('a[href^="#"]')) {
+      toc.hidePopover();
+    }
+  });
+
+  // Native invokers (command/commandfor) don't manage aria-expanded on the
+  // trigger themselves - keep it in sync with the popover's actual state.
+  toc?.addEventListener("toggle", (e) => {
+    tocButton?.setAttribute("aria-expanded", String(e.newState === "open"));
+  });
+</script>

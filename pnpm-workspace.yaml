@@ -1,0 +1,74 @@
+allowBuilds:
+  esbuild: false
+  sharp: false
+
+minimumReleaseAge: 43200
+trustPolicy: no-downgrade
+trustPolicyExclude:
+  - "chokidar@4.0.3"
+  - "undici-types@6.21.0"
+strictDepBuilds: true
+blockExoticSubdeps: true
+minimumReleaseAgeExclude:
+  - "@astrojs/internal-helpers@0.11.0"
+  - "@astrojs/markdown-satteri@0.4.0"
+  - "@astrojs/mdx@8.0.0"
+  - "@bruits/satteri-darwin-arm64@0.10.3"
+  - "@bruits/satteri-darwin-x64@0.10.3"
+  - "@bruits/satteri-linux-arm64-gnu@0.10.3"
+  - "@bruits/satteri-linux-arm64-musl@0.10.3"
+  - "@bruits/satteri-linux-x64-gnu@0.10.3"
+  - "@bruits/satteri-linux-x64-musl@0.10.3"
+  - "@bruits/satteri-wasm32-wasi@0.10.3"
+  - "@bruits/satteri-win32-arm64-msvc@0.10.3"
+  - "@bruits/satteri-win32-x64-msvc@0.10.3"
+  - "@eslint/plugin-kit@0.7.3"
+  - "@img/sharp-darwin-arm64@0.35.4"
+  - "@img/sharp-darwin-x64@0.35.4"
+  - "@img/sharp-freebsd-wasm32@0.35.4"
+  - "@img/sharp-libvips-darwin-arm64@1.3.3"
+  - "@img/sharp-libvips-darwin-x64@1.3.3"
+  - "@img/sharp-libvips-linux-arm64@1.3.3"
+  - "@img/sharp-libvips-linux-arm@1.3.3"
+  - "@img/sharp-libvips-linux-ppc64@1.3.3"
+  - "@img/sharp-libvips-linux-riscv64@1.3.3"
+  - "@img/sharp-libvips-linux-s390x@1.3.3"
+  - "@img/sharp-libvips-linux-x64@1.3.3"
+  - "@img/sharp-libvips-linuxmusl-arm64@1.3.3"
+  - "@img/sharp-libvips-linuxmusl-x64@1.3.3"
+  - "@img/sharp-linux-arm64@0.35.4"
+  - "@img/sharp-linux-arm@0.35.4"
+  - "@img/sharp-linux-ppc64@0.35.4"
+  - "@img/sharp-linux-riscv64@0.35.4"
+  - "@img/sharp-linux-s390x@0.35.4"
+  - "@img/sharp-linux-x64@0.35.4"
+  - "@img/sharp-linuxmusl-arm64@0.35.4"
+  - "@img/sharp-linuxmusl-x64@0.35.4"
+  - "@img/sharp-wasm32@0.35.4"
+  - "@img/sharp-webcontainers-wasm32@0.35.4"
+  - "@img/sharp-win32-arm64@0.35.4"
+  - "@img/sharp-win32-ia32@0.35.4"
+  - "@img/sharp-win32-x64@0.35.4"
+  - "@playwright/test@1.63.0"
+  - "@typescript-eslint/eslint-plugin@8.70.0"
+  - "@typescript-eslint/parser@8.70.0"
+  - "@typescript-eslint/project-service@8.70.0"
+  - "@typescript-eslint/scope-manager@8.70.0"
+  - "@typescript-eslint/tsconfig-utils@8.70.0"
+  - "@typescript-eslint/type-utils@8.70.0"
+  - "@typescript-eslint/types@8.70.0"
+  - "@typescript-eslint/typescript-estree@8.70.0"
+  - "@typescript-eslint/utils@8.70.0"
+  - "@typescript-eslint/visitor-keys@8.70.0"
+  - astro@7.3.1
+  - eslint@10.10.0
+  - find-proc@0.1.0
+  - globals@17.12.0
+  - marked@18.0.12
+  - playwright-core@1.63.0
+  - playwright@1.63.0
+  - satteri@0.10.3
+  - sharp@0.35.4
+  - typescript-eslint@8.70.0
+  - unifont@0.7.5
+  - zod@4.5.4

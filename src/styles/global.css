@@ -4,6 +4,10 @@
   --timer-time: 60;
 
   interpolate-size: allow-keywords;
+
+  @media (prefers-reduced-motion: no-preference) {
+    scroll-behavior: smooth;
+  }
 }
 
 @theme {
@@ -40,6 +44,15 @@
   --color-container: oklch(from var(--color-primary) 0.97 calc(c * 0.03) h);
   --color-icon: oklch(from var(--color-primary) 0.55 calc(c * 0.12) h);
   --color-body: oklch(from var(--color-primary) 0.2 calc(c * 0.12) h);
+
+  /* --color-surface: a component's own outer background - literal white, never tinted from
+     --color-primary, distinct from --color-container's role (ADR-0007's "panel/surface
+     backgrounds" description actually fits this token better; --color-container in practice
+     is used for tinted *inset* panels - Dialog/Popover header/footer bars, code panes - not
+     the component's own root surface). Names the `bg-white` literal already used for that
+     purpose in Dialog, Popover, and CodePreview; worth a follow-up ADR note reconciling the
+     two roles. */
+  --color-surface: #fff;
 
   /* radius: single dial, rest of the scale derives from it (ADR-0005) */
   --radius: 0.5rem;

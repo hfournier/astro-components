@@ -4,59 +4,64 @@ import { marked } from "marked";
 import Heading from "../components/heading/Heading.astro";
 import Link from "../components/link/Link.astro";
 import { camelToKebabCase } from "../utils.js";
+import type { PropWithHeadingType } from "../types";
 
 type Props = {
   extendsInfo: CollectionEntry<"components">["data"]["extends"];
-  props: CollectionEntry<"components">["data"]["props"];
+  headingId?: string;
+  props: PropWithHeadingType[];
 };
 
-const { extendsInfo, props } = Astro.props;
+const { extendsInfo, headingId, props } = Astro.props;
 ---
 
-<Heading level="h2">Properties</Heading>
+<section class="space-y-8">
+  <Heading id={headingId} level="h2">Properties</Heading>
 
-{
-  extendsInfo?.kind === "element" ? (
-    <p>
-      The component accepts all the native HTML{" "}
-      {extendsInfo.tag.map((tag, index) => (
-        <>
-          {index > 0 && (index === extendsInfo.tag.length - 1 ? " or " : ", ")}
-          <Link
-            href={`https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/${tag.toLowerCase()}`}
-          >{`<${tag}>`}</Link>
-        </>
-      ))}{" "}
-      element's attributes
-      {props && props.length > 0
-        ? ", as well as the following custom properties:"
-        : "."}
-    </p>
-  ) : extendsInfo?.kind === "component" ? (
-    <p>
-      The component accepts all the{" "}
-      <Link href={`/components/${camelToKebabCase(extendsInfo.name)}`}>
-        {extendsInfo.name}
-      </Link>{" "}
-      component's properties
-      {props && props.length > 0
-        ? ", as well as the following custom properties:"
-        : "."}
-    </p>
-  ) : (
-    <p>
-      {props && props.length > 0
-        ? "The following properties are defined for this component:"
-        : "This component has no properties."}
-    </p>
-  )
-}
+  {
+    extendsInfo?.kind === "element" ? (
+      <p>
+        The component accepts all the native HTML{" "}
+        {extendsInfo.tag.map((tag, index) => (
+          <>
+            {index > 0 &&
+              (index === extendsInfo.tag.length - 1 ? " or " : ", ")}
+            <Link
+              href={`https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/${tag.toLowerCase()}`}
+            >{`<${tag}>`}</Link>
+          </>
+        ))}{" "}
+        element's attributes
+        {props.length > 0
+          ? ", as well as the following custom properties:"
+          : "."}
+      </p>
+    ) : extendsInfo?.kind === "component" ? (
+      <p>
+        The component accepts all the{" "}
+        <Link href={`/components/${camelToKebabCase(extendsInfo.name)}`}>
+          {extendsInfo.name}
+        </Link>{" "}
+        component's properties
+        {props.length > 0
+          ? ", as well as the following custom properties:"
+          : "."}
+      </p>
+    ) : (
+      <p>
+        {props.length > 0
+          ? "The following properties are defined for this component:"
+          : "This component has no properties."}
+      </p>
+    )
+  }
 
-{
-  props &&
+  {
     props.map((prop) => (
       <>
-        <Heading level="h3">{prop.name}</Heading>
+        <Heading id={prop.headingId} level="h3">
+          {prop.name}
+        </Heading>
         <dl class="grid max-w-fit grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 pl-8">
           <dt class="font-medium">Type</dt>
           <dd>{prop.type}</dd>
@@ -74,4 +79,5 @@ const { extendsInfo, props } = Astro.props;
         <p set:html={marked.parse(prop.description)} />
       </>
     ))
-}
+  }
+</section>

@@ -18,6 +18,16 @@ props:
     type: string
     required: true
     description: Unique id for the overlay element, used to wire up command/commandfor triggers that open and close it. This is the native element's `id` attribute, but marked as required, instead of optional.
+  - name: showBackdrop
+    type: boolean
+    required: false
+    default: "true"
+    description: Whether to render the dimmed `::backdrop` fill behind the overlay.
+  - name: showBlur
+    type: boolean
+    required: false
+    default: "true"
+    description: Whether to blur the page content behind the overlay's `::backdrop`.
   - name: transition
     type: '"fade" | "fade-scale"'
     required: false
