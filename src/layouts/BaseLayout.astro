@@ -3,16 +3,23 @@ import BaseHead from "../internal/BaseHead.astro";
 import "../styles/global.css";
 
 type Props = {
-  title: string;
+  classListBody?: string;
+  classListHtml?: string;
   description: string;
+  title: string;
 };
 
-const { title, description } = Astro.props;
+const { classListBody, classListHtml, description, title } = Astro.props;
 ---
 
-<html lang="en">
+<html class:list={[classListHtml]} lang="en">
   <BaseHead {title} {description} />
-  <body class="text-body mx-auto max-w-7xl space-y-8 p-8">
+  <body
+    class:list={[
+      "text-body mx-auto max-w-7xl space-y-8 p-4 md:p-6 lg:p-8",
+      classListBody,
+    ]}
+  >
     <slot />
   </body>
 </html>

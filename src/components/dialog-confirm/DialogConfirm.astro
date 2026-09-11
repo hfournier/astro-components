@@ -25,31 +25,33 @@ const { id, title, buttonConfirm, buttonCancel } = Astro.props;
 
   <slot />
 
-  <form
-    class:list={twMerge("flex items-center justify-end gap-2")}
-    method="dialog"
-    slot="footer"
-  >
-    <Button
-      command="close"
-      commandfor={id}
-      id={buttonConfirm.id}
-      value={buttonConfirm.value}
-    >
-      {buttonConfirm.text}
-    </Button>
-    {
-      buttonCancel && (
+  <form method="dialog" slot="footer">
+    <menu class:list={twMerge("flex items-center justify-end gap-2")}>
+      <li>
         <Button
-          command="request-close"
+          command="close"
           commandfor={id}
-          id={buttonCancel.id}
-          value={buttonCancel.value}
-          variant="outline"
+          id={buttonConfirm.id}
+          value={buttonConfirm.value}
         >
-          {buttonCancel.text}
+          {buttonConfirm.text}
         </Button>
-      )
-    }
+      </li>
+      {
+        buttonCancel && (
+          <li>
+            <Button
+              command="request-close"
+              commandfor={id}
+              id={buttonCancel.id}
+              value={buttonCancel.value}
+              variant="outline"
+            >
+              {buttonCancel.text}
+            </Button>
+          </li>
+        )
+      }
+    </menu>
   </form>
 </Dialog>

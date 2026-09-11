@@ -7,35 +7,38 @@ import Heading from "../components/heading/Heading.astro";
 import CodePreview from "./CodePreview.astro";
 
 type Props = {
+  headingId?: string;
   usage: CollectionEntry<"usage">;
 };
 
-const { usage } = Astro.props;
+const { headingId, usage } = Astro.props;
 
 const { Content } = await render(usage);
 ---
 
-<Heading level="h2">Usage</Heading>
+<section class="space-y-8">
+  <Heading id={headingId} level="h2">Usage</Heading>
 
-<p set:html={marked.parse(usage.data.description)} />
+  <p set:html={marked.parse(usage.data.description)} />
 
-{
-  usage.data.show !== "none" && (
-    <>
-      <CodePreview>
-        {usage.data.show !== "preview-only" && usage.body && (
-          <Code
-            class="p-4"
-            code={usage.body}
-            lang="jsx"
-            theme="github-light"
-            slot="code"
-          />
-        )}
-        {usage.data.show !== "code-only" && (
-          <Content components={{ ...mdxComponents }} slot="preview" />
-        )}
-      </CodePreview>
-    </>
-  )
-}
+  {
+    usage.data.show !== "none" && (
+      <>
+        <CodePreview>
+          {usage.data.show !== "preview-only" && usage.body && (
+            <Code
+              class="p-4"
+              code={usage.body}
+              lang="jsx"
+              theme="github-light"
+              slot="code"
+            />
+          )}
+          {usage.data.show !== "code-only" && (
+            <Content components={{ ...mdxComponents }} slot="preview" />
+          )}
+        </CodePreview>
+      </>
+    )
+  }
+</section>

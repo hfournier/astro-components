@@ -3,8 +3,9 @@ const hasCodeSlot = Astro.slots.has("code");
 const hasPreviewSlot = Astro.slots.has("preview");
 ---
 
-<section
+<div
   class:list={["border-divider grid border-(length:--border-width-boundary)"]}
+  data-testid="code-preview"
 >
   {
     hasCodeSlot && (
@@ -16,21 +17,21 @@ const hasPreviewSlot = Astro.slots.has("preview");
 
   {
     hasPreviewSlot && (
-      <div
+      <figure
         class:list={[
           "bg-container flex flex-col gap-1 p-4",
           hasCodeSlot &&
             "border-divider border-t-(length:--border-width-divider)",
         ]}
       >
-        <div class="text-sm font-semibold">Preview</div>
+        <figcaption class="text-sm font-semibold">Preview</figcaption>
         <div
           class="border-divider overflow-x-auto border-(length:--border-width-divider) bg-white p-4"
           tabindex="0"
         >
           <slot name="preview" />
         </div>
-      </div>
+      </figure>
     )
   }
-</section>
+</div>

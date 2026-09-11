@@ -8,29 +8,32 @@ import CodePreview from "./CodePreview.astro";
 
 type Props = {
   example: CollectionEntry<"examples">;
+  headingId?: string;
 };
 
-const { example } = Astro.props;
+const { headingId, example } = Astro.props;
 
 const { Content } = await render(example);
 ---
 
-<Heading level="h3">{example.data.title}</Heading>
+<div class="space-y-8">
+  <Heading id={headingId} level="h3">{example.data.title}</Heading>
 
-<p set:html={marked.parse(example.data.description)} />
+  <p set:html={marked.parse(example.data.description)} />
 
-<CodePreview>
-  {
-    example.body && (
-      <Code
-        class="p-4"
-        code={example.body}
-        lang="jsx"
-        theme="github-light"
-        slot="code"
-      />
-    )
-  }
+  <CodePreview>
+    {
+      example.body && (
+        <Code
+          class="p-4"
+          code={example.body}
+          lang="jsx"
+          theme="github-light"
+          slot="code"
+        />
+      )
+    }
 
-  <Content components={{ ...mdxComponents }} slot="preview" />
-</CodePreview>
+    <Content components={{ ...mdxComponents }} slot="preview" />
+  </CodePreview>
+</div>

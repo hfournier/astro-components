@@ -1,11 +1,12 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import Icon from "../icon/Icon.astro";
 
 type Props = HTMLAttributes<"h1"> & {
   level: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 };
 
-const { class: classList, level, ...attrs } = Astro.props;
+const { class: classList, id, level, ...attrs } = Astro.props;
 
 const headingClasses = {
   h1: "text-heading-2xl font-heading-lg",
@@ -19,6 +20,23 @@ const headingClasses = {
 const Tag = level;
 ---
 
-<Tag class:list={[headingClasses, classList]} {...attrs}>
-  <slot />
-</Tag>
+{
+  id ? (
+    <div class="group/heading flex items-center gap-2">
+      <Tag class:list={[headingClasses, classList]} {id} {...attrs}>
+        <slot />
+      </Tag>
+
+      <a class:list={[headingClasses]} href={`#${id}`} aria-labelledby={id}>
+        <Icon
+          name="link"
+          class="size-[0.7em] opacity-0 group-hover/heading:opacity-100 motion-safe:transition-opacity"
+        />
+      </a>
+    </div>
+  ) : (
+    <Tag class:list={[headingClasses, classList]} {id} {...attrs}>
+      <slot />
+    </Tag>
+  )
+}
