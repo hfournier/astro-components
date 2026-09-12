@@ -1,0 +1,35 @@
+---
+import { getCollection } from "astro:content";
+import Details from "../components/details/Details.astro";
+import Link from "../components/link/Link.astro";
+
+const components = await getCollection("components");
+---
+
+<aside
+  class="border-divider bg-surface/95 lg:bg-surface min-w-60 border-(length:--border-width-boundary) p-2 lg:p-4"
+>
+  <nav class="sticky top-0" aria-label="Components">
+    <Details
+      class="[&>summary]:text-lg [&>summary]:font-semibold"
+      label="Components"
+      showBorders={false}
+      open
+    >
+      <ul class="space-y-1 pl-4">
+        {
+          components.map((component) => (
+            <li>
+              <Link
+                class="flex min-h-6 items-center"
+                href={`/components/${component.id.replace("/documentation", "")}`}
+              >
+                {component.data.name}
+              </Link>
+            </li>
+          ))
+        }
+      </ul>
+    </Details>
+  </nav>
+</aside>

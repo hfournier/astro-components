@@ -1,15 +1,16 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
 
 type Props = HTMLAttributes<"a">;
 const { class: classList, ...attrs } = Astro.props;
 ---
 
 <a
-  class:list={[
+  class:list={twMerge(
     "text-primary-control hover:text-primary-control-hover underline decoration-1 underline-offset-2 hover:decoration-2 hover:underline-offset-4",
-    classList,
-  ]}
+    classList
+  )}
   {...attrs}
 >
   <slot />

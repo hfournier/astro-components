@@ -53,7 +53,10 @@ const randomId = crypto.randomUUID();
   {...attrs}
 >
   <div
-    class:list={["[anchor-name:var(--hfdev-anchorname-overlay)]", classList]}
+    class:list={twMerge(
+      "[anchor-name:var(--hfdev-anchorname-overlay)]",
+      classList
+    )}
   >
     <slot />
   </div>

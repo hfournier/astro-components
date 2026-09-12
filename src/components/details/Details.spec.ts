@@ -24,14 +24,16 @@ test.describe("Details", () => {
     await page.goto("/components/details");
   });
 
-  // The usage example plus the two named examples render as the only <details>
+  // The usage example plus the three named examples render as the only <details>
   // on the page (each source block beside a preview is highlighted <pre> text,
   // not elements). DOM order: usage, example-01 (open by default), example-02
-  // (with icon). Scoped through the CodePreview (data-testid="code-preview") wrappers.
+  // (with icon), example-03 (without borders). Scoped through the CodePreview
+  // (data-testid="code-preview") wrappers.
   const allDetails = (page: Page) =>
     page.getByTestId("code-preview").locator("details");
   const withIcon = (page: Page) =>
     allDetails(page).filter({ hasText: "Details Heading with Icon" });
+  const withoutBorders = (page: Page) => allDetails(page).last();
 
   test("summary toggles its content open and closed from the keyboard", async ({
     page,
@@ -78,10 +80,11 @@ test.describe("Details", () => {
   }) => {
     const summary = withIcon(page).locator("summary");
 
-    // leading icon (size-4) + chevron (size-5)
+    // leading icon + chevron - both size-4, distinguished by data attribute
+    // rather than their (shared) size class
     await expect(summary.locator("svg")).toHaveCount(2);
 
-    const leadingIcon = summary.locator("svg.size-4");
+    const leadingIcon = summary.locator("svg[data-hfdev-details-icon]");
     await expect(leadingIcon).toHaveCount(1);
     await expect(leadingIcon).toHaveAttribute("aria-hidden", "true");
 
@@ -100,7 +103,7 @@ test.describe("Details", () => {
 
     const closedChevron = allDetails(page)
       .first()
-      .locator("summary svg.size-5");
+      .locator("summary svg[data-hfdev-details-chevron]");
     await expect(closedChevron).toHaveCSS(
       "transition-duration",
       expectedDuration
@@ -110,7 +113,7 @@ test.describe("Details", () => {
     const openChevron = page
       .getByTestId("code-preview")
       .locator("details[open]")
-      .locator("summary svg.size-5");
+      .locator("summary svg[data-hfdev-details-chevron]");
     await expect(openChevron).toHaveCSS("rotate", "180deg");
   });
 
@@ -120,7 +123,7 @@ test.describe("Details", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
 
     const details = allDetails(page).first();
-    const chevron = details.locator("summary svg.size-5");
+    const chevron = details.locator("summary svg[data-hfdev-details-chevron]");
 
     await expect(chevron).toHaveCSS("transition-duration", "0s");
 
@@ -131,5 +134,21 @@ test.describe("Details", () => {
     await expect(
       details.getByText("Details content", { exact: true })
     ).toBeVisible();
+  });
+
+  test("renders without a summary/content border when showBorders is false", async ({
+    page,
+  }) => {
+    const details = withoutBorders(page);
+    const summary = details.locator("summary");
+
+    await expect(summary).toHaveCSS("border-width", "0px");
+    await expect(details).toHaveCSS("border-width", "0px");
+
+    await summary.focus();
+    await page.keyboard.press("Enter");
+    await expect(details).toHaveJSProperty("open", true);
+    await expect(summary).toHaveCSS("border-width", "0px");
+    await expect(details).toHaveCSS("border-width", "0px");
   });
 });

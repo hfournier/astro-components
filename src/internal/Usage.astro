@@ -5,6 +5,7 @@ import { components as mdxComponents } from "../mdx";
 import { Code } from "astro:components";
 import Heading from "../components/heading/Heading.astro";
 import CodePreview from "./CodePreview.astro";
+import P from "./mdx/P.astro";
 
 type Props = {
   headingId?: string;
@@ -19,7 +20,7 @@ const { Content } = await render(usage);
 <section class="space-y-8">
   <Heading id={headingId} level="h2">Usage</Heading>
 
-  <p set:html={marked.parse(usage.data.description)} />
+  <P set:html={marked.parse(usage.data.description)} />
 
   {
     usage.data.show !== "none" && (

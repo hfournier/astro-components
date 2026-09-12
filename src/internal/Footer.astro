@@ -1,0 +1,19 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+
+type Props = HTMLAttributes<"footer">;
+
+const { class: classList, ...attrs } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<footer
+  class:list={twMerge(
+    "col-span-full bg-(--color-chrome)/50 p-4 text-center text-body",
+    classList
+  )}
+  {...attrs}
+>
+  copyright &copy; {year}. All rights reserved.
+</footer>

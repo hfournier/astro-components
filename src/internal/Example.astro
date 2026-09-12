@@ -5,6 +5,7 @@ import { components as mdxComponents } from "../mdx";
 import { Code } from "astro:components";
 import Heading from "../components/heading/Heading.astro";
 import CodePreview from "./CodePreview.astro";
+import P from "./mdx/P.astro";
 
 type Props = {
   example: CollectionEntry<"examples">;
@@ -19,7 +20,7 @@ const { Content } = await render(example);
 <div class="space-y-8">
   <Heading id={headingId} level="h3">{example.data.title}</Heading>
 
-  <p set:html={marked.parse(example.data.description)} />
+  <P set:html={marked.parse(example.data.description)} />
 
   <CodePreview>
     {

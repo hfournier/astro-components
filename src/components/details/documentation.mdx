@@ -17,6 +17,10 @@ props:
     type: SvgIconNameTypes
     required: false
     description: Icon displayed at the start of the summary, before the label text.
+  - name: showBorders
+    type: boolean
+    required: false
+    description: Whether the summary and expanded content are outlined with a border. Defaults to true.
 slots:
   - name: default
     description: The content revealed when the details is expanded.

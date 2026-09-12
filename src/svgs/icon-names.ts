@@ -17,6 +17,7 @@ export const svgIconNames = [
   "envelope",
   "exclamation-circle",
   "exclamation-triangle",
+  "github",
   "globe-alt",
   "link",
   "phone",

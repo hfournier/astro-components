@@ -35,6 +35,13 @@
     from var(--color-primary) var(--control-lightness-hover) c calc(h + 180)
   );
 
+  /* --color-chrome: site chrome (Header/Footer), not a component's color role - aliases
+     --color-primary-control rather than reading --color-primary directly, so it inherits
+     that role's already-verified 4.5:1-against-white guarantee (ADR-0007) instead of the
+     raw base token, which was only ever verified as an input to the derivation, not as a
+     background paired with text on its own. Same pattern as --color-focus-ring below. */
+  --color-chrome: var(--color-primary-control);
+
   /* decorative/UI-only roles (WCAG 1.4.11 non-text contrast, not 4.5:1 text contrast) - same
      hue as primary, low chroma (ADR-0007). --color-container uses a much lower chroma
      fraction than the others: near-white surfaces show a color tint far more readily than
