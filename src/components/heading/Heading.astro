@@ -1,6 +1,7 @@
 ---
 import type { HTMLAttributes } from "astro/types";
 import Icon from "../icon/Icon.astro";
+import { twMerge } from "tailwind-merge";
 
 type Props = HTMLAttributes<"h1"> & {
   level: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
@@ -23,11 +24,15 @@ const Tag = level;
 {
   id ? (
     <div class="group/heading flex items-center gap-2">
-      <Tag class:list={[headingClasses, classList]} {id} {...attrs}>
+      <Tag class:list={twMerge(headingClasses, classList)} {id} {...attrs}>
         <slot />
       </Tag>
 
-      <a class:list={[headingClasses]} href={`#${id}`} aria-labelledby={id}>
+      <a
+        class:list={twMerge(headingClasses)}
+        href={`#${id}`}
+        aria-labelledby={id}
+      >
         <Icon
           name="link"
           class="size-[0.7em] opacity-0 group-hover/heading:opacity-100 motion-safe:transition-opacity"
@@ -35,7 +40,7 @@ const Tag = level;
       </a>
     </div>
   ) : (
-    <Tag class:list={[headingClasses, classList]} {id} {...attrs}>
+    <Tag class:list={twMerge(headingClasses, classList)} {id} {...attrs}>
       <slot />
     </Tag>
   )

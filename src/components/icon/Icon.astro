@@ -16,4 +16,4 @@ const a11yAttrs = label
   : ({ "aria-hidden": "true" } as const);
 ---
 
-<Tag class={classList} {...attrs} {...a11yAttrs} />
+<Tag class:list={[classList]} {...attrs} {...a11yAttrs} />

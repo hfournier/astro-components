@@ -13,9 +13,9 @@ const { headings } = Astro.props;
 ---
 
 <aside
-  class="border-divider bg-surface/95 lg:bg-surface sticky top-0 border-(length:--border-width-boundary) p-2 lg:static lg:top-auto lg:order-2 lg:p-4"
+  class="border-divider bg-surface/95 xl:bg-surface sticky top-0 min-w-60 border-(length:--border-width-boundary) p-2 xl:static xl:top-auto xl:order-2 xl:p-4"
 >
-  <nav class="group/toc lg:hidden">
+  <nav class="group/toc xl:hidden">
     <button
       class:list={[
         "flex cursor-pointer list-none items-center gap-2 p-2",
@@ -47,7 +47,7 @@ const { headings } = Astro.props;
     </Popover>
   </nav>
 
-  <nav class="sticky top-0 hidden lg:block">
+  <nav class="sticky top-0 hidden xl:block" aria-label="Table of contents">
     <Heading class="text-xl" level="h2">On this page</Heading>
 
     <TableOfContentsMenu {headings} />

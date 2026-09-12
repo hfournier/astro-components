@@ -3,6 +3,7 @@ import { marked } from "marked";
 import Heading from "../components/heading/Heading.astro";
 import Link from "../components/link/Link.astro";
 import type { SlotWithHeadingType } from "../types";
+import P from "./mdx/P.astro";
 
 type Props = {
   headingId?: string;
@@ -15,15 +16,15 @@ const { headingId, slots } = Astro.props;
 <section class="space-y-8">
   <Heading id={headingId} level="h2">Slots</Heading>
 
-  <p>
+  <P>
     Slots are used to provide content to the component. They can contain plain
     text, HTML elements, or other components. Slots can be named by using the <code
       >name</code
     > property, whereas a slot without a{" "}
     <code>name</code> property is the default slot.
-  </p>
+  </P>
 
-  <p>The following slots are defined for this component:</p>
+  <P>The following slots are defined for this component:</P>
 
   {
     slots.map(({ slot, headingId: slotHeadingId }) => (
@@ -59,7 +60,7 @@ const { headingId, slots } = Astro.props;
             )}
           </dd>
         </dl>
-        <p set:html={marked.parse(slot.description)} />
+        <P set:html={marked.parse(slot.description)} />
       </>
     ))
   }

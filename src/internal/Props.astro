@@ -5,6 +5,7 @@ import Heading from "../components/heading/Heading.astro";
 import Link from "../components/link/Link.astro";
 import { camelToKebabCase } from "../utils.js";
 import type { PropWithHeadingType } from "../types";
+import P from "./mdx/P.astro";
 
 type Props = {
   extendsInfo: CollectionEntry<"components">["data"]["extends"];
@@ -20,7 +21,7 @@ const { extendsInfo, headingId, props } = Astro.props;
 
   {
     extendsInfo?.kind === "element" ? (
-      <p>
+      <P>
         The component accepts all the native HTML{" "}
         {extendsInfo.tag.map((tag, index) => (
           <>
@@ -35,9 +36,9 @@ const { extendsInfo, headingId, props } = Astro.props;
         {props.length > 0
           ? ", as well as the following custom properties:"
           : "."}
-      </p>
+      </P>
     ) : extendsInfo?.kind === "component" ? (
-      <p>
+      <P>
         The component accepts all the{" "}
         <Link href={`/components/${camelToKebabCase(extendsInfo.name)}`}>
           {extendsInfo.name}
@@ -46,13 +47,13 @@ const { extendsInfo, headingId, props } = Astro.props;
         {props.length > 0
           ? ", as well as the following custom properties:"
           : "."}
-      </p>
+      </P>
     ) : (
-      <p>
+      <P>
         {props.length > 0
           ? "The following properties are defined for this component:"
           : "This component has no properties."}
-      </p>
+      </P>
     )
   }
 
@@ -76,7 +77,7 @@ const { extendsInfo, headingId, props } = Astro.props;
             </>
           )}
         </dl>
-        <p set:html={marked.parse(prop.description)} />
+        <P set:html={marked.parse(prop.description)} />
       </>
     ))
   }

@@ -1,0 +1,24 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Icon from "../components/icon/Icon.astro";
+import { twMerge } from "tailwind-merge";
+
+type Props = HTMLAttributes<"header">;
+
+const { class: classList, ...attrs } = Astro.props;
+---
+
+<header
+  class:list={twMerge(
+    "col-span-full flex items-center justify-between bg-(--color-chrome) p-4 text-white",
+    classList
+  )}
+  {...attrs}
+>
+  <div class="font-semibold">astro-components</div>
+  <div class="flex items-center gap-2">
+    <a href="https://github.com/hfournier/astro-components" aria-label="GitHub"
+      ><Icon class="size-5" name="github" /></a
+    >
+  </div>
+</header>

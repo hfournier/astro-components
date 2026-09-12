@@ -21,6 +21,7 @@ import type {
   ToCHeadingType,
 } from "../../types";
 import GithubSlugger from "github-slugger";
+import P from "../../internal/mdx/P.astro";
 
 export const getStaticPaths = (async () => {
   const components = await getCollection("components");
@@ -107,11 +108,11 @@ if (examples && examples.length > 0) {
 <BaseLayout
   title={component.data.meta.title}
   description={component.data.meta.description}
-  classListHtml="scroll-pt-15 lg:scroll-pt-0"
+  classListHtml="scroll-pt-15 xl:scroll-pt-0"
 >
   <main
     class:list={[
-      "relative grid gap-4 md:gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,360px)] lg:gap-8",
+      "relative grid gap-4 md:gap-6 lg:gap-8 xl:grid-cols-[minmax(0,1fr)_fit-content(360px)]",
     ]}
   >
     <TableOfContents {headings} />
@@ -119,7 +120,7 @@ if (examples && examples.length > 0) {
     <article class="space-y-8">
       <Heading level="h1">{component.data.name} Component</Heading>
 
-      <p set:html={marked.parse(component.data.description)} />
+      <P set:html={marked.parse(component.data.description)} />
 
       {
         component.data.role !== "internal" &&
