@@ -1,18 +1,39 @@
 ---
 import type { HTMLAttributes } from "astro/types";
-import { twMerge } from "tailwind-merge";
+import { extendTailwindMerge } from "tailwind-merge";
+
+// tailwind-merge's default config doesn't know the --text-control* role tokens (global.css)
+// are a font-size scale, not a color: left as plain `text-*` classes, it lumps them into the
+// same ambiguous group as the text-color utilities below (text-white, text-primary-control)
+// and silently drops whichever comes first, regardless of the two being independent axes.
+// Registering them under the "font-size" class group keeps both.
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      "font-size": ["text-control", "text-control-sm", "text-control-lg"],
+    },
+  },
+});
 
 type Props = HTMLAttributes<"button"> & {
   variant?: "solid" | "outline";
   color?: "primary" | "secondary";
+  size?: "sm" | "md" | "lg";
 };
 const {
   variant = "solid",
   color = "primary",
+  size = "md",
   class: classList,
   type = "button",
   ...attrs
 } = Astro.props;
+
+const sizeClasses = {
+  sm: "text-control-sm",
+  md: "text-control",
+  lg: "text-control-lg",
+}[size];
 
 const buttonClasses = {
   solid: {
@@ -32,8 +53,9 @@ const buttonClasses = {
 
 <button
   class:list={twMerge(
-    "rounded-control font-control cursor-pointer px-4 py-2 text-control motion-safe:transition-colors",
+    "rounded-control font-control cursor-pointer px-[1em] py-[0.5em] motion-safe:transition-colors",
     "focus-visible:outline-focus-ring focus-visible:outline-(length:--focus-ring-width) focus-visible:outline-offset-(--focus-ring-offset)",
+    sizeClasses,
     buttonClasses,
     classList
   )}

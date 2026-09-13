@@ -19,6 +19,11 @@ props:
     required: false
     default: "primary"
     description: The color scheme of the button. The `primary` button color is based on the chosen theme's primary color and adjusted for accessibility. Likewise, the `secondary` button color is based on the chosen theme's secondary color (180 deg from the primary) and also adjusted for accessibility.
+  - name: size
+    type: '"sm" | "md" | "lg"'
+    required: false
+    default: "md"
+    description: Controls the button's overall scale. Sets both the button's text size and its padding together (padding is em-based, so it tracks whichever size is active), rather than resizing text alone.
 slots:
   - name: default
     description: The text to display inside the button.
