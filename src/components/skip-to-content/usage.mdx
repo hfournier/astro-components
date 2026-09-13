@@ -1,0 +1,7 @@
+---
+title: SkipToContent
+description: "Place `SkipToContent` as the first focusable element in the document, typically at the top of a layout (first element in `<body>`). It renders an anchor pointed at `#main-content`, so the element that receives focus - usually the page's `<main>` - must carry that `id`. However, you can override the default target by using the `href` attribute.\n\nThe link is positioned off-screen until it receives keyboard focus, at which point it becomes visible at the top of the viewport. This keeps it out of the way for pointer and screen-reader users navigating by landmark, while giving keyboard users a fast path past repeated navigation on every page.\n\nThe following example points the link at a local target instead of the default `#main-content`."
+show: "code-only"
+---
+
+<SkipToContent href="#skip-to-content-usage-target" />

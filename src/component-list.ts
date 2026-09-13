@@ -8,5 +8,6 @@ export { default as Heading } from "./components/heading/Heading.astro";
 export { default as Icon } from "./components/icon/Icon.astro";
 export { default as Link } from "./components/link/Link.astro";
 export { default as Popover } from "./components/popover/Popover.astro";
+export { default as SkipToContent } from "./components/skip-to-content/SkipToContent.astro";
 export { default as Tab } from "./components/tab/Tab.astro";
 export { default as Tabs } from "./components/tabs/Tabs.astro";

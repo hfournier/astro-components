@@ -6,6 +6,7 @@ import AsideComponents from "../internal/AsideComponents.astro";
 import Footer from "../internal/Footer.astro";
 import Header from "../internal/Header.astro";
 import { twMerge } from "tailwind-merge";
+import SkipToContent from "../components/skip-to-content/SkipToContent.astro";
 
 type Props = LayoutPropsType;
 
@@ -20,6 +21,8 @@ const { classListBody, classListHtml, description, title } = Astro.props;
       classListBody
     )}
   >
+    <SkipToContent />
+
     <div
       class="grid grid-rows-[auto_1fr_auto] gap-4 md:grid-cols-[fit-content(260px)_minmax(0,1fr)] md:gap-6 lg:gap-8"
     >

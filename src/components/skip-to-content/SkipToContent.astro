@@ -1,0 +1,19 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+
+type Props = HTMLAttributes<"a">;
+const { href, class: classList, ...attrs } = Astro.props;
+---
+
+<a
+  class:list={twMerge(
+    "absolute -top-250 left-1 z-100 p-2.5 focus:top-1",
+    "bg-primary-control border-primary-control hover:bg-primary-control-hover hover:border-primary-control-hover border-(length:--border-width-boundary) text-white",
+    "rounded-control font-control text-control cursor-pointer px-4 py-2 motion-safe:transition-colors",
+    "focus-visible:outline-focus-ring focus-visible:outline-(length:--focus-ring-width) focus-visible:outline-offset-(--focus-ring-offset)",
+    classList
+  )}
+  href={href || "#main-content"}
+  {...attrs}>Skip to content</a
+>
