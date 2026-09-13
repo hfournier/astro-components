@@ -90,6 +90,15 @@
      explicit --text-<role>--line-height (ADR-0008, correcting ADR-0005's non-namespace treatment) */
   --text-control: var(--text-base);
   --text-control--line-height: var(--text-base--line-height);
+  /* control-size scale: Button's `size` prop (sm/md/lg) selects between these three - md
+     stays the plain --text-control role above, sm/lg get their own role tokens rather than
+     raw text-sm/text-lg classes, mirroring the document-heading scale's multi-step pattern
+     below (issue #43). Button's padding is em-based, so it scales along with whichever of
+     these is active without a separate per-size padding mapping. */
+  --text-control-sm: var(--text-sm);
+  --text-control-sm--line-height: var(--text-sm--line-height);
+  --text-control-lg: var(--text-lg);
+  --text-control-lg--line-height: var(--text-lg--line-height);
   --text-nav: var(--text-base);
   --text-nav--line-height: var(--text-base--line-height);
   --text-title: clamp(1rem, 0.95rem + 0.5vw, 1.25rem);

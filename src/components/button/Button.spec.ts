@@ -8,6 +8,12 @@ const COMBINATIONS = [
   "Outline Secondary",
 ];
 
+const SIZES = [
+  { name: "Small Button", token: "--text-control-sm" },
+  { name: "Medium Button", token: "--text-control" },
+  { name: "Large Button", token: "--text-control-lg" },
+] as const;
+
 // The demo now lives on the shared doc page at /components/button: the Usage block
 // plus example-01 (solid) and example-02 (outline). Every live button sits inside a
 // CodePreview (data-testid="code-preview"); the source block beside each preview is
@@ -24,6 +30,17 @@ async function resolvedColor(page: Page, cssValue: string): Promise<string> {
     probe.remove();
     return resolved;
   }, cssValue);
+}
+
+async function resolvedFontSizePx(page: Page, token: string): Promise<number> {
+  return page.evaluate((cssVar) => {
+    const probe = document.createElement("div");
+    probe.style.fontSize = `var(${cssVar})`;
+    document.body.appendChild(probe);
+    const resolved = parseFloat(getComputedStyle(probe).fontSize);
+    probe.remove();
+    return resolved;
+  }, token);
 }
 
 test.describe("Button", () => {
@@ -102,4 +119,38 @@ test.describe("Button", () => {
       await expect(target).toHaveCSS("outline-offset", expectedOffset);
     }
   });
+
+  test("renders every size via the size prop", async ({ page }) => {
+    for (const { name } of SIZES) {
+      await expect(button(page, name)).toBeVisible();
+    }
+  });
+
+  for (const { name, token } of SIZES) {
+    test(`size "${name}" resolves its text-control role token and scales padding in em`, async ({
+      page,
+    }) => {
+      const expectedFontSize = await resolvedFontSizePx(page, token);
+      const target = button(page, name);
+
+      await expect(target).toHaveCSS("font-size", `${expectedFontSize}px`);
+
+      const [paddingLeft, paddingTop] = await Promise.all([
+        target.evaluate((el) => parseFloat(getComputedStyle(el).paddingLeft)),
+        target.evaluate((el) => parseFloat(getComputedStyle(el).paddingTop)),
+      ]);
+
+      // Padding is em-based (1em / 0.5em), so it must track the resolved font-size directly.
+      expect(paddingLeft).toBeCloseTo(expectedFontSize, 1);
+      expect(paddingTop).toBeCloseTo(expectedFontSize / 2, 1);
+    });
+  }
+
+  for (const { name } of SIZES) {
+    test(`hovering size "${name}" passes color contrast`, async ({ page }) => {
+      await button(page, name).hover();
+      // The a11y fixture's automatic axe scan (ADR-0002) runs after this test body,
+      // while this button is still hovered, and catches any hover-state contrast violation.
+    });
+  }
 });
