@@ -21,6 +21,11 @@ const SIZES = [
 const button = (page: Page, name: string) =>
   page.getByTestId("code-preview").getByRole("button", { name, exact: true });
 
+// example-04 renders Button as="a" - same CodePreview scoping, but an accessible role of
+// "link" instead of "button" since it's a real anchor.
+const anchorButton = (page: Page, name: string) =>
+  page.getByTestId("code-preview").getByRole("link", { name, exact: true });
+
 async function resolvedColor(page: Page, cssValue: string): Promise<string> {
   return page.evaluate((value) => {
     const probe = document.createElement("div");
@@ -153,4 +158,45 @@ test.describe("Button", () => {
       // while this button is still hovered, and catches any hover-state contrast violation.
     });
   }
+
+  test('as="a" renders a real anchor, styled identically to the default button', async ({
+    page,
+  }) => {
+    const anchor = anchorButton(page, "Anchor Button");
+
+    await expect(anchor).toBeVisible();
+    await expect(anchor).toHaveJSProperty("tagName", "A");
+    await expect(anchor).toHaveAttribute("href", "#");
+
+    const expectedBackground = await resolvedColor(
+      page,
+      "var(--color-primary-control)"
+    );
+    await expect(anchor).toHaveCSS("background-color", expectedBackground);
+  });
+
+  test('as="a" resolves the focus ring to the dedicated tokens', async ({
+    page,
+  }) => {
+    const expectedColor = await resolvedColor(page, "var(--color-focus-ring)");
+    const [expectedWidth, expectedOffset] = await page.evaluate(() => {
+      const root = getComputedStyle(document.documentElement);
+      return [
+        root.getPropertyValue("--focus-ring-width").trim(),
+        root.getPropertyValue("--focus-ring-offset").trim(),
+      ];
+    });
+
+    const anchor = anchorButton(page, "Anchor Button");
+    await anchor.focus();
+    await expect(anchor).toHaveCSS("outline-color", expectedColor);
+    await expect(anchor).toHaveCSS("outline-width", expectedWidth);
+    await expect(anchor).toHaveCSS("outline-offset", expectedOffset);
+  });
+
+  test('hovering as="a" passes color contrast', async ({ page }) => {
+    await anchorButton(page, "Anchor Button").hover();
+    // The a11y fixture's automatic axe scan (ADR-0002) runs after this test body,
+    // while this anchor is still hovered, and catches any hover-state contrast violation.
+  });
 });
