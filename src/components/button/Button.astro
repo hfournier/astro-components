@@ -4,7 +4,7 @@ import { extendTailwindMerge } from "tailwind-merge";
 
 // tailwind-merge's default config doesn't know the --text-control* role tokens (global.css)
 // are a font-size scale, not a color: left as plain `text-*` classes, it lumps them into the
-// same ambiguous group as the text-color utilities below (text-white, text-primary-control)
+// same ambiguous group as the text-color utilities below (text-on-control, text-primary-control)
 // and silently drops whichever comes first, regardless of the two being independent axes.
 // Registering them under the "font-size" class group keeps both.
 const twMerge = extendTailwindMerge({
@@ -64,15 +64,15 @@ const sizeClasses = {
 const buttonClasses = {
   solid: {
     primary:
-      "bg-primary-control border-primary-control hover:bg-primary-control-hover hover:border-primary-control-hover border-(length:--border-width-boundary) text-white",
+      "bg-primary-control border-primary-control hover:bg-primary-control-hover hover:border-primary-control-hover border-(length:--border-width-boundary) text-on-control",
     secondary:
-      "bg-secondary-control border-secondary-control hover:bg-secondary-control-hover hover:border-secondary-control-hover border-(length:--border-width-boundary) text-white",
+      "bg-secondary-control border-secondary-control hover:bg-secondary-control-hover hover:border-secondary-control-hover border-(length:--border-width-boundary) text-on-control",
   }[color],
   outline: {
     primary:
-      "text-primary-control border-(length:--border-width-boundary) border-primary-control hover:bg-primary-control-hover hover:text-white hover:border-primary-control-hover bg-transparent",
+      "text-primary-control border-(length:--border-width-boundary) border-primary-control hover:bg-primary-control-hover hover:text-on-control hover:border-primary-control-hover bg-transparent",
     secondary:
-      "text-secondary-control border-(length:--border-width-boundary) border-secondary-control hover:bg-secondary-control-hover hover:text-white hover:border-secondary-control-hover bg-transparent",
+      "text-secondary-control border-(length:--border-width-boundary) border-secondary-control hover:bg-secondary-control-hover hover:text-on-control hover:border-secondary-control-hover bg-transparent",
   }[color],
 }[variant];
 ---

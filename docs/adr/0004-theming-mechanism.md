@@ -1,6 +1,8 @@
 # Theming mechanism, class-merge convention & dark-mode readiness
 
-> **Superseded in part by ADR-0007**: the "one base token derives a numbered 50-950 scale via `hsl(from ...)`" piece of this decision was replaced — the numbered scale is gone, replaced by curated semantic tokens derived via `oklch(from ...)`. Everything else below (the `@theme` mechanism itself, `calc()`-derived scales in general, the class-merge convention, and dark-mode readiness) still stands.
+> **Superseded in part by ADR-0007**: the "one base token derives a numbered 50-950 scale via `hsl(from ...)`" piece of this decision was replaced — the numbered scale is gone, replaced by curated semantic tokens derived via `oklch(from ...)`. Everything else below (the `@theme` mechanism itself, `calc()`-derived scales in general, and the class-merge convention) still stands.
+>
+> **Superseded in part by ADR-0011**: the dark-mode-readiness clause ("no dark values are designed now") is replaced — `color-scheme: light dark` + `light-dark()` now ship real values project-wide. The mechanism itself (this ADR's choice of `light-dark()` + `color-scheme` over class-based variable redefinition) still stands.
 
 Color tokens already work via `@theme` + one base `--color-primary` token deriving a full scale via CSS relative-color syntax. This decision confirms/extends that pattern project-wide, resolves an existing class-merge inconsistency, and settles how the mechanism stays dark-mode-ready without designing a dark mode that doesn't exist yet.
 

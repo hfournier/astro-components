@@ -1,6 +1,8 @@
 # Semantic color tokens replace the raw 50-950 scale; derivation moves to OKLCH
 
-Supersedes the color-scale portion of ADR-0004 (the `@theme`/class-merge/dark-mode decisions there stand; only "one base token derives a numbered 50-950 scale via `hsl(from ...)`" is replaced).
+Supersedes the color-scale portion of ADR-0004 (the `@theme`/class-merge decisions there stand; only "one base token derives a numbered 50-950 scale via `hsl(from ...)`" is replaced).
+
+> **Superseded in part by ADR-0011**: the `oklch(from ...)` derivation formula below is replaced project-wide by `color-mix(in hwb, ...)`, and dark mode ships real values instead of remaining unshipped. The semantic-token roster this ADR introduces (the 8 roles, their contrast requirements, the reasoning for deleting the numbered 50-950 scale as public API) still stands.
 
 Two independent WCAG AA contrast failures shipped from the same root cause: a raw scale step (`primary-600`) that isn't safe as text-on-white, reused in two unrelated components without anything catching it until axe-core did.
 
