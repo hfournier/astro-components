@@ -1,33 +1,20 @@
 ---
-import type { HTMLAttributes } from "astro/types";
-import { extendTailwindMerge } from "tailwind-merge";
+import type { ComponentProps } from "astro/types";
+import Button from "../button/Button.astro";
 
-// tailwind-merge's default config doesn't know --text-control-sm (global.css) is a font-size
-// role token, not a color: left as a plain `text-*` class, it lumps it into the same
-// ambiguous group as the text-color utility below (text-white) and silently drops whichever
-// comes first - here, text-white, leaving the link's text at its inherited color instead of
-// white-on-primary-control (issue #45). Registering it under the "font-size" class group
-// keeps both. Same fix as Button.astro.
-const twMerge = extendTailwindMerge({
-  extend: {
-    classGroups: {
-      "font-size": ["text-control-sm"],
-    },
-  },
-});
-
-type Props = HTMLAttributes<"a">;
-const { href, class: classList, ...attrs } = Astro.props;
+// Composes Button (as="a") for its styling, including the color-contrast fix Button already
+// owns (#44/#45), rather than duplicating its class list and twMerge workaround (#46). Only the
+// off-screen-until-focused positioning below is SkipToContent's own concern.
+type Props = ComponentProps<typeof Button<"a">>;
+const { href, size = "sm", class: classList, ...attrs }: Props = Astro.props;
 ---
 
-<a
-  class:list={twMerge(
-    "absolute -top-250 left-1 z-100 focus:top-1",
-    "bg-primary-control border-primary-control hover:bg-primary-control-hover hover:border-primary-control-hover border-(length:--border-width-boundary) text-white",
-    "rounded-control font-control text-control-sm cursor-pointer px-[1em] py-[0.5em] motion-safe:transition-colors",
-    "focus-visible:outline-focus-ring focus-visible:outline-(length:--focus-ring-width) focus-visible:outline-offset-(--focus-ring-offset)",
-    classList
-  )}
+<Button
+  as="a"
+  class:list={["absolute -top-250 left-1 z-100 focus:top-1", classList]}
+  {size}
   href={href || "#main-content"}
-  {...attrs}>Skip to content</a
+  {...attrs}
 >
+  Skip to content
+</Button>

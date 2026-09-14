@@ -7,8 +7,13 @@ meta:
   description: A custom Button component that extends HTML's `<button>` element
 extends:
   kind: element
-  tag: [button]
+  tag: [button, a]
 props:
+  - name: as
+    type: '"button" | "a"'
+    required: false
+    default: "button"
+    description: Which element Button renders. Use `as="a"` (with `href`) to render an anchor styled identically to the button, for a link that should look like a button.
   - name: variant
     type: '"solid" | "outline"'
     required: false

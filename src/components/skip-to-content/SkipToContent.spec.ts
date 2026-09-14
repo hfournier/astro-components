@@ -6,17 +6,9 @@ import { test, expect } from "../../test/a11y-fixture";
 const skipLink = (page: Page) =>
   page.getByRole("link", { name: "Skip to content" });
 
-async function resolvedColor(page: Page, cssValue: string): Promise<string> {
-  return page.evaluate((value) => {
-    const probe = document.createElement("div");
-    probe.style.color = value;
-    document.body.appendChild(probe);
-    const resolved = getComputedStyle(probe).color;
-    probe.remove();
-    return resolved;
-  }, cssValue);
-}
-
+// Color/contrast is Button's own concern now that SkipToContent composes <Button as="a">
+// (#46) - Button.spec.ts covers it (including the text-white regression #45 caught). This
+// file keeps only what's actually SkipToContent's own behavior.
 test.describe("SkipToContent", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
@@ -24,15 +16,6 @@ test.describe("SkipToContent", () => {
 
   test("targets #main-content by default", async ({ page }) => {
     await expect(skipLink(page)).toHaveAttribute("href", "#main-content");
-  });
-
-  test("resolves its text color to white, not whatever color is inherited", async ({
-    page,
-  }) => {
-    const white = await resolvedColor(page, "white");
-
-    await skipLink(page).focus();
-    await expect(skipLink(page)).toHaveCSS("color", white);
   });
 
   test("is off-screen until focused, then becomes visible and passes contrast", async ({
