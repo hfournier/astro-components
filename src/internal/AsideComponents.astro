@@ -20,12 +20,23 @@ const components = await getCollection("components");
         {
           components.map((component) => (
             <li>
-              <Link
-                class="flex min-h-6 items-center"
+              <a
+                class:list={[
+                  "flex min-h-6 items-center",
+                  "aria-[current='page']:text-primary-control aria-[current='page']:underline aria-[current='page']:decoration-1 aria-[current='page']:underline-offset-2",
+                  "aria-[current='page']:hover:text-primary-control-hover aria-[current='page']:hover:decoration-2 aria-[current='page']:hover:underline-offset-4",
+                  "hover:text-primary-control-hover hover:underline hover:decoration-2 hover:underline-offset-4",
+                ]}
                 href={`/components/${component.id.replace("/documentation", "")}`}
+                aria-current={
+                  Astro.url.pathname ===
+                  `/components/${component.id.replace("/documentation", "")}`
+                    ? "page"
+                    : null
+                }
               >
                 {component.data.name}
-              </Link>
+              </a>
             </li>
           ))
         }

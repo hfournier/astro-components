@@ -1,7 +1,27 @@
 ---
 import type { HTMLAttributes } from "astro/types";
 import Icon from "../icon/Icon.astro";
-import { twMerge } from "tailwind-merge";
+import { extendTailwindMerge } from "tailwind-merge";
+
+// tailwind-merge's default config doesn't know the --text-heading-* role tokens (global.css,
+// ADR-0008) are a font-size scale, not a color: left as plain `text-*` classes, it lumps them
+// into the same ambiguous group as the `text-heading` color utility below (from --color-heading)
+// and silently drops whichever comes first, regardless of the two being independent axes. Same
+// fix as Button.astro's `text-control`/`-control-sm`/`-control-lg`.
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      "font-size": [
+        "text-heading-xs",
+        "text-heading-sm",
+        "text-heading-md",
+        "text-heading-lg",
+        "text-heading-xl",
+        "text-heading-2xl",
+      ],
+    },
+  },
+});
 
 type Props = HTMLAttributes<"h1"> & {
   level: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
@@ -24,12 +44,16 @@ const Tag = level;
 {
   id ? (
     <div class="group/heading flex items-center gap-2">
-      <Tag class:list={twMerge(headingClasses, classList)} {id} {...attrs}>
+      <Tag
+        class:list={twMerge("text-heading", headingClasses, classList)}
+        {id}
+        {...attrs}
+      >
         <slot />
       </Tag>
 
       <a
-        class:list={twMerge(headingClasses)}
+        class:list={["text-heading", headingClasses]}
         href={`#${id}`}
         aria-labelledby={id}
       >
@@ -40,7 +64,11 @@ const Tag = level;
       </a>
     </div>
   ) : (
-    <Tag class:list={twMerge(headingClasses, classList)} {id} {...attrs}>
+    <Tag
+      class:list={twMerge("text-heading", headingClasses, classList)}
+      {id}
+      {...attrs}
+    >
       <slot />
     </Tag>
   )

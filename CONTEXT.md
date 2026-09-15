@@ -13,8 +13,20 @@ A token that a whole derived scale is computed from via `calc()` (or an equivale
 _Avoid_: root token, primary token (ambiguous with the `primary` color role)
 
 **Role token**:
-A token named for the situation it's used in (`--font-weight-nav`, `--radius-container`) rather than its literal step (`--font-weight-semibold`, `--radius-xl`), defined via `var()` onto a value-layer token of the same property. Lets a component author pick by intent instead of by magnitude. Distinct from a [[Base token]]: a base token is what a scale derives *from*, a role token is a second name layered *on top of* an already-derived scale.
+A token named for the situation it's used in (`--font-weight-nav`, `--radius-container`) rather than its literal step (`--font-weight-semibold`, `--radius-xl`), defined via `var()` onto a value-layer token of the same property. Lets a component author pick by intent instead of by magnitude. Distinct from a [[Base token]]: a base token is what a scale derives *from*, a role token is a second name layered *on top of* an already-derived scale. `--control` is a role name reused across several properties (`--color-primary-control`, `--radius-control`, `--font-weight-control`) for the same [[Control]] role; a role token still just renames an existing scale step, unlike a [[Composite token]], which computes a value the raw scale never had.
 _Avoid_: semantic token, alias (too generic — every token is technically a CSS alias)
+
+**Private token**:
+A CSS custom property that exists purely as derivation plumbing — an intermediate value another token computes from, never consumed directly by a component and never registered in Tailwind's `@theme` block (so no utility class is generated for it either). A numbered 50-950-style scale step is the motivating example: even kept out of the public API, a scale still invites a future token to pick an unvetted step from it, so this project doesn't keep one even privately — every [[Role token]] or [[Composite token]] derives straight from a [[Base token]] instead.
+_Avoid_: internal token (ambiguous with [[Internal component]]), scratch token
+
+**Composite token**:
+A CSS custom property that assembles more than one design decision into a single per-variant value (a control's solid-fill background folds together a color role, a lightness dial, and a color-mix formula) — deliberately left out of Tailwind's `@theme` block and consumed only via arbitrary-value `var()` syntax, never its own utility class. Distinct from a [[Role token]]: a role token renames an already-derived scale step for intent; a composite token computes a value nothing in the raw scale already holds.
+_Avoid_: theme token (reads as a restatement of [[Theme]], a different concept), variant token (collides with the [[Variant]] prop axis)
+
+**Reference surface**:
+The specific background a [[Role token]] or [[Composite token]] is verified against when the component doesn't own its own actual rendered backdrop — an outline button's text, a nav link — as opposed to a solid-fill background the component does own and can read live. `--color-surface` is the light-mode reference surface; dark mode adds a second one. A token is only as trustworthy as the reference surface it was checked against — placing it on a different, unverified background is the consumer's responsibility, not a guarantee the system makes.
+_Avoid_: background (too generic), context (overloaded)
 
 **Theme**:
 The complete set of token values active for a given site — what you get by editing `src/styles/global.css`. Swapping a theme changes appearance only; it never changes a component's markup, props, or behavior.
@@ -27,6 +39,10 @@ _Avoid_: color scheme, palette (palette is the scale itself, e.g. "the primary p
 **Variant**:
 A named alternative treatment of a component's structural/shape axis, selected via a `variant` prop (e.g. Button's `solid` vs `outline`). Reserved exclusively for that one axis — a component with more than one independent axis (color role, size, ...) gets one prop per axis rather than folding them into `variant` as a compound value.
 _Avoid_: style, mode, using `variant` for any axis other than structure/shape
+
+**Control**:
+An interactive component a user directly operates — clicks, focuses, toggles, types into. Button today; checkbox/switch/input tomorrow. The intended consumer of every `-control`/`-control-hover` [[Role token]] already established per-property (`--color-primary-control`, `--radius-control`, `--font-weight-control`, `--text-control`, ...). Orthogonal to [[Component role]] (primitive/pattern/internal classifies by reusability, not by this axis) — a control can be a [[Pattern component]] (Button) or a [[Primitive component]]. Distinct from a purely-display component (a [[Document heading]], a static icon) that never draws from `-control` tokens, and from a container/overlay a user also "operates" but whose whole job isn't being clicked/toggled/entered into (Popover, Dialog).
+_Avoid_: interactive component (too broad — would also catch Popover/Dialog)
 
 **Primitive component**:
 A component that supplies structural or interactive behavior (focus handling, open/close state, positioning) with little to no visual styling of its own, meant to be composed inside a pattern component rather than used directly. It's still an independently meaningful building block — generic enough that more than one [[Pattern component]] can compose it, and worth documenting on its own terms. `BaseOverlay` is the current example, composed by both `Dialog` and `Popover`. Declared on a component's [[Component documentation file]] as `role: primitive`. Contrast with [[Internal component]], which isn't independently reusable at all.

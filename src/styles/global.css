@@ -3,6 +3,11 @@
 :root {
   --timer-time: 60;
 
+  /* opts every element into real shipped dark values (ADR-0011, superseding ADR-0004's
+     readiness-only stance) - OS preference by default, overridable via a plain class/attribute
+     per ADR-0004's original mechanism, never bound to framework/JS state. */
+  color-scheme: light dark;
+
   interpolate-size: allow-keywords;
 
   @media (prefers-reduced-motion: no-preference) {
@@ -12,54 +17,167 @@
 
 @theme {
   /* change the primary color to customize your color scheme */
-  --color-primary: #cc5500;
+  --color-primary: #55cc00;
 
-  /* control-lightness: one OKLCH dial shared by every color family and role, so a role's
-     contrast character can't drift between colors (ADR-0007). Verified for the current
-     --color-primary to clear 4.5:1 against white for both primary and secondary hues; the
-     hover-state a11y tests remain the actual guarantee if --color-primary ever changes. */
-  --control-lightness-resting: 0.45;
-  --control-lightness-hover: 0.35;
+  /* mix dials: how much of --color-primary survives a color-mix(in hwb, ...) toward the
+     mode-appropriate neutral endpoint - black in light mode, white in dark mode - one shared
+     X per role, so a role's contrast character can't drift between primary/secondary by
+     accident (ADR-0011, superseding ADR-0007's oklch lightness dials). Verified in
+     docs/adr/0011-hwb-color-mix-and-real-dark-values.md to clear each role's target contrast
+     for ANY hue at full saturation, not just today's --color-primary - a stronger guarantee
+     than ADR-0007's dials, which were only checked against today's base color. */
+  --icon-mix: 50%;
+  --heading-mix: 20%;
 
-  --color-primary-control: oklch(
-    from var(--color-primary) var(--control-lightness-resting) c h
+  /* --control-mix-*-light/-dark: split light/dark, unlike icon/heading above. The light values
+     (45%/25%, mixed toward black) are hue-independent-safe (ADR-0011's table). Their naive
+     dark-mode mirror (45%/25% mixed toward white) is ALSO hue-independent-safe, but for today's
+     --color-primary specifically it reads as pastel/washed-out against #0a0a0a - real orange
+     needs far less white mixed in to clear 4.5:1 than the worst-case hue this family has to
+     plan for (ADR-0011's table: hue 240 needs X<=55% tint; #cc5500 itself clears 4.5:1 even at
+     X=100%, no white at all). The *-dark values below are tuned to #cc5500's own hue instead -
+     visibly closer to the actual brand color, at the cost of no longer being safe for an
+     arbitrarily saturated future --color-primary (a hue near 240-270 deg would need re-tuning
+     these two dials specifically; the axe-core hover tests remain the real backstop either way,
+     per ADR-0007's own conclusion). */
+  --control-mix-resting-light: 45%;
+  --control-mix-hover-light: 25%;
+  --control-mix-resting-dark: 90%;
+  --control-mix-hover-dark: 70%;
+
+  /* --divider-mix / --container-mix split light/dark, unlike every dial above: both roles stay
+     close to --color-surface by design (a subtle inset tint, not a foreground element), and the
+     *same* mix % lands at very different contrast depending on direction. Mixing a small amount
+     of color into black barely moves relative luminance (black's own luminance floor is 0, and
+     this family's darkest color-mix endpoint isn't far above it), while mixing the same amount
+     into white moves it a lot (white starts at luminance 1). Measured: container-mix 6% gives
+     1.081 contrast against white in light mode but only 1.022 against #0a0a0a in dark mode -
+     barely perceptible; naively doubling+ the dark mix to compensate (20%/30%) overshot into an
+     obviously tinted panel instead of a subtle one. The *-dark dials below land under their
+     light counterpart's own contrast ratio instead - enough to read as a distinct panel/line,
+     not enough to look like a deliberate color choice. */
+  --divider-mix-light: 15%;
+  --divider-mix-dark: 24%;
+  --container-mix-light: 6%;
+  --container-mix-dark: 14%;
+
+  /* -control/-control-hover: solid-fill background (paired with --color-on-control text) or
+     text/border-on-surface for primary/secondary controls (ADR-0007's role table still
+     applies). light-dark() ships real dark values now (ADR-0011, superseding ADR-0004's
+     "no dark values designed" clause): light mode mixes toward black (dark - safe under
+     white text, and under --color-surface's light value); dark mode mixes toward white
+     (light - safe under black text, and under --color-surface's dark value). Same mix
+     percentage both directions, just aimed at the mode-appropriate neutral endpoint. */
+  --color-primary-control: light-dark(
+    color-mix(
+      in hwb,
+      var(--color-primary) var(--control-mix-resting-light),
+      black
+    ),
+    color-mix(
+      in hwb,
+      var(--color-primary) var(--control-mix-resting-dark),
+      white
+    )
   );
-  --color-primary-control-hover: oklch(
-    from var(--color-primary) var(--control-lightness-hover) c h
+  --color-primary-control-hover: light-dark(
+    color-mix(
+      in hwb,
+      var(--color-primary) var(--control-mix-hover-light),
+      black
+    ),
+    color-mix(in hwb, var(--color-primary) var(--control-mix-hover-dark), white)
   );
 
-  --color-secondary-control: oklch(
-    from var(--color-primary) var(--control-lightness-resting) c calc(h + 180)
+  /* secondary: hue-rotated 180° from --color-primary via hwb(from ...) - the only relative-
+     color-syntax step left after retiring oklch(from ...) project-wide (ADR-0011);
+     color-mix(in hwb, ...) alone can't rotate hue, only interpolate toward a white/black
+     endpoint, so the rotation happens first, inline, straight off the base token - no
+     private --color-secondary intermediate (CONTEXT.md's Private token entry). */
+  --color-secondary-control: light-dark(
+    color-mix(
+      in hwb,
+      hwb(from var(--color-primary) calc(h + 180) w b)
+        var(--control-mix-resting-light),
+      black
+    ),
+    color-mix(
+      in hwb,
+      hwb(from var(--color-primary) calc(h + 180) w b)
+        var(--control-mix-resting-dark),
+      white
+    )
   );
-  --color-secondary-control-hover: oklch(
-    from var(--color-primary) var(--control-lightness-hover) c calc(h + 180)
+  --color-secondary-control-hover: light-dark(
+    color-mix(
+      in hwb,
+      hwb(from var(--color-primary) calc(h + 180) w b)
+        var(--control-mix-hover-light),
+      black
+    ),
+    color-mix(
+      in hwb,
+      hwb(from var(--color-primary) calc(h + 180) w b)
+        var(--control-mix-hover-dark),
+      white
+    )
   );
+
+  /* --color-on-control: the text/icon color a component pairs with its OWN solid -control
+     fill (Button's solid variant, Header's chrome bar) - white in light mode (fill mixes
+     toward black), black in dark mode (fill mixes toward white). Not hue-dependent: a fill
+     mixed dark/light enough to clear 4.5:1 against --color-surface is, by construction, also
+     dark/light enough to clear 4.5:1 against literal white/black (ADR-0011's table - the two
+     targets can't both be satisfied with margin by the same value, so this is the deliberate
+     resolution). Distinct from -control's OTHER job, text-on-a-surface-it-doesn't-own: that
+     direction already reads correctly against --color-surface with no separate text token. */
+  --color-on-control: light-dark(white, black);
 
   /* --color-chrome: site chrome (Header/Footer), not a component's color role - aliases
      --color-primary-control rather than reading --color-primary directly, so it inherits
-     that role's already-verified 4.5:1-against-white guarantee (ADR-0007) instead of the
-     raw base token, which was only ever verified as an input to the derivation, not as a
+     that role's already-verified contrast guarantee (ADR-0007/ADR-0011) instead of the raw
+     base token, which was only ever verified as an input to the derivation, not as a
      background paired with text on its own. Same pattern as --color-focus-ring below. */
   --color-chrome: var(--color-primary-control);
 
   /* decorative/UI-only roles (WCAG 1.4.11 non-text contrast, not 4.5:1 text contrast) - same
-     hue as primary, low chroma (ADR-0007). --color-container uses a much lower chroma
-     fraction than the others: near-white surfaces show a color tint far more readily than
-     mid/dark tones do at the same chroma, so 0.12 read as a visible peach rather than a
-     neutral panel background. */
-  --color-divider: oklch(from var(--color-primary) 0.85 calc(c * 0.12) h);
-  --color-container: oklch(from var(--color-primary) 0.97 calc(c * 0.03) h);
-  --color-icon: oklch(from var(--color-primary) 0.55 calc(c * 0.12) h);
-  --color-body: oklch(from var(--color-primary) 0.2 calc(c * 0.12) h);
+     hue as primary, same tint(light)/shade(dark) split as -control above (mirrored: these two
+     stay close to --color-surface rather than away from it), at their own named mix (ADR-0011).
+     --color-container uses a much lower mix than the others: near-white/near-black surfaces show
+     a color tint far more readily than mid tones do at the same mix, so a shared mix read as a
+     visible peach rather than a neutral panel background (the same effect ADR-0007 hit with
+     chroma). Not independently WCAG-verified against a contrast target the way -control/
+     -control-hover are (ADR-0007's own position, carried forward) - just tuned to roughly the
+     prior visual weight, now against --color-surface's real dark value too (see the *-mix-dark
+     dials' comment above for why these two need a different % per direction). */
+  --color-divider: light-dark(
+    color-mix(in hwb, var(--color-primary) var(--divider-mix-light), white),
+    color-mix(in hwb, var(--color-primary) var(--divider-mix-dark), black)
+  );
+  --color-container: light-dark(
+    color-mix(in hwb, var(--color-primary) var(--container-mix-light), white),
+    color-mix(in hwb, var(--color-primary) var(--container-mix-dark), black)
+  );
+  --color-icon: light-dark(
+    color-mix(in hwb, var(--color-primary) var(--icon-mix), black),
+    color-mix(in hwb, var(--color-primary) var(--icon-mix), white)
+  );
+  --color-body: light-dark(black, white);
+  --color-heading: light-dark(
+    color-mix(in hwb, var(--color-primary) var(--heading-mix), black),
+    color-mix(in hwb, var(--color-primary) var(--heading-mix), white)
+  );
 
-  /* --color-surface: a component's own outer background - literal white, never tinted from
-     --color-primary, distinct from --color-container's role (ADR-0007's "panel/surface
-     backgrounds" description actually fits this token better; --color-container in practice
-     is used for tinted *inset* panels - Dialog/Popover header/footer bars, code panes - not
-     the component's own root surface). Names the `bg-white` literal already used for that
-     purpose in Dialog, Popover, and CodePreview; worth a follow-up ADR note reconciling the
-     two roles. */
-  --color-surface: #fff;
+  /* --color-surface: a component's own outer background - the light/dark reference surface
+     itself (CONTEXT.md's Reference surface entry), never tinted from --color-primary, distinct
+     from --color-container's role (ADR-0007's "panel/surface backgrounds" description actually
+     fits this token better; --color-container in practice is used for tinted *inset* panels -
+     Dialog/Popover header/footer bars, code panes - not the component's own root surface).
+     Names the `bg-white` literal Dialog, Popover, and CodePreview used for that purpose before
+     dark mode shipped (now `bg-surface` in all three, ADR-0011). Dark value (#0a0a0a) is a
+     literal, not derived from --color-primary - a primary-tinted dark surface wasn't tested and
+     isn't what any consumer currently renders. */
+  --color-surface: light-dark(#fff, #0a0a0a);
 
   /* radius: single dial, rest of the scale derives from it (ADR-0005) */
   --radius: 0.5rem;
