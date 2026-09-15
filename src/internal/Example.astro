@@ -29,7 +29,8 @@ const { Content } = await render(example);
           class="p-4"
           code={example.body}
           lang="jsx"
-          theme="github-light"
+          themes={{ light: "github-light", dark: "github-dark" }}
+          defaultColor="light-dark()"
           slot="code"
         />
       )

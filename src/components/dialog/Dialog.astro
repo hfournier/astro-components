@@ -12,7 +12,7 @@ const { id, class: classList, ...attrs } = Astro.props;
 ---
 
 <BaseOverlay
-  class:list={twMerge("rounded-container min-w-xs bg-white", classList)}
+  class:list={twMerge("rounded-container bg-surface min-w-xs", classList)}
   {id}
   {...attrs}
 >
