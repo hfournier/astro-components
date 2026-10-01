@@ -5,7 +5,10 @@ import Details from "../components/details/Details.astro";
 import Link from "../components/link/Link.astro";
 import { componentCategories } from "../types";
 
-const pages = [{ id: "colors", data: { title: "Colors" } }];
+const pages = [
+  { id: "", data: { title: "Getting started" } },
+  { id: "colors", data: { title: "Colors" } },
+];
 const components = await getCollection("components");
 const tests = await getCollection("tests");
 
