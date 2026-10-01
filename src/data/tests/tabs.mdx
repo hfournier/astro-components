@@ -3,162 +3,168 @@ title: Tabs
 description: Tests for the Tabs component
 ---
 
-<Tabs class="p-4" bgColor="primary-dark">
-  <Tab label="Tab 1">
-    Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae
-    sapiente debitis quidem quasi cupiditate laborum tenetur voluptates
-    omnis illo sint doloremque dolorem natus impedit eligendi, nesciunt ea
-    laboriosam, reprehenderit soluta.
-  </Tab>
-  <Tab label="Tab 2">
-    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore
-    officia nesciunt laudantium ex corrupti earum vitae, eaque, ad
-    reiciendis debitis quod similique enim sunt facere eos rem blanditiis
-    id esse.
-  </Tab>
-  <Tab label="Tab 3">
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad, vel
-    suscipit! Itaque sint odit beatae delectus modi ratione a temporibus
-    atque eveniet ipsa doloribus ducimus aut quae, sit quos in?
-  </Tab>
-</Tabs>
+<Heading level={1}>Tabs Tests</Heading>
 
-<Tabs class="p-4" bgColor="primary-light">
-  <Tab label="Tab 1">
-    Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae
-    sapiente debitis quidem quasi cupiditate laborum tenetur voluptates
-    omnis illo sint doloremque dolorem natus impedit eligendi, nesciunt ea
-    laboriosam, reprehenderit soluta.
-  </Tab>
-  <Tab label="Tab 2">
-    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore
-    officia nesciunt laudantium ex corrupti earum vitae, eaque, ad
-    reiciendis debitis quod similique enim sunt facere eos rem blanditiis
-    id esse.
-  </Tab>
-  <Tab label="Tab 3">
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad, vel
-    suscipit! Itaque sint odit beatae delectus modi ratione a temporibus
-    atque eveniet ipsa doloribus ducimus aut quae, sit quos in?
-  </Tab>
-</Tabs>
+<Section class="p-4 space-y-4">
+  <Heading level={2}>Default</Heading>
+  <Tabs>
+    <Tab label="Tab 1">
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae
+      sapiente debitis quidem quasi cupiditate laborum tenetur voluptates
+      omnis illo sint doloremque dolorem natus impedit eligendi, nesciunt ea
+      laboriosam, reprehenderit soluta.
+    </Tab>
+    <Tab label="Tab 2">
+      Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore
+      officia nesciunt laudantium ex corrupti earum vitae, eaque, ad
+      reiciendis debitis quod similique enim sunt facere eos rem blanditiis
+      id esse.
+    </Tab>
+    <Tab label="Tab 3">
+      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad, vel
+      suscipit! Itaque sint odit beatae delectus modi ratione a temporibus
+      atque eveniet ipsa doloribus ducimus aut quae, sit quos in?
+    </Tab>
+  </Tabs>
+</Section>
 
-<Tabs class="p-4" bgColor="secondary-dark">
-  <Tab label="Tab 1">
-    Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae
-    sapiente debitis quidem quasi cupiditate laborum tenetur voluptates
-    omnis illo sint doloremque dolorem natus impedit eligendi, nesciunt ea
-    laboriosam, reprehenderit soluta.
-  </Tab>
-  <Tab label="Tab 2">
-    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore
-    officia nesciunt laudantium ex corrupti earum vitae, eaque, ad
-    reiciendis debitis quod similique enim sunt facere eos rem blanditiis
-    id esse.
-  </Tab>
-  <Tab label="Tab 3">
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad, vel
-    suscipit! Itaque sint odit beatae delectus modi ratione a temporibus
-    atque eveniet ipsa doloribus ducimus aut quae, sit quos in?
-  </Tab>
-</Tabs>
+<Section class="p-4 space-y-4">
+  <Heading level={2}>Icons</Heading>
+  <Tabs>
+    <Tab label="Flights" icon="flight">
+        Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae
+        sapiente debitis quidem quasi cupiditate laborum tenetur voluptates omnis
+        illo sint doloremque dolorem natus impedit eligendi, nesciunt ea
+        laboriosam, reprehenderit soluta.
+    </Tab>
+    <Tab label="Travel" icon="luggage">
+        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore officia
+        nesciunt laudantium ex corrupti earum vitae, eaque, ad reiciendis debitis
+        quod similique enim sunt facere eos rem blanditiis id esse.
+    </Tab>
+    <Tab label="Cruise" icon="anchor">
+        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad, vel
+        suscipit! Itaque sint odit beatae delectus modi ratione a temporibus atque
+        eveniet ipsa doloribus ducimus aut quae, sit quos in?
+    </Tab>
+  </Tabs>
+</Section>
 
-<Tabs class="p-4" bgColor="secondary-light">
-  <Tab label="Tab 1">
-    Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae
-    sapiente debitis quidem quasi cupiditate laborum tenetur voluptates
-    omnis illo sint doloremque dolorem natus impedit eligendi, nesciunt ea
-    laboriosam, reprehenderit soluta.
-  </Tab>
-  <Tab label="Tab 2">
-    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore
-    officia nesciunt laudantium ex corrupti earum vitae, eaque, ad
-    reiciendis debitis quod similique enim sunt facere eos rem blanditiis
-    id esse.
-  </Tab>
-  <Tab label="Tab 3">
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad, vel
-    suscipit! Itaque sint odit beatae delectus modi ratione a temporibus
-    atque eveniet ipsa doloribus ducimus aut quae, sit quos in?
-  </Tab>
-</Tabs>
+<Section class="p-4 space-y-4">
+  <Heading level={2}>Icons and badges</Heading>
+  <Tabs>
+      <Tab label="Inbox" icon="inbox" badgeLabel="3">
+          Three unread messages.
+      </Tab>
+      <Tab label="Archive" icon="archive">
+          Archived messages.
+      </Tab>
+      <Tab label="Updates" icon="notifications" badgeLabel="">
+          New updates since your last visit.
+      </Tab>
+  </Tabs>
+</Section>
 
-<Tabs class="p-4" bgColor="grayish-dark">
-  <Tab label="Tab 1">
-    Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae
-    sapiente debitis quidem quasi cupiditate laborum tenetur voluptates
-    omnis illo sint doloremque dolorem natus impedit eligendi, nesciunt ea
-    laboriosam, reprehenderit soluta.
-  </Tab>
-  <Tab label="Tab 2">
-    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore
-    officia nesciunt laudantium ex corrupti earum vitae, eaque, ad
-    reiciendis debitis quod similique enim sunt facere eos rem blanditiis
-    id esse.
-  </Tab>
-  <Tab label="Tab 3">
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad, vel
-    suscipit! Itaque sint odit beatae delectus modi ratione a temporibus
-    atque eveniet ipsa doloribus ducimus aut quae, sit quos in?
-  </Tab>
-</Tabs>
+<Section class="p-4 space-y-4">
+  <Heading level={2}>Secondary variant</Heading>
+  <Tabs variant="secondary">
+    <Tab label="Tab 1">
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae
+      sapiente debitis quidem quasi cupiditate laborum tenetur voluptates
+      omnis illo sint doloremque dolorem natus impedit eligendi, nesciunt ea
+      laboriosam, reprehenderit soluta.
+    </Tab>
+    <Tab label="Tab 2">
+      Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore
+      officia nesciunt laudantium ex corrupti earum vitae, eaque, ad
+      reiciendis debitis quod similique enim sunt facere eos rem blanditiis
+      id esse.
+    </Tab>
+    <Tab label="Tab 3">
+      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad, vel
+      suscipit! Itaque sint odit beatae delectus modi ratione a temporibus
+      atque eveniet ipsa doloribus ducimus aut quae, sit quos in?
+    </Tab>
+  </Tabs>
+</Section>
 
-<Tabs class="p-4" bgColor="grayish-light">
-  <Tab label="Tab 1">
-    Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae
-    sapiente debitis quidem quasi cupiditate laborum tenetur voluptates
-    omnis illo sint doloremque dolorem natus impedit eligendi, nesciunt ea
-    laboriosam, reprehenderit soluta.
-  </Tab>
-  <Tab label="Tab 2">
-    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore
-    officia nesciunt laudantium ex corrupti earum vitae, eaque, ad
-    reiciendis debitis quod similique enim sunt facere eos rem blanditiis
-    id esse.
-  </Tab>
-  <Tab label="Tab 3">
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad, vel
-    suscipit! Itaque sint odit beatae delectus modi ratione a temporibus
-    atque eveniet ipsa doloribus ducimus aut quae, sit quos in?
-  </Tab>
-</Tabs>
+<Section class="p-4 space-y-4">
+  <Heading level={2}>Secondary variant with icons</Heading>
+  <Tabs variant="secondary">
+      <Tab label="Flights" icon="flight">
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae
+          sapiente debitis quidem quasi cupiditate laborum tenetur voluptates omnis
+          illo sint doloremque dolorem natus impedit eligendi, nesciunt ea
+          laboriosam, reprehenderit soluta.
+      </Tab>
+      <Tab label="Travel" icon="luggage">
+          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore officia
+          nesciunt laudantium ex corrupti earum vitae, eaque, ad reiciendis debitis
+          quod similique enim sunt facere eos rem blanditiis id esse.
+      </Tab>
+      <Tab label="Cruise" icon="anchor">
+          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad, vel
+          suscipit! Itaque sint odit beatae delectus modi ratione a temporibus atque
+          eveniet ipsa doloribus ducimus aut quae, sit quos in?
+      </Tab>
+  </Tabs>
+</Section>
 
-<Tabs class="p-4" bgColor="black">
-  <Tab label="Tab 1">
-    Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae
-    sapiente debitis quidem quasi cupiditate laborum tenetur voluptates
-    omnis illo sint doloremque dolorem natus impedit eligendi, nesciunt ea
-    laboriosam, reprehenderit soluta.
-  </Tab>
-  <Tab label="Tab 2">
-    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore
-    officia nesciunt laudantium ex corrupti earum vitae, eaque, ad
-    reiciendis debitis quod similique enim sunt facere eos rem blanditiis
-    id esse.
-  </Tab>
-  <Tab label="Tab 3">
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad, vel
-    suscipit! Itaque sint odit beatae delectus modi ratione a temporibus
-    atque eveniet ipsa doloribus ducimus aut quae, sit quos in?
-  </Tab>
-</Tabs>
+<Section class="p-4 space-y-4">
+  <Heading level={2}>Secondary variant with icons and badges</Heading>
+  <Tabs variant="secondary">
+      <Tab label="Mentions" badgeLabel="1500">
+          Over 999 mentions show as 999+, while the tab's accessible name keeps the exact count.
+      </Tab>
+      <Tab label="Replies" badgeLabel="0">
+          A badge of 0 isn't shown.
+      </Tab>
+      <Tab label="Drafts" badgeLabel="">
+          New drafts are marked with a dot.
+      </Tab>
+  </Tabs>
+</Section>
 
-<Tabs class="p-4" bgColor="white">
-  <Tab label="Tab 1">
-    Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae
-    sapiente debitis quidem quasi cupiditate laborum tenetur voluptates
-    omnis illo sint doloremque dolorem natus impedit eligendi, nesciunt ea
-    laboriosam, reprehenderit soluta.
-  </Tab>
-  <Tab label="Tab 2">
-    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore
-    officia nesciunt laudantium ex corrupti earum vitae, eaque, ad
-    reiciendis debitis quod similique enim sunt facere eos rem blanditiis
-    id esse.
-  </Tab>
-  <Tab label="Tab 3">
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad, vel
-    suscipit! Itaque sint odit beatae delectus modi ratione a temporibus
-    atque eveniet ipsa doloribus ducimus aut quae, sit quos in?
-  </Tab>
-</Tabs>
+<Section class="p-4 space-y-4">
+  <Heading level={2}>Transition - slide-left</Heading>
+  <Tabs>
+      <Tab label="Tab 1" transition="slide-left">
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae
+          sapiente debitis quidem quasi cupiditate laborum tenetur voluptates omnis
+          illo sint doloremque dolorem natus impedit eligendi, nesciunt ea
+          laboriosam, reprehenderit soluta.
+      </Tab>
+      <Tab label="Tab 2" transition="slide-left">
+          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore officia
+          nesciunt laudantium ex corrupti earum vitae, eaque, ad reiciendis debitis
+          quod similique enim sunt facere eos rem blanditiis id esse.
+      </Tab>
+      <Tab label="Tab 3" transition="slide-left">
+          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad, vel
+          suscipit! Itaque sint odit beatae delectus modi ratione a temporibus atque
+          eveniet ipsa doloribus ducimus aut quae, sit quos in?
+      </Tab>
+  </Tabs>
+</Section>
+
+<Section class="p-4 space-y-4">
+  <Heading level={2}>Transition - fade-up</Heading>
+  <Tabs>
+      <Tab label="Tab 1" transition="fade-up">
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae
+          sapiente debitis quidem quasi cupiditate laborum tenetur voluptates omnis
+          illo sint doloremque dolorem natus impedit eligendi, nesciunt ea
+          laboriosam, reprehenderit soluta.
+      </Tab>
+      <Tab label="Tab 2" transition="fade-up">
+          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolore officia
+          nesciunt laudantium ex corrupti earum vitae, eaque, ad reiciendis debitis
+          quod similique enim sunt facere eos rem blanditiis id esse.
+      </Tab>
+      <Tab label="Tab 3" transition="fade-up">
+          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad, vel
+          suscipit! Itaque sint odit beatae delectus modi ratione a temporibus atque
+          eveniet ipsa doloribus ducimus aut quae, sit quos in?
+      </Tab>
+  </Tabs>
+</Section>

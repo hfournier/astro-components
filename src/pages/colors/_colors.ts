@@ -178,53 +178,79 @@ export function themeColors(
   return { scheme, custom, palettes };
 }
 
-/** Each `--theme-color-*` custom property as [name, value], grouped by scheme, custom colors, then palette. */
+type PropertyGroup = [string, string][];
+
+/**
+ * The theme's custom properties as [name, value] groups. Roles (`--theme-color-*`, scheme then
+ * custom colors) go in `:root`. Palette steps (`--color-theme-*`) go in `@theme static`, where Tailwind
+ * turns each into a color utility (`bg-theme-primary-500`).
+ */
 function propertyGroups(
   sourceColor: string,
   customColors: CustomColor[],
   variant: Variant
-): [string, string][][] {
+): { roles: PropertyGroup[]; palettes: PropertyGroup[] } {
   const { scheme, custom, palettes } = themeColors(
     sourceColor,
     customColors,
     variant
   );
-  return [
-    ...[scheme, custom].map((roles) =>
-      Object.entries(roles).map(([role, value]): [string, string] => [
-        `--theme-color-${role}`,
-        value,
-      ])
-    ),
-    ...Object.entries(palettes).map(([name, steps]) =>
+  return {
+    roles: [scheme, custom]
+      .map((group) =>
+        Object.entries(group).map(([role, value]): [string, string] => [
+          `--theme-color-${role}`,
+          value,
+        ])
+      )
+      .filter((group) => group.length > 0),
+    palettes: Object.entries(palettes).map(([name, steps]) =>
       Object.entries(steps).map(([step, value]): [string, string] => [
-        `--theme-color-${name}-${step}`,
+        `--color-theme-${name}-${step}`,
         value,
       ])
     ),
-  ].filter((group) => group.length > 0);
+  };
 }
 
-/** Maps each `--theme-color-*` custom property to its value for a source color. */
+/** Maps each `--theme-color-*` role and `--color-theme-*` palette step to its value for a source color. */
 export function themeProperties(
   sourceColor: string,
   customColors: CustomColor[] = [],
   variant: Variant = defaultVariant
 ): Record<string, string> {
-  return Object.fromEntries(
-    propertyGroups(sourceColor, customColors, variant).flat()
+  const { roles, palettes } = propertyGroups(
+    sourceColor,
+    customColors,
+    variant
   );
+  return Object.fromEntries([...roles, ...palettes].flat());
 }
 
-/** The custom properties as a `:root` rule, with a blank line between groups. */
+const declarations = (groups: PropertyGroup[]) =>
+  groups
+    .map((group) =>
+      group.map(([property, value]) => `  ${property}: ${value};`).join("\n")
+    )
+    .join("\n\n");
+
+/**
+ * The roles as a `:root` rule and the palette steps as an `@theme static` block (static, so every
+ * step is emitted even when no utility uses it, e.g. for `var()` in inline styles), with a blank
+ * line between groups.
+ */
 export function themeCss(
   sourceColor: string,
   customColors: CustomColor[] = [],
   variant: Variant = defaultVariant
 ): string {
-  const groups = propertyGroups(sourceColor, customColors, variant).map(
-    (group) =>
-      group.map(([property, value]) => `  ${property}: ${value};`).join("\n")
+  const { roles, palettes } = propertyGroups(
+    sourceColor,
+    customColors,
+    variant
   );
-  return `:root {\n  color-scheme: light dark;\n\n${groups.join("\n\n")}\n}`;
+  return [
+    `:root {\n  color-scheme: light dark;\n\n${declarations(roles)}\n}`,
+    `@theme static {\n${declarations(palettes)}\n}`,
+  ].join("\n\n");
 }

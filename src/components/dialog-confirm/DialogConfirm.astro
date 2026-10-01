@@ -20,12 +20,7 @@ const { id, buttonDismiss, buttonConfirm, ...attrs } = Astro.props;
      so it fires `cancel` the same way Escape does. Dialog wires aria-labelledby to the
      headline itself. */
 }
-<Dialog
-  {id}
-  role="alertdialog"
-  aria-describedby={`${id}-content`}
-  {...attrs}
->
+<Dialog {id} role="alertdialog" aria-describedby={`${id}-content`} {...attrs}>
   <slot />
 
   <menu class="flex items-center justify-end gap-2" slot="footer">
@@ -36,6 +31,7 @@ const { id, buttonDismiss, buttonConfirm, ...attrs } = Astro.props;
         id={buttonDismiss.id}
         value={buttonDismiss.value}
         autofocus
+        size="sm"
         variant="text"
       >
         {buttonDismiss.text}
@@ -47,6 +43,7 @@ const { id, buttonDismiss, buttonConfirm, ...attrs } = Astro.props;
         commandfor={id}
         id={buttonConfirm.id}
         value={buttonConfirm.value}
+        size="sm"
         variant="text"
       >
         {buttonConfirm.text}

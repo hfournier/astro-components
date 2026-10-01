@@ -1,5 +1,5 @@
-/* The hand-written half of the theme: every token except the M3 color roles, which the theme
-   generator at /colors writes into colors.css. Imported by global.css. */
+/* The hand-written half of the theme: every token except the M3 color roles and tonal palettes,
+   which the theme generator at /colors writes into colors.css. Imported by global.css. */
 
 @theme {
   /* easing: Tailwind's native namespace, role layer on top (ADR-0006) */

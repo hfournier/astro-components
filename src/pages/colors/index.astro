@@ -1,17 +1,13 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
 import { Code } from "astro:components";
 import { argbFromHex, type CustomColor } from "@poupe/material-color-utilities";
-import {
-  defaultVariant,
-  themeColors,
-  themeCss,
-  variants,
-} from "./_theme-properties";
-import Button from "../components/button/Button.astro";
-import Heading from "../components/heading/Heading.astro";
-import Icon from "../components/icon/Icon.astro";
-import P from "../internal/mdx/P.astro";
+import { defaultVariant, themeColors, themeCss, variants } from "./_colors";
+import Button from "../../components/button/Button.astro";
+import Heading from "../../components/heading/Heading.astro";
+import Icon from "../../components/icon/Icon.astro";
+import P from "../../internal/mdx/P.astro";
+import Link from "../../components/link/Link.astro";
 
 const sourceColor = "#cc5500";
 const customColors: CustomColor[] = [
@@ -44,10 +40,6 @@ const { palettes } = themeColors(sourceColor, customColors, defaultVariant);
       the resulting color palette in real-time.
     </P>
 
-    <Button size="sm">Test Button</Button>
-    <Button>Test Button</Button>
-    <Button size="lg">Test Button</Button>
-
     <div class="flex items-center gap-2">
       <label for="sourceColor">Select a color:</label>
       <input
@@ -72,6 +64,8 @@ const { palettes } = themeColors(sourceColor, customColors, defaultVariant);
         }
       </select>
     </div>
+
+    <Heading level={2}>Generated theme colors</Heading>
 
     <div class="grid gap-2">
       <div class="grid grid-cols-3 grid-rows-[100px_50px] gap-x-1">
@@ -387,7 +381,7 @@ const { palettes } = themeColors(sourceColor, customColors, defaultVariant);
             {Object.keys(steps).map((tone) => (
               <div
                 class="xl:tetx-base grid aspect-2/3 place-items-center border-stone-600 text-[9px] not-last:border-r sm:text-xs lg:text-sm"
-                style={`background-color: var(--theme-color-${name}-${tone}); color: contrast-color(var(--theme-color-${name}-${tone}));`}
+                style={`background-color: var(--color-theme-${name}-${tone}); color: contrast-color(var(--color-theme-${name}-${tone}));`}
               >
                 {tone}
               </div>
@@ -397,12 +391,30 @@ const { palettes } = themeColors(sourceColor, customColors, defaultVariant);
       ))
     }
 
+    <Heading level={2}>Customizing your theme</Heading>
+
+    <P
+      >Once you are satisfied with your colors, you can copy the theme CSS below
+      and paste it into a <code>colors.css</code> file in your project.</P
+    >
+
+    <P
+      ><b>Note</b>: the generated theme CSS only includes the <Link
+        href="https://tailwindcss.com/docs/theme#generating-all-css-variables"
+        >"static" option
+      </Link>
+      {" "}
+      on the `@theme` section so that the above color shades will render correctly.
+      In your own code, remove that option, so only the color variants that are used
+      are included.</P
+    >
+
     <div class="relative" data-theme-css>
       <Code
         class="p-4"
         code={themeCss(sourceColor, customColors, defaultVariant)}
         lang="css"
-        themes={{ light: "github-light", dark: "github-dark" }}
+        themes={{ light: "github-light-default", dark: "github-dark-default" }}
         defaultColor="light-dark()"
       />
       <Button
@@ -420,7 +432,7 @@ const { palettes } = themeColors(sourceColor, customColors, defaultVariant);
 
 <script>
   import type { HighlighterCore } from "shiki/core";
-  import { themeCss, themeProperties, type Variant } from "./_theme-properties";
+  import { themeCss, themeProperties, type Variant } from "./_colors";
 
   const themeRoot = document.querySelector<HTMLElement>(
     "section[data-theme-root]"
@@ -444,8 +456,8 @@ const { palettes } = themeColors(sourceColor, customColors, defaultVariant);
         createHighlighterCore({
           langs: [import("shiki/langs/css.mjs")],
           themes: [
-            import("shiki/themes/github-light.mjs"),
-            import("shiki/themes/github-dark.mjs"),
+            import("shiki/themes/github-light-default.mjs"),
+            import("shiki/themes/github-dark-default.mjs"),
           ],
           engine: createJavaScriptRegexEngine(),
         })
@@ -465,7 +477,7 @@ const { palettes } = themeColors(sourceColor, customColors, defaultVariant);
     const id = ++renderId;
     const html = (await loadHighlighter()).codeToHtml(css, {
       lang: "css",
-      themes: { light: "github-light", dark: "github-dark" },
+      themes: { light: "github-light-default", dark: "github-dark-default" },
       defaultColor: "light-dark()",
     });
     // A newer change started while this one was highlighting.
