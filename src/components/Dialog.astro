@@ -1,0 +1,129 @@
+---
+import type { ComponentProps } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import Icon from "./Icon.astro";
+import BaseOverlay from "./BaseOverlay.astro";
+import Footer from "./Footer.astro";
+import Header from "./Header.astro";
+import type { SvgIconNameTypes } from "../svgs";
+
+type BaseOverlayProps = ComponentProps<typeof BaseOverlay>;
+
+// No bgColor: M3 fixes basic dialogs at Surface Container High (BaseOverlay's default).
+type Props = Omit<BaseOverlayProps, "as" | "bgColor"> & {
+  icon?: SvgIconNameTypes;
+  headline?: string;
+  label?: string;
+};
+
+const { icon, headline, label, id, class: classList, ...attrs } = Astro.props;
+---
+
+<BaseOverlay
+  class:list={twMerge(
+    "flex max-h-[calc(100dvh-3rem)] max-w-140 min-w-70 flex-col rounded-[28px] p-6",
+    classList
+  )}
+  {id}
+  showBlur={true}
+  transition="fade-down"
+  aria-labelledby={headline ? `${id}-headline` : undefined}
+  aria-label={label && !headline ? label : undefined}
+  {...attrs}
+>
+  {
+    (headline || icon) && (
+      <Header
+        bgColor="transparent"
+        class:list={["pb-4", icon && "flex flex-col items-center gap-4"]}
+      >
+        {icon && <Icon class="fill-(--theme-color-secondary)" name={icon} />}
+        {headline && (
+          <h2
+            class:list={[
+              "text-2xl text-(--theme-color-on-surface)",
+              icon && "text-center",
+            ]}
+            id={`${id}-headline`}
+          >
+            {headline}
+          </h2>
+        )}
+      </Header>
+    )
+  }
+
+  {
+    /* Only the content scrolls; the headline and actions stay put. It bleeds to the dialog's
+       edges (-mx-6 px-6) so the dividers span the full width, per M3. Browsers make a scrolling
+       region keyboard-focusable, so it gets the theme focus ring rather than the UA outline.
+       Text is M3 supporting text: Body Medium in on-surface-variant. */
+  }
+  <div
+    class:list={[
+      "scroll-content -mx-6 min-h-0 flex-1 overflow-y-auto px-6",
+      "text-sm text-(--theme-color-on-surface-variant)",
+      "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-inset",
+    ]}
+    id={`${id}-content`}
+  >
+    <div class="divider divider-top" aria-hidden="true"></div>
+    <slot />
+    <div class="divider divider-bottom" aria-hidden="true"></div>
+  </div>
+
+  {
+    Astro.slots.has("footer") && (
+      <Footer bgColor="transparent" class="pt-6">
+        <slot name="footer" />
+      </Footer>
+    )
+  }
+</BaseOverlay>
+
+<style>
+  /* M3 scrolling dialog: a divider shows at whichever edge content is scrolled out of view,
+     separating it from the fixed headline/actions. Scroll-state queries only style descendants
+     of the scroller, so the dividers are sticky children of it. Unsupported browsers simply
+     never show them. */
+  .scroll-content {
+    container-type: scroll-state;
+  }
+
+  .divider {
+    position: sticky;
+    z-index: 1;
+    height: 1px;
+    margin-inline: calc(var(--spacing) * -6);
+    background-color: var(--theme-color-outline-variant);
+    opacity: 0;
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition: opacity var(--theme-duration-overlay)
+        var(--ease-theme-overlay);
+    }
+  }
+
+  /* Negative margins so the hidden dividers take up no space in the layout. */
+  .divider-top {
+    top: 0;
+    margin-bottom: -1px;
+  }
+
+  .divider-bottom {
+    bottom: 0;
+    margin-top: -1px;
+  }
+
+  @container scroll-state(scrollable: top) {
+    .divider-top {
+      opacity: 1;
+    }
+  }
+
+  @container scroll-state(scrollable: bottom) {
+    .divider-bottom {
+      opacity: 1;
+    }
+  }
+</style>

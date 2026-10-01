@@ -53,7 +53,7 @@ const metaSchema = z.object({
 });
 
 const components = defineCollection({
-  loader: glob({ pattern: "**/documentation.mdx", base: "./src/components" }),
+  loader: glob({ pattern: "**/documentation.mdx", base: "./src/docs" }),
   schema: z.object({
     name: z.string(),
     description: z.string(),
@@ -70,7 +70,7 @@ const components = defineCollection({
 });
 
 const usage = defineCollection({
-  loader: glob({ pattern: "**/usage.mdx", base: "./src/components" }),
+  loader: glob({ pattern: "**/usage.mdx", base: "./src/docs" }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
@@ -79,7 +79,7 @@ const usage = defineCollection({
 });
 
 const examples = defineCollection({
-  loader: glob({ pattern: "**/example-*.mdx", base: "./src/components" }),
+  loader: glob({ pattern: "**/example-*.mdx", base: "./src/docs" }),
   schema: z.object({
     title: z.string(),
     description: z.string(),

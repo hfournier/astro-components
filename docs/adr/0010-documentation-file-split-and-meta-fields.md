@@ -2,6 +2,8 @@
 
 > **Supersedes part of ADR-0009**: point 1 (one `documentation.mdx` file) is replaced by a three-file convention, and point 4's frontmatter schema gains a required `meta` object and renames `title` to `name`. Everything else in ADR-0009 (points 2-3, 5-9, 11, the `components` collection rename in point 10) still stands.
 
+> **Folder layout superseded by ADR-0013**: components now sit flat in `src/components/`, and the documentation files and specs this ADR places beside them live in `src/docs/<id>/`.
+
 Implementing ADR-0009 surfaced a need it didn't anticipate: an example's source code has to work as two different things — a live rendered `<Content>` preview and a displayed code block showing the source that produced it (`src/internal/Example.astro`/`Usage.astro` render both from the same MDX entry, via Astro's `render()` for the preview and the entry's raw `.body` string for the `<Code>` block). That dual rendering needs each example to be its own content-collection document with its own `.body` — a single `documentation.mdx` body holding several examples end-to-end, plus the props table content above it, can't be sliced back into one clean string per example.
 
 We decided:
