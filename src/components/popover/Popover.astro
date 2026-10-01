@@ -3,20 +3,29 @@ import type { ComponentProps } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import BaseOverlay from "../base-overlay/BaseOverlay.astro";
 import Icon from "../icon/Icon.astro";
+import type { PopoverBgColorType } from "../../types.js";
 
 type BaseOverlayProps = ComponentProps<typeof BaseOverlay>;
 
-type Props = BaseOverlayProps & {
+type Props = Omit<BaseOverlayProps, "bgColor"> & {
+  bgColor?: PopoverBgColorType;
   showCloseX?: boolean;
 };
 
-const { id, class: classList, showCloseX = false, ...attrs } = Astro.props;
+const {
+  as = "div",
+  id,
+  class: classList,
+  showCloseX = false,
+  ...attrs
+} = Astro.props;
 ---
 
 <BaseOverlay
-  as="div"
+  {as}
   class:list={twMerge(
-    "rounded-container m-4 bg-white p-4 md:m-5 md:mx-6 md:p-6 lg:m-6 lg:mx-8 lg:p-8",
+    "rounded-xl border border-(--theme-color-outline-variant) p-4 md:p-6 lg:p-8",
+    showCloseX && "m-5 md:mx-7 md:my-6 lg:mx-9 lg:my-7",
     classList
   )}
   {id}
@@ -28,21 +37,20 @@ const { id, class: classList, showCloseX = false, ...attrs } = Astro.props;
   {
     showCloseX && (
       <button
-        class:list={twMerge(
-          "group/close border-divider bg-container grid size-10 cursor-pointer place-items-center rounded-full border-(length:--border-width-divider) md:size-11 lg:size-12",
-          "focus-visible:outline-focus-ring focus-visible:outline-(length:--focus-ring-width) focus-visible:outline-offset-(--focus-ring-offset)",
+        class:list={[
+          "grid size-11 cursor-pointer place-items-center rounded-full border border-(--theme-color-outline-variant) bg-inherit md:size-11 lg:size-12",
+          "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
           "fixed top-[calc(anchor(top)-1rem)] right-[calc(anchor(right)-1rem)] md:top-[calc(anchor(top)-1.125rem)] md:right-[calc(anchor(right)-1.125rem)] lg:top-[calc(anchor(top)-1.25rem)] lg:right-[calc(anchor(right)-1.25rem)]",
-          "[position-anchor:var(--hfdev-anchorname-overlay)]"
-        )}
+          "[position-anchor:var(--ac-anchorname-overlay)]",
+          // M3 icon-button hover: an 8% state layer in the icon's color, so it works on any surface.
+          "before:absolute before:inset-0 before:rounded-full before:bg-current before:opacity-0 hover:before:opacity-8 motion-safe:before:transition-opacity",
+        ]}
         type="button"
         commandfor={id}
         command="hide-popover"
         aria-label="Close"
       >
-        <Icon
-          class="text-icon size-4 group-hover/close:text-black md:size-5"
-          name="x-mark"
-        />
+        <Icon class="size-4" name="close" />
       </button>
     )
   }

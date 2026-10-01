@@ -1,11 +1,10 @@
 ---
 import { render, type CollectionEntry } from "astro:content";
-import { marked } from "marked";
 import { components as mdxComponents } from "../mdx";
 import { Code } from "astro:components";
 import Heading from "../components/heading/Heading.astro";
 import CodePreview from "./CodePreview.astro";
-import P from "./mdx/P.astro";
+import MarkdownParagraphs from "./MarkdownParagraphs.astro";
 
 type Props = {
   example: CollectionEntry<"examples">;
@@ -18,9 +17,9 @@ const { Content } = await render(example);
 ---
 
 <div class="space-y-8">
-  <Heading id={headingId} level="h3">{example.data.title}</Heading>
+  <Heading id={headingId} level={3}>{example.data.title}</Heading>
 
-  <P set:html={marked.parse(example.data.description)} />
+  <MarkdownParagraphs text={example.data.description} />
 
   <CodePreview>
     {
@@ -29,7 +28,8 @@ const { Content } = await render(example);
           class="p-4"
           code={example.body}
           lang="jsx"
-          theme="github-light"
+          themes={{ light: "github-light", dark: "github-dark" }}
+          defaultColor="light-dark()"
           slot="code"
         />
       )

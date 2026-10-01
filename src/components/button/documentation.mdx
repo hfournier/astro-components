@@ -1,6 +1,7 @@
 ---
 name: Button
-description: A custom Button component that extends HTML's `<button>` element by adding properties that allow for styling and accessibility that is consistent with the design system
+description: A custom Button component that extends HTML's `<button>` element by adding properties that allow for styling and accessibility that is consistent with the design system.
+category: Forms
 role: pattern
 meta:
   title: Button | astro-components HenriFournier.dev
@@ -15,20 +16,25 @@ props:
     default: "button"
     description: Which element Button renders. Use `as="a"` (with `href`) to render an anchor styled identically to the button, for a link that should look like a button.
   - name: variant
-    type: '"solid" | "outline"'
+    type: '"elevated" | "filled" | "tonal" | "outlined" | "text"'
     required: false
-    default: "solid"
-    description: Controls the button's appearance. The `solid` variant renders a filled button, while the `outline` variant renders a bordered button.
-  - name: color
-    type: '"primary" | "secondary"'
+    default: "filled"
+    description: The button's Material 3 style variant, from most to least emphasis. `filled` uses the theme's primary color, for the most important action. `tonal` uses the secondary container color, a softer alternative. `elevated` sits on a low surface container with a shadow that rises on hover, for separating a button from a patterned background. `outlined` has a border and no fill, for secondary actions. `text` has neither, for the lowest-priority actions. Every variant shows the same state layer on hover, focus and press, and the same muted appearance when disabled.
+  - name: showFullwidth
+    type: "boolean"
     required: false
-    default: "primary"
-    description: The color scheme of the button. The `primary` button color is based on the chosen theme's primary color and adjusted for accessibility. Likewise, the `secondary` button color is based on the chosen theme's secondary color (180 deg from the primary) and also adjusted for accessibility.
+    default: "false"
+    description: When `true`, the button stretches to the full width of its container. Otherwise it is only as wide as its content.
+  - name: shape
+    type: '"round" | "square"'
+    required: false
+    default: "round"
+    description: The button's corner style. `round` gives fully rounded (pill-shaped) ends. `square` uses smaller corner radii that scale with `size`.
   - name: size
     type: '"sm" | "md" | "lg"'
     required: false
     default: "md"
-    description: Controls the button's overall scale. Sets both the button's text size and its padding together (padding is em-based, so it tracks whichever size is active), rather than resizing text alone.
+    description: Sets the button's minimum height (40px, 48px or 56px), inline padding (16px, 20px or 24px) and label type style. As in Material 3, buttons under 56px use Label Large (14px) and the 56px `lg` size uses Title Medium (16px). The `sm` size keeps a 48px touch target.
 slots:
   - name: default
     description: The text to display inside the button.

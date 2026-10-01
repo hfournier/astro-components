@@ -1,0 +1,40 @@
+---
+name: Badge
+description: A Material 3 badge that shows a count or status dot on top of another element, such as an icon, using CSS anchor positioning. As in M3, it's drawn in the `error` and `on-error` color roles.
+category: Inline text semantics
+role: pattern
+meta:
+  title: Badge | astro-components HenriFournier.dev
+  description: A Material 3 badge showing a count or status dot on top of another element, such as an icon, using CSS anchor positioning.
+extends:
+  kind: element
+  tag: [span]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/span
+props:
+  - name: label
+    type: string | number
+    required: false
+    description: The badge's content. Leave it out for a small dot badge. `0` (or `"0"`) renders no badge at all. A number (or numeric string) over 999 shows as `999+`, and any other string is cut to its first 4 characters.
+  - name: placement
+    type: '"anchored" | "inline"'
+    required: false
+    default: '"anchored"'
+    description: 'The default, `anchored`, overlaps the top-end corner of the element named by `--ac-anchorname-badge` (see Anchoring), typically an icon. `inline` places the badge in the text flow, such as after a label that has no icon to anchor to. As in M3, an inline dot sits on the text baseline, and an inline badge with content aligns its top with the top of the text''s capital letters.'
+---
+
+## Anchoring
+
+By default the badge is `position: fixed`, anchored to the element it decorates, so it can go anywhere in the markup and isn't clipped by that element's `overflow`. With `placement="inline"` it's an ordinary inline element instead, and needs no anchor.
+
+The badge follows the anchor named in its `--ac-anchorname-badge` custom property. Give the element it decorates a matching `anchor-name`. Anchor names are dashed idents, and each must be unique on the page:
+
+```astro
+<Icon class="[anchor-name:--inbox-badge]" name="inbox" label="Inbox, 3 unread" />
+<Badge class="[--ac-anchorname-badge:--inbox-badge]" label={3} />
+```
+
+## Accessibility
+
+A badge is visual only: it's always rendered with `aria-hidden="true"`, since screen readers would otherwise read its count on its own ("3") with no context. Put the full meaning in the decorated element's accessible name instead, such as Icon's `label="Inbox, 3 unread"`, and keep the two in sync whenever the count changes.
+
+Use Icon's `label` prop rather than a raw `aria-label`: without `label`, Icon adds `aria-hidden="true"`, which hides the `aria-label` too.

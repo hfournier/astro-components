@@ -1,0 +1,89 @@
+---
+import { getCollection } from "astro:content";
+import Aside from "../components/aside/Aside.astro";
+import Details from "../components/details/Details.astro";
+import Link from "../components/link/Link.astro";
+import { componentCategories } from "../types";
+
+const components = await getCollection("components");
+const tests = await getCollection("tests");
+
+const componentsByCategory = componentCategories
+  .map((category) => ({
+    category,
+    components: components
+      .filter((component) => component.data.category === category)
+      .sort((a, b) => a.data.name.localeCompare(b.data.name)),
+  }))
+  .filter((group) => group.components.length > 0);
+---
+
+<Aside
+  bgColor="surface-container-low"
+  class="min-w-60 border border-(--theme-color-outline-variant) p-2 lg:p-4"
+>
+  <nav class="sticky top-0 space-y-4 overflow-y-auto" aria-label="Main">
+    <Details label="Components" variant="plain" open>
+      <div class="space-y-3">
+        {
+          componentsByCategory.map(({ category, components }) => (
+            <div>
+              <p class="text-sm font-semibold tracking-wide text-(--theme-color-on-surface-variant)">
+                {category}
+              </p>
+
+              <ul class="space-y-1">
+                {components.map((component) => (
+                  <li>
+                    <Link
+                      class:list={[
+                        "flex min-h-6 items-center pl-4 text-inherit no-underline",
+                        "aria-[current='page']:text-(--theme-color-link-text) aria-[current='page']:underline aria-[current='page']:decoration-1 aria-[current='page']:underline-offset-2",
+                        "aria-[current='page']:hover:decoration-2 aria-[current='page']:hover:underline-offset-4",
+                        "hover:text-(--theme-color-link-text) hover:underline hover:decoration-2 hover:underline-offset-4",
+                      ]}
+                      href={`/components/${component.id.replace("/documentation", "")}`}
+                      aria-current={
+                        Astro.url.pathname ===
+                        `/components/${component.id.replace("/documentation", "")}`
+                          ? "page"
+                          : null
+                      }
+                    >
+                      {component.data.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </Details>
+
+    <Details label="Tests" variant="plain" open>
+      <ul class="space-y-1">
+        {
+          tests.map((test) => (
+            <li>
+              <Link
+                class:list={[
+                  "flex min-h-6 items-center text-inherit no-underline",
+                  "aria-[current='page']:text-(--theme-color-link-text) aria-[current='page']:underline aria-[current='page']:decoration-1 aria-[current='page']:underline-offset-2",
+                  "aria-[current='page']:hover:decoration-2 aria-[current='page']:hover:underline-offset-4",
+                  "hover:text-(--theme-color-link-text) hover:underline hover:decoration-2 hover:underline-offset-4",
+                ]}
+                href={`/tests/${test.id}`}
+                aria-current={
+                  Astro.url.pathname === `/tests/${test.id}` ? "page" : null
+                }
+              >
+                {test.data.title}
+              </Link>
+            </li>
+          ))
+        }
+      </ul>
+    </Details>
+  </nav>
+</Aside>

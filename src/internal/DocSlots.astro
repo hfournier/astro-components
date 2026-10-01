@@ -1,0 +1,68 @@
+---
+import Heading from "../components/heading/Heading.astro";
+import Link from "../components/link/Link.astro";
+import type { SlotWithHeadingType } from "../types";
+import P from "./mdx/P.astro";
+import MarkdownParagraphs from "./MarkdownParagraphs.astro";
+import Section from "../components/section/Section.astro";
+
+type Props = {
+  headingId?: string;
+  slots: SlotWithHeadingType[];
+};
+
+const { headingId, slots } = Astro.props;
+---
+
+<Section class="space-y-8">
+  <Heading id={headingId} level={2}>Slots</Heading>
+
+  <P>
+    Slots are used to provide content to the component. They can contain plain
+    text, HTML elements, or other components. Slots can be named by using the <code
+      >name</code
+    > property, whereas a slot without a{" "}
+    <code>name</code> property is the default slot.
+  </P>
+
+  <P>The following slots are defined for this component:</P>
+
+  {
+    slots.map(({ slot, headingId: slotHeadingId }) => (
+      <>
+        <Heading id={slotHeadingId} level={3}>
+          {slot.name}
+        </Heading>
+        <dl class="grid max-w-fit grid-cols-[auto_minmax(0,1fr)] gap-3 pl-8">
+          <dt class="font-medium">Accepts</dt>
+          <dd>
+            {slot.kind === "text" ? (
+              "text only"
+            ) : slot.kind === "component" ? (
+              slot.multiple ? (
+                <>
+                  one or more{" "}
+                  <Link href={`/components/${slot.component.toLowerCase()}`}>
+                    {slot.component}
+                  </Link>{" "}
+                  components
+                </>
+              ) : (
+                <>
+                  a single{" "}
+                  <Link href={`/components/${slot.component.toLowerCase()}`}>
+                    {slot.component}
+                  </Link>{" "}
+                  component
+                </>
+              )
+            ) : (
+              "any kind of content"
+            )}
+          </dd>
+        </dl>
+        <MarkdownParagraphs text={slot.description} />
+      </>
+    ))
+  }
+</Section>

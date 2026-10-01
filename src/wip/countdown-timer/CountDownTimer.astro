@@ -78,3 +78,79 @@ const seconds2ndDigit = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
     </div>
   </div>
 </div>
+
+<style>
+  :root {
+    --timer-time: 60;
+  }
+
+  @keyframes slideDown1sStart {
+    0%,
+    6% {
+      translate: 0 0;
+    }
+    10%,
+    100% {
+      translate: 0 100%;
+    }
+  }
+
+  @keyframes slideDown1s {
+    0% {
+      translate: 0 -100%;
+    }
+    4%,
+    6% {
+      translate: 0 0;
+    }
+    10%,
+    100% {
+      translate: 0 100%;
+    }
+  }
+
+  @keyframes slideDown1sEnd {
+    0% {
+      translate: 0 -100%;
+    }
+    4%,
+    100% {
+      translate: 0 0;
+    }
+  }
+
+  @keyframes slideDown10sStart {
+    0%,
+    1% {
+      translate: 0 0;
+    }
+    1.67%,
+    100% {
+      translate: 0 100%;
+    }
+  }
+
+  @keyframes slideDown10s {
+    0% {
+      translate: 0 -100%;
+    }
+    0.67%,
+    16% {
+      translate: 0 0;
+    }
+    16.67%,
+    100% {
+      translate: 0 100%;
+    }
+  }
+
+  @keyframes slideDown10sEnd {
+    0% {
+      translate: 0 -100%;
+    }
+    0.67%,
+    100% {
+      translate: 0 0;
+    }
+  }
+</style>

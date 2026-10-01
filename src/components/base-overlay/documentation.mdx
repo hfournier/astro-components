@@ -1,6 +1,7 @@
 ---
 name: BaseOverlay
 description: A primitive overlay component that renders as a native `<dialog>` or `<div popover>` element, providing shared open/close transition behavior for pattern components like Dialog and Popover.
+category: Base
 role: primitive
 meta:
   title: BaseOverlay | astro-components HenriFournier.dev
@@ -14,6 +15,11 @@ props:
     required: false
     default: '"dialog"'
     description: Which HTML element to render the overlay as.
+  - name: bgColor
+    type: '"surface-container-low" | "surface-container" | "surface-container-high" | "inverse-surface"'
+    required: false
+    default: '"surface-container-high"'
+    description: The Material 3 surface of the overlay's panel, limited to the surfaces M3 uses for overlays - `Surface Container Low` for sheets and drawers, `Surface Container` for menus and rich tooltips, `Surface Container High` for dialogs, and `Inverse Surface` for plain tooltips and snackbars. The panel is a BaseWrapper, so text, links and focus rings inside it take matching colors.
   - name: id
     type: string
     required: true
@@ -26,13 +32,13 @@ props:
   - name: showBlur
     type: boolean
     required: false
-    default: "true"
-    description: Whether to blur the page content behind the overlay's `::backdrop`.
+    default: "false"
+    description: Whether to blur the page content behind the overlay's `::backdrop`. Material 3 doesn't blur, so it's off by default.
   - name: transition
-    type: '"fade" | "fade-scale"'
+    type: '"fade" | "fade-down" | "fade-scale"'
     required: false
     default: '"fade"'
-    description: Which enter/exit transition to apply when the overlay opens and closes. The `fade` transition is a simple fade-in/fade-out, while the `fade-scale` transition includes a scaling animation.
+    description: Which enter/exit transition to apply when the overlay opens and closes. The `fade` transition is a simple fade-in/fade-out, `fade-down` also slides the overlay down into place, and `fade-scale` adds a scaling animation.
 slots:
   - name: default
     description: The content to display inside the overlay.

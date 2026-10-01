@@ -1,0 +1,14 @@
+---
+import type { ComponentProps } from "astro/types";
+import BaseWrapper from "../base-wrapper/BaseWrapper.astro";
+
+type BaseWrapperProps = ComponentProps<typeof BaseWrapper>;
+
+type Props = Omit<BaseWrapperProps, "as">;
+
+const { class: classList, ...attrs } = Astro.props;
+---
+
+<BaseWrapper as="section" class:list={[classList]} {...attrs}>
+  <slot />
+</BaseWrapper>

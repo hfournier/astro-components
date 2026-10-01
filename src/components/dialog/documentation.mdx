@@ -1,13 +1,33 @@
 ---
 name: Dialog
-description: A custom Dialog component that extends HTML's `<dialog>` element
+description: A modal dialog built on HTML's `<dialog>` element and styled after Material 3, with an optional icon and headline, scrolling supporting content, and a footer for actions.
+category: Interactive elements
 role: pattern
 meta:
   title: Dialog | astro-components HenriFournier.dev
-  description: A custom Dialog component that extends HTML's `<dialog>` element
+  description: A Material 3 modal dialog built on HTML's `<dialog>` element, with an optional icon and headline, scrolling content, and an actions footer.
 extends:
   kind: component
   name: BaseOverlay
-props: []
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog
+props:
+  - name: headline
+    type: string
+    required: false
+    description: The dialog's headline, rendered as an `<h2>` and used as the dialog's accessible name via `aria-labelledby`. Keep it short - a question or statement rather than a sentence. When omitted (and there's no `icon`), no header is rendered and the content starts at the top of the dialog.
+  - name: icon
+    type: SvgIconNameTypes
+    required: false
+    description: An optional icon shown above the headline. When present, the icon and headline are centered, per Material 3.
+  - name: label
+    type: string
+    required: false
+    description: The dialog's accessible name (`aria-label`) when it has no `headline`. Ignored when a `headline` is given. Provide one of the two, so screen readers can announce the dialog.
+slots:
+  - name: default
+    description: The dialog's supporting text or custom content, styled as Material 3 supporting text. It scrolls when taller than the viewport allows, with dividers appearing at whichever edge has content scrolled out of view (in browsers that support scroll-state container queries). Put `autofocus` on an element here to choose what receives focus when the dialog opens.
+    kind: any
+  - name: footer
+    description: The dialog's actions, placed below the content. Material 3 recommends at most two text buttons - see DialogConfirm and DialogAcknowledge for ready-made versions.
+    kind: any
 ---
-

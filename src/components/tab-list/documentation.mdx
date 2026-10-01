@@ -1,6 +1,7 @@
 ---
 name: TabList
 description: Renders the row of tab buttons for the Tabs component, from a list of labels and their generated ids. Not an independently reusable component — its props are shaped entirely by Tabs' own internal build-time logic.
+category: Text content
 role: internal
 meta:
   title: TabList | astro-components HenriFournier.dev
@@ -11,8 +12,12 @@ props:
     type: string
     required: true
     description: Id fragment shared with the tab panels it controls, used to derive each tab button's id and aria-controls linkage. Generated and passed in by the parent Tabs component.
-  - name: labels
-    type: string[]
+  - name: tabs
+    type: "{ label: string; icon?: SvgIconNameTypes; badgeLabel?: string }[]"
     required: true
-    description: The label text for each tab button to render, extracted by the parent Tabs component from its Tab children.
+    description: One entry per tab button to render - its label, optional icon and optional badge - extracted by the parent Tabs component from its Tab children's props.
+  - name: variant
+    type: '"primary" | "secondary"'
+    required: true
+    description: The Material 3 tab style, passed down from Tabs. Primary tabs stack an icon above the label, color the selected label `primary` and use a 3px indicator as wide as the content. Secondary tabs put the icon beside the label, color the selected label `on-surface` and use a 2px indicator as wide as the tab.
 ---

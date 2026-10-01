@@ -2,11 +2,13 @@
 import "../styles/global.css";
 import type { LayoutPropsType } from "../types";
 import BaseHead from "../internal/BaseHead.astro";
-import AsideComponents from "../internal/AsideComponents.astro";
-import Footer from "../internal/Footer.astro";
-import Header from "../internal/Header.astro";
+import Sidebar from "../internal/Sidebar.astro";
 import { twMerge } from "tailwind-merge";
 import SkipToContent from "../components/skip-to-content/SkipToContent.astro";
+import Header from "../components/header/Header.astro";
+import Footer from "../components/footer/Footer.astro";
+import Link from "../components/link/Link.astro";
+import Icon from "../components/icon/Icon.astro";
 
 type Props = LayoutPropsType;
 
@@ -17,7 +19,7 @@ const { classListBody, classListHtml, description, title } = Astro.props;
   <BaseHead {title} {description} />
   <body
     class:list={twMerge(
-      "text-body mx-auto max-w-7xl p-4 md:p-6 lg:p-8",
+      "mx-auto max-w-7xl bg-(--theme-color-surface) p-4 text-(--theme-color-on-surface) md:p-6 lg:p-8",
       classListBody
     )}
   >
@@ -26,12 +28,34 @@ const { classListBody, classListHtml, description, title } = Astro.props;
     <div
       class="grid grid-rows-[auto_1fr_auto] gap-4 md:grid-cols-[fit-content(260px)_minmax(0,1fr)] md:gap-6 lg:gap-8"
     >
-      <Header />
+      <Header
+        class="col-span-full flex items-center justify-between p-4"
+        bgColor="primary-container"
+      >
+        <div class="font-semibold">
+          <Link class="no-underline hover:underline" href="/"
+            >astro-components</Link
+          >
+        </div>
+        <div class="flex items-center gap-2">
+          <Link
+            href="https://github.com/hfournier/astro-components"
+            aria-label="GitHub"
+            target="_blank"><Icon name="github" /></Link
+          >
+        </div>
+      </Header>
 
-      <AsideComponents />
+      <Sidebar />
       <slot />
 
-      <Footer />
+      <Footer
+        class="col-span-full p-4 text-center"
+        bgColor="secondary-container"
+      >
+        copyright &copy; {new Date().getFullYear()}
+        {" "}astro-components. All rights reserved.
+      </Footer>
     </div>
   </body>
 </html>

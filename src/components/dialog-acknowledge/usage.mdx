@@ -1,0 +1,14 @@
+---
+title: DialogAcknowledge
+description: The following example shows how to use the DialogAcknowledge component, specifying the required `id` and `buttonAcknowledge` properties, along with an optional `headline`.
+---
+
+<Button command="show-modal" commandfor="dialog-acknowledge-usage">Open Acknowledge Dialog</Button>
+
+<DialogAcknowledge
+  id="dialog-acknowledge-usage"
+  headline="Draft saved"
+  buttonAcknowledge={{ text: "OK", value: "ok" }}
+>
+  Your draft has been saved and can be finished later.
+</DialogAcknowledge>

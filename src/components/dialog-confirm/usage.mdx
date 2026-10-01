@@ -1,14 +1,15 @@
 ---
 title: DialogConfirm
-description: The following example shows how to use the DialogConfirm component in its most basic form, specifying only the required `id`, `title`, and `buttonConfirm` properties.
+description: The following example shows how to use the DialogConfirm component, specifying the required `id`, `buttonDismiss`, and `buttonConfirm` properties, along with an optional `headline`.
 ---
 
 <Button command="show-modal" commandfor="dialog-confirm-usage">Open Confirm Dialog</Button>
 
 <DialogConfirm
   id="dialog-confirm-usage"
-  title="Confirm Title"
-  buttonConfirm={{ text: "Confirm", value: "confirm" }}
+  headline="Discard draft?"
+  buttonDismiss={{ text: "Cancel", value: "cancel" }}
+  buttonConfirm={{ text: "Discard", value: "discard" }}
 >
-  Dialog confirm content
+  Your unsaved changes will be lost.
 </DialogConfirm>

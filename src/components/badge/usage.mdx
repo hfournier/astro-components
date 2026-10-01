@@ -1,0 +1,9 @@
+---
+title: Badge
+description: The following example shows a Badge with a count on an Icon inside a Button. The Icon is the anchor, and it carries the count in its accessible name, so the badge itself is hidden from screen readers.
+---
+
+<Button variant="text">
+  <Icon class="[anchor-name:--badge-usage]" name="inbox" label="Inbox, 3 unread" />
+</Button>
+<Badge class="[--ac-anchorname-badge:--badge-usage]" label={3} />

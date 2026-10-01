@@ -2,10 +2,12 @@
 import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import crypto from "node:crypto";
-import type { OverlayTransitionType } from "../../types.js";
+import type { OverlayBgColorType, OverlayTransitionType } from "../../types.js";
+import BaseWrapper from "../base-wrapper/BaseWrapper.astro";
 
 type Props = Omit<HTMLAttributes<"dialog" | "div">, "id"> & {
   as?: "dialog" | "div";
+  bgColor?: OverlayBgColorType;
   id: string;
   // Classes for the actual top-layer/`position: fixed` element (the native
   // dialog/popover itself) - e.g. CSS anchor-positioning offsets. `class`
@@ -18,10 +20,11 @@ type Props = Omit<HTMLAttributes<"dialog" | "div">, "id"> & {
 
 const {
   as: Tag = "dialog",
+  bgColor = "surface-container-high",
   id,
   overlayClass,
   showBackdrop = true,
-  showBlur = true,
+  showBlur = false,
   transition = "fade",
   class: classList,
   ...attrs
@@ -29,8 +32,10 @@ const {
 
 const transitionClasses = {
   fade: "opacity-0 motion-safe:transition-[display,opacity,overlay] open:opacity-100 motion-safe:starting:open:opacity-0",
+  "fade-down":
+    "opacity-0 -translate-y-full motion-safe:transition-[display,opacity,overlay,translate] open:opacity-100 open:translate-y-0 motion-safe:starting:open:opacity-0 motion-safe:starting:open:-translate-y-full",
   "fade-scale":
-    "opacity-0 scale-70 motion-safe:transition-[display,opacity,overlay,scale] open:opacity-100 open:scale-100 motion-safe:starting:open:opacity-0 motion-safe:starting:open:scale-70",
+    "opacity-0 scale-80 motion-safe:transition-[display,opacity,overlay,scale] open:opacity-100 open:scale-100 motion-safe:starting:open:opacity-0 motion-safe:starting:open:scale-80",
 }[transition];
 
 const randomId = crypto.randomUUID();
@@ -38,26 +43,30 @@ const randomId = crypto.randomUUID();
 
 <Tag
   class:list={twMerge(
-    "m-auto overscroll-contain bg-transparent",
-    "motion-safe:ease-overlay motion-safe:transition-discrete motion-safe:duration-(--duration-overlay)",
+    "m-auto overscroll-contain bg-transparent outline-none",
+    "motion-safe:ease-theme-overlay motion-safe:transition-discrete motion-safe:duration-(--theme-duration-overlay)",
+    showBackdrop &&
+      "backdrop:bg-(--theme-color-scrim)/32 backdrop:opacity-0 open:backdrop:opacity-100 motion-safe:starting:open:backdrop:opacity-0",
+    showBackdrop &&
+      "motion-safe:backdrop:ease-theme-overlay motion-safe:backdrop:transition-[display,opacity,overlay] motion-safe:backdrop:transition-discrete motion-safe:backdrop:duration-(--theme-duration-overlay)",
     showBlur && "backdrop:backdrop-blur-xs",
-    showBackdrop &&
-      "backdrop:bg-black/30 backdrop:opacity-0 open:backdrop:opacity-100 motion-safe:starting:open:backdrop:opacity-0",
-    showBackdrop &&
-      "motion-safe:backdrop:ease-overlay motion-safe:backdrop:transition-[display,opacity,overlay] motion-safe:backdrop:transition-discrete motion-safe:backdrop:duration-(--duration-overlay)",
+    showBlur && showBackdrop && "backdrop:bg-(--theme-color-scrim)/16",
     transitionClasses,
     overlayClass
   )}
   {id}
-  style={`--hfdev-anchorname-overlay: --anchorname-${randomId}-overlay`}
+  style={`--ac-anchorname-overlay: --anchorname-${randomId}-overlay`}
   {...attrs}
 >
-  <div
-    class:list={twMerge(
-      "[anchor-name:var(--hfdev-anchorname-overlay)]",
-      classList
-    )}
+  {
+    /* The panel is a BaseWrapper so it resets the per-background custom properties (focus-ring,
+       ring offset, link colors) to its own surface - an overlay inherits them from wherever it
+       sits in the DOM, not from what it's drawn over. */
+  }
+  <BaseWrapper
+    {bgColor}
+    class:list={["[anchor-name:var(--ac-anchorname-overlay)]", classList]}
   >
     <slot />
-  </div>
+  </BaseWrapper>
 </Tag>

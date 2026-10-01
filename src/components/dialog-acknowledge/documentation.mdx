@@ -1,0 +1,33 @@
+---
+name: DialogAcknowledge
+description: |-
+  A ready-made Material 3 dialog built on Dialog, with a single acknowledgement action wired to
+  close the dialog via the `command`/`commandfor` API.
+
+  Use it for a message the user only needs to acknowledge, such as a notice or an error they can't
+  act on from the dialog. It renders with `role="alertdialog"`, and accepts all of Dialog's props,
+  including `headline` and `icon`. When the user must choose between two actions, use DialogConfirm
+  instead.
+role: pattern
+meta:
+  title: DialogAcknowledge | astro-components HenriFournier.dev
+  description: A Material 3 dialog built on Dialog, with a single acknowledgement action wired to close it.
+category: Interactive elements
+extends:
+  kind: component
+  name: Dialog
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog
+props:
+  - name: id
+    type: string
+    required: true
+    description: Unique id for the dialog, used as the `commandfor` target of the buttons that open and close it.
+  - name: buttonAcknowledge
+    type: '{ id?: string; text: string; value: string }'
+    required: true
+    description: The acknowledgement action (e.g. "OK" or "Got it"). It receives focus when the dialog opens, so pressing Enter closes it, and sets the dialog's `returnValue` to `value`. Closing with Escape leaves `returnValue` empty.
+slots:
+  - name: default
+    description: The dialog's supporting text - the message being acknowledged. It's linked to the dialog with `aria-describedby`, so screen readers announce it along with the headline.
+    kind: any
+---

@@ -1,6 +1,7 @@
 ---
 name: Tab
 description: A single tab panel within a Tabs component, holding one tab's label and content.
+category: Text content
 role: pattern
 meta:
   title: Tab | astro-components HenriFournier.dev
@@ -10,6 +11,14 @@ extends:
   tag: [div]
 parents: [Tabs]
 props:
+  - name: badgeLabel
+    type: string
+    required: false
+    description: Shows a Badge on this tab. Pass a count (a number over 999 shows as `999+`, and `"0"` hides the badge) or `""` for a dot. On a primary tab with an `icon`, the badge overlaps the icon; otherwise it sits after the label. A count is added to the tab's accessible name (e.g. "Inbox, 3"), since the badge itself is hidden from screen readers. A dot adds nothing to the name, so say what it means in the tab's content or label.
+  - name: icon
+    type: SvgIconNameTypes
+    required: false
+    description: An icon shown with this tab's label - above it on primary tabs, before it on secondary tabs.
   - name: label
     type: string
     required: true

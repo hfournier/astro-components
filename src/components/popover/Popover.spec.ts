@@ -20,8 +20,8 @@ async function resolvedStyle(
 }
 
 // Keyboard activation (focus + Enter) rather than a real pointer click, matching Dialog.spec.ts:
-// a real click leaves the cursor hovering the element, which flips it into Button's (currently
-// contrast-failing) :hover style - not something this retrofit's tests should exercise.
+// a real click leaves the cursor hovering the element (its state layer showing) and can leave
+// :focus-visible unset on whatever gains focus next.
 async function activate(locator: Locator): Promise<void> {
   await locator.focus();
   await locator.page().keyboard.press("Enter");
@@ -101,25 +101,19 @@ test.describe("Popover", () => {
     await expect(popover).toHaveCSS("transition-duration", "0s");
   });
 
-  test("wrapper rounding resolves to the container radius token, flat at every width", async ({
+  test("panel uses M3's 12px medium corner, flat at every width", async ({
     page,
   }) => {
     await activate(triggerFor(page, "popover-usage"));
 
-    const expectedRadius = await resolvedStyle(
-      page,
-      "border-radius",
-      "var(--radius-container)"
-    );
-
     const wrapper = page.locator("#popover-usage > div");
     for (const width of [400, 900, 1400]) {
       await page.setViewportSize({ width, height: 800 });
-      await expect(wrapper).toHaveCSS("border-top-left-radius", expectedRadius);
+      await expect(wrapper).toHaveCSS("border-top-left-radius", "12px");
     }
   });
 
-  test("close button keeps rounded-full regardless of the container radius token", async ({
+  test("close button stays fully rounded, not the panel's corner radius", async ({
     page,
   }) => {
     await activate(triggerFor(page, "popover-close-button"));
@@ -131,53 +125,60 @@ test.describe("Popover", () => {
       parseFloat(getComputedStyle(el).borderTopLeftRadius)
     );
     // rounded-full resolves to an effectively-infinite radius (browsers differ on the exact huge
-    // number), well past --radius-container - it just needs to stay a pill, not the container radius.
+    // number), well past the panel's 12px - it just needs to stay a pill.
     expect(radius).toBeGreaterThan(1000);
   });
 
-  test("close button's edge resolves to the divider border-width token", async ({
-    page,
-  }) => {
-    await activate(triggerFor(page, "popover-close-button"));
-
-    const expectedWidth = await resolvedStyle(
-      page,
-      "border-top-width",
-      "var(--border-width-divider)"
-    );
-    const closeButton = page
-      .locator("#popover-close-button")
-      .getByRole("button", { name: "Close" });
-    await expect(closeButton).toHaveCSS("border-top-width", expectedWidth);
-  });
-
-  test("close button focus ring resolves to the dedicated focus-ring tokens", async ({
+  test("the panel and close button have M3's 1px outline-variant border", async ({
     page,
   }) => {
     await activate(triggerFor(page, "popover-close-button"));
 
     const expectedColor = await resolvedStyle(
       page,
-      "outline-color",
-      "var(--color-focus-ring)"
+      "border-top-color",
+      "var(--theme-color-outline-variant)"
     );
-    const expectedWidth = await resolvedStyle(
-      page,
-      "outline-width",
-      "var(--focus-ring-width)"
-    );
-    const expectedOffset = await resolvedStyle(
-      page,
-      "outline-offset",
-      "var(--focus-ring-offset)"
-    );
+    const popover = page.locator("#popover-close-button");
+    const panel = page.locator("#popover-close-button > div");
+    const closeButton = popover.getByRole("button", { name: "Close" });
+
+    for (const target of [panel, closeButton]) {
+      await expect(target).toHaveCSS("border-top-width", "1px");
+      await expect(target).toHaveCSS("border-top-color", expectedColor);
+    }
+  });
+
+  test("close button focus ring is a 3px ring in the focus-ring-on-bg color, offset by the panel background", async ({
+    page,
+  }) => {
+    await activate(triggerFor(page, "popover-close-button"));
 
     const closeButton = page
       .locator("#popover-close-button")
       .getByRole("button", { name: "Close" });
+
+    // Resolved inside the popover: its panel is a BaseWrapper, which sets both for its surface
+    const [ringColor, offsetColor] = await closeButton.evaluate((el) =>
+      ["--theme-color-focus-ring-on-bg", "--theme-color-wrapper-bg"].map(
+        (token) => {
+          const probe = document.createElement("div");
+          probe.style.color = `var(${token})`;
+          el.parentElement!.appendChild(probe);
+          const resolved = getComputedStyle(probe).color;
+          probe.remove();
+          return resolved;
+        }
+      )
+    );
+
     await closeButton.focus();
-    await expect(closeButton).toHaveCSS("outline-color", expectedColor);
-    await expect(closeButton).toHaveCSS("outline-width", expectedWidth);
-    await expect(closeButton).toHaveCSS("outline-offset", expectedOffset);
+    // Tailwind draws ring-offset-2 + ring-3 as two box-shadows: a 2px spread in the background
+    // color, then the ring color out to 5px
+    await expect
+      .poll(() => closeButton.evaluate((el) => getComputedStyle(el).boxShadow))
+      .toContain(
+        `${offsetColor} 0px 0px 0px 2px, ${ringColor} 0px 0px 0px 5px`
+      );
   });
 });

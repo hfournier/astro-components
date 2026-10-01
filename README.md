@@ -16,7 +16,7 @@ src/components/button/
 ├── Button.spec.ts                  # Playwright + axe-core tests
 ├── documentation.mdx               # name, description, role, prop manifest, slots
 ├── usage.mdx                       # baseline usage: prose + a live preview/source pair
-└── example-01-variant-solid.mdx    # one file per named variant/scenario
+└── example-01-variants.mdx         # one file per named variant/scenario
 ```
 
 `documentation.mdx` holds structured, machine-checkable frontmatter (props,
@@ -53,7 +53,7 @@ decisions behind it.
 │   ├── layouts/           # BaseLayout.astro - header, sidebar nav, footer
 │   ├── pages/             # file-based routes, incl. src/pages/components/[id].astro
 │   ├── content.config.ts  # Zod schemas for the components/usage/examples content collections
-│   └── styles/global.css  # design tokens (Tailwind v4 @theme)
+│   └── styles/            # global.css (entry point), theme.css (design tokens), colors.css (generated M3 color roles)
 ├── docs/
 │   ├── adr/               # architecture decision records
 │   └── agents/            # conventions for AI coding agents working in this repo

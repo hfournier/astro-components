@@ -1,0 +1,34 @@
+/* The hand-written half of the theme: every token except the M3 color roles, which the theme
+   generator at /colors writes into colors.css. Imported by global.css. */
+
+@theme {
+  /* easing: Tailwind's native namespace, role layer on top (ADR-0006) */
+  --ease-theme-overlay: var(--ease-out);
+
+  /* box-shadow: M3 elevation levels, tinted with the generated shadow role */
+  --shadow-theme-elevation-1:
+    0 1px 2px 0 color-mix(in srgb, var(--theme-color-shadow) 30%, transparent),
+    0 1px 3px 1px color-mix(in srgb, var(--theme-color-shadow) 15%, transparent);
+  --shadow-theme-elevation-2:
+    0 1px 2px 0 color-mix(in srgb, var(--theme-color-shadow) 30%, transparent),
+    0 2px 6px 2px color-mix(in srgb, var(--theme-color-shadow) 15%, transparent);
+}
+
+:root {
+  /* duration: no Tailwind namespace, hand-rolled literal steps (ADR-0006) */
+  --theme-duration-fast: 150ms;
+  --theme-duration-base: 300ms;
+  --theme-duration-slow: 500ms;
+
+  --theme-duration-feedback: var(--theme-duration-fast);
+  --theme-duration-overlay: var(--theme-duration-base);
+  --theme-duration-content-swap: var(--theme-duration-slow);
+
+  /* Component color roles on M3 color roles, for content outside any BaseWrapper. BaseWrapper
+     (and BaseOverlay's panel, which is one) overrides each per background. */
+  --theme-color-link-text: var(--theme-color-primary);
+  /* focus ring that contrasts with the background behind it (used by Button, Link and others) */
+  --theme-color-focus-ring-on-bg: var(--theme-color-secondary);
+  /* the surface behind the content (the body's background), for focus-ring offsets */
+  --theme-color-wrapper-bg: var(--theme-color-surface);
+}

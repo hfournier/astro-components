@@ -1,57 +1,56 @@
 ---
+import type { ComponentProps } from "astro/types";
 import type { ButtonPropsType } from "../../types.js";
-import { twMerge } from "tailwind-merge";
 import Dialog from "../dialog/Dialog.astro";
 import Button from "../button/Button.astro";
 
-type Props = {
-  id: string;
-  title: string;
+type DialogProps = ComponentProps<typeof Dialog>;
+
+type Props = DialogProps & {
+  buttonDismiss: ButtonPropsType;
   buttonConfirm: ButtonPropsType;
-  buttonCancel?: ButtonPropsType;
 };
 
-const { id, title, buttonConfirm, buttonCancel } = Astro.props;
+const { id, buttonDismiss, buttonConfirm, ...attrs } = Astro.props;
 ---
 
-<Dialog {id} aria-labelledby={`${id}-title`}>
-  <h3
-    class:list={twMerge("font-title text-title")}
-    id={`${id}-title`}
-    slot="header"
-  >
-    {title}
-  </h3>
-
+{
+  /* M3: a dialog with two actions pairs a dismissing action with a confirming one, confirm
+     last. Dismiss is autofocused so a reflexive Enter never confirms, and uses request-close
+     so it fires `cancel` the same way Escape does. Dialog wires aria-labelledby to the
+     headline itself. */
+}
+<Dialog
+  {id}
+  role="alertdialog"
+  aria-describedby={`${id}-content`}
+  {...attrs}
+>
   <slot />
 
-  <form method="dialog" slot="footer">
-    <menu class:list={twMerge("flex items-center justify-end gap-2")}>
-      <li>
-        <Button
-          command="close"
-          commandfor={id}
-          id={buttonConfirm.id}
-          value={buttonConfirm.value}
-        >
-          {buttonConfirm.text}
-        </Button>
-      </li>
-      {
-        buttonCancel && (
-          <li>
-            <Button
-              command="request-close"
-              commandfor={id}
-              id={buttonCancel.id}
-              value={buttonCancel.value}
-              variant="outline"
-            >
-              {buttonCancel.text}
-            </Button>
-          </li>
-        )
-      }
-    </menu>
-  </form>
+  <menu class="flex items-center justify-end gap-2" slot="footer">
+    <li>
+      <Button
+        command="request-close"
+        commandfor={id}
+        id={buttonDismiss.id}
+        value={buttonDismiss.value}
+        autofocus
+        variant="text"
+      >
+        {buttonDismiss.text}
+      </Button>
+    </li>
+    <li>
+      <Button
+        command="close"
+        commandfor={id}
+        id={buttonConfirm.id}
+        value={buttonConfirm.value}
+        variant="text"
+      >
+        {buttonConfirm.text}
+      </Button>
+    </li>
+  </menu>
 </Dialog>

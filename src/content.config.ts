@@ -1,6 +1,7 @@
 import { defineCollection } from "astro:content";
 import { z } from "astro/zod";
 import { glob } from "astro/loaders";
+import { componentCategories } from "./types";
 
 const propSchema = z.object({
   name: z.string(),
@@ -56,8 +57,10 @@ const components = defineCollection({
   schema: z.object({
     name: z.string(),
     description: z.string(),
+    category: z.enum(componentCategories),
     role: z.enum(["primitive", "pattern", "internal"]),
     meta: metaSchema,
+    mdn: z.url().optional(),
     props: z.array(propSchema).optional(),
     slots: z.array(slotSchema).optional(),
     cssProps: z.array(cssPropSchema).optional(),
@@ -71,9 +74,7 @@ const usage = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    show: z
-      .enum(["both", "code-only", "preview-only", "none"])
-      .default("both"),
+    show: z.enum(["both", "code-only", "preview-only", "none"]).default("both"),
   }),
 });
 
@@ -85,4 +86,12 @@ const examples = defineCollection({
   }),
 });
 
-export const collections = { components, usage, examples };
+const tests = defineCollection({
+  loader: glob({ pattern: "**/*.mdx", base: "./src/data/tests" }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+  }),
+});
+
+export const collections = { components, examples, tests, usage };

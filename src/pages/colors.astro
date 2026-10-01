@@ -1,0 +1,513 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { Code } from "astro:components";
+import { argbFromHex, type CustomColor } from "@poupe/material-color-utilities";
+import {
+  defaultVariant,
+  themeColors,
+  themeCss,
+  variants,
+} from "./_theme-properties";
+import Button from "../components/button/Button.astro";
+import Heading from "../components/heading/Heading.astro";
+import Icon from "../components/icon/Icon.astro";
+import P from "../internal/mdx/P.astro";
+
+const sourceColor = "#cc5500";
+const customColors: CustomColor[] = [
+  {
+    name: "success",
+    value: argbFromHex("#00ff00"),
+    blend: true,
+  },
+  {
+    name: "warning",
+    value: argbFromHex("#ffbf00"),
+    blend: true,
+  },
+];
+
+const { palettes } = themeColors(sourceColor, customColors, defaultVariant);
+---
+
+<BaseLayout title="Colors" description="Astro Components">
+  <section
+    class="space-y-8"
+    data-theme-root
+    data-custom-colors={JSON.stringify(customColors)}
+  >
+    <Heading level={1}>Colors</Heading>
+
+    <P>
+      Generate a complete color palette from a single source color. Use the
+      color picker below to enter your brand or select a preferred color and see
+      the resulting color palette in real-time.
+    </P>
+
+    <Button size="sm">Test Button</Button>
+    <Button>Test Button</Button>
+    <Button size="lg">Test Button</Button>
+
+    <div class="flex items-center gap-2">
+      <label for="sourceColor">Select a color:</label>
+      <input
+        type="color"
+        id="sourceColor"
+        name="sourceColor"
+        value={sourceColor}
+      />
+
+      <label for="variant" class="ml-4">Variant:</label>
+      <select
+        id="variant"
+        name="variant"
+        class="rounded border border-stone-600 px-2 py-1"
+      >
+        {
+          Object.keys(variants).map((variant) => (
+            <option value={variant} selected={variant === defaultVariant}>
+              {variant.replace("-", " ").replace(/^./, (c) => c.toUpperCase())}
+            </option>
+          ))
+        }
+      </select>
+    </div>
+
+    <div class="grid gap-2">
+      <div class="grid grid-cols-3 grid-rows-[100px_50px] gap-x-1">
+        <div
+          class="bg-(--theme-color-primary) p-2 text-xs text-(--theme-color-on-primary) lg:text-sm"
+        >
+          Primary
+        </div>
+        <div
+          class="bg-(--theme-color-secondary) p-2 text-xs text-(--theme-color-on-secondary) lg:text-sm"
+        >
+          Secondary
+        </div>
+        <div
+          class="bg-(--theme-color-tertiary) p-2 text-xs text-(--theme-color-on-tertiary) lg:text-sm"
+        >
+          Tertiary
+        </div>
+        <div
+          class="bg-(--theme-color-on-primary) p-2 text-xs text-(--theme-color-primary) lg:text-sm"
+        >
+          On Primary
+        </div>
+        <div
+          class="bg-(--theme-color-on-secondary) p-2 text-xs text-(--theme-color-secondary) lg:text-sm"
+        >
+          On Secondary
+        </div>
+        <div
+          class="bg-(--theme-color-on-tertiary) p-2 text-xs text-(--theme-color-tertiary) lg:text-sm"
+        >
+          On Tertiary
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 grid-rows-[100px_50px] gap-x-1">
+        <div
+          class="bg-(--theme-color-primary-container) p-2 text-xs text-(--theme-color-on-primary-container) lg:text-sm"
+        >
+          Primary Container
+        </div>
+        <div
+          class="bg-(--theme-color-secondary-container) p-2 text-xs text-(--theme-color-on-secondary-container) lg:text-sm"
+        >
+          Secondary Container
+        </div>
+        <div
+          class="bg-(--theme-color-tertiary-container) p-2 text-xs text-(--theme-color-on-tertiary-container) lg:text-sm"
+        >
+          Tertiary Container
+        </div>
+        <div
+          class="bg-(--theme-color-on-primary-container) p-2 text-xs text-(--theme-color-primary-container) lg:text-sm"
+        >
+          On Primary Container
+        </div>
+        <div
+          class="bg-(--theme-color-on-secondary-container) p-2 text-xs text-(--theme-color-secondary-container) lg:text-sm"
+        >
+          On Secondary Container
+        </div>
+        <div
+          class="bg-(--theme-color-on-tertiary-container) p-2 text-xs text-(--theme-color-tertiary-container) lg:text-sm"
+        >
+          On Tertiary Container
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 grid-rows-[100px_100px_50px_50px] gap-x-1">
+        <div
+          class="bg-(--theme-color-primary-fixed) p-2 text-xs text-(--theme-color-on-primary-fixed) lg:text-sm"
+        >
+          Primary Fixed
+        </div>
+        <div
+          class="bg-(--theme-color-secondary-fixed) p-2 text-xs text-(--theme-color-on-secondary-fixed) lg:text-sm"
+        >
+          Secondary Fixed
+        </div>
+        <div
+          class="bg-(--theme-color-tertiary-fixed) p-2 text-xs text-(--theme-color-on-tertiary-fixed) lg:text-sm"
+        >
+          Tertiary Fixed
+        </div>
+
+        <div
+          class="bg-(--theme-color-primary-fixed-dim) p-2 text-xs text-(--theme-color-on-primary-fixed) lg:text-sm"
+        >
+          Primary Fixed Dim
+        </div>
+        <div
+          class="bg-(--theme-color-secondary-fixed-dim) p-2 text-xs text-(--theme-color-on-secondary-fixed) lg:text-sm"
+        >
+          Secondary Fixed Dim
+        </div>
+        <div
+          class="bg-(--theme-color-tertiary-fixed-dim) p-2 text-xs text-(--theme-color-on-tertiary-fixed) lg:text-sm"
+        >
+          Tertiary Fixed Dim
+        </div>
+
+        <div
+          class="bg-(--theme-color-on-primary-fixed) p-2 text-xs text-(--theme-color-primary-fixed) lg:text-sm"
+        >
+          On Primary Fixed
+        </div>
+        <div
+          class="bg-(--theme-color-on-secondary-fixed) p-2 text-xs text-(--theme-color-secondary-fixed) lg:text-sm"
+        >
+          On Secondary Fixed
+        </div>
+        <div
+          class="bg-(--theme-color-on-tertiary-fixed) p-2 text-xs text-(--theme-color-tertiary-fixed) lg:text-sm"
+        >
+          On Tertiary Fixed
+        </div>
+
+        <div
+          class="bg-(--theme-color-on-primary-fixed-variant) p-2 text-xs text-(--theme-color-primary-fixed) lg:text-sm"
+        >
+          On Primary Fixed Variant
+        </div>
+        <div
+          class="bg-(--theme-color-on-secondary-fixed-variant) p-2 text-xs text-(--theme-color-secondary-fixed) lg:text-sm"
+        >
+          On Secondary Fixed Variant
+        </div>
+        <div
+          class="bg-(--theme-color-on-tertiary-fixed-variant) p-2 text-xs text-(--theme-color-tertiary-fixed) lg:text-sm"
+        >
+          On Tertiary Fixed Variant
+        </div>
+        <div></div>
+      </div>
+
+      <div class="grid grid-cols-4 grid-rows-[100px_50px] gap-x-1">
+        <div
+          class="bg-(--theme-color-surface-dim) p-2 text-xs text-(--theme-color-on-surface) lg:text-sm"
+        >
+          Surface Dim
+        </div>
+        <div
+          class="bg-(--theme-color-surface) p-2 text-xs text-(--theme-color-on-surface) lg:text-sm"
+        >
+          Surface
+        </div>
+        <div
+          class="bg-(--theme-color-surface-bright) p-2 text-xs text-(--theme-color-on-surface) lg:text-sm"
+        >
+          Surface Bright
+        </div>
+        <div class="grid">
+          <div
+            class="bg-(--theme-color-inverse-surface) p-2 text-xs text-(--theme-color-inverse-on-surface) lg:text-sm"
+          >
+            Inverse Surface
+          </div>
+          <div
+            class="bg-(--theme-color-inverse-primary) p-2 text-xs text-[contrast-color(var(--theme-color-inverse-primary))] lg:text-sm"
+          >
+            Inverse Primary
+          </div>
+        </div>
+
+        <div
+          class="bg-(--theme-color-on-surface) p-2 text-xs text-(--theme-color-surface) lg:text-sm"
+        >
+          On Surface
+        </div>
+        <div
+          class="bg-(--theme-color-on-surface) p-2 text-xs text-(--theme-color-surface) lg:text-sm"
+        >
+          On Surface
+        </div>
+        <div
+          class="bg-(--theme-color-on-surface-variant) p-2 text-xs text-(--theme-color-surface) lg:text-sm"
+        >
+          On Surface Variant
+        </div>
+        <div
+          class="bg-(--theme-color-inverse-on-surface) p-2 text-xs text-(--theme-color-inverse-surface) lg:text-sm"
+        >
+          On Inverse Surface
+        </div>
+      </div>
+
+      <div class="grid grid-cols-5 grid-rows-[100px] gap-x-1">
+        <div
+          class="bg-(--theme-color-surface-container-lowest) p-2 text-xs text-(--theme-color-on-surface) lg:text-sm"
+        >
+          Surface Container Lowest
+        </div>
+        <div
+          class="bg-(--theme-color-surface-container-low) p-2 text-xs text-(--theme-color-on-surface) lg:text-sm"
+        >
+          Surface Container Low
+        </div>
+        <div
+          class="bg-(--theme-color-surface-container) p-2 text-xs text-(--theme-color-on-surface) lg:text-sm"
+        >
+          Surface Container
+        </div>
+        <div
+          class="bg-(--theme-color-surface-container-high) p-2 text-xs text-(--theme-color-on-surface) lg:text-sm"
+        >
+          Surface Container High
+        </div>
+        <div
+          class="bg-(--theme-color-surface-container-highest) p-2 text-xs text-(--theme-color-on-surface) lg:text-sm"
+        >
+          Surface Container Highest
+        </div>
+      </div>
+
+      <div class="grid grid-cols-4 grid-rows-[50px] gap-x-1">
+        <div
+          class="bg-(--theme-color-outline) p-2 text-xs text-[contrast-color(var(--theme-color-outline))] lg:text-sm"
+        >
+          Outline
+        </div>
+        <div
+          class="bg-(--theme-color-outline-variant) p-2 text-xs text-[contrast-color(var(--theme-color-outline-variant))] lg:text-sm"
+        >
+          Outline Variant
+        </div>
+        <div
+          class="bg-(--theme-color-shadow) p-2 text-xs text-[contrast-color(var(--theme-color-shadow))] lg:text-sm"
+        >
+          Shadow
+        </div>
+        <div
+          class="bg-(--theme-color-scrim) p-2 text-xs text-[contrast-color(var(--theme-color-scrim))] lg:text-sm"
+        >
+          Scrim
+        </div>
+      </div>
+
+      <div class="grid grid-cols-4 grid-rows-[50px] gap-x-1">
+        <div
+          class="bg-(--theme-color-error) p-2 text-xs text-(--theme-color-on-error) lg:text-sm"
+        >
+          Error
+        </div>
+        <div
+          class="bg-(--theme-color-on-error) p-2 text-xs text-(--theme-color-error) lg:text-sm"
+        >
+          On Error
+        </div>
+        <div
+          class="bg-(--theme-color-error-container) p-2 text-xs text-(--theme-color-on-error-container) lg:text-sm"
+        >
+          Error Container
+        </div>
+        <div
+          class="bg-(--theme-color-on-error-container) p-2 text-xs text-(--theme-color-error-container) lg:text-sm"
+        >
+          On Error Container
+        </div>
+      </div>
+
+      <div class="grid grid-cols-4 grid-rows-[50px] gap-x-1">
+        <div
+          class="bg-(--theme-color-warning) p-2 text-xs text-(--theme-color-on-warning) lg:text-sm"
+        >
+          Warning
+        </div>
+        <div
+          class="bg-(--theme-color-on-warning) p-2 text-xs text-(--theme-color-warning) lg:text-sm"
+        >
+          On Warning
+        </div>
+        <div
+          class="bg-(--theme-color-warning-container) p-2 text-xs text-(--theme-color-on-warning-container) lg:text-sm"
+        >
+          Warning Container
+        </div>
+        <div
+          class="bg-(--theme-color-on-warning-container) p-2 text-xs text-(--theme-color-warning-container) lg:text-sm"
+        >
+          On Warning Container
+        </div>
+      </div>
+
+      <div class="grid grid-cols-4 grid-rows-[50px] gap-x-1">
+        <div
+          class="bg-(--theme-color-success) p-2 text-xs text-(--theme-color-on-success) lg:text-sm"
+        >
+          Success
+        </div>
+        <div
+          class="bg-(--theme-color-on-success) p-2 text-xs text-(--theme-color-success) lg:text-sm"
+        >
+          On Success
+        </div>
+        <div
+          class="bg-(--theme-color-success-container) p-2 text-xs text-(--theme-color-on-success-container) lg:text-sm"
+        >
+          Success Container
+        </div>
+        <div
+          class="bg-(--theme-color-on-success-container) p-2 text-xs text-(--theme-color-success-container) lg:text-sm"
+        >
+          On Success Container
+        </div>
+      </div>
+    </div>
+
+    {
+      Object.entries(palettes).map(([name, steps]) => (
+        <div class="space-y-2">
+          <h2 class="text-lg font-medium">{name}</h2>
+          <div class="grid auto-cols-fr grid-flow-col border-stone-600">
+            {Object.keys(steps).map((tone) => (
+              <div
+                class="xl:tetx-base grid aspect-2/3 place-items-center border-stone-600 text-[9px] not-last:border-r sm:text-xs lg:text-sm"
+                style={`background-color: var(--theme-color-${name}-${tone}); color: contrast-color(var(--theme-color-${name}-${tone}));`}
+              >
+                {tone}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))
+    }
+
+    <div class="relative" data-theme-css>
+      <Code
+        class="p-4"
+        code={themeCss(sourceColor, customColors, defaultVariant)}
+        lang="css"
+        themes={{ light: "github-light", dark: "github-dark" }}
+        defaultColor="light-dark()"
+      />
+      <Button
+        class="absolute top-2 right-2 min-w-0"
+        variant="outlined"
+        size="sm"
+        data-copy
+      >
+        <span data-copy-label>Copy</span>
+        <Icon name="content_copy" class="size-4" />
+      </Button>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import type { HighlighterCore } from "shiki/core";
+  import { themeCss, themeProperties, type Variant } from "./_theme-properties";
+
+  const themeRoot = document.querySelector<HTMLElement>(
+    "section[data-theme-root]"
+  );
+  const sourceColor = document.querySelector<HTMLInputElement>("#sourceColor");
+  const variant = document.querySelector<HTMLSelectElement>("#variant");
+  const customColors = JSON.parse(themeRoot?.dataset.customColors ?? "[]");
+  const codeBlock = document.querySelector<HTMLElement>("[data-theme-css]");
+  const copyButton = codeBlock?.querySelector<HTMLButtonElement>("[data-copy]");
+  const copyLabel = copyButton?.querySelector("[data-copy-label]");
+
+  // Loaded on the first change only, with just the CSS grammar and the two
+  // themes the server-rendered <Code> uses, so the initial page stays light.
+  let highlighter: Promise<HighlighterCore> | undefined;
+  const loadHighlighter = () =>
+    (highlighter ??= Promise.all([
+      import("shiki/core"),
+      import("shiki/engine/javascript"),
+    ])
+      .then(([{ createHighlighterCore }, { createJavaScriptRegexEngine }]) =>
+        createHighlighterCore({
+          langs: [import("shiki/langs/css.mjs")],
+          themes: [
+            import("shiki/themes/github-light.mjs"),
+            import("shiki/themes/github-dark.mjs"),
+          ],
+          engine: createJavaScriptRegexEngine(),
+        })
+      )
+      .catch((error) => {
+        // Let the next change retry instead of reusing the failed load.
+        highlighter = undefined;
+        throw error;
+      }));
+
+  // The CSS currently shown, so Copy always matches the picked color and
+  // variant even while re-highlighting is still in flight.
+  let css = "";
+  let renderId = 0;
+
+  const renderCode = async () => {
+    const id = ++renderId;
+    const html = (await loadHighlighter()).codeToHtml(css, {
+      lang: "css",
+      themes: { light: "github-light", dark: "github-dark" },
+      defaultColor: "light-dark()",
+    });
+    // A newer change started while this one was highlighting.
+    if (id !== renderId) return;
+    const pre = codeBlock?.querySelector("pre");
+    if (!pre) return;
+    const template = document.createElement("template");
+    template.innerHTML = html;
+    const next = template.content.querySelector("pre");
+    if (!next) return;
+    // Keep the classes <Code> was given (e.g. padding) alongside Shiki's own.
+    next.className = pre.className;
+    pre.replaceWith(next);
+  };
+
+  const applyTheme = () => {
+    if (!themeRoot || !sourceColor || !variant) return;
+    const args = [
+      sourceColor.value,
+      customColors,
+      variant.value as Variant,
+    ] as const;
+    for (const [property, value] of Object.entries(themeProperties(...args))) {
+      themeRoot.style.setProperty(property, value);
+    }
+    css = themeCss(...args);
+    renderCode();
+  };
+
+  copyButton?.addEventListener("click", async () => {
+    const text = css || (codeBlock?.querySelector("pre")?.textContent ?? "");
+    try {
+      await navigator.clipboard.writeText(text);
+      if (copyLabel) copyLabel.textContent = "Copied";
+    } catch {
+      if (copyLabel) copyLabel.textContent = "Copy failed";
+    }
+    setTimeout(() => {
+      if (copyLabel) copyLabel.textContent = "Copy";
+    }, 2000);
+  });
+
+  sourceColor?.addEventListener("input", applyTheme);
+  variant?.addEventListener("change", applyTheme);
+</script>

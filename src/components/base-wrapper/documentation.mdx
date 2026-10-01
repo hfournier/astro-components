@@ -1,0 +1,27 @@
+---
+name: BaseWrapper
+description: A primitive wrapper that renders as one of a fixed set of native sectioning/grouping elements, providing shared background-color theming for pattern components like Aside, Footer, Header, and Section.
+category: Base
+role: primitive
+meta:
+  title: BaseWrapper | astro-components HenriFournier.dev
+  description: A primitive wrapper rendering as a native sectioning/grouping element, providing shared background-color theming for Aside, Footer, Header, and Section.
+extends:
+  kind: element
+  tag: [article, aside, div, figure, footer, header, main, section]
+props:
+  - name: as
+    type: '"article" | "aside" | "div" | "figure" | "footer" | "header" | "main" | "section"'
+    required: false
+    default: '"div"'
+    description: Which HTML element to render the wrapper as.
+  - name: bgColor
+    type: '"primary-container" | "primary-fixed" | "primary-fixed-dim" | "secondary-container" | "secondary-fixed" | "secondary-fixed-dim" | "tertiary-container" | "tertiary-fixed" | "tertiary-fixed-dim" | "surface-dim" | "surface-bright" | "inverse-surface" | "surface-container-lowest" | "surface-container-low" | "surface-container" | "surface-container-high" | "surface-container-highest" | "transparent"'
+    required: false
+    default: '"transparent"'
+    description: Which Material 3 background role to apply to the wrapper, paired with its matching "on" role for text (e.g. `primary-container` with `on-primary-container`). It also sets `--theme-color-wrapper-bg` for descendants, so things like focus-ring offsets match the background behind them. `transparent` applies no background and keeps the surrounding wrapper's value.
+slots:
+  - name: default
+    description: The content to display inside the wrapper.
+    kind: any
+---

@@ -1,15 +1,22 @@
 ---
+import BaseWrapper from "../components/base-wrapper/BaseWrapper.astro";
+
 const hasCodeSlot = Astro.slots.has("code");
 const hasPreviewSlot = Astro.slots.has("preview");
 ---
 
+{
+  /* No tabindex on the scroll wrappers: Shiki's <pre> is already keyboard-focusable for
+     scrolling code, and browsers make an overflowing preview focusable on their own. Extra
+     tab stops here only slowed keyboard users down on the way to the preview's controls. */
+}
 <div
-  class:list={["border-divider grid border-(length:--border-width-boundary)"]}
+  class:list={["grid border border-(--theme-color-outline-variant)"]}
   data-testid="code-preview"
 >
   {
     hasCodeSlot && (
-      <div class="overflow-x-auto" tabindex="0">
+      <div class="overflow-x-auto">
         <slot name="code" />
       </div>
     )
@@ -17,21 +24,22 @@ const hasPreviewSlot = Astro.slots.has("preview");
 
   {
     hasPreviewSlot && (
-      <figure
+      <BaseWrapper
+        as="figure"
+        bgColor="surface-container-low"
         class:list={[
-          "bg-container flex flex-col gap-1 p-4",
-          hasCodeSlot &&
-            "border-divider border-t-(length:--border-width-divider)",
+          "flex flex-col gap-1 p-4",
+          hasCodeSlot && "border-t border-(--theme-color-outline-variant)",
         ]}
       >
         <figcaption class="text-sm font-semibold">Preview</figcaption>
-        <div
-          class="border-divider overflow-x-auto border-(length:--border-width-divider) bg-white p-4"
-          tabindex="0"
+        <BaseWrapper
+          bgColor="surface-container-lowest"
+          class="overflow-x-auto border border-(--theme-color-outline-variant) p-4"
         >
           <slot name="preview" />
-        </div>
-      </figure>
+        </BaseWrapper>
+      </BaseWrapper>
     )
   }
 </div>

@@ -1,19 +1,6 @@
 ---
 import type { HTMLTag, Polymorphic } from "astro/types";
-import { extendTailwindMerge } from "tailwind-merge";
-
-// tailwind-merge's default config doesn't know the --text-control* role tokens (global.css)
-// are a font-size scale, not a color: left as plain `text-*` classes, it lumps them into the
-// same ambiguous group as the text-color utilities below (text-white, text-primary-control)
-// and silently drops whichever comes first, regardless of the two being independent axes.
-// Registering them under the "font-size" class group keeps both.
-const twMerge = extendTailwindMerge({
-  extend: {
-    classGroups: {
-      "font-size": ["text-control", "text-control-sm", "text-control-lg"],
-    },
-  },
-});
+import { twMerge } from "tailwind-merge";
 
 // Astro's own polymorphic-component helper. Verified with a cleared `.astro` cache
 // (`rm -rf .astro && astro sync`), repeatedly, both internally and for every external consumer
@@ -23,8 +10,9 @@ const twMerge = extendTailwindMerge({
 type Props<Tag extends Extract<HTMLTag, "a" | "button"> = "button"> =
   Polymorphic<{
     as: Tag;
-    variant?: "solid" | "outline";
-    color?: "primary" | "secondary";
+    variant?: "elevated" | "filled" | "outlined" | "text" | "tonal";
+    showFullwidth?: boolean;
+    shape?: "round" | "square";
     size?: "sm" | "md" | "lg";
   }>;
 
@@ -43,8 +31,9 @@ const {
   // `as="a"`), so it would otherwise render as a literal `as="a"` attribute on the real element.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   as: _as,
-  variant = "solid",
-  color = "primary",
+  variant = "filled",
+  showFullwidth = false,
+  shape = "round",
   size = "md",
   class: classList,
   type,
@@ -55,34 +44,52 @@ const {
 // attribute (rarely used) is a MIME-type hint, not a click-behavior enum, so it's left alone.
 const resolvedType = Tag === "button" ? (type ?? "button") : type;
 
+// Size sets the height, padding and label type. M3 picks the label style by height
+// (ButtonDefaults.textStyleFor): Label Large below 56px, Title Medium at 56px (M3's Medium).
+// Both are weight 500, set below.
+const labelLarge = "text-sm leading-5 tracking-[0.1px]";
+const titleMedium = "text-base leading-6 tracking-[0.2px]";
 const sizeClasses = {
-  sm: "text-control-sm",
-  md: "text-control",
-  lg: "text-control-lg",
+  sm: `${labelLarge} min-h-10 px-4 after:inset-x-0 after:-inset-y-1.25 after:absolute`,
+  md: `${labelLarge} min-h-12 px-5`,
+  lg: `${titleMedium} min-h-14 px-6`,
 }[size];
 
-const buttonClasses = {
-  solid: {
-    primary:
-      "bg-primary-control border-primary-control hover:bg-primary-control-hover hover:border-primary-control-hover border-(length:--border-width-boundary) text-white",
-    secondary:
-      "bg-secondary-control border-secondary-control hover:bg-secondary-control-hover hover:border-secondary-control-hover border-(length:--border-width-boundary) text-white",
-  }[color],
-  outline: {
-    primary:
-      "text-primary-control border-(length:--border-width-boundary) border-primary-control hover:bg-primary-control-hover hover:text-white hover:border-primary-control-hover bg-transparent",
-    secondary:
-      "text-secondary-control border-(length:--border-width-boundary) border-secondary-control hover:bg-secondary-control-hover hover:text-white hover:border-secondary-control-hover bg-transparent",
-  }[color],
+// M3 disabled: label on-surface at 38%, any container (and outline) on-surface at 10%.
+const disabledContainer =
+  "disabled:bg-(--theme-color-on-surface)/10 disabled:border-transparent";
+
+const variantClasses = {
+  elevated: `bg-(--theme-color-surface-container-low) border-(--theme-color-surface-container-low) text-(--theme-color-primary) shadow-theme-elevation-1 not-disabled:hover:shadow-theme-elevation-2 disabled:shadow-none ${disabledContainer}`,
+  filled: `bg-(--theme-color-primary) border-(--theme-color-primary) text-(--theme-color-on-primary) ${disabledContainer}`,
+  outlined:
+    "bg-transparent border-(--theme-color-outline-variant) text-(--theme-color-on-surface-variant) disabled:border-(--theme-color-on-surface)/10",
+  text: "bg-transparent border-transparent text-(--theme-color-primary)",
+  tonal: `bg-(--theme-color-secondary-container) border-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container) ${disabledContainer}`,
 }[variant];
+
+const shapeClasses = {
+  round: "rounded-full",
+  square: {
+    sm: "rounded-xl",
+    md: "rounded-[14px]",
+    lg: "rounded-2xl",
+  }[size],
+}[shape];
 ---
 
 <Tag
   class:list={twMerge(
-    "rounded-control font-control cursor-pointer px-[1em] py-[0.5em] motion-safe:transition-colors",
-    "focus-visible:outline-focus-ring focus-visible:outline-(length:--focus-ring-width) focus-visible:outline-offset-(--focus-ring-offset)",
+    "flex cursor-pointer items-center justify-center gap-2 border font-medium",
+    "relative isolate before:absolute before:-inset-px before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0 motion-safe:before:transition-opacity",
+    "not-disabled:hover:before:opacity-8 not-disabled:focus-visible:before:opacity-10 not-disabled:active:before:opacity-10",
+    "disabled:cursor-default disabled:text-(--theme-color-on-surface)/38",
+    "motion-safe:transition",
+    "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
+    showFullwidth ? "min-w-full" : "max-w-fit",
+    variantClasses,
+    shapeClasses,
     sizeClasses,
-    buttonClasses,
     classList
   )}
   type={resolvedType}

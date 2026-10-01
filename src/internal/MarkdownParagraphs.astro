@@ -1,0 +1,19 @@
+---
+import { marked } from "marked";
+import P from "./mdx/P.astro";
+
+type Props = {
+  text: string;
+};
+
+const { text } = Astro.props;
+
+// Blank lines separate paragraphs (e.g. in a `>-` YAML block scalar). Each paragraph is its own
+// P with only inline Markdown parsed, since marked.parse would wrap it in a second, nested <p>.
+const paragraphs = text
+  .split(/\r?\n\s*\r?\n/)
+  .map((paragraph) => paragraph.trim())
+  .filter(Boolean);
+---
+
+{paragraphs.map((paragraph) => <P set:html={marked.parseInline(paragraph)} />)}

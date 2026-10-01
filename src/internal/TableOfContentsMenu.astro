@@ -2,6 +2,8 @@
 import type { HTMLAttributes } from "astro/types";
 import type { ToCHeadingType } from "../types";
 import { twMerge } from "tailwind-merge";
+import Link from "../components/link/Link.astro";
+import Heading from "../components/heading/Heading.astro";
 
 type Props = HTMLAttributes<"ul"> & {
   headings: ToCHeadingType[];
@@ -19,19 +21,35 @@ const { headings, class: classList, ...attrs } = Astro.props;
       <>
         {headings.map((heading) => (
           <li>
-            <a
-              class:list={[
-                "flex min-h-6 items-center",
-                "[&:target-current]:text-primary-control [&:target-current]:underline [&:target-current]:decoration-1 [&:target-current]:underline-offset-2",
-                "[&:target-current]:hover:text-primary-control-hover [&:target-current]:hover:decoration-2 [&:target-current]:hover:underline-offset-4",
-                "hover:text-primary-control-hover hover:underline hover:decoration-2 hover:underline-offset-4",
-                heading.level === 2 && "pl-4",
-                heading.level === 3 && "pl-8",
-              ]}
-              href={`#${heading.id}`}
-            >
-              {heading.text}
-            </a>
+            {heading.level === 1 ? (
+              <Heading class="text-xl" level={2}>
+                <Link
+                  class:list={[
+                    "flex min-h-6 items-center text-inherit no-underline",
+                    "[&:target-current]:text-(--theme-color-link-text) [&:target-current]:underline [&:target-current]:decoration-1 [&:target-current]:underline-offset-2",
+                    "[&:target-current]:hover:decoration-2 [&:target-current]:hover:underline-offset-4",
+                    "hover:text-(--theme-color-link-text) hover:underline hover:decoration-2 hover:underline-offset-4",
+                  ]}
+                  href={`#${heading.id}`}
+                >
+                  {heading.text}
+                </Link>
+              </Heading>
+            ) : (
+              <Link
+                class:list={[
+                  "flex min-h-6 items-center text-inherit no-underline",
+                  "[&:target-current]:text-(--theme-color-link-text) [&:target-current]:underline [&:target-current]:decoration-1 [&:target-current]:underline-offset-2",
+                  "[&:target-current]:hover:decoration-2 [&:target-current]:hover:underline-offset-4",
+                  "hover:text-(--theme-color-link-text) hover:underline hover:decoration-2 hover:underline-offset-4",
+                  heading.level === 2 && "pl-4",
+                  heading.level === 3 && "pl-8",
+                ]}
+                href={`#${heading.id}`}
+              >
+                {heading.text}
+              </Link>
+            )}
           </li>
         ))}
       </>

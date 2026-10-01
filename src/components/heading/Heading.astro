@@ -2,45 +2,71 @@
 import type { HTMLAttributes } from "astro/types";
 import Icon from "../icon/Icon.astro";
 import { twMerge } from "tailwind-merge";
+import type { HeadingLevelType } from "../../types";
 
 type Props = HTMLAttributes<"h1"> & {
-  level: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+  level: HeadingLevelType;
 };
 
 const { class: classList, id, level, ...attrs } = Astro.props;
 
+// Each level is one step of M3's type scale, in rem so it follows the reader's font size
 const headingClasses = {
-  h1: "text-heading-2xl font-heading-lg",
-  h2: "text-heading-xl font-heading-lg",
-  h3: "text-heading-lg font-heading-lg",
-  h4: "text-heading-md font-heading-sm",
-  h5: "text-heading-sm font-heading-sm",
-  h6: "text-heading-xs font-heading-sm",
+  // Display Small: 36/44px
+  1: "text-[2.25rem] leading-11 font-normal",
+  // Headline Large: 32/40px
+  2: "text-[2rem] leading-10 font-normal",
+  // Headline Medium: 28/36px
+  3: "text-[1.75rem] leading-9 font-normal",
+  // Headline Small: 24/32px
+  4: "text-2xl leading-8 font-normal",
+  // Title Large: 22/28px
+  5: "text-[1.375rem] leading-7 font-normal",
+  // Title Medium: 16/24px, weight 500, 0.2px tracking
+  6: "text-base leading-6 font-medium tracking-[0.2px]",
 }[level];
 
-const Tag = level;
+const Tag = `h${level}` as const;
 ---
 
 {
+  /* No text color of its own: M3 headings use the "on" color of the surface they sit on, which
+     BaseWrapper (or the body) sets, so headings inherit it. The anchor icon also shows on
+     keyboard focus, not just hover, so the tab stop is never invisible. */
+}
+{
   id ? (
     <div class="group/heading flex items-center gap-2">
-      <Tag class:list={twMerge(headingClasses, classList)} {id} {...attrs}>
+      <Tag
+        class:list={twMerge(headingClasses, classList)}
+        {id}
+        {...attrs}
+      >
         <slot />
       </Tag>
 
       <a
-        class:list={twMerge(headingClasses)}
+        class:list={twMerge(
+          // A link, so it takes the per-background link color and focus ring (see BaseWrapper).
+          "rounded-xs text-(--theme-color-link-text)",
+          "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
+          headingClasses
+        )}
         href={`#${id}`}
         aria-labelledby={id}
       >
         <Icon
           name="link"
-          class="size-[0.7em] opacity-0 group-hover/heading:opacity-100 motion-safe:transition-opacity"
+          class="size-[0.7em] origin-center -rotate-45 opacity-0 group-focus-within/heading:opacity-100 group-hover/heading:opacity-100 motion-safe:transition-opacity"
         />
       </a>
     </div>
   ) : (
-    <Tag class:list={twMerge(headingClasses, classList)} {id} {...attrs}>
+    <Tag
+      class:list={twMerge(headingClasses, classList)}
+      {id}
+      {...attrs}
+    >
       <slot />
     </Tag>
   )

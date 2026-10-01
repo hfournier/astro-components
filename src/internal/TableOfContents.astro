@@ -1,5 +1,5 @@
 ---
-import Heading from "../components/heading/Heading.astro";
+import Aside from "../components/aside/Aside.astro";
 import Icon from "../components/icon/Icon.astro";
 import Popover from "../components/popover/Popover.astro";
 import type { ToCHeadingType } from "../types";
@@ -12,14 +12,15 @@ type Props = {
 const { headings } = Astro.props;
 ---
 
-<aside
-  class="border-divider bg-surface/95 xl:bg-surface sticky top-0 min-w-60 border-(length:--border-width-boundary) p-2 xl:static xl:top-auto xl:order-2 xl:p-4"
+<Aside
+  bgColor="surface-container-low"
+  class="sticky top-0 min-w-60 border border-(--theme-color-outline-variant) p-2 xl:static xl:top-auto xl:order-2 xl:p-4"
 >
-  <nav class="group/toc xl:hidden">
+  <nav class="group/toc xl:hidden" aria-label="Table of contents">
     <button
       class:list={[
         "flex cursor-pointer list-none items-center gap-2 p-2",
-        "[anchor-name:--hfdev-anchorname-toc-button]",
+        "[anchor-name:--ac-anchorname-toc-button]",
       ]}
       type="button"
       command="show-popover"
@@ -28,18 +29,16 @@ const { headings } = Astro.props;
       >On this page
       <Icon
         class:list={[
-          "text-icon size-4 shrink-0",
-          "group-has-[#table-of-contents:popover-open]/toc:rotate-180 motion-safe:transition-[rotate] motion-safe:duration-(--duration-overlay)",
+          "size-4 shrink-0",
+          "group-has-[#table-of-contents:popover-open]/toc:rotate-180 motion-safe:transition-[rotate] motion-safe:duration-(--theme-duration-overlay)",
         ]}
-        name="chevron-down"
+        name="keyboard_arrow_down"
       />
     </button>
 
     <Popover
-      class:list={[
-        "border-divider m-0! border-(length:--border-width-boundary)",
-      ]}
-      overlayClass="m-0 top-[anchor(bottom)] left-[anchor(left)] [position-anchor:--hfdev-anchorname-toc-button]"
+      class="m-0!"
+      overlayClass="m-0 top-[anchor(bottom)] left-[anchor(left)] [position-anchor:--ac-anchorname-toc-button]"
       id="table-of-contents"
       showBlur={false}
     >
@@ -47,12 +46,15 @@ const { headings } = Astro.props;
     </Popover>
   </nav>
 
-  <nav class="sticky top-0 hidden xl:block" aria-label="Table of contents">
-    <Heading class="text-xl" level="h2">On this page</Heading>
+  <nav
+    class="sticky top-0 hidden space-y-4 xl:block"
+    aria-label="Table of contents"
+  >
+    <div class="text-xs">On this page</div>
 
     <TableOfContentsMenu {headings} />
   </nav>
-</aside>
+</Aside>
 
 <script>
   const toc = document.getElementById("table-of-contents");
