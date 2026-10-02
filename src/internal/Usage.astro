@@ -1,11 +1,11 @@
 ---
 import { render, type CollectionEntry } from "astro:content";
-import { marked } from "marked";
 import { components as mdxComponents } from "../mdx";
 import { Code } from "astro:components";
 import Heading from "../components/heading/Heading.astro";
 import CodePreview from "./CodePreview.astro";
-import P from "./mdx/P.astro";
+import MarkdownParagraphs from "./MarkdownParagraphs.astro";
+import Section from "../components/section/Section.astro";
 
 type Props = {
   headingId?: string;
@@ -17,10 +17,10 @@ const { headingId, usage } = Astro.props;
 const { Content } = await render(usage);
 ---
 
-<section class="space-y-8">
-  <Heading id={headingId} level="h2">Usage</Heading>
+<Section class="space-y-8">
+  <Heading id={headingId} level={2}>Usage</Heading>
 
-  <P set:html={marked.parse(usage.data.description)} />
+  <MarkdownParagraphs text={usage.data.description} />
 
   {
     usage.data.show !== "none" && (
@@ -31,7 +31,11 @@ const { Content } = await render(usage);
               class="p-4"
               code={usage.body}
               lang="jsx"
-              theme="github-light"
+              themes={{
+                light: "github-light-default",
+                dark: "github-dark-default",
+              }}
+              defaultColor="light-dark()"
               slot="code"
             />
           )}
@@ -42,4 +46,4 @@ const { Content } = await render(usage);
       </>
     )
   }
-</section>
+</Section>

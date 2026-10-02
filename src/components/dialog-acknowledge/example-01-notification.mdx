@@ -1,0 +1,15 @@
+---
+title: DialogAcknowledge with an icon
+description: A DialogAcknowledge with an `icon` above its headline. With an icon, the icon and headline are centered, per Material 3.
+---
+
+<Button command="show-modal" commandfor="dialog-acknowledge-icon">Open Notification Dialog</Button>
+
+<DialogAcknowledge
+    id="dialog-acknowledge-icon"
+    icon="mail"
+    headline="Message sent"
+    buttonAcknowledge={{ text: "Got it", value: "ok" }}
+    >
+    Your message has been sent. We'll reply within two business days.
+</DialogAcknowledge>

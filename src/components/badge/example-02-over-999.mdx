@@ -1,0 +1,9 @@
+---
+title: Badge with a label over 999
+description: A number over 999 is shown as `999+`, keeping the badge to at most 4 characters. The icon's accessible name can still give the exact count.
+---
+
+<Button variant="text">
+  <Icon class="[anchor-name:--badge-example-max]" name="mail" label="Messages, 1500 unread" />
+</Button>
+<Badge class="[--ac-anchorname-badge:--badge-example-max]" label={1500} />

@@ -1,0 +1,13 @@
+# Component category, MDN link, and visual test pages
+
+> **Extends ADR-0009 §4 and ADR-0010 §2**: the `components` collection's frontmatter gains a required `category` and an optional `mdn`, and `src/content.config.ts` gains a fourth collection, `tests`. Nothing in either ADR is withdrawn.
+
+With the component count growing past a dozen, a flat alphabetical sidebar stopped being a useful way to find anything, and component pages had no pointer to the platform documentation for the native element they build on. Separately, checking a component across every background role by eye needed a page that isn't one of its documented examples. We decided:
+
+1. **`category` is required, and its values are MDN's HTML element reference groups** (`componentCategories` in `src/types.ts`: "Content sectioning", "Forms", "Inline text semantics", "Interactive elements", "Text content", ...), plus `Base` for primitives with no single element and `Custom` for components that don't map onto one. Reusing MDN's grouping, rather than inventing ours, means a component lands where a reader who knows the element it wraps would look for it. The sidebar (`src/internal/Sidebar.astro`) groups components by category, in the array's order, alphabetically within each group, and hides empty groups. Required rather than optional, like `role`: every component has to appear somewhere in the sidebar.
+2. **`mdn` is an optional URL to the MDN page of the element a component extends.** When set, the component page links to it ("view the `<button>` element on MDN"), with the element name read from the URL's last path segment. Optional because not every component wraps one element (Tabs, BaseOverlay). It is not derived from `extends.tag`: a component can extend several tags (`[button, a]`), and the one worth sending a reader to is an authoring choice.
+3. **A `tests` collection holds visual test pages, kept outside the component folders.** `src/data/tests/*.mdx` (frontmatter `title`/`description`, same schema as an example) renders at `/tests/<id>` via `src/pages/tests/[id].astro`, listed under its own sidebar heading. A test page shows a component across many contexts at once (every background role, every variant) for checking by eye. These pages aren't documentation, so they live outside `src/components/` where the `usage`/`examples` globs would pick them up. They aren't automated tests either; the Playwright + axe specs (ADR-0002) stay the source of truth.
+
+## Consequences
+
+Every `documentation.mdx` must now declare a `category`, or the content collection fails to build. The test pages have no prop manifest or drift check behind them, so they can fall out of date when a component's API changes. Fixing one is a manual job.

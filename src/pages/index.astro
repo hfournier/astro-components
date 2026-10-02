@@ -1,19 +1,387 @@
 ---
+import { Code } from "astro:components";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Heading from "../components/heading/Heading.astro";
+import Link from "../components/link/Link.astro";
+import Li from "../internal/mdx/Li.astro";
+import Ol from "../internal/mdx/Ol.astro";
+import P from "../internal/mdx/P.astro";
+import Ul from "../internal/mdx/Ul.astro";
+
+const codeThemes = {
+  light: "github-light-default",
+  dark: "github-dark-default",
+} as const;
+
+const globalCss = `@import "tailwindcss";
+@import "./colors.css";
+@import "./theme.css";
+
+:root {
+  /* lets Details animate its content's height to auto */
+  interpolate-size: allow-keywords;
+}`;
+
+const layoutAstro = `---
+import "../styles/global.css";
+---
+
+<html lang="en">
+  <body class="bg-(--theme-color-surface) text-(--theme-color-on-surface)">
+    <slot />
+  </body>
+</html>`;
+
+const usageAstro = `---
+import Button from "../components/button/Button.astro";
+import DialogConfirm from "../components/dialog-confirm/DialogConfirm.astro";
+---
+
+<Button command="show-modal" commandfor="discard-draft">Discard draft</Button>
+
+<DialogConfirm
+  id="discard-draft"
+  headline="Discard draft?"
+  buttonDismiss={{ text: "Cancel", value: "cancel" }}
+  buttonConfirm={{ text: "Discard", value: "discard" }}
+>
+  Your unsaved changes will be lost.
+</DialogConfirm>`;
+
+// Every documented component, the other component folders it imports (directly or through
+// another component), and the shared files outside src/components it needs.
+const components = [
+  {
+    name: "Aside",
+    folder: "aside",
+    needs: ["base-wrapper"],
+    shared: ["types"],
+  },
+  { name: "Badge", folder: "badge", needs: [], shared: [] },
+  { name: "Button", folder: "button", needs: [], shared: [] },
+  {
+    name: "Details",
+    folder: "details",
+    needs: ["icon"],
+    shared: ["types", "icons"],
+  },
+  {
+    name: "Dialog",
+    folder: "dialog",
+    needs: ["base-overlay", "base-wrapper", "footer", "header", "icon"],
+    shared: ["types", "icons"],
+  },
+  {
+    name: "DialogAcknowledge",
+    folder: "dialog-acknowledge",
+    needs: [
+      "dialog",
+      "button",
+      "base-overlay",
+      "base-wrapper",
+      "footer",
+      "header",
+      "icon",
+    ],
+    shared: ["types", "icons"],
+  },
+  {
+    name: "DialogConfirm",
+    folder: "dialog-confirm",
+    needs: [
+      "dialog",
+      "button",
+      "base-overlay",
+      "base-wrapper",
+      "footer",
+      "header",
+      "icon",
+    ],
+    shared: ["types", "icons"],
+  },
+  {
+    name: "Footer",
+    folder: "footer",
+    needs: ["base-wrapper"],
+    shared: ["types"],
+  },
+  {
+    name: "Header",
+    folder: "header",
+    needs: ["base-wrapper"],
+    shared: ["types"],
+  },
+  {
+    name: "Heading",
+    folder: "heading",
+    needs: ["icon"],
+    shared: ["types", "icons"],
+  },
+  { name: "Icon", folder: "icon", needs: [], shared: ["icons"] },
+  { name: "Link", folder: "link", needs: [], shared: [] },
+  {
+    name: "Popover",
+    folder: "popover",
+    needs: ["base-overlay", "base-wrapper", "icon"],
+    shared: ["types", "icons"],
+  },
+  {
+    name: "Section",
+    folder: "section",
+    needs: ["base-wrapper"],
+    shared: ["types"],
+  },
+  {
+    name: "SkipToContent",
+    folder: "skip-to-content",
+    needs: ["button"],
+    shared: [],
+  },
+  {
+    name: "Tabs / Tab",
+    folder: "tabs",
+    needs: ["tab", "tab-list", "tab-panels", "badge", "base-wrapper", "icon"],
+    shared: ["types", "icons", "ultrahtml"],
+  },
+];
+
+const sharedLabels: Record<string, string> = {
+  types: "src/types.ts",
+  icons: "icons",
+  ultrahtml: "ultrahtml",
+};
 ---
 
 <BaseLayout
   title="astro-components HenriFournier.dev"
-  description="astro-components is a personal library of accessible, Tailwind-styled Astro components, each documented with its usage, properties, slots, and live examples."
+  description="astro-components is a library of accessible, Material 3 styled Astro + Tailwind components you copy into your own project. Getting started: requirements, theme setup and which files to copy."
 >
-  <main id="main-content">
-    <h1 class="space-y-8 text-4xl font-bold">Astro Components</h1>
-    <nav aria-label="Primary">
-      <ul>
-        <li>
-          <a href="/components">Components</a>
-        </li>
-      </ul>
-    </nav>
+  <main id="main-content" class="max-w-4xl space-y-10">
+    <section class="space-y-2">
+      <Heading level={1}>astro-components</Heading>
+      <P>
+        A library of accessible Astro + Tailwind components styled after{" "}
+        <Link href="https://m3.material.io" target="_blank" rel="noreferrer"
+          >Material 3</Link
+        >: buttons, dialogs, tabs, badges, themed page sections and more. Each
+        one is documented with its usage, properties, slots and live examples,
+        and tested with axe-core for WCAG 2.2 AA in Chromium, Firefox and
+        WebKit.
+      </P>
+      <P>
+        These are <strong>copy-paste components</strong>: you copy their source
+        into your own project instead of installing a package. The copies are
+        yours to edit, and there's nothing upstream to keep in sync.
+      </P>
+    </section>
+
+    <section class="space-y-2" aria-labelledby="requirements">
+      <Heading level={2} id="requirements">Requirements</Heading>
+      <Ul>
+        <Li>
+          <Link href="https://astro.build" target="_blank" rel="noreferrer"
+            >Astro</Link
+          > 7 or later.
+        </Li>
+        <Li>
+          <Link
+            href="https://tailwindcss.com/docs/installation/framework-guides/astro"
+            target="_blank"
+            rel="noreferrer">Tailwind CSS 4</Link
+          >, set up with the <code>@tailwindcss/vite</code> plugin.
+        </Li>
+        <Li>
+          <code>tailwind-merge</code>, which every component uses so that a
+          class you pass overrides the component's own.
+        </Li>
+        <Li>
+          <code>ultrahtml</code>, only if you use Tabs.
+        </Li>
+      </Ul>
+      <Code
+        code="pnpm add tailwind-merge ultrahtml"
+        lang="sh"
+        themes={codeThemes}
+        defaultColor="light-dark()"
+        class="p-4"
+      />
+      <P>
+        The components rely on recent web platform features: the Popover API,
+        invoker commands (<code>command</code>/<code>commandfor</code>) to open
+        and close dialogs and popovers without JavaScript, CSS anchor
+        positioning for Badge, and <code>light-dark()</code> for dark mode. Check
+        support for your audience's browsers before relying on them.
+      </P>
+    </section>
+
+    <section class="space-y-2" aria-labelledby="setup">
+      <Heading level={2} id="setup">Set up the theme</Heading>
+      <Ol>
+        <Li>
+          Copy <code>src/styles/colors.css</code> and
+          <code>src/styles/theme.css</code> from the{" "}
+          <Link
+            href="https://github.com/hfournier/astro-components"
+            target="_blank"
+            rel="noreferrer">repository</Link
+          > into your project's styles folder.
+          <code>colors.css</code> holds the Material 3 color roles;
+          <code>theme.css</code> holds motion, elevation and the colors components
+          use for links and focus rings.
+        </Li>
+        <Li>
+          Import both into your global stylesheet, right after Tailwind:
+        </Li>
+      </Ol>
+      <Code
+        code={globalCss}
+        lang="css"
+        themes={codeThemes}
+        defaultColor="light-dark()"
+        class="p-4"
+      />
+      <Ol start="3">
+        <Li>
+          Import the stylesheet in your layout, and give the page the theme's
+          surface and text colors:
+        </Li>
+      </Ol>
+      <Code
+        code={layoutAstro}
+        lang="astro"
+        themes={codeThemes}
+        defaultColor="light-dark()"
+        class="p-4"
+      />
+    </section>
+
+    <section class="space-y-2" aria-labelledby="colors">
+      <Heading level={2} id="colors">Use your own colors</Heading>
+      <P>
+        The colors in <code>colors.css</code> are generated, not hand-written. Open
+        the <Link href="/colors">theme generator</Link>, pick a source color
+        (your brand color) and a scheme variant, then copy the generated CSS
+        over your <code>colors.css</code>. Every color role gets a light and a
+        dark value, and the page switches between them with the operating
+        system's color scheme. Because Material 3 picks each role's tone, text
+        stays readable on its background for any source color.
+      </P>
+      <P>
+        Components draw only from these roles, through custom properties like
+        <code>--theme-color-primary</code>. For your own content, each key
+        color's tonal palette is also available as Tailwind colors, from
+        <code>bg-theme-primary-10</code> (lightest) to
+        <code>bg-theme-primary-950</code> (darkest). Palette steps don't change in
+        dark mode, and you're responsible for their contrast.
+      </P>
+    </section>
+
+    <section class="space-y-2" aria-labelledby="copy">
+      <Heading level={2} id="copy">Copy the components you need</Heading>
+      <P>
+        Copy each component's folder from <code>src/components/</code> into the same
+        place in your project, keeping the folder names: components import each other
+        by relative path. You only need the
+        <code>.astro</code> files; the <code>.spec.ts</code> and
+        <code>.mdx</code> files are for this site's tests and documentation. Copy
+        the folders a component needs as well, plus these shared files:
+      </P>
+      <Ul>
+        <Li>
+          <strong><code>src/types.ts</code></strong>: shared prop types. It also
+          holds types for this documentation site that import from
+          <code>astro:content</code> (<code>PropWithHeadingType</code>,
+          <code>SlotWithHeadingType</code>); delete those two and that import.
+        </Li>
+        <Li>
+          <strong>icons</strong>: <code>src/svgs/</code> (the icon names and loader)
+          and <code>src/assets/svgs/</code> (the icon files). Keep
+          <code>src/assets/svgs/</code> at that path, because the loader looks for
+          icons there. To add an icon, drop its SVG in that folder and add its name
+          to <code>src/svgs/icon-names.ts</code>.
+        </Li>
+      </Ul>
+
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse text-left text-sm">
+          <caption class="sr-only">
+            Each component's folder, the other component folders it needs, and
+            the shared files it needs
+          </caption>
+          <thead>
+            <tr class="border-b border-(--theme-color-outline-variant)">
+              <th scope="col" class="py-2 pr-4 font-medium">Component</th>
+              <th scope="col" class="py-2 pr-4 font-medium"
+                >Also copy these folders</th
+              >
+              <th scope="col" class="py-2 font-medium">Shared files</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              components.map(({ name, folder, needs, shared }) => (
+                <tr class="border-b border-(--theme-color-outline-variant) align-top">
+                  <th scope="row" class="py-2 pr-4 font-normal">
+                    <Link href={`/components/${folder}`}>{name}</Link>
+                  </th>
+                  <td class="py-2 pr-4">
+                    {needs.length > 0
+                      ? needs.map((need) => (
+                          <code class="mr-1 inline-block">{need}</code>
+                        ))
+                      : "None"}
+                  </td>
+                  <td class="py-2">
+                    {shared.length > 0
+                      ? shared.map((item) => (
+                          <code class="mr-1 inline-block">
+                            {sharedLabels[item]}
+                          </code>
+                        ))
+                      : "None"}
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="space-y-2" aria-labelledby="use">
+      <Heading level={2} id="use">Use them</Heading>
+      <P>
+        Import a component and use it like any other Astro component. This
+        button opens a confirmation dialog through invoker commands, with no
+        script of your own:
+      </P>
+      <Code
+        code={usageAstro}
+        lang="astro"
+        themes={codeThemes}
+        defaultColor="light-dark()"
+        class="p-4"
+      />
+      <P>
+        Every component's page lists its props and slots and shows live examples
+        next to their source. Start with{" "}
+        <Link href="/components/button">Button</Link>, or pick a component from
+        the sidebar.
+      </P>
+    </section>
+
+    <section class="space-y-2" aria-labelledby="accessibility">
+      <Heading level={2} id="accessibility">Accessibility</Heading>
+      <P>
+        Components use native elements (<code>&lt;button&gt;</code>,
+        <code>&lt;dialog&gt;</code>, <code>&lt;details&gt;</code>, popovers) so
+        keyboard and screen-reader behavior comes from the browser. Motion only
+        plays when the user hasn't asked for reduced motion. To keep text, links
+        and focus rings readable, put content on a background with Section,
+        Header, Footer or Aside and their <code>bgColor</code> prop, rather than a
+        raw background class: the wrapper also switches the text, link and focus-ring
+        colors to ones that contrast with that background.
+      </P>
+    </section>
   </main>
 </BaseLayout>

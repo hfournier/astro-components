@@ -1,0 +1,29 @@
+---
+import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
+import { getCollection, render } from "astro:content";
+import { components as mdxComponents } from "../../mdx";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+export const getStaticPaths = (async () => {
+  const tests = await getCollection("tests");
+  return tests.map((test) => ({
+    params: { id: test.id },
+    props: { test },
+  }));
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { test } = Astro.props;
+const { Content } = await render(test);
+---
+
+<BaseLayout
+  title={test.data.title}
+  description={test.data.description}
+  classListHtml="scroll-pt-15 xl:scroll-pt-0"
+>
+  <main class:list={[""]} id="main-content">
+    <Content components={{ ...mdxComponents }} />
+  </main>
+</BaseLayout>

@@ -6,13 +6,13 @@ import {
   type CollectionEntry,
 } from "astro:content";
 import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
-import { marked } from "marked";
 import { components as mdxComponents } from "../../mdx";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Heading from "../../components/heading/Heading.astro";
+import Link from "../../components/link/Link.astro";
 import Usage from "../../internal/Usage.astro";
-import Slots from "../../internal/Slots.astro";
-import Props from "../../internal/Props.astro";
+import DocSlots from "../../internal/DocSlots.astro";
+import DocProps from "../../internal/DocProps.astro";
 import Example from "../../internal/Example.astro";
 import TableOfContents from "../../internal/TableOfContents.astro";
 import type {
@@ -21,7 +21,7 @@ import type {
   ToCHeadingType,
 } from "../../types";
 import GithubSlugger from "github-slugger";
-import P from "../../internal/mdx/P.astro";
+import MarkdownParagraphs from "../../internal/MarkdownParagraphs.astro";
 
 export const getStaticPaths = (async () => {
   const components = await getCollection("components");
@@ -34,7 +34,7 @@ export const getStaticPaths = (async () => {
 type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
 const { component } = Astro.props;
-const { Content } = await render(component);
+const { Content, headings: bodyHeadings } = await render(component);
 const extendsInfo = component.data.extends;
 
 const usage = await getEntry(
@@ -54,13 +54,23 @@ const examples = await getCollection("examples", (entry) =>
 const slugger = new GithubSlugger();
 const headings: ToCHeadingType[] = [];
 
-headings.push({ id: "top", text: "Overview", level: 1 });
+headings.push({ id: "top", text: `${component.data.name} Overview`, level: 1 });
 
 let usageHeadingId: string | undefined;
 if (usage) {
   usageHeadingId = slugger.slug("Usage");
   headings.push({ id: usageHeadingId, text: "Usage", level: 2 });
 }
+
+// The documentation.mdx body renders after Usage, so its headings come next. Astro has already
+// given them ids (with its own slugger); slugging their text here too reserves those ids, so a
+// later prop/slot/example heading with the same text gets a suffixed id instead of a duplicate.
+bodyHeadings
+  .filter(({ depth }) => depth === 2 || depth === 3)
+  .forEach(({ slug, text, depth }) => {
+    slugger.slug(text);
+    headings.push({ id: slug, text, level: depth as 2 | 3 });
+  });
 
 let propsHeadingId: string | undefined;
 let propsWithIds: PropWithHeadingType[] = [];
@@ -119,9 +129,22 @@ if (examples && examples.length > 0) {
     <TableOfContents {headings} />
 
     <article class="space-y-8">
-      <Heading level="h1">{component.data.name} Component</Heading>
+      <Heading level={1}>{component.data.name} Component</Heading>
 
-      <P set:html={marked.parse(component.data.description)} />
+      <MarkdownParagraphs text={component.data.description} />
+
+      {
+        component.data.mdn && (
+          <p>
+            For more details, view the{" "}
+            <code>&lt;{component.data.mdn.split("/").pop()}&gt;</code>
+            element on{" "}
+            <Link href={component.data.mdn} target="_blank" rel="noreferrer">
+              MDN
+            </Link>
+          </p>
+        )
+      }
 
       {
         component.data.role !== "internal" &&
@@ -137,9 +160,11 @@ if (examples && examples.length > 0) {
 
       {usage && <Usage headingId={usageHeadingId} {usage} />}
 
+      <Content components={{ ...mdxComponents }} />
+
       {
         component.data.props && (
-          <Props
+          <DocProps
             headingId={propsHeadingId}
             {extendsInfo}
             props={propsWithIds}
@@ -149,14 +174,14 @@ if (examples && examples.length > 0) {
 
       {
         component.data.slots && component.data.slots.length > 0 && (
-          <Slots headingId={slotsHeadingId} slots={slotsWithIds} />
+          <DocSlots headingId={slotsHeadingId} slots={slotsWithIds} />
         )
       }
 
       {
         examples && examples.length > 0 && (
           <>
-            <Heading id={examplesHeadingId} level="h2">
+            <Heading id={examplesHeadingId} level={2}>
               Examples
             </Heading>
 
@@ -166,8 +191,6 @@ if (examples && examples.length > 0) {
           </>
         )
       }
-
-      <Content components={{ ...mdxComponents }} />
     </article>
   </main>
 </BaseLayout>

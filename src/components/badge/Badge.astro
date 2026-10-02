@@ -1,0 +1,65 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+
+type Props = HTMLAttributes<"span"> & {
+  label?: string | number;
+  placement?: "anchored" | "inline";
+};
+const {
+  label,
+  placement = "anchored",
+  class: classList,
+  ...attrs
+} = Astro.props;
+
+// A numeric string (e.g. from a data attribute) behaves like a number: hidden at 0, capped at 999+
+const value =
+  typeof label === "string" && /^\d+$/.test(label) ? Number(label) : label;
+
+// "anchored" overlaps the top-end corner of an anchor (typically an icon), per M3's BadgedBox
+// offsets; "inline" sits in the text flow, e.g. after a tab label that has no icon to anchor to.
+// Inline, M3 sits the dot on the text's baseline and aligns a badge with content to the top of the
+// text's capital letters (not its line box). overflow-hidden makes an inline-block's baseline its
+// bottom margin edge, so align-baseline puts the bottom on the text's baseline; for a badge with
+// content, a negative bottom margin of (cap height - badge height) then lifts its top to the cap
+// line. The outer span keeps the surrounding text's font, so 1cap is the label's cap height, and
+// the badge's own 11px type lives on the inner span.
+const placementClasses =
+  placement === "inline"
+    ? [
+        "inline-block shrink-0 overflow-hidden align-baseline",
+        value && "mb-[calc(1cap-1lh)]",
+      ]
+    : [
+        "fixed [position-anchor:var(--ac-anchorname-badge)]",
+        value
+          ? "top-[calc(anchor(top)-2px)] left-[calc(anchor(right)-12px)]"
+          : "top-[anchor(top)] right-[anchor(right)]",
+      ];
+---
+
+{
+  value !== 0 && (
+    <span
+      class:list={twMerge(
+        "rounded-full bg-(--theme-color-error) text-(--theme-color-on-error)",
+        value ? "h-4 min-w-4 px-1 text-center leading-4" : "size-1.5",
+        placementClasses,
+        classList
+      )}
+      aria-hidden="true"
+      {...attrs}
+    >
+      {value && (
+        <span class="inline-block align-top text-[11px] leading-4 font-medium tracking-[0.5px]">
+          {typeof value === "string"
+            ? value.substring(0, 4)
+            : value > 999
+              ? "999+"
+              : value}
+        </span>
+      )}
+    </span>
+  )
+}

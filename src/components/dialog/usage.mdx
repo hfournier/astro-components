@@ -1,10 +1,17 @@
 ---
 title: Dialog
-description: The following example shows how to use the Dialog component in its most basic form, specifying only the required `id` property.
+description: The following example shows a basic Dialog with a headline, supporting text, and a close action in the `footer` slot. Opening and closing use the `command`/`commandfor` API, so no JavaScript is needed.
 ---
 
 <Button command="show-modal" commandfor="dialog-usage">Open Dialog</Button>
 
-<Dialog id="dialog-usage">
-  Dialog content
+<Dialog id="dialog-usage" headline="Dialog headline">
+  Dialog supporting text.
+
+  <menu class="flex items-center justify-end gap-2" slot="footer">
+    <li>
+      <Button command="close" commandfor="dialog-usage" size="sm" variant="text">Close</Button>
+    </li>
+  </menu>
+
 </Dialog>

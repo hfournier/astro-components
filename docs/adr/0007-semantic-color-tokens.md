@@ -1,5 +1,7 @@
 # Semantic color tokens replace the raw 50-950 scale; derivation moves to OKLCH
 
+> **Superseded by ADR-0012**: the move to Material 3 replaced these eight derived tokens with generated M3 color roles. Its rule that no component reads a raw scale step still holds, now for the tonal palettes the generator emits.
+
 Supersedes the color-scale portion of ADR-0004 (the `@theme`/class-merge/dark-mode decisions there stand; only "one base token derives a numbered 50-950 scale via `hsl(from ...)`" is replaced).
 
 Two independent WCAG AA contrast failures shipped from the same root cause: a raw scale step (`primary-600`) that isn't safe as text-on-white, reused in two unrelated components without anything catching it until axe-core did.

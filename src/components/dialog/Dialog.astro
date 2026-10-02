@@ -3,56 +3,127 @@ import type { ComponentProps } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import Icon from "../icon/Icon.astro";
 import BaseOverlay from "../base-overlay/BaseOverlay.astro";
+import Footer from "../footer/Footer.astro";
+import Header from "../header/Header.astro";
+import type { SvgIconNameTypes } from "../../svgs";
 
 type BaseOverlayProps = ComponentProps<typeof BaseOverlay>;
 
-type Props = BaseOverlayProps;
+// No bgColor: M3 fixes basic dialogs at Surface Container High (BaseOverlay's default).
+type Props = Omit<BaseOverlayProps, "as" | "bgColor"> & {
+  icon?: SvgIconNameTypes;
+  headline?: string;
+  label?: string;
+};
 
-const { id, class: classList, ...attrs } = Astro.props;
+const { icon, headline, label, id, class: classList, ...attrs } = Astro.props;
 ---
 
 <BaseOverlay
-  class:list={twMerge("rounded-container min-w-xs bg-white", classList)}
+  class:list={twMerge(
+    "flex max-h-[calc(100dvh-3rem)] max-w-140 min-w-70 flex-col rounded-[28px] p-6",
+    classList
+  )}
   {id}
+  showBlur={true}
+  transition="fade-down"
+  aria-labelledby={headline ? `${id}-headline` : undefined}
+  aria-label={label && !headline ? label : undefined}
   {...attrs}
 >
-  <header
-    class:list={twMerge(
-      "border-divider bg-container rounded-t-container flex items-center justify-between border-b-(length:--border-width-divider) p-4 md:px-6"
-    )}
+  {
+    (headline || icon) && (
+      <Header
+        bgColor="transparent"
+        class:list={["pb-4", icon && "flex flex-col items-center gap-4"]}
+      >
+        {icon && <Icon class="fill-(--theme-color-secondary)" name={icon} />}
+        {headline && (
+          <h2
+            class:list={[
+              "text-2xl text-(--theme-color-on-surface)",
+              icon && "text-center",
+            ]}
+            id={`${id}-headline`}
+          >
+            {headline}
+          </h2>
+        )}
+      </Header>
+    )
+  }
+
+  {
+    /* Only the content scrolls; the headline and actions stay put. It bleeds to the dialog's
+       edges (-mx-6 px-6) so the dividers span the full width, per M3. Browsers make a scrolling
+       region keyboard-focusable, so it gets the theme focus ring rather than the UA outline.
+       Text is M3 supporting text: Body Medium in on-surface-variant. */
+  }
+  <div
+    class:list={[
+      "scroll-content -mx-6 min-h-0 flex-1 overflow-y-auto px-6",
+      "text-sm text-(--theme-color-on-surface-variant)",
+      "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-inset",
+    ]}
+    id={`${id}-content`}
   >
-    {Astro.slots.has("header") ? <slot name="header" /> : <>&nbsp;</>}
-
-    <button
-      class:list={twMerge(
-        "group/close bg-container cursor-pointer",
-        "focus-visible:outline-focus-ring focus-visible:outline-(length:--focus-ring-width) focus-visible:outline-offset-(--focus-ring-offset)"
-      )}
-      type="button"
-      commandfor={id}
-      command="close"
-      aria-label="Close"
-    >
-      <Icon
-        class="text-icon size-4 group-hover/close:text-black md:size-5"
-        name="x-mark"
-      />
-    </button>
-  </header>
-
-  <div class="min-h-16 p-4 md:px-6">
+    <div class="divider divider-top" aria-hidden="true"></div>
     <slot />
+    <div class="divider divider-bottom" aria-hidden="true"></div>
   </div>
 
   {
     Astro.slots.has("footer") && (
-      <footer
-        class:list={twMerge(
-          "border-divider bg-container rounded-b-container border-t-(length:--border-width-divider) p-4 md:px-6"
-        )}
-      >
+      <Footer bgColor="transparent" class="pt-6">
         <slot name="footer" />
-      </footer>
+      </Footer>
     )
   }
 </BaseOverlay>
+
+<style>
+  /* M3 scrolling dialog: a divider shows at whichever edge content is scrolled out of view,
+     separating it from the fixed headline/actions. Scroll-state queries only style descendants
+     of the scroller, so the dividers are sticky children of it. Unsupported browsers simply
+     never show them. */
+  .scroll-content {
+    container-type: scroll-state;
+  }
+
+  .divider {
+    position: sticky;
+    z-index: 1;
+    height: 1px;
+    margin-inline: calc(var(--spacing) * -6);
+    background-color: var(--theme-color-outline-variant);
+    opacity: 0;
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition: opacity var(--theme-duration-overlay)
+        var(--ease-theme-overlay);
+    }
+  }
+
+  /* Negative margins so the hidden dividers take up no space in the layout. */
+  .divider-top {
+    top: 0;
+    margin-bottom: -1px;
+  }
+
+  .divider-bottom {
+    bottom: 0;
+    margin-top: -1px;
+  }
+
+  @container scroll-state(scrollable: top) {
+    .divider-top {
+      opacity: 1;
+    }
+  }
+
+  @container scroll-state(scrollable: bottom) {
+    .divider-bottom {
+      opacity: 1;
+    }
+  }
+</style>

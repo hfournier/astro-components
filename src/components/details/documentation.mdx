@@ -1,6 +1,7 @@
 ---
 name: Details
-description: A custom Details component that extends HTML's `<details>` element with a styled summary, a leading icon, and an animated chevron that rotates on toggle.
+description: A Details component that extends HTML's `<details>` element with a Material 3 style summary row, an optional leading icon, and an animated chevron that rotates on toggle.
+category: Interactive elements
 role: pattern
 meta:
   title: Details | astro-components HenriFournier.dev
@@ -8,6 +9,7 @@ meta:
 extends:
   kind: element
   tag: [details]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/details
 props:
   - name: label
     type: string
@@ -17,10 +19,11 @@ props:
     type: SvgIconNameTypes
     required: false
     description: Icon displayed at the start of the summary, before the label text.
-  - name: showBorders
-    type: boolean
+  - name: variant
+    type: '"outlined" | "plain"'
     required: false
-    description: Whether the summary and expanded content are outlined with a border. Defaults to true.
+    default: '"outlined"'
+    description: '`outlined` wraps the summary and content in an M3 outlined card (12px corners, `outline-variant` border) and pads the content. `plain` has no card, e.g. for navigation sections. In both, the content is inset to line up with the summary label.'
 slots:
   - name: default
     description: The content revealed when the details is expanded.

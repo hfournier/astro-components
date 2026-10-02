@@ -8,7 +8,8 @@ const { class: classList, ...attrs } = Astro.props;
 
 <a
   class:list={twMerge(
-    "text-primary-control hover:text-primary-control-hover underline decoration-1 underline-offset-2 hover:decoration-2 hover:underline-offset-4",
+    "rounded-xs text-(--theme-color-link-text) underline decoration-1 underline-offset-2 hover:decoration-2 hover:underline-offset-4",
+    "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
     classList
   )}
   {...attrs}

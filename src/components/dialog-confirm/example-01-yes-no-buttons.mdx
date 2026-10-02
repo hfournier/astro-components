@@ -1,16 +1,15 @@
 ---
 title: DialogConfirm with Yes/No Buttons
-description: A custom DialogConfirm component with Yes/No buttons
+description: A DialogConfirm whose actions are a plain Yes/No. Material 3 recommends naming the confirming action after what it does (e.g. "Delete"), but Yes/No can suit a direct question.
 ---
 
 <Button command="show-modal" commandfor="dialog-yes-no">Open Confirm Dialog</Button>
 
 <DialogConfirm
     id="dialog-yes-no"
-    title="Confirm Action"
+    headline="Confirm Action"
+    buttonDismiss={{ text: "No", value: "no" }}
     buttonConfirm={{ text: "Yes", value: "yes" }}
-    buttonCancel={{ text: "No", value: "no" }}
     >
     Are you sure?
 </DialogConfirm>
-

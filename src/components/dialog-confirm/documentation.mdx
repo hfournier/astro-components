@@ -1,29 +1,38 @@
 ---
 name: DialogConfirm
-description: A ready-made confirmation dialog built on Dialog, with a title, a body slot, and a footer of confirm/cancel buttons wired to close the dialog via the `command`/`commandfor` API.
+description: |-
+  A ready-made Material 3 confirmation dialog built on Dialog, with exactly two actions - a
+  dismissing action and a confirming action - wired to close the dialog via the
+  `command`/`commandfor` API.
+
+  Use it when the user must choose between confirming and dismissing an action, such as discarding
+  a draft or deleting an item. It renders with `role="alertdialog"`, and accepts all of Dialog's
+  props, including `headline` and `icon`. For a message with a single "OK" action, use
+  DialogAcknowledge instead.
 role: pattern
 meta:
   title: DialogConfirm | astro-components HenriFournier.dev
-  description: A ready-made confirmation dialog built on Dialog, with a title and a footer of confirm/cancel buttons wired to close it.
+  description: A Material 3 confirmation dialog built on Dialog, with a dismissing and a confirming action wired to close it.
+category: Interactive elements
+extends:
+  kind: component
+  name: Dialog
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog
 props:
   - name: id
     type: string
     required: true
-    description: Unique id for the dialog, forwarded to the underlying Dialog and used to wire up its title's `aria-labelledby`.
-  - name: title
-    type: string
+    description: Unique id for the dialog, used as the `commandfor` target of the buttons that open and close it.
+  - name: buttonDismiss
+    type: '{ id?: string; text: string; value: string }'
     required: true
-    description: The text shown in the dialog's header.
+    description: The dismissing action (e.g. "Cancel"). It's placed first and receives focus when the dialog opens, so pressing Enter by reflex never confirms. It closes the dialog the same way Escape does (firing `cancel`), setting the dialog's `returnValue` to `value`.
   - name: buttonConfirm
     type: '{ id?: string; text: string; value: string }'
     required: true
-    description: Config for the confirm button — id (also usable as a command/commandfor target from outside), text (button label), and value (the dialog's returnValue when this button closes it).
-  - name: buttonCancel
-    type: '{ id?: string; text: string; value: string }'
-    required: false
-    description: Config for an optional cancel button, rendered with the outline variant. Omit to show only the confirm button.
+    description: The confirming action (e.g. "Delete"), placed last. Closes the dialog, setting its `returnValue` to `value`. Name it after the action it confirms rather than a generic "OK" or "Yes".
 slots:
   - name: default
-    description: The dialog's body content.
+    description: The dialog's supporting text, typically a sentence explaining the consequence of confirming. It's linked to the dialog with `aria-describedby`, so screen readers announce it along with the headline.
     kind: any
 ---

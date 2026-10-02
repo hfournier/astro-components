@@ -11,5 +11,17 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    // Lazily imported by the colors page on first change. Pre-bundled at startup
+    // so the dev server doesn't discover them mid-session and answer the import
+    // with "504 Outdated Optimize Dep".
+    optimizeDeps: {
+      include: [
+        "shiki/core",
+        "shiki/engine/javascript",
+        "shiki/langs/css.mjs",
+        "shiki/themes/github-light-default.mjs",
+        "shiki/themes/github-dark-default.mjs",
+      ],
+    },
   },
 });

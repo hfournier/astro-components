@@ -15,6 +15,18 @@ export const test = base.extend<{ skipA11yCheck: boolean }>({
 
     if (skipA11yCheck) return;
 
+    // Scan the settled page: mid-transition (e.g. a dialog still fading in) axe measures
+    // half-blended colors and reports contrast failures that never exist at rest. Infinite
+    // animations are skipped, since they never finish; a cancelled one rejects, so it's caught.
+    await page.evaluate(() =>
+      Promise.all(
+        document
+          .getAnimations()
+          .filter((animation) => animation.effect?.getComputedTiming().endTime !== Infinity)
+          .map((animation) => animation.finished.catch(() => undefined)),
+      ),
+    );
+
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
       .analyze();

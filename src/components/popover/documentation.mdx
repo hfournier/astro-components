@@ -1,6 +1,7 @@
 ---
 name: Popover
 description: A custom Popover component that extends HTML's `<div>` element with a `popover` attribute
+category: Text content
 role: pattern
 meta:
   title: Popover | astro-components HenriFournier.dev
@@ -8,7 +9,13 @@ meta:
 extends:
   kind: component
   name: BaseOverlay
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/div
 props:
+  - name: bgColor
+    type: '"surface-container" | "surface-container-high" | "inverse-surface"'
+    required: false
+    default: '"surface-container-high"'
+    description: The popover's Material 3 surface. Use `Surface Container` for a menu-like popover (M3's menu surface), `Surface Container High` for a dialog-like one, or `Inverse Surface` for a tooltip-like one. Text, links, focus rings and the close button follow the chosen surface.
   - name: showCloseX
     type: boolean
     required: false

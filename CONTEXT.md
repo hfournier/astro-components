@@ -5,28 +5,40 @@ An open-source library of copy-paste Astro + Tailwind components. This context c
 ## Language
 
 **Token**:
-A single named design decision (a color step, a radius, a border width, a font weight) exposed as a CSS custom property consumed through Tailwind's `@theme`, so changing one value anywhere restyles every component that uses it.
+A single named design decision (a color role, a radius, a duration, a font weight) exposed as a CSS custom property consumed through Tailwind's `@theme`, so changing one value anywhere restyles every component that uses it.
 _Avoid_: variable, design value
 
 **Base token**:
-A token that a whole derived scale is computed from via `calc()` (or an equivalent CSS function), rather than a value declared independently. `--color-primary` (the whole primary/secondary/grayish scale derives from it) and `--radius` (the radius scale derives from it) are base tokens; `--font-weight-semibold` is not, since it isn't derived from anything.
+A token that a whole derived scale is computed from via `calc()` (or an equivalent CSS function), rather than a value declared independently. None exist at the moment: with the move to Material 3 the old ones (`--color-primary`, `--radius`) were removed, since the color roles are generated whole into `colors.css` and M3's corner sizes are fixed rather than scaled from one dial. `--font-weight-semibold` is not a base token, since nothing is derived from it.
 _Avoid_: root token, primary token (ambiguous with the `primary` color role)
 
 **Role token**:
-A token named for the situation it's used in (`--font-weight-nav`, `--radius-container`) rather than its literal step (`--font-weight-semibold`, `--radius-xl`), defined via `var()` onto a value-layer token of the same property. Lets a component author pick by intent instead of by magnitude. Distinct from a [[Base token]]: a base token is what a scale derives *from*, a role token is a second name layered *on top of* an already-derived scale.
+A token named for the situation it's used in (`--theme-duration-overlay`, `--ease-theme-overlay`) rather than its literal step (`--theme-duration-base`, `--ease-out`), defined via `var()` onto a value-layer token of the same property. Lets a component author pick by intent instead of by magnitude. Distinct from a [[Base token]]: a base token is what a scale derives *from*, a role token is a second name layered *on top of* an already-derived scale.
 _Avoid_: semantic token, alias (too generic — every token is technically a CSS alias)
 
 **Theme**:
-The complete set of token values active for a given site — what you get by editing `src/styles/global.css`. Swapping a theme changes appearance only; it never changes a component's markup, props, or behavior.
+The complete set of token values active for a given site — what you get by editing `src/styles/theme.css` (hand-written tokens) and regenerating `src/styles/colors.css` (M3 color roles, from the generator at `/colors`). Swapping a theme changes appearance only; it never changes a component's markup, props, or behavior.
 _Avoid_: skin, style
 
 **Color role**:
-A semantic name for which color scale a component draws from (`primary`, `secondary`, `grayish`), independent of how that scale is styled onto the component. Exposed on components as the `color` prop (singular — one role is active at a time).
-_Avoid_: color scheme, palette (palette is the scale itself, e.g. "the primary palette"), `colors` (plural; the prop takes one value)
+One of Material 3's named colors (`primary`, `on-primary`, `secondary-container`, `surface-container-high`, `outline-variant`, ...), generated into `src/styles/colors.css` as `--theme-color-<role>` with light and dark values. Components draw only from roles, never from a tonal-palette step. Which roles a component uses is fixed by its [[Variant]] or [[Background role]], not exposed as a separate `color` prop.
+_Avoid_: color scheme, palette (a palette is the tonal scale a role is picked from), `colors` (plural)
 
 **Variant**:
-A named alternative treatment of a component's structural/shape axis, selected via a `variant` prop (e.g. Button's `solid` vs `outline`). Reserved exclusively for that one axis — a component with more than one independent axis (color role, size, ...) gets one prop per axis rather than folding them into `variant` as a compound value.
-_Avoid_: style, mode, using `variant` for any axis other than structure/shape
+A named alternative treatment of a component, selected via a `variant` prop, following M3's own names where M3 has them: Button's `elevated`/`filled`/`tonal`/`outlined`/`text`, Tabs' `primary`/`secondary`, Details' `outlined`/`plain`. A variant fixes the color roles, border and elevation together, as M3 defines them. Other independent axes (`size`, `shape`) get one prop each rather than being folded into `variant` as a compound value.
+_Avoid_: style, mode, `color` (a variant is more than a color choice)
+
+**Background role**:
+The M3 color role a container paints behind its content, chosen with a `bgColor` prop (`surface-container-high`, `primary-container`, `inverse-surface`, `transparent`, ...). Choosing one also sets the matching "on" role for text and re-points the component color roles that must stay readable on it (`--theme-color-link-text`, `--theme-color-focus-ring-on-bg`). [[BaseWrapper]] owns the full set; overlays accept a narrower subset (`OverlayBgColorType`, `PopoverBgColorType`) limited to the surfaces M3 uses for them.
+_Avoid_: background color, theme (a theme is the whole token set)
+
+**Wrapper background**:
+`--theme-color-wrapper-bg`: the color actually behind a piece of content, set by the nearest [[BaseWrapper]] with a non-`transparent` [[Background role]] (or the page surface outside any wrapper). Read by descendants that must match their surroundings, most often a focus ring's offset (`ring-offset-(--theme-color-wrapper-bg)`).
+_Avoid_: parent background, surface (a surface is one specific role)
+
+**BaseWrapper**:
+The [[Primitive component]] that renders one of a fixed set of sectioning/grouping elements (`as`: `div`, `section`, `header`, `footer`, `aside`, `main`, `article`, `figure`) and applies a [[Background role]]. `Section`, `Header`, `Footer` and `Aside` are thin [[Pattern component]]s over it, each fixing `as` to its own element; BaseOverlay's panel is one too.
+_Avoid_: container, box, surface
 
 **Primitive component**:
 A component that supplies structural or interactive behavior (focus handling, open/close state, positioning) with little to no visual styling of its own, meant to be composed inside a pattern component rather than used directly. It's still an independently meaningful building block — generic enough that more than one [[Pattern component]] can compose it, and worth documenting on its own terms. `BaseOverlay` is the current example, composed by both `Dialog` and `Popover`. Declared on a component's [[Component documentation file]] as `role: primitive`. Contrast with [[Internal component]], which isn't independently reusable at all.
@@ -41,11 +53,11 @@ A component that exists purely as an implementation detail of one specific other
 _Avoid_: private component, helper component
 
 **Component title**:
-A heading-tagged (`<h1>`–`<h6>`) piece of UI chrome scoped to one component's own visual weight — the tag exists only so assistive tech has a landmark to jump to, not to place it in a page's own heading hierarchy. `DialogConfirm`'s `<h3>` is the current example, styled from `--font-weight-title`/`--text-title`.
+A heading-tagged (`<h1>`–`<h6>`) piece of UI chrome scoped to one component's own visual weight — the tag exists only so assistive tech has a landmark to jump to, not to place it in a page's own heading hierarchy. `Dialog`'s `<h2>` headline is the current example, styled from M3's Headline Small regardless of where the dialog sits in the page's outline.
 _Avoid_: heading (ambiguous with [[Document heading]]), title (too generic alone)
 
 **Document heading**:
-An `<h1>`–`<h6>` element belonging to a page's own content hierarchy, styled from its own scale (`--font-weight-heading-sm`/`-lg`; `--text-heading-xs`/`-sm`/`-md`/`-lg`/`-xl`/`-2xl`, one step per level, mapped `h1→2xl … h6→xs`) rather than a [[Component title]]'s. The two must never be conflated just because they share an HTML tag — no component currently renders one.
+An `<h1>`–`<h6>` element belonging to a page's own content hierarchy, styled from one step of Material 3's type scale per level (h1 Display Small, h2–h4 Headline Large/Medium/Small, h5 Title Large, h6 Title Medium) rather than a [[Component title]]'s. The two must never be conflated just because they share an HTML tag — no component currently renders one.
 _Avoid_: heading level, page title
 
 **Copy-paste component**:

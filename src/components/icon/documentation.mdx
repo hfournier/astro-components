@@ -1,6 +1,7 @@
 ---
 name: Icon
 description: Renders one of the library's inline SVG icons, sized and colored via CSS like any other inline SVG.
+category: SVG and MathML
 role: pattern
 meta:
   title: Icon | astro-components HenriFournier.dev
@@ -10,11 +11,31 @@ extends:
   tag: [svg]
 props:
   - name: name
-    type: '"close"'
+    type: SvgIconNameTypes
     required: true
-    description: Which icon to render.
+    description: 'Which icon to render, by its file name in `src/assets/svgs`, e.g. `"keyboard_arrow_down"`, or `"favorite-fill"` for a filled variant.'
   - name: label
     type: string
     required: false
     description: Accessible label for the icon. When provided, it's set as the icon's `aria-label` and the icon is exposed to assistive tech; when omitted, the icon is marked `aria-hidden` as decorative.
 ---
+
+## Size and color
+
+As in Material 3, icons are 24px by default and take the color of the text around them, so an icon in a Button matches its label, and one on any BaseWrapper background uses that background's on-color. Icons don't change color on hover: put an interactive icon in a component with a state layer, such as Button. Set a `size-*` class to change the size, and a `fill-*` class to change the color, e.g. `fill-(--theme-color-on-surface-variant)` for a standalone icon where M3 calls for the muted variant.
+
+## Icon set
+
+The icons are [Material Symbols](https://fonts.google.com/icons), the icon set Material 3 uses, in the **Outlined** style at weight 400. The library ships a few dozen of the most common ones. Some also come in a filled version, named with a `-fill` suffix, for selected or active states, as M3 uses them (e.g. a selected navigation item).
+
+To add an icon:
+
+1. Find it at [fonts.google.com/icons](https://fonts.google.com/icons) and note its name, e.g. `shopping_bag`.
+2. Copy `outlined/<name>.svg` (or `outlined/<name>-fill.svg`) from the [`@material-symbols/svg-400`](https://www.npmjs.com/package/@material-symbols/svg-400) package into `src/assets/svgs`, unchanged. The files are also on a CDN at `https://cdn.jsdelivr.net/npm/@material-symbols/svg-400/outlined/<name>.svg`.
+3. Add its name to `svgIconNames` in `src/svgs/icon-names.ts`, which gives `name` its autocomplete. A test fails if the list and the files don't match.
+
+Stick to the Outlined style at weight 400 so new icons match the rest. Material Symbols is licensed under Apache 2.0.
+
+## Brand icons
+
+Material Symbols has no brand logos: M3 leaves those to each brand's own artwork. For them, use [Simple Icons](https://simpleicons.org) (CC0), single-path SVGs on a 24×24 grid that take `fill` like any other icon. Add them the same way, from the `icons` folder of the [`simple-icons`](https://www.npmjs.com/package/simple-icons) package, and follow the brand's own guidelines for color and use. The library includes `github`.
