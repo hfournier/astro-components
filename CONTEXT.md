@@ -65,15 +65,15 @@ A component distributed as source a consumer copies directly into their own proj
 _Avoid_: package component, library component
 
 **Component documentation file**:
-The `documentation.mdx` file co-located in a component's folder (superseding the working name `examples.mdx`). Its frontmatter holds structured, machine-checkable facts — `name`, `description`, `role`, `meta`, the [[Prop manifest]], and `slots`/`cssProps`/`extends`/`parents` — consumed equally by a rendered props table for humans and by a coding agent. Its MDX body is empty; prose and live rendered examples live in the component's sibling [[Usage file]] and [[Example file]]s instead.
+The `documentation.mdx` file in a component's docs folder (`src/docs/<id>/`) (superseding the working name `examples.mdx`). Its frontmatter holds structured, machine-checkable facts — `name`, `description`, `role`, `meta`, the [[Prop manifest]], and `slots`/`cssProps`/`extends`/`parents` — consumed equally by a rendered props table for humans and by a coding agent. Its MDX body is empty; prose and live rendered examples live in the component's sibling [[Usage file]] and [[Example file]]s instead.
 _Avoid_: examples.mdx (superseded name), examples file
 
 **Usage file**:
-The `usage.mdx` file co-located in a component's folder alongside its [[Component documentation file]]: one per component, frontmatter `title`/`description`/`show`, MDX body showing the component's baseline usage. `show` (`"both"` | `"code-only"` | `"preview-only"` | `"none"`) picks whether the body renders as a live preview, its raw source, both as a tab pair, or neither.
+The `usage.mdx` file in a component's docs folder alongside its [[Component documentation file]]: one per component, frontmatter `title`/`description`/`show`, MDX body showing the component's baseline usage. `show` (`"both"` | `"code-only"` | `"preview-only"` | `"none"`) picks whether the body renders as a live preview, its raw source, both as a tab pair, or neither.
 _Avoid_: example (ambiguous with [[Example file]]), demo
 
 **Example file**:
-An `example-NN-<slug>.mdx` file co-located in a component's folder: one per named variant or scenario (a component can have several), frontmatter `title`/`description`, MDX body showing that one variant. Always rendered as a live-preview/source-code tab pair — unlike a [[Usage file]], it has no `show` field, since showing both is the whole point.
+An `example-NN-<slug>.mdx` file in a component's docs folder: one per named variant or scenario (a component can have several), frontmatter `title`/`description`, MDX body showing that one variant. Always rendered as a live-preview/source-code tab pair — unlike a [[Usage file]], it has no `show` field, since showing both is the whole point.
 _Avoid_: usage (ambiguous with [[Usage file]]), demo
 
 **Prop manifest**:

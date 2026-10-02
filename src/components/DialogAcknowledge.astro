@@ -1,0 +1,38 @@
+---
+import type { ComponentProps } from "astro/types";
+import type { ButtonPropsType } from "../types";
+import Dialog from "./Dialog.astro";
+import Button from "./Button.astro";
+
+type DialogProps = ComponentProps<typeof Dialog>;
+
+type Props = DialogProps & {
+  buttonAcknowledge: ButtonPropsType;
+};
+
+const { id, buttonAcknowledge, ...attrs } = Astro.props;
+---
+
+{
+  /* M3: a dialog with a single action must make it an acknowledgement. It's autofocused so
+     Enter dismisses the dialog. Dialog wires aria-labelledby to the headline itself. */
+}
+<Dialog {id} role="alertdialog" aria-describedby={`${id}-content`} {...attrs}>
+  <slot />
+
+  <menu class="flex items-center justify-end gap-2" slot="footer">
+    <li>
+      <Button
+        command="close"
+        commandfor={id}
+        id={buttonAcknowledge.id}
+        value={buttonAcknowledge.value}
+        autofocus
+        size="sm"
+        variant="text"
+      >
+        {buttonAcknowledge.text}
+      </Button>
+    </li>
+  </menu>
+</Dialog>

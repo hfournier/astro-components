@@ -1,8 +1,8 @@
 ---
 import { Code } from "astro:components";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Heading from "../components/heading/Heading.astro";
-import Link from "../components/link/Link.astro";
+import Heading from "../components/Heading.astro";
+import Link from "../components/Link.astro";
 import Li from "../internal/mdx/Li.astro";
 import Ol from "../internal/mdx/Ol.astro";
 import P from "../internal/mdx/P.astro";
@@ -33,8 +33,8 @@ import "../styles/global.css";
 </html>`;
 
 const usageAstro = `---
-import Button from "../components/button/Button.astro";
-import DialogConfirm from "../components/dialog-confirm/DialogConfirm.astro";
+import Button from "../components/Button.astro";
+import DialogConfirm from "../components/DialogConfirm.astro";
 ---
 
 <Button command="show-modal" commandfor="discard-draft">Discard draft</Button>
@@ -48,99 +48,48 @@ import DialogConfirm from "../components/dialog-confirm/DialogConfirm.astro";
   Your unsaved changes will be lost.
 </DialogConfirm>`;
 
-// Every documented component, the other component folders it imports (directly or through
-// another component), and the shared files outside src/components it needs.
+// Every documented component, the other components it imports (directly or through another
+// component), and the shared files outside src/components it needs. `id` is its docs page.
 const components = [
-  {
-    name: "Aside",
-    folder: "aside",
-    needs: ["base-wrapper"],
-    shared: ["types"],
-  },
-  { name: "Badge", folder: "badge", needs: [], shared: [] },
-  { name: "Button", folder: "button", needs: [], shared: [] },
-  {
-    name: "Details",
-    folder: "details",
-    needs: ["icon"],
-    shared: ["types", "icons"],
-  },
+  { name: "Aside", id: "aside", needs: ["BaseWrapper"], shared: ["types"] },
+  { name: "Badge", id: "badge", needs: [], shared: [] },
+  { name: "Button", id: "button", needs: [], shared: [] },
+  { name: "Details", id: "details", needs: ["Icon"], shared: ["types", "icons"] },
   {
     name: "Dialog",
-    folder: "dialog",
-    needs: ["base-overlay", "base-wrapper", "footer", "header", "icon"],
+    id: "dialog",
+    needs: ["BaseOverlay", "BaseWrapper", "Footer", "Header", "Icon"],
     shared: ["types", "icons"],
   },
   {
     name: "DialogAcknowledge",
-    folder: "dialog-acknowledge",
-    needs: [
-      "dialog",
-      "button",
-      "base-overlay",
-      "base-wrapper",
-      "footer",
-      "header",
-      "icon",
-    ],
+    id: "dialog-acknowledge",
+    needs: ["Dialog", "Button", "BaseOverlay", "BaseWrapper", "Footer", "Header", "Icon"],
     shared: ["types", "icons"],
   },
   {
     name: "DialogConfirm",
-    folder: "dialog-confirm",
-    needs: [
-      "dialog",
-      "button",
-      "base-overlay",
-      "base-wrapper",
-      "footer",
-      "header",
-      "icon",
-    ],
+    id: "dialog-confirm",
+    needs: ["Dialog", "Button", "BaseOverlay", "BaseWrapper", "Footer", "Header", "Icon"],
     shared: ["types", "icons"],
   },
-  {
-    name: "Footer",
-    folder: "footer",
-    needs: ["base-wrapper"],
-    shared: ["types"],
-  },
-  {
-    name: "Header",
-    folder: "header",
-    needs: ["base-wrapper"],
-    shared: ["types"],
-  },
-  {
-    name: "Heading",
-    folder: "heading",
-    needs: ["icon"],
-    shared: ["types", "icons"],
-  },
-  { name: "Icon", folder: "icon", needs: [], shared: ["icons"] },
-  { name: "Link", folder: "link", needs: [], shared: [] },
+  { name: "Footer", id: "footer", needs: ["BaseWrapper"], shared: ["types"] },
+  { name: "Header", id: "header", needs: ["BaseWrapper"], shared: ["types"] },
+  { name: "Heading", id: "heading", needs: ["Icon"], shared: ["types", "icons"] },
+  { name: "Icon", id: "icon", needs: [], shared: ["icons"] },
+  { name: "Link", id: "link", needs: [], shared: [] },
   {
     name: "Popover",
-    folder: "popover",
-    needs: ["base-overlay", "base-wrapper", "icon"],
+    id: "popover",
+    needs: ["BaseOverlay", "BaseWrapper", "Icon"],
     shared: ["types", "icons"],
   },
-  {
-    name: "Section",
-    folder: "section",
-    needs: ["base-wrapper"],
-    shared: ["types"],
-  },
-  {
-    name: "SkipToContent",
-    folder: "skip-to-content",
-    needs: ["button"],
-    shared: [],
-  },
+  { name: "Section", id: "section", needs: ["BaseWrapper"], shared: ["types"] },
+  { name: "SkipToContent", id: "skip-to-content", needs: ["Button"], shared: [] },
   {
     name: "Tabs / Tab",
-    folder: "tabs",
-    needs: ["tab", "tab-list", "tab-panels", "badge", "base-wrapper", "icon"],
+    id: "tabs",
+    needs: ["Tab", "TabList", "TabPanels", "Badge", "BaseWrapper", "Icon"],
     shared: ["types", "icons", "ultrahtml"],
   },
 ];
@@ -279,12 +228,11 @@ const sharedLabels: Record<string, string> = {
     <section class="space-y-2" aria-labelledby="copy">
       <Heading level={2} id="copy">Copy the components you need</Heading>
       <P>
-        Copy each component's folder from <code>src/components/</code> into the same
-        place in your project, keeping the folder names: components import each other
-        by relative path. You only need the
-        <code>.astro</code> files; the <code>.spec.ts</code> and
-        <code>.mdx</code> files are for this site's tests and documentation. Copy
-        the folders a component needs as well, plus these shared files:
+        Copy each component's <code>.astro</code> file from
+        <code>src/components/</code> into your project's
+        <code>src/components/</code>. Components import each other from that same
+        folder, and import the shared files from one folder up. Copy the other
+        components a component needs as well, plus these shared files:
       </P>
       <Ul>
         <Li>
@@ -305,24 +253,24 @@ const sharedLabels: Record<string, string> = {
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-left text-sm">
           <caption class="sr-only">
-            Each component's folder, the other component folders it needs, and
-            the shared files it needs
+            Each component, the other components it needs, and the shared files
+            it needs
           </caption>
           <thead>
             <tr class="border-b border-(--theme-color-outline-variant)">
               <th scope="col" class="py-2 pr-4 font-medium">Component</th>
               <th scope="col" class="py-2 pr-4 font-medium"
-                >Also copy these folders</th
+                >Also copy these components</th
               >
               <th scope="col" class="py-2 font-medium">Shared files</th>
             </tr>
           </thead>
           <tbody>
             {
-              components.map(({ name, folder, needs, shared }) => (
+              components.map(({ name, id, needs, shared }) => (
                 <tr class="border-b border-(--theme-color-outline-variant) align-top">
                   <th scope="row" class="py-2 pr-4 font-normal">
-                    <Link href={`/components/${folder}`}>{name}</Link>
+                    <Link href={`/components/${id}`}>{name}</Link>
                   </th>
                   <td class="py-2 pr-4">
                     {needs.length > 0

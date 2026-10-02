@@ -2,6 +2,8 @@
 
 > **Superseded in part by ADR-0010**: point 1 (one `documentation.mdx` file per component) is replaced by a three-file split (`documentation.mdx` + `usage.mdx` + `example-*.mdx`), and point 4's frontmatter schema gains a required `meta` object and renames `title` to `name`. Everything else below (points 2-3, 5-9, 11, and the `components` collection rename in point 10) still stands.
 
+> **Folder layout superseded by ADR-0013**: components now sit flat in `src/components/`, and the documentation files and specs this ADR places beside them live in `src/docs/<id>/`.
+
 Each component folder already co-locates `<Name>.astro` and `<Name>.spec.ts`; a per-component `examples.mdx` was added alongside them with `{title, description}` frontmatter and an MDX body of live rendered examples, but no per-prop documentation exists anywhere for a human or a coding agent to consult before using a component. This decision defines that convention, building on the prop-naming convention (ADR-0001) and accessibility standard (ADR-0003). We decided:
 
 1. **`examples.mdx` is renamed to `documentation.mdx`**, one file per component rather than a separate `examples.mdx` + `documentation.mdx` pair. The examples-vs-docs boundary would be perpetually fuzzy — examples are themselves documentation for a human — so splitting them invites the same content to be filed inconsistently across components.

@@ -13,12 +13,13 @@ repo itself.
 
 ## What's here
 
-Every component lives in its own folder under `src/components/`, alongside the
-files that generate its documentation page:
+Components live flat in `src/components/`, laid out exactly as they'd sit in
+your own project, so you can copy them as-is. Each component's documentation
+and tests live in a folder of their own under `src/docs/`:
 
 ```
-src/components/button/
-├── Button.astro                    # the component itself
+src/components/Button.astro         # the component itself
+src/docs/button/
 ├── Button.spec.ts                  # Playwright + axe-core tests
 ├── documentation.mdx               # name, description, role, category, prop manifest, slots
 ├── usage.mdx                       # baseline usage: prose + a live preview/source pair
@@ -74,8 +75,9 @@ component color roles that background roles re-point) is hand-written in
 /
 ├── src/
 │   ├── assets/svgs/       # Material Symbols icon files used by Icon
-│   ├── components/        # one folder per component (see above)
+│   ├── components/        # the components, flat, as they're copied into a project
 │   ├── data/tests/        # visual test pages, rendered at /tests/<id>
+│   ├── docs/              # one folder per component: documentation, usage, examples, specs
 │   ├── internal/          # docs-site rendering helpers (sidebar, table of contents, code preview, MDX renderers, ...)
 │   ├── layouts/           # BaseLayout.astro - header, sidebar nav, footer
 │   ├── pages/             # routes: home, /components/[id], /colors (theme generator), /tests/[id]
@@ -112,7 +114,7 @@ Tests run with Playwright across Chromium, Firefox, and WebKit, with
 `@axe-core/playwright` scanning every test's page for WCAG 2.2 AA violations
 (see [`docs/adr/0002-test-framework-and-a11y-tooling.md`](./docs/adr/0002-test-framework-and-a11y-tooling.md)
 and [`docs/accessibility-checklist.md`](./docs/accessibility-checklist.md)).
-Each component's `*.spec.ts` sits alongside it in its own folder. The suite
+Each component's `*.spec.ts` sits in its docs folder under `src/docs/`. The suite
 runs in light mode only.
 
 ## Stack
