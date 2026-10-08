@@ -1,0 +1,89 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import crypto from "node:crypto";
+import Divider from "./Divider.astro";
+import type { SvgIconNameTypes } from "../svgs";
+import NavDrawerItem from "./NavDrawerItem.astro";
+
+type Props = HTMLAttributes<"div"> & {
+  // The href of the NavRailItem this section belongs to, e.g. "/tests"
+  parentHref: string;
+  sectionLabel?: string;
+  subItems: {
+    href: string | URL;
+    icon?: SvgIconNameTypes;
+    label: string;
+  }[];
+};
+const {
+  parentHref,
+  sectionLabel,
+  subItems,
+  class: classList,
+  // Destructured only to keep `slot` (which places this in NavRail's sub-items slot) out of
+  // `attrs`, so it isn't rendered as an attribute.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  slot: _slot,
+  ...attrs
+} = Astro.props;
+
+// The section is current on its own pages: under its parent's href ("/tests" or "/tests/a"), or
+// on one of its own links (for sections whose pages share no path, such as "/" and "/colors").
+// Same matching as NavRailItem: "/" only matches itself, or it would match every page.
+const trimSlash = (path: string) => path.replace(/(.)\/$/, "$1");
+const path = trimSlash(Astro.url.pathname);
+const isUnder = (href: string | URL) => {
+  const target = trimSlash(typeof href === "string" ? href : href.pathname);
+  return target === "/"
+    ? path === "/"
+    : path === target || path.startsWith(`${target}/`);
+};
+const isCurrentSection =
+  isUnder(parentHref) || subItems.some((item) => isUnder(item.href));
+
+// A labelled section is a group named by its label, so screen readers announce it ("Forms, group")
+const labelId = sectionLabel
+  ? `ac-nav-section-label-${crypto.randomUUID()}`
+  : undefined;
+---
+
+{
+  /* Every section renders, and only the current one shows (the hidden attribute wins over any
+     display class): an expanded NavRail shows it, and a NavDrawer shows it or, while a rail item is
+     hovered or focused, swaps in that item's section, matched by data-ac-nav-section. */
+}
+<div
+  class:list={[
+    "hidden @min-[160px]/rail:block",
+    // When a NavDrawer swaps sections, it fades this out (data-fading) and in (data-swapped-in,
+    // from display: none). Not on page load, where it's just shown.
+    "motion-safe:transition-opacity motion-safe:duration-(--theme-duration-fast) data-fading:opacity-0 starting:data-swapped-in:opacity-0",
+    classList,
+  ]}
+  hidden={!isCurrentSection}
+  role={labelId ? "group" : undefined}
+  aria-labelledby={labelId}
+  data-ac-nav-section={trimSlash(parentHref)}
+  data-ac-nav-section-current={isCurrentSection ? "" : undefined}
+  {...attrs}
+>
+  {
+    sectionLabel && (
+      <>
+        <Divider />
+        {/* M3 drawer headline: Title Small in on-surface-variant, lined up with the items' icons */}
+        <div
+          class="px-4 pt-3 pb-2 text-sm leading-5 font-medium tracking-[0.1px] text-(--theme-color-on-surface-variant)"
+          id={labelId}
+        >
+          {sectionLabel}
+        </div>
+      </>
+    )
+  }
+  {
+    subItems.map((item) => (
+      <NavDrawerItem href={item.href} icon={item.icon} label={item.label} />
+    ))
+  }
+</div>

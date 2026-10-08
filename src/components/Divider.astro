@@ -1,0 +1,40 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+
+type Props = HTMLAttributes<"hr"> & {
+  // M3 inset: "start" leaves 16px before the line, "middle" 16px at both ends
+  inset?: "none" | "start" | "middle";
+  orientation?: "horizontal" | "vertical";
+};
+const {
+  inset = "none",
+  orientation = "horizontal",
+  class: classList,
+  ...attrs
+} = Astro.props;
+
+// M3 divider: a 1px line in outline-variant. Logical margins, so a start inset follows the
+// writing direction. A vertical divider stretches to its flex or grid row's height, so it needs
+// a flex or grid parent (or a height class).
+const orientationClasses = {
+  horizontal: "h-0 w-auto border-t",
+  vertical: "h-auto w-0 self-stretch border-s",
+}[orientation];
+
+const insetClasses = {
+  horizontal: { none: "", start: "ms-4", middle: "mx-4" }[inset],
+  vertical: { none: "", start: "mt-4", middle: "my-4" }[inset],
+}[orientation];
+---
+
+<hr
+  class:list={twMerge(
+    "shrink-0 border-0 border-(--theme-color-outline-variant)",
+    orientationClasses,
+    insetClasses,
+    classList
+  )}
+  aria-orientation={orientation === "vertical" ? "vertical" : undefined}
+  {...attrs}
+/>

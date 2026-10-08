@@ -1,0 +1,69 @@
+---
+name: ButtonIcon
+description: A Material 3 icon button, extending HTML's `<button>` element. It shows a single icon, in one of M3's four styles and five sizes, and can act as a toggle. As M3 recommends on the web, it shows a Tooltip with its label on hover and keyboard focus.
+category: Forms
+role: pattern
+meta:
+  title: ButtonIcon | astro-components HenriFournier.dev
+  description: A Material 3 icon button with four styles, five sizes, three widths, an optional toggle state and a tooltip.
+extends:
+  kind: element
+  tag: [button]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button
+props:
+  - name: icon
+    type: SvgIconNameTypes
+    required: true
+    description: The icon to show, by its file name in `src/assets/svgs`. Its size follows `size` (20px for `xs`, 24px for `sm` and `md`, 32px for `lg`, 40px for `xl`).
+  - name: label
+    type: string
+    required: true
+    description: What the button does, such as `"Delete"`. The button shows only an icon, so this is its accessible name (`aria-label`) and the text of its tooltip.
+  - name: isToggle
+    type: boolean
+    required: false
+    default: "false"
+    description: Makes the button a toggle that switches between selected and unselected on each click, exposed to assistive tech with `aria-pressed`. As in M3, a selected toggle swaps its shape (round becomes square and square becomes round) and its colors (see `variant`).
+  - name: isSelected
+    type: boolean
+    required: false
+    default: "false"
+    description: A toggle's initial state. It only applies with `isToggle`. After that, read or set the button's `aria-pressed` attribute.
+  - name: selectedIcon
+    type: SvgIconNameTypes
+    required: false
+    description: An icon to show in place of `icon` while the button is selected (`aria-pressed="true"`) or expanded (`aria-expanded="true"`). M3 toggles often switch to a filled icon, such as `"bookmark-fill"` for `"bookmark"`, and a button that opens a menu can show that it's open, such as `"menu_open"` for `"menu"`. The swap is done in CSS, so the icon follows the attribute however it changes.
+  - name: shape
+    type: '"round" | "square"'
+    required: false
+    default: '"round"'
+    description: The button's corners at rest. `round` is fully rounded, and `square` uses corner radii that scale with `size`. Either way, the corners tighten while the button is pressed.
+  - name: showTooltip
+    type: boolean
+    required: false
+    default: "true"
+    description: Shows a plain Tooltip with the `label` on hover (after a short delay) and on keyboard focus. Turn it off when the button already has a visible text label next to it, or when a rich Tooltip describes it instead.
+  - name: size
+    type: '"xs" | "sm" | "md" | "lg" | "xl"'
+    required: false
+    default: '"sm"'
+    description: The button's height, from M3's extra small to extra large (32px, 40px, 56px, 96px and 136px). Every size keeps a touch target of at least 48×48px. The outline of an `outlined` button gets thicker with the size.
+  - name: variant
+    type: '"filled" | "outlined" | "standard" | "tonal"'
+    required: false
+    default: '"standard"'
+    description: The button's Material 3 style, from most to least emphasis. `filled` uses the primary color. `tonal` uses the secondary container color. `outlined` has an outline and no fill. `standard` has neither. As a toggle, `filled` sits on a surface container until it's selected, then turns primary; `tonal` turns secondary, `outlined` turns inverse surface, and `standard` turns its icon primary.
+  - name: width
+    type: '"narrow" | "default" | "wide"'
+    required: false
+    default: '"default"'
+    description: The space on either side of the icon. `default` gives a square (or circular) button. `narrow` and `wide` are M3's narrower and wider widths, for tight spaces or for giving an action more weight.
+---
+
+## Accessibility
+
+An icon button has no visible text, so `label` is required: it's the button's accessible name, such as `"Delete"` or `"Add to favorites"`. Name the action, not the icon. The tooltip repeats the label for sighted users, so it's hidden from assistive tech. It can be dismissed with Escape, and stays open while the pointer is over it, as WCAG 1.4.13 requires.
+
+A toggle keeps the same label whether it's selected or not (`"Bookmark"`, not `"Add bookmark"` / `"Remove bookmark"`), since screen readers announce the pressed state from `aria-pressed`. To react to a change, listen for the button's `click` event and read the new state from `aria-pressed`.
+
+Use a toggle for a setting that the button turns on and off, such as a bookmark or mute. A button that shows and hides other content, such as a menu or a panel, isn't a toggle: leave out `isToggle` and give it `aria-expanded` instead, as MenuToggle does. Never use both on one button.

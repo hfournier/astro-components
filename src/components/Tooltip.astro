@@ -1,0 +1,256 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import crypto from "node:crypto";
+import { twMerge } from "tailwind-merge";
+import BaseWrapper from "./BaseWrapper.astro";
+
+// M3 tooltips, in two variants that are placed differently:
+//
+// - "plain" (default): a short label for the element it's placed in. Put it as a direct child of
+//   that element, which must be positioned (e.g. `relative`). It shows after a short delay while
+//   the element is hovered, and straight away while it has keyboard focus. Its text repeats the
+//   element's accessible name, so it's hidden from assistive tech. To anchor to the element's
+//   border box rather than its padding box, the element sets --ac-tooltip-anchor-inset to minus
+//   its border width (e.g. `[--ac-tooltip-anchor-inset:-1px]`).
+// - "rich": an optional subhead, supporting text and optional actions (the `actions` slot, e.g.
+//   text Buttons). It can hold interactive content, so it can't live inside the element it
+//   describes: put it right after that element and pass the element's id as `for`. It opens on
+//   hover and keyboard focus, stays open while the pointer or focus is on either of them, and
+//   becomes the element's accessible description (aria-describedby, minus the actions). Keyboard
+//   users reach the actions with Tab, since the tooltip follows the element in the DOM.
+type Props = HTMLAttributes<"div"> & {
+  // rich only: the id of the element the tooltip describes
+  for?: string;
+  // rich only: a Title Small heading above the supporting text
+  subhead?: string;
+  variant?: "plain" | "rich";
+};
+const {
+  for: triggerId,
+  subhead,
+  variant = "plain",
+  class: classList,
+  ...attrs
+} = Astro.props;
+
+if (variant === "rich" && !triggerId) {
+  throw new Error(
+    "Tooltip: a rich tooltip needs `for`, the id of the element it describes."
+  );
+}
+
+// Each tooltip anchors to its own element, so each needs its own anchor name. A plain tooltip puts
+// it on an inner span rather than the element itself, so it can't clash with an anchor-name the
+// element has; a rich tooltip's script adds it to the element's own anchor names.
+const randomId = crypto.randomUUID();
+const anchorName = `--ac-anchorname-tooltip-${randomId}`;
+const descriptionId = `ac-tooltip-description-${randomId}`;
+const hasActions = Astro.slots.has("actions");
+
+// M3 positions a rich tooltip's text from its baselines (subhead 28px from the top, supporting
+// text 24px below that, 16px under the text). For 14/20 text the baseline sits about 15px into
+// the line, which gives these paddings. Without a subhead or actions, it pads like a plain tooltip.
+const textPadding =
+  subhead || hasActions ? [subhead ? "pt-1" : "pt-[9px]", "pb-4"] : "py-1";
+---
+
+{
+  variant === "plain" ? (
+    <>
+      <span
+        class="pointer-events-none absolute inset-(--ac-tooltip-anchor-inset,0px)"
+        style={`anchor-name: ${anchorName}`}
+        aria-hidden="true"
+      />
+      <span
+        class:list={twMerge(
+          // M3 plain tooltip: inverse-surface, Body Small, corner extra small, 4px below its
+          // anchor, flipping above or shifting sideways to stay in the viewport. A popover, so it
+          // sits in the top layer, above anything its element's stacking context would put it under.
+          "inset-auto m-0 mt-1 min-h-6 w-max max-w-50 min-w-10 overflow-visible rounded-sm border-0 px-2 py-1",
+          "bg-(--theme-color-inverse-surface) text-center text-xs leading-4 font-normal tracking-[0.4px] text-(--theme-color-inverse-on-surface)",
+          "[position-area:bottom] [position-try-fallbacks:bottom_span-left,bottom_span-right,flip-block]",
+          // bridges the 4px gap, so the pointer can move onto the tooltip without it hiding (WCAG 1.4.13)
+          "before:absolute before:-inset-1",
+          // The script opens the popover as soon as its element is hovered or focused; these rules
+          // decide when it shows. The starting style lets it fade in, with the hover delay, from
+          // display: none, and transition-discrete keeps it in place while it fades out once closed.
+          "invisible opacity-0 starting:invisible! starting:opacity-0!",
+          "transition-[opacity,visibility,display,overlay] transition-discrete duration-(--theme-duration-feedback)",
+          // on its parent's hover (only on devices that can hover) and keyboard focus
+          "[@media(hover:hover)]:[:hover>&]:visible [@media(hover:hover)]:[:hover>&]:opacity-100 [@media(hover:hover)]:[:hover>&]:delay-500",
+          "[:focus-visible>&]:visible [:focus-visible>&]:opacity-100 [:focus-visible>&]:delay-0",
+          // dismissed with Escape (see the script); delay-0, or the hover delay would also delay hiding
+          "[[data-tooltip-dismissed]>&]:invisible! [[data-tooltip-dismissed]>&]:opacity-0! [[data-tooltip-dismissed]>&]:delay-0!",
+          classList
+        )}
+        style={`position-anchor: ${anchorName}`}
+        popover="manual"
+        aria-hidden="true"
+        data-ac-tooltip
+        {...attrs}
+      >
+        <slot />
+      </span>
+    </>
+  ) : (
+    <BaseWrapper
+      bgColor="surface-container"
+      class={twMerge(
+        // M3 rich tooltip: surface-container at elevation 2, corner medium, 16px side padding,
+        // at most 320px wide, 4px from its anchor. A popover, so it sits in the top layer.
+        "shadow-theme-elevation-2 inset-auto m-0 mt-1 min-h-6 w-max max-w-80 min-w-10 overflow-visible rounded-xl border-0 px-4 text-left",
+        // subhead and supporting text are both on-surface-variant
+        "text-(--theme-color-on-surface-variant)",
+        "[position-area:bottom] [position-try-fallbacks:bottom_span-left,bottom_span-right,flip-block]",
+        // bridges the 4px gap, so the pointer can move onto the tooltip without it closing
+        "before:absolute before:-inset-1 before:-z-10",
+        "opacity-0 transition-[opacity,display,overlay] transition-discrete duration-(--theme-duration-feedback) open:opacity-100 starting:open:opacity-0",
+        classList
+      )}
+      style={`position-anchor: ${anchorName}`}
+      popover="manual"
+      data-ac-tooltip-rich={triggerId}
+      data-ac-anchor-name={anchorName}
+      {...attrs}
+    >
+      <div id={descriptionId}>
+        {subhead && (
+          // M3 Title Small
+          <p class="pt-3.25 text-sm leading-5 font-medium tracking-[0.1px]">
+            {subhead}
+          </p>
+        )}
+        {/* M3 Body Medium */}
+        <div class:list={[textPadding, "text-sm leading-5 tracking-[0.25px]"]}>
+          <slot />
+        </div>
+      </div>
+      {hasActions && (
+        <div class="flex min-h-9 flex-wrap items-center gap-2 pb-2">
+          <slot name="actions" />
+        </div>
+      )}
+    </BaseWrapper>
+  )
+}
+
+<script>
+  // Plain tooltips: a manual popover, opened while its element is hovered or focused so it's in
+  // the top layer; its CSS handles the delay and fade. Opening it afresh each time also puts it
+  // above any popover or dialog opened since.
+  const plainTooltips = document.querySelectorAll<HTMLElement>("[data-ac-tooltip]");
+  const tooltipParents = Array.from(plainTooltips, (tooltip) => tooltip.parentElement!);
+
+  plainTooltips.forEach((tooltip) => {
+    const parent = tooltip.parentElement!;
+    const open = () => {
+      if (!tooltip.matches(":popover-open")) tooltip.showPopover();
+    };
+    const close = () => {
+      if (tooltip.matches(":popover-open") && !parent.matches(":hover, :focus-visible")) {
+        tooltip.hidePopover();
+      }
+    };
+    parent.addEventListener("pointerenter", open);
+    parent.addEventListener("focusin", () => {
+      if (parent.matches(":focus-visible")) open();
+    });
+    parent.addEventListener("pointerleave", close);
+    parent.addEventListener("focusout", close);
+  });
+
+  // WCAG 1.4.13: Escape hides a showing tooltip without moving the pointer or focus. It stays
+  // hidden until the pointer leaves its element or focus moves away.
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    tooltipParents
+      .filter((parent) => parent.matches(":hover, :focus-visible"))
+      .forEach((parent) => parent.setAttribute("data-tooltip-dismissed", ""));
+  });
+
+  tooltipParents.forEach((parent) => {
+    const reset = () => parent.removeAttribute("data-tooltip-dismissed");
+    parent.addEventListener("pointerleave", reset);
+    parent.addEventListener("blur", reset);
+  });
+
+  // Rich tooltips: a manual popover opened and closed from its trigger's hover and focus.
+  const showDelay = 500; // same as a plain tooltip's hover delay
+  const hideDelay = 300; // time to move the pointer between the trigger and the tooltip
+  const canHover = window.matchMedia("(hover: hover)");
+
+  document
+    .querySelectorAll<HTMLElement>("[data-ac-tooltip-rich]")
+    .forEach((tooltip) => {
+      const trigger = document.getElementById(tooltip.dataset.acTooltipRich!);
+      if (!trigger) return;
+
+      // Anchor the tooltip to its trigger, keeping any anchor names the trigger already has
+      const ownNames =
+        getComputedStyle(trigger).getPropertyValue("anchor-name");
+      const anchorName = tooltip.dataset.acAnchorName!;
+      trigger.style.setProperty(
+        "anchor-name",
+        ownNames && ownNames !== "none"
+          ? `${ownNames}, ${anchorName}`
+          : anchorName
+      );
+
+      // The subhead and supporting text describe the trigger (the actions don't)
+      const descriptionId = tooltip.firstElementChild!.id;
+      const describedBy =
+        trigger.getAttribute("aria-describedby")?.split(" ") ?? [];
+      if (!describedBy.includes(descriptionId)) {
+        trigger.setAttribute(
+          "aria-describedby",
+          [...describedBy, descriptionId].join(" ")
+        );
+      }
+
+      let timer: number | undefined;
+      // set by Escape, so returning focus to the trigger doesn't reopen the tooltip; cleared once
+      // the pointer leaves the trigger or focus leaves it
+      let isDismissed = false;
+      const isOpen = () => tooltip.matches(":popover-open");
+      const isEngaged = () =>
+        trigger.matches(":hover, :focus-visible") ||
+        tooltip.matches(":hover") ||
+        tooltip.contains(document.activeElement);
+      const open = (delay: number) => {
+        if (isDismissed) return;
+        clearTimeout(timer);
+        timer = window.setTimeout(() => {
+          if (!isOpen()) tooltip.showPopover();
+        }, delay);
+      };
+      const close = (delay: number) => {
+        clearTimeout(timer);
+        timer = window.setTimeout(() => {
+          if (isOpen() && !isEngaged()) tooltip.hidePopover();
+        }, delay);
+      };
+
+      trigger.addEventListener("pointerenter", () => {
+        if (canHover.matches) open(showDelay);
+      });
+      tooltip.addEventListener("pointerenter", () => clearTimeout(timer));
+      for (const element of [trigger, tooltip]) {
+        element.addEventListener("pointerleave", () => close(hideDelay));
+        element.addEventListener("focusout", () => close(0));
+      }
+      trigger.addEventListener("focusin", () => {
+        if (trigger.matches(":focus-visible")) open(0);
+      });
+      trigger.addEventListener("pointerleave", () => (isDismissed = false));
+      trigger.addEventListener("blur", () => (isDismissed = false));
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape" || !isOpen()) return;
+        clearTimeout(timer);
+        isDismissed = true;
+        if (tooltip.contains(document.activeElement)) trigger.focus();
+        tooltip.hidePopover();
+      });
+    });
+</script>

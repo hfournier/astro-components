@@ -1,0 +1,401 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import crypto from "node:crypto";
+import { twMerge } from "tailwind-merge";
+import BaseWrapper from "./BaseWrapper.astro";
+import type { BgColorType } from "../types";
+
+// An M3 navigation drawer beside a collapsed (not expandable) NavRail, holding the rail's
+// NavRailSubItems sections and showing one at a time: the current page's, or the section of the
+// rail item being hovered or focused (matched by the item's href and the section's parentHref).
+//
+// - xl and up: a standard drawer, in the layout right after the rail and always visible. Hovering
+//   or focusing a rail item previews its section until the pointer and focus leave.
+// - Below lg: unused. The rail opens as a modal expanded rail, and the drawer moves its sections
+//   into it, after the rail's destinations.
+// - lg to xl: an overlay that slides out from under the rail.
+//   - Modal (default): M3's modal drawer. A scrim covers the page, which is inert until the drawer
+//     closes (the rail stays usable, so hovering another item switches sections). Opens on hover,
+//     a tap, or ArrowRight on a focused rail item; closes with Escape or a click on the scrim.
+//   - Not modal: opens on hover, a tap or keyboard focus, and closes once the pointer and focus
+//     have left the rail item and the drawer, or with Escape or a click outside.
+//   On touch, a second tap on the rail item whose section is open goes to its page.
+// In every mode, Tab goes from a rail item into its section's links and then on to the next rail
+// item, and ArrowRight/ArrowLeft move between a rail item and its section.
+type Props = HTMLAttributes<"div"> & {
+  bgColor?: BgColorType;
+  isModal?: boolean;
+  // The drawer's width, as an expanded NavRail's: 220px or 360px. For another width, pass a class
+  // such as `[--ac-nav-drawer-width:300px]`; it's kept within those limits.
+  width?: "narrow" | "wide";
+};
+const {
+  bgColor = "surface-container-low",
+  isModal = true,
+  width = "narrow",
+  class: classList,
+  id,
+  "aria-label": ariaLabel = "Section",
+  ...attrs
+} = Astro.props;
+
+const drawerId = id ?? `ac-nav-drawer-${crypto.randomUUID()}`;
+
+// Set as a custom property, so a consumer overrides it with one class
+const widthClasses = {
+  narrow: "[--ac-nav-drawer-width:220px]",
+  wide: "[--ac-nav-drawer-width:360px]",
+}[width];
+---
+
+{
+  /* Below xl the drawer is a fixed overlay stacked under the rail (NavRail is z-30), so it slides
+     out from under the rail's edge, and its scrim sits under both. Open while data-open is set
+     (by the script); closed, it's invisible, so it can't be focused or reached by assistive tech. */
+}
+<BaseWrapper
+  class={twMerge(
+    // Below xl: beside the 96px collapsed rail, full height, corner large on its end side, at
+    // elevation 1. 220-360px wide (and never wider than the viewport beside the rail). It's a rail
+    // container too, as NavRailSubItems sections only show in a rail wider than 160px.
+    "peer/nav-drawer @container/rail fixed top-0 left-24 z-20 h-dvh overflow-y-auto rounded-r-2xl border-l border-(--theme-color-outline-variant) px-3 py-5 shadow-theme-elevation-1",
+    widthClasses,
+    "w-(--ac-nav-drawer-width) min-w-55 max-w-[min(360px,calc(100vw-6rem))]",
+    // Slides out from under the rail, and back. Visible straight away when opening, so focus can
+    // move into it; still visible while it slides back when closing.
+    "invisible -translate-x-full data-open:visible data-open:translate-x-0",
+    "motion-safe:transition-[translate,visibility] motion-safe:data-open:transition-[translate] motion-safe:duration-(--theme-duration-base)",
+    // xl and up: always visible, in the layout right after the rail
+    "xl:visible xl:sticky xl:left-auto xl:z-auto xl:translate-x-0 xl:rounded-none xl:shadow-none xl:transition-none",
+    classList
+  )}
+  {bgColor}
+  id={drawerId}
+  data-ac-nav-drawer
+  data-ac-nav-drawer-modal={isModal ? "" : undefined}
+  {...attrs}
+>
+  {
+    /* The Divider above a section separates it from the rail's destinations in an expanded rail;
+      the drawer has none, so the first section it shows drops its Divider */
+  }
+  <nav
+    class="[&>[data-ac-nav-section]:nth-child(1_of_[data-ac-nav-section]:not([hidden]))>hr]:hidden"
+    aria-label={ariaLabel}
+  >
+    <slot />
+  </nav>
+</BaseWrapper>
+
+{
+  isModal && (
+    // M3 modal drawer scrim: 32% scrim over the page, under the drawer and the rail
+    <div
+      class:list={[
+        "invisible fixed inset-0 z-10 bg-(--theme-color-scrim)/32 opacity-0",
+        "peer-data-open/nav-drawer:visible peer-data-open/nav-drawer:opacity-100",
+        "motion-safe:transition-[opacity,visibility] motion-safe:duration-(--theme-duration-base) xl:hidden",
+      ]}
+      aria-hidden="true"
+      data-ac-nav-drawer-scrim
+    />
+  )
+}
+
+<script>
+  const lg = window.matchMedia("(width >= 64rem)");
+  const xl = window.matchMedia("(width >= 80rem)");
+  const openDelay = 200; // so the pointer can cross the rail without opening the drawer
+  const closeDelay = 300; // time to move the pointer between a rail item and the drawer
+
+  const trimSlash = (path: string) => path.replace(/(.)\/$/, "$1");
+  const pathOf = (link: HTMLAnchorElement) =>
+    trimSlash(new URL(link.href).pathname);
+  const isVisible = (element: HTMLElement) =>
+    element.getClientRects().length > 0;
+
+  document
+    .querySelectorAll<HTMLElement>("[data-ac-nav-drawer]")
+    .forEach((drawer) => {
+      const isModal = drawer.hasAttribute("data-ac-nav-drawer-modal");
+      const sections = Array.from(
+        drawer.querySelectorAll<HTMLElement>("[data-ac-nav-section]")
+      );
+      const sectionPaths = new Set(sections.map((s) => s.dataset.acNavSection));
+
+      // The rail items with a section in this drawer
+      const items = Array.from(
+        document.querySelectorAll<HTMLAnchorElement>(
+          "[data-ac-nav-rail] nav a[href]"
+        )
+      ).filter((item) => sectionPaths.has(pathOf(item)));
+      const rail = items[0]?.closest<HTMLElement>("[data-ac-nav-rail]");
+      if (!rail) return;
+
+      let opener: HTMLAnchorElement | null = null; // the rail item whose section is shown
+      // Set by Escape, so returning focus to the rail item doesn't reopen the drawer; cleared when
+      // focus leaves that item
+      let dismissedItem: HTMLAnchorElement | null = null;
+      let timer: number | undefined;
+      const inerted: HTMLElement[] = [];
+
+      // From lg to xl, where the drawer opens and closes. Below lg it does neither: its sections
+      // are in the rail, which opens expanded (see place()).
+      const isOverlay = () => lg.matches && !xl.matches;
+      const isOpen = () => drawer.hasAttribute("data-open");
+      // Below xl the modal drawer stays open until dismissed; otherwise leaving closes it
+      const closesOnLeave = () => !isModal || !isOverlay();
+      const links = () =>
+        Array.from(
+          drawer.querySelectorAll<HTMLAnchorElement>(
+            "[data-ac-nav-section]:not([hidden]) a[href]"
+          )
+        );
+
+      // Show one section's links (by its parent's path), or the current page's with null. While
+      // the drawer is visible, the shown links fade out before the new ones fade in (see
+      // NavRailSubItems), one after the other, so the two never share the drawer.
+      let swap = 0; // so a newer show() cancels a pending one
+      const show = (path: string | null) => {
+        const isShown = (section: HTMLElement) =>
+          path === null
+            ? section.hasAttribute("data-ac-nav-section-current")
+            : section.dataset.acNavSection === path;
+        const outgoing = sections.filter((s) => !s.hidden && !isShown(s));
+        const id = ++swap;
+        const swapIn = () => {
+          if (id !== swap) return;
+          sections.forEach((section) => {
+            // fades in from its starting style (see NavRailSubItems)
+            if (section.hidden && isShown(section)) section.dataset.swappedIn = "";
+            section.hidden = !isShown(section);
+            delete section.dataset.fading;
+          });
+        };
+        const isDrawerVisible = isOpen() || xl.matches;
+        const fadeMs = outgoing[0]
+          ? parseFloat(getComputedStyle(outgoing[0]).transitionDuration) * 1000
+          : 0;
+        if (!isDrawerVisible || outgoing.length === 0 || fadeMs === 0) {
+          swapIn();
+          return;
+        }
+        outgoing.forEach((section) => (section.dataset.fading = ""));
+        window.setTimeout(swapIn, fadeMs);
+      };
+
+      // Below xl the drawer is a disclosure its rail items open; at xl it's always visible
+      const syncAria = () => {
+        items.forEach((item) => {
+          if (isOverlay()) {
+            item.setAttribute(
+              "aria-expanded",
+              String(isOpen() && item === opener)
+            );
+            item.setAttribute("aria-controls", drawer.id);
+          } else {
+            item.removeAttribute("aria-expanded");
+            item.removeAttribute("aria-controls");
+          }
+        });
+      };
+
+      // A modal drawer makes the rest of the page inert, except the rail
+      const setInert = (isInert: boolean) => {
+        if (!isInert) {
+          inerted.splice(0).forEach((element) => (element.inert = false));
+          return;
+        }
+        Array.from(document.body.children).forEach((element) => {
+          if (
+            element instanceof HTMLElement &&
+            !element.inert &&
+            !(element instanceof HTMLScriptElement) &&
+            !element.hasAttribute("data-ac-nav-drawer-scrim") &&
+            !element.contains(drawer) &&
+            !element.contains(rail)
+          ) {
+            element.inert = true;
+            inerted.push(element);
+          }
+        });
+      };
+
+      const open = (item: HTMLAnchorElement, moveFocus = false) => {
+        if (!lg.matches) return;
+        clearTimeout(timer);
+        opener = item;
+        show(pathOf(item));
+        if (isOverlay() && !isOpen()) {
+          drawer.setAttribute("data-open", "");
+          if (isModal) setInert(true);
+        }
+        syncAria();
+        if (moveFocus) links()[0]?.focus();
+      };
+
+      const close = (returnFocus = false) => {
+        clearTimeout(timer);
+        const lastOpener = opener;
+        const hadFocus = drawer.contains(document.activeElement);
+        opener = null;
+        if (isOpen()) {
+          drawer.removeAttribute("data-open");
+          setInert(false);
+          // Back to the current page's section once it has slid away, not mid-slide (a reopen
+          // cancels the slide, and the section it opens with stays)
+          Promise.all(drawer.getAnimations().map((a) => a.finished)).then(
+            () => {
+              if (!opener && !isOpen()) show(null);
+            },
+            () => {}
+          );
+        } else show(null);
+        syncAria();
+        if (returnFocus && hadFocus) lastOpener?.focus();
+      };
+
+      const isEngaged = () =>
+        (opener?.matches(":hover, :focus") ?? false) ||
+        drawer.matches(":hover") ||
+        drawer.contains(document.activeElement);
+      const closeSoon = () => {
+        clearTimeout(timer);
+        timer = window.setTimeout(() => {
+          if (!isEngaged()) close();
+        }, closeDelay);
+      };
+
+      // The next focusable control in the rail after a rail item, for Tab out of its section
+      const nextInRail = (item: HTMLElement) => {
+        const focusables = Array.from(
+          rail.querySelectorAll<HTMLElement>("a[href], button:not([disabled])")
+        ).filter(isVisible);
+        return focusables[focusables.indexOf(item) + 1];
+      };
+
+      items.forEach((item) => {
+        // A touch has no hover: a tap opens the drawer instead (see click below), and lifting the
+        // finger, which fires pointerleave, doesn't close it
+        item.addEventListener("pointerenter", (event) => {
+          if (event.pointerType === "touch") return;
+          clearTimeout(timer);
+          // Switch straight away once the drawer is showing a section; delay opening it
+          if (isOpen() || !isOverlay()) open(item);
+          else timer = window.setTimeout(() => open(item), openDelay);
+        });
+        item.addEventListener("pointerleave", (event) => {
+          if (event.pointerType === "touch") return;
+          if (closesOnLeave()) closeSoon();
+          else if (!isOpen()) clearTimeout(timer); // cancel a pending open
+        });
+        // Below xl, a tap on a rail item opens its section (or switches to it) rather than
+        // following the link; a second tap, while its section is open, goes to its page. Decided
+        // per tap, so a touchscreen laptop's mouse still follows the link.
+        let pointerType = "";
+        item.addEventListener("pointerdown", (event) => {
+          pointerType = event.pointerType;
+        });
+        item.addEventListener("click", (event) => {
+          const isTap = pointerType === "touch";
+          pointerType = "";
+          if (!isTap || !isOverlay() || (isOpen() && item === opener)) return;
+          event.preventDefault();
+          open(item);
+        });
+        item.addEventListener("focus", () => {
+          // A modal drawer doesn't open on focus, or keyboard users couldn't tab past the rail
+          if (!item.matches(":focus-visible") || item === dismissedItem) return;
+          if (closesOnLeave() || isOpen()) open(item);
+        });
+        item.addEventListener("blur", () => {
+          if (item === dismissedItem) dismissedItem = null;
+          if (closesOnLeave()) closeSoon();
+        });
+        item.addEventListener("keydown", (event) => {
+          if (!lg.matches) return;
+          if (event.key === "ArrowRight") {
+            event.preventDefault();
+            open(item, true);
+          } else if (
+            event.key === "Tab" &&
+            !event.shiftKey &&
+            item === opener &&
+            (isOpen() || !isOverlay()) &&
+            links().length > 0
+          ) {
+            event.preventDefault();
+            links()[0].focus();
+          }
+        });
+      });
+
+      drawer.addEventListener("pointerenter", () => clearTimeout(timer));
+      drawer.addEventListener("pointerleave", (event) => {
+        if (event.pointerType !== "touch" && closesOnLeave()) closeSoon();
+      });
+      drawer.addEventListener("focusout", () => {
+        if (closesOnLeave()) closeSoon();
+      });
+
+      // Tab out of a section goes back to the rail: forward to the rail item after its opener,
+      // back to its opener. ArrowLeft goes back to the opener too.
+      drawer.addEventListener("keydown", (event) => {
+        if (!opener) return;
+        const sectionLinks = links();
+        const isFirst = document.activeElement === sectionLinks[0];
+        const isLast = document.activeElement === sectionLinks.at(-1);
+        if (
+          event.key === "ArrowLeft" ||
+          (event.key === "Tab" && event.shiftKey && isFirst)
+        ) {
+          event.preventDefault();
+          opener.focus();
+        } else if (event.key === "Tab" && !event.shiftKey && isLast) {
+          const next = nextInRail(opener);
+          if (next) {
+            event.preventDefault();
+            next.focus();
+          }
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape" || !opener) return;
+        dismissedItem = opener;
+        close(true);
+      });
+
+      // A click outside the drawer and the rail (including on the modal drawer's scrim)
+      document.addEventListener("pointerdown", (event) => {
+        if (!isOpen()) return;
+        const target = event.target as Node;
+        if (!drawer.contains(target) && !rail.contains(target)) close();
+      });
+
+      // Below lg the rail opens as a modal expanded rail, and the sections go into its <nav>, after
+      // its destinations, as an expandable rail's sub-items are (where only the current page's
+      // shows). From lg up they're back in the drawer.
+      const drawerNav = drawer.querySelector("nav");
+      const railNav = rail.querySelector("nav");
+      const place = () => {
+        const target = lg.matches ? drawerNav : railNav;
+        if (target) sections.forEach((section) => target.append(section));
+      };
+
+      // Crossing the lg or xl breakpoint switches between the drawer's modes
+      const reset = () => {
+        opener = null;
+        drawer.removeAttribute("data-open");
+        setInert(false);
+        place();
+        show(null);
+        syncAria();
+      };
+      lg.addEventListener("change", reset);
+      xl.addEventListener("change", reset);
+
+      place();
+      syncAria();
+    });
+</script>

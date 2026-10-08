@@ -1,0 +1,213 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import type { SvgIconNameTypes } from "../svgs";
+import Icon from "./Icon.astro";
+import Tooltip from "./Tooltip.astro";
+
+type Props = HTMLAttributes<"button"> & {
+  icon: SvgIconNameTypes;
+  // An icon button shows only an icon, so this is its accessible name (and its tooltip's text)
+  label: string;
+  // A toggle button switches between selected and unselected on each click (aria-pressed)
+  isToggle?: boolean;
+  // A toggle button's initial state
+  isSelected?: boolean;
+  // Shown in place of `icon` while the button is pressed (a toggle) or expanded (a disclosure,
+  // with aria-expanded), e.g. "bookmark-fill" for "bookmark" or "menu_open" for "menu"
+  selectedIcon?: SvgIconNameTypes;
+  shape?: "round" | "square";
+  // M3: on web, show a tooltip describing the action on hover (and keyboard focus)
+  showTooltip?: boolean;
+  size?: "xs" | "sm" | "md" | "lg" | "xl";
+  variant?: "filled" | "outlined" | "standard" | "tonal";
+  width?: "narrow" | "default" | "wide";
+};
+
+const {
+  icon,
+  label,
+  isToggle = false,
+  isSelected = false,
+  selectedIcon,
+  shape = "round",
+  showTooltip = true,
+  size = "sm",
+  variant = "standard",
+  width = "default",
+  class: classList,
+  type,
+  ...attrs
+}: Props = Astro.props;
+
+const iconSizeClasses = {
+  xs: "size-5",
+  sm: "size-6",
+  md: "size-6",
+  lg: "size-8",
+  xl: "size-10",
+}[size];
+
+// "round" is half the height in px rather than rounded-full, so the corners can animate to and
+// from the pressed and selected radii (M3's shape morph) instead of jumping.
+const shapeClasses = {
+  round: {
+    xs: "rounded-[16px]",
+    sm: "rounded-[20px]",
+    md: "rounded-[28px]",
+    lg: "rounded-[48px]",
+    xl: "rounded-[68px]",
+  }[size],
+  square: {
+    xs: "rounded-xl",
+    sm: "rounded-xl",
+    md: "rounded-2xl",
+    lg: "rounded-[28px]",
+    xl: "rounded-[28px]",
+  }[size],
+}[shape];
+
+// M3: a selected toggle swaps shapes, round becoming square and square becoming round
+const selectedShapeClasses = {
+  round: {
+    xs: "aria-pressed:rounded-xl",
+    sm: "aria-pressed:rounded-xl",
+    md: "aria-pressed:rounded-2xl",
+    lg: "aria-pressed:rounded-[28px]",
+    xl: "aria-pressed:rounded-[28px]",
+  }[size],
+  square: {
+    xs: "aria-pressed:rounded-[16px]",
+    sm: "aria-pressed:rounded-[20px]",
+    md: "aria-pressed:rounded-[28px]",
+    lg: "aria-pressed:rounded-[48px]",
+    xl: "aria-pressed:rounded-[68px]",
+  }[size],
+}[shape];
+
+const pressedShapeClasses = {
+  xs: "not-disabled:active:rounded-lg",
+  sm: "not-disabled:active:rounded-lg",
+  md: "not-disabled:active:rounded-xl",
+  lg: "not-disabled:active:rounded-2xl",
+  xl: "not-disabled:active:rounded-2xl",
+}[size];
+
+// M3: width is leading space + icon + trailing space, per size and width
+const sizeClasses = {
+  narrow: {
+    xs: "h-8 w-7",
+    sm: "h-10 w-8",
+    md: "h-14 w-12",
+    lg: "h-24 w-16",
+    xl: "h-34 w-26",
+  }[size],
+  default: {
+    xs: "size-8",
+    sm: "size-10",
+    md: "size-14",
+    lg: "size-24",
+    xl: "size-34",
+  }[size],
+  wide: {
+    xs: "h-8 w-10",
+    sm: "h-10 w-13",
+    md: "h-14 w-18",
+    lg: "h-24 w-32",
+    xl: "h-34 w-46",
+  }[size],
+}[width];
+
+// M3 outline width grows with size. The state layer extends over the border, so it insets by the
+// same amount, and so does the tooltip's anchor (see Tooltip).
+const borderClasses = {
+  xs: "border before:-inset-px [--ac-tooltip-anchor-inset:-1px]",
+  sm: "border before:-inset-px [--ac-tooltip-anchor-inset:-1px]",
+  md: "border before:-inset-px [--ac-tooltip-anchor-inset:-1px]",
+  lg: "border-2 before:-inset-0.5 [--ac-tooltip-anchor-inset:-2px]",
+  xl: "border-3 before:-inset-[3px] [--ac-tooltip-anchor-inset:-3px]",
+}[size];
+
+// M3 disabled: icon on-surface at 38%, any container on-surface at 10%.
+const disabledContainer =
+  "disabled:bg-(--theme-color-on-surface)/10 disabled:border-transparent";
+
+// A toggle's selected colors only apply while enabled, so a disabled toggle looks disabled
+const variantClasses = {
+  filled: isToggle
+    ? `bg-(--theme-color-surface-container) border-(--theme-color-surface-container) text-(--theme-color-on-surface-variant) not-disabled:aria-pressed:bg-(--theme-color-primary) not-disabled:aria-pressed:border-(--theme-color-primary) not-disabled:aria-pressed:text-(--theme-color-on-primary) ${disabledContainer}`
+    : `bg-(--theme-color-primary) border-(--theme-color-primary) text-(--theme-color-on-primary) ${disabledContainer}`,
+  // the outline stays outline-variant when disabled
+  outlined: isToggle
+    ? "bg-transparent border-(--theme-color-outline-variant) text-(--theme-color-on-bg-variant) not-disabled:aria-pressed:bg-(--theme-color-inverse-surface) not-disabled:aria-pressed:border-(--theme-color-inverse-surface) not-disabled:aria-pressed:text-(--theme-color-inverse-on-surface) disabled:aria-pressed:bg-(--theme-color-on-surface)/10 disabled:aria-pressed:border-transparent"
+    : "bg-transparent border-(--theme-color-outline-variant) text-(--theme-color-on-bg-variant)",
+  standard: isToggle
+    ? "bg-transparent border-transparent text-(--theme-color-on-bg-variant) not-disabled:aria-pressed:text-(--theme-color-primary)"
+    : "bg-transparent border-transparent text-(--theme-color-on-bg-variant)",
+  tonal: isToggle
+    ? `bg-(--theme-color-secondary-container) border-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container) not-disabled:aria-pressed:bg-(--theme-color-secondary) not-disabled:aria-pressed:border-(--theme-color-secondary) not-disabled:aria-pressed:text-(--theme-color-on-secondary) ${disabledContainer}`
+    : `bg-(--theme-color-secondary-container) border-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container) ${disabledContainer}`,
+}[variant];
+---
+
+<button
+  class:list={twMerge(
+    "group/icon-button grid cursor-pointer place-items-center",
+    "relative isolate before:absolute before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0 motion-safe:before:transition-opacity",
+    "not-disabled:hover:before:opacity-8 not-disabled:focus-visible:before:opacity-10 not-disabled:active:before:opacity-10",
+    // M3 touch target: at least 48x48, centered on the button, for every size and width
+    "after:absolute after:top-1/2 after:left-1/2 after:size-12 after:min-h-full after:min-w-full after:-translate-1/2",
+    "disabled:cursor-default disabled:text-(--theme-color-on-surface)/38",
+    "motion-safe:transition-[color,background-color,border-color,border-radius] motion-safe:duration-(--theme-duration-feedback)",
+    "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
+    borderClasses,
+    variantClasses,
+    sizeClasses,
+    shapeClasses,
+    isToggle && selectedShapeClasses,
+    pressedShapeClasses,
+    classList
+  )}
+  type={type ? type : "button"}
+  aria-label={label}
+  aria-pressed={isToggle ? (isSelected ? "true" : "false") : undefined}
+  data-ac-icon-toggle={isToggle ? "" : undefined}
+  {...attrs}
+>
+  {
+    selectedIcon ? (
+      <>
+        {/* swapped by CSS, so the icon follows aria-pressed/aria-expanded however they change */}
+        <Icon
+          class:list={[
+            iconSizeClasses,
+            "group-aria-pressed/icon-button:hidden group-aria-expanded/icon-button:hidden",
+          ]}
+          name={icon}
+        />
+        <Icon
+          class:list={[
+            iconSizeClasses,
+            "hidden group-aria-pressed/icon-button:block group-aria-expanded/icon-button:block",
+          ]}
+          name={selectedIcon}
+        />
+      </>
+    ) : (
+      <Icon class:list={[iconSizeClasses]} name={icon} />
+    )
+  }
+  {showTooltip && <Tooltip>{label}</Tooltip>}
+</button>
+
+<script>
+  // Toggle buttons flip aria-pressed on each click (keyboard activation fires click too)
+  document.addEventListener("click", (event) => {
+    const button = (event.target as Element).closest<HTMLButtonElement>(
+      "[data-ac-icon-toggle]"
+    );
+    if (!button || button.disabled) return;
+    const isPressed = button.getAttribute("aria-pressed") === "true";
+    button.setAttribute("aria-pressed", String(!isPressed));
+  });
+</script>

@@ -1,0 +1,114 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import type { SvgIconNameTypes } from "../svgs";
+import Icon from "./Icon.astro";
+
+type Props = HTMLAttributes<"button"> & {
+  icon: SvgIconNameTypes;
+  // The accessible name; shown beside the icon when the FAB is extended
+  label: string;
+  // An M3 extended FAB, showing its label beside the icon. In a NavRail, the rail decides instead:
+  // extended while the rail is expanded, a plain FAB while it's collapsed.
+  isExtended?: boolean;
+  size?: "base" | "md" | "lg";
+  variant?:
+    | "primary"
+    | "primary-container"
+    | "secondary"
+    | "secondary-container"
+    | "tertiary"
+    | "tertiary-container";
+};
+
+const {
+  icon,
+  label,
+  isExtended = false,
+  size = "base",
+  variant = "primary-container",
+  class: classList,
+  type,
+  ...attrs
+} = Astro.props;
+
+const variantClasses = {
+  primary: "bg-(--theme-color-primary) text-(--theme-color-on-primary)",
+  "primary-container":
+    "bg-(--theme-color-primary-container) text-(--theme-color-on-primary-container)",
+  secondary: "bg-(--theme-color-secondary) text-(--theme-color-on-secondary)",
+  "secondary-container":
+    "bg-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container)",
+  tertiary: "bg-(--theme-color-tertiary) text-(--theme-color-on-tertiary)",
+  "tertiary-container":
+    "bg-(--theme-color-tertiary-container) text-(--theme-color-on-tertiary-container)",
+}[variant];
+
+// M3 FAB (56px, corner large), medium FAB (80px, corner large increased) and large FAB
+// (96px, corner extra large), with 24px, 28px and 32px icons
+const sizeClasses = {
+  base: "size-14 rounded-2xl",
+  md: "size-20 rounded-[20px]",
+  lg: "size-24 rounded-[28px]",
+}[size];
+
+const iconSizeClasses = {
+  base: "size-6",
+  md: "size-7",
+  lg: "size-8",
+}[size];
+
+// M3 small, medium or large extended FAB: the FAB's height and corners, as wide as its icon and
+// label. In a NavRail, the rail's width decides: extended in an expanded rail (wider than 160px,
+// see NavRail), a plain FAB in a collapsed one. Outside a rail there's no `rail` container, so
+// neither query matches and isExtended decides. Each set is written out in full so Tailwind
+// generates it.
+const extendedClasses = isExtended
+  ? {
+      base: "w-auto gap-2 px-4 text-base leading-6 font-medium tracking-[0.15px]",
+      md: "w-auto gap-3 px-[26px] text-[22px] leading-7 font-normal",
+      lg: "w-auto gap-4 px-7 text-2xl leading-8 font-normal",
+    }[size]
+  : {
+      base: "@min-[160px]/rail:w-auto @min-[160px]/rail:gap-2 @min-[160px]/rail:px-4 @min-[160px]/rail:text-base @min-[160px]/rail:leading-6 @min-[160px]/rail:font-medium @min-[160px]/rail:tracking-[0.15px]",
+      md: "@min-[160px]/rail:w-auto @min-[160px]/rail:gap-3 @min-[160px]/rail:px-[26px] @min-[160px]/rail:text-[22px] @min-[160px]/rail:leading-7 @min-[160px]/rail:font-normal",
+      lg: "@min-[160px]/rail:w-auto @min-[160px]/rail:gap-4 @min-[160px]/rail:px-7 @min-[160px]/rail:text-2xl @min-[160px]/rail:leading-8 @min-[160px]/rail:font-normal",
+    }[size];
+
+// An extended FAB in a collapsed NavRail goes back to a plain FAB
+const collapsedRailClasses = isExtended
+  ? {
+      base: "@max-[160px]/rail:w-14 @max-[160px]/rail:gap-0 @max-[160px]/rail:px-0",
+      md: "@max-[160px]/rail:w-20 @max-[160px]/rail:gap-0 @max-[160px]/rail:px-0",
+      lg: "@max-[160px]/rail:w-24 @max-[160px]/rail:gap-0 @max-[160px]/rail:px-0",
+    }[size]
+  : "";
+
+// The label is always the accessible name; it's visually hidden unless the FAB is extended
+const labelClasses = isExtended
+  ? "@max-[160px]/rail:sr-only"
+  : "sr-only @min-[160px]/rail:not-sr-only";
+---
+
+<button
+  class:list={twMerge(
+    "flex shrink-0 cursor-pointer items-center justify-center whitespace-nowrap",
+    // M3: elevation level 3 at rest, focused and pressed; level 4 on hover
+    "shadow-theme-elevation-3 hover:shadow-theme-elevation-4 active:shadow-theme-elevation-3",
+    // M3 state layer, in the icon's color
+    "relative isolate before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0",
+    "hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10",
+    "motion-safe:transition-shadow motion-safe:duration-(--theme-duration-feedback) motion-safe:before:transition-opacity",
+    "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
+    variantClasses,
+    sizeClasses,
+    extendedClasses,
+    collapsedRailClasses,
+    classList
+  )}
+  type={type ?? "button"}
+  {...attrs}
+>
+  <Icon class={iconSizeClasses} name={icon} />
+  <span class={labelClasses}>{label}</span>
+</button>

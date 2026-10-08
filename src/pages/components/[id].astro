@@ -8,6 +8,7 @@ import {
 import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
 import { components as mdxComponents } from "../../mdx";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import Main from "../../components/Main.astro";
 import Heading from "../../components/Heading.astro";
 import Link from "../../components/Link.astro";
 import Usage from "../../internal/Usage.astro";
@@ -54,7 +55,8 @@ const examples = await getCollection("examples", (entry) =>
 const slugger = new GithubSlugger();
 const headings: ToCHeadingType[] = [];
 
-headings.push({ id: "top", text: `${component.data.name} Overview`, level: 1 });
+headings.push({ id: "", text: component.data.name, level: 1 });
+headings.push({ id: "top", text: "Overview", level: 2 });
 
 let usageHeadingId: string | undefined;
 if (usage) {
@@ -120,15 +122,12 @@ if (examples && examples.length > 0) {
   description={component.data.meta.description}
   classListHtml="scroll-pt-15 xl:scroll-pt-0"
 >
-  <main
-    class:list={[
-      "relative grid gap-4 md:gap-6 lg:gap-8 xl:grid-cols-[minmax(0,1fr)_fit-content(360px)]",
-    ]}
-    id="main-content"
+  <Main
+    class="relative grid grid-rows-[0px_1fr] px-2 xl:grid-cols-[minmax(0,1fr)_fit-content(360px)] xl:grid-rows-1 xl:gap-8 xl:pr-8"
   >
     <TableOfContents {headings} />
 
-    <article class="space-y-8">
+    <article class="mx-auto max-w-[75ch] space-y-8 px-4 sm:px-6 md:px-8">
       <Heading level={1}>{component.data.name} Component</Heading>
 
       <MarkdownParagraphs text={component.data.description} />
@@ -192,5 +191,5 @@ if (examples && examples.length > 0) {
         )
       }
     </article>
-  </main>
+  </Main>
 </BaseLayout>

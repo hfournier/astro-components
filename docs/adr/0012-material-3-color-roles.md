@@ -10,9 +10,10 @@ We decided:
 2. **Every role ships a real dark value via `light-dark()`**, with `color-scheme: light dark` on `:root`, so the scheme follows the OS. This replaces ADR-0004's "readiness only" clause; that ADR's choice of `light-dark()` gated by `color-scheme` is now actually in use.
 3. **Roles live in `:root`, not `@theme`, and are consumed with Tailwind's arbitrary-value syntax** (`bg-(--theme-color-primary)`, `text-(--theme-color-on-surface)`). No `bg-primary`-style utilities are generated for roles: a role's value is a `light-dark()` pair, and keeping roles out of the color utilities keeps them apart from the palette steps (point 6), which are utilities. The `--theme-` prefix marks project tokens apart from Tailwind's own.
 4. **Components draw from roles only, chosen by their variant or background role, as M3 defines them.** Button's `filled` variant is `primary` with `on-primary`, `tonal` is `secondary-container` with `on-secondary-container`, and so on. A component never takes a free `color` prop (see `CONTEXT.md`'s **Variant** and **Color role**).
-5. **Background roles carry their own link and focus-ring colors.** M3 has no link role, and `primary` isn't readable on every background a container can take. BaseWrapper's `bgColor` sets the background and its on-role, and re-points three component tokens for its descendants:
+5. **Background roles carry their own link and focus-ring colors.** M3 has no link role, and `primary` isn't readable on every background a container can take. BaseWrapper's `bgColor` sets the background and its on-role, and re-points four component tokens for its descendants:
    - `--theme-color-link-text`: `primary` on surfaces, the on-role on containers, the `on-*-fixed-variant` role on fixed colors, `inverse-primary` on `inverse-surface`.
    - `--theme-color-focus-ring-on-bg`: the same mapping, except surfaces use `secondary`.
+   - `--theme-color-on-bg-variant`: lower-emphasis content such as a standard icon button's icon. `on-surface-variant` on surfaces, the on-role on containers, the `on-*-fixed-variant` role on fixed colors, `inverse-on-surface` on `inverse-surface`.
    - `--theme-color-wrapper-bg`: the background itself, for focus-ring offsets.
 
    `transparent` sets none of them, so content inherits from the nearest wrapper (see `CONTEXT.md`'s **Background role** and **Wrapper background**).

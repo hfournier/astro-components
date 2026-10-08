@@ -1,0 +1,31 @@
+---
+name: NavDrawerItem
+description: A single link in a Material 3 navigation drawer, extending HTML's `<a>` element. A full-width 56px row with an optional icon and a label, highlighted when it's the current page. NavRailSubItems renders one for each of its sub-items.
+category: Content sectioning
+role: internal
+meta:
+  title: NavDrawerItem | astro-components HenriFournier.dev
+  description: A Material 3 navigation drawer link, with an optional icon and an active indicator for the current page.
+extends:
+  kind: element
+  tag: [a]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/a
+parents: [NavRailSubItems]
+props:
+  - name: icon
+    type: SvgIconNameTypes
+    required: false
+    description: An icon before the label, by its file name in `src/assets/svgs`. Optional, unlike a NavRailItem's, as M3's drawer items may have one or not. Without it, the label starts where the icon would.
+  - name: label
+    type: string
+    required: true
+    description: The link's text, in M3's Label Large. A label too long for the drawer is cut short with an ellipsis.
+---
+
+## Current page
+
+NavDrawerItem marks itself as the current page (`aria-current="page"`) when its `href` is the current page's path or a parent of it, the same way as NavRailItem. The current page's link sits in M3's active indicator, a full-width pill in `secondary-container` with `on-secondary-container` text. Other links are `on-surface-variant`, turning `on-surface` while hovered, focused or pressed. To decide which is current yourself, pass `aria-current`.
+
+## Layout
+
+The item fills the width of its container, which in a NavDrawer is the drawer's width minus 12px either side, per M3. It's 56px high, with 16px before its content, 24px after it, and 12px between the icon and the label.

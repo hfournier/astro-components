@@ -3,6 +3,7 @@ import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
 import { getCollection, render } from "astro:content";
 import { components as mdxComponents } from "../../mdx";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import Main from "../../components/Main.astro";
 
 export const getStaticPaths = (async () => {
   const tests = await getCollection("tests");
@@ -23,7 +24,7 @@ const { Content } = await render(test);
   description={test.data.description}
   classListHtml="scroll-pt-15 xl:scroll-pt-0"
 >
-  <main class:list={[""]} id="main-content">
+  <Main class="px-8">
     <Content components={{ ...mdxComponents }} />
-  </main>
+  </Main>
 </BaseLayout>

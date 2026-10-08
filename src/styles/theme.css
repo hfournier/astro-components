@@ -1,6 +1,12 @@
 /* The hand-written half of the theme: every token except the M3 color roles and tonal palettes,
    which the theme generator at /colors writes into colors.css. Imported by global.css. */
 
+/* font: M3's typeface, Roboto Flex, loaded by the Astro Fonts API (astro.config.mjs, BaseHead).
+   Inline, so utilities point straight at the variable <Font> sets, fallbacks included. */
+@theme inline {
+  --font-sans: var(--font-roboto-flex);
+}
+
 @theme {
   /* easing: Tailwind's native namespace, role layer on top (ADR-0006) */
   --ease-theme-overlay: var(--ease-out);
@@ -12,6 +18,12 @@
   --shadow-theme-elevation-2:
     0 1px 2px 0 color-mix(in srgb, var(--theme-color-shadow) 30%, transparent),
     0 2px 6px 2px color-mix(in srgb, var(--theme-color-shadow) 15%, transparent);
+  --shadow-theme-elevation-3:
+    0 1px 3px 0 color-mix(in srgb, var(--theme-color-shadow) 30%, transparent),
+    0 4px 8px 3px color-mix(in srgb, var(--theme-color-shadow) 15%, transparent);
+  --shadow-theme-elevation-4:
+    0 2px 3px 0 color-mix(in srgb, var(--theme-color-shadow) 30%, transparent),
+    0 6px 10px 4px color-mix(in srgb, var(--theme-color-shadow) 15%, transparent);
 }
 
 :root {
@@ -29,6 +41,8 @@
   --theme-color-link-text: var(--theme-color-primary);
   /* focus ring that contrasts with the background behind it (used by Button, Link and others) */
   --theme-color-focus-ring-on-bg: var(--theme-color-secondary);
+  /* lower-emphasis content on the background, such as a standard icon button's icon */
+  --theme-color-on-bg-variant: var(--theme-color-on-surface-variant);
   /* the surface behind the content (the body's background), for focus-ring offsets */
   --theme-color-wrapper-bg: var(--theme-color-surface);
 }

@@ -24,16 +24,18 @@ test.describe("Details", () => {
     await page.goto("/components/details");
   });
 
-  // The usage example plus the three named examples render as the only <details>
+  // The usage example plus the four named examples render as the only <details>
   // on the page (each source block beside a preview is highlighted <pre> text,
   // not elements). DOM order: usage, example-01 (open by default), example-02
-  // (with icon), example-03 (plain). Scoped through the CodePreview
-  // (data-testid="code-preview") wrappers.
+  // (with icon), example-03 (plain), example-04 (dense). Scoped through the
+  // CodePreview (data-testid="code-preview") wrappers.
   const allDetails = (page: Page) =>
     page.getByTestId("code-preview").locator("details");
   const withIcon = (page: Page) =>
     allDetails(page).filter({ hasText: "Details Heading with Icon" });
-  const withoutBorders = (page: Page) => allDetails(page).last();
+  const withoutBorders = (page: Page) => allDetails(page).nth(3);
+  const dense = (page: Page) =>
+    allDetails(page).filter({ hasText: "Dense Details Heading" });
 
   test("summary toggles its content open and closed from the keyboard", async ({
     page,
@@ -136,20 +138,34 @@ test.describe("Details", () => {
     ).toBeVisible();
   });
 
-  test("renders without a summary/content border in the plain variant", async ({
+  test("plain variant keeps a transparent 1px border, so it's the outlined variant's size", async ({
     page,
   }) => {
     const details = withoutBorders(page);
     const summary = details.locator("summary");
 
     await expect(summary).toHaveCSS("border-width", "0px");
-    await expect(details).toHaveCSS("border-width", "0px");
+    await expect(details).toHaveCSS("border-top-width", "1px");
+    await expect(details).toHaveCSS("border-top-color", "rgba(0, 0, 0, 0)");
 
     await summary.focus();
     await page.keyboard.press("Enter");
     await expect(details).toHaveJSProperty("open", true);
-    await expect(summary).toHaveCSS("border-width", "0px");
-    await expect(details).toHaveCSS("border-width", "0px");
+    await expect(details).toHaveCSS("border-top-color", "rgba(0, 0, 0, 0)");
+  });
+
+  test("a closed details is just its summary and border, with no gap below the summary", async ({
+    page,
+  }) => {
+    const details = allDetails(page).first();
+    const summary = details.locator("summary");
+    await expect(details).toHaveJSProperty("open", false);
+
+    const [detailsHeight, summaryHeight] = await Promise.all([
+      details.evaluate((el) => el.getBoundingClientRect().height),
+      summary.evaluate((el) => el.getBoundingClientRect().height),
+    ]);
+    expect(detailsHeight).toBe(summaryHeight + 2);
   });
 
   test("outlined variant is an M3 outlined card", async ({ page }) => {
@@ -178,6 +194,42 @@ test.describe("Details", () => {
 
     const chevron = summary.locator("svg[data-ac-details-chevron]");
     await expect(chevron).toHaveCSS("width", "24px");
+  });
+
+  test("dense size is a 48px summary in Body Medium, with the same padding", async ({
+    page,
+  }) => {
+    const summary = dense(page).locator("summary");
+
+    await expect(summary).toHaveCSS("min-height", "48px");
+    await expect(summary).toHaveCSS("padding-left", "16px");
+    await expect(summary).toHaveCSS("padding-right", "16px");
+    // Body Medium
+    await expect(summary).toHaveCSS("font-size", "14px");
+    await expect(summary).toHaveCSS("line-height", "20px");
+    await expect(summary).toHaveCSS("letter-spacing", "0.25px");
+  });
+
+  test("summary items are 8px apart, like an M3 button with an icon", async ({
+    page,
+  }) => {
+    await expect(withIcon(page).locator("summary")).toHaveCSS(
+      "column-gap",
+      "8px"
+    );
+  });
+
+  test("summary corners follow the card's inner curve when outlined, and stay 12px when plain", async ({
+    page,
+  }) => {
+    await expect(allDetails(page).first().locator("summary")).toHaveCSS(
+      "border-top-left-radius",
+      "11px"
+    );
+    await expect(withoutBorders(page).locator("summary")).toHaveCSS(
+      "border-top-left-radius",
+      "12px"
+    );
   });
 
   test("hovering the summary shows the M3 state layer", async ({ page }) => {

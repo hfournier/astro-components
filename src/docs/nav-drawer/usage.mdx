@@ -1,0 +1,35 @@
+---
+title: NavDrawer
+description: The following example shows a NavRail that isn't expandable, followed by a NavDrawer holding a section for each of its destinations. Put both in your layout, so they're on every page. There's no live preview here, since it would take over this site's own rail.
+show: code-only
+---
+
+<NavRail isExpandable={false}>
+  <Fab icon="search" label="Search" slot="fab" />
+
+  <NavRailItem href="/" icon="home" label="Start here" />
+  <NavRailItem href="/components" icon="code_blocks" label="Components" />
+  <NavRailItem href="/tests" icon="grading" label="Tests" />
+</NavRail>
+
+<NavDrawer>
+  <NavRailSubItems
+    parentHref="/"
+    subItems={[
+      { href: "/", label: "Getting started" },
+      { href: "/colors", label: "Colors" },
+    ]}
+  />
+  <NavRailSubItems
+    parentHref="/components"
+    sectionLabel="Forms"
+    subItems={[
+      { href: "/components/button", label: "Button" },
+      { href: "/components/fab", label: "Fab" },
+    ]}
+  />
+  <NavRailSubItems
+    parentHref="/tests"
+    subItems={[{ href: "/tests/button", icon: "grading", label: "Button" }]}
+  />
+</NavDrawer>

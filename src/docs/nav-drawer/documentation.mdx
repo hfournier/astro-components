@@ -1,0 +1,52 @@
+---
+name: NavDrawer
+description: A Material 3 navigation drawer beside a NavRail that isn't expandable, holding the rail's NavRailSubItems sections. It shows one section at a time, the current page's, or the section of the rail item being hovered or focused. From the xl breakpoint up it's always visible beside the rail; below it, it slides out from under the rail when a rail item with a section is hovered.
+category: Content sectioning
+role: pattern
+meta:
+  title: NavDrawer | astro-components HenriFournier.dev
+  description: A Material 3 navigation drawer beside a NavRail, showing the sub-items of the current or hovered destination.
+extends:
+  kind: component
+  name: BaseWrapper
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/nav
+props:
+  - name: bgColor
+    type: BgColorType
+    required: false
+    default: '"surface-container-low"'
+    description: The drawer's background role. The default is M3's modal drawer color, which also sets it apart from a rail on `surface`.
+  - name: isModal
+    type: boolean
+    required: false
+    default: "true"
+    description: Below xl, whether the drawer is M3's modal drawer. When modal, a 32% scrim covers the page, which is inert until the drawer closes; it opens on hover, a tap, or ArrowRight on a focused rail item, and closes with Escape or a click on the scrim. When not modal, it opens on hover or keyboard focus and closes once the pointer and focus have left the rail item and the drawer, or with Escape or a click outside. It has no effect from xl up, where the drawer is always visible.
+  - name: width
+    type: '"narrow" | "wide"'
+    required: false
+    default: '"narrow"'
+    description: The drawer's width, as an expanded NavRail's, 220px or 360px. For another width, see `--ac-nav-drawer-width`.
+slots:
+  - name: default
+    description: The sections to show, one for each rail item that has sub-items. Each section's `parentHref` is the `href` of its rail item.
+    kind: component
+    component: NavRailSubItems
+    multiple: true
+cssProps:
+  - name: --ac-nav-drawer-width
+    description: The drawer's width, set by `width`. Override it with a class such as `[--ac-nav-drawer-width:300px]`; it's kept within M3's 220-360px, and below xl never wider than the viewport beside the rail.
+---
+
+## Layout
+
+Put the NavDrawer right after its NavRail (with `isExpandable={false}`), as siblings. From the xl breakpoint up, the drawer takes its place in the layout, so give it a column, for example with a grid of `grid-cols-1 lg:grid-cols-[auto_1fr] xl:grid-cols-[auto_auto_1fr]` on their parent. Below xl it's a fixed overlay stacked under the rail, so it takes no space and slides out from under the rail's edge. Below lg the drawer isn't used: the rail is hidden until its MenuToggle opens it as a modal expanded rail (see NavRail), and the drawer moves its sections into the rail, after its destinations, where only the current page's section shows. From lg up they move back. It finds its rail and rail items by itself, matching each rail item's `href` to a section's `parentHref`, so there's nothing to wire up.
+
+The drawer slides out from under the rail, so NavRail is `z-30`, the drawer `z-20` and its scrim `z-10`. Anything else on the page with a higher z-index shows above the open drawer.
+
+## Keyboard and screen readers
+
+In every mode, Tab goes from a rail item into its section's links and then on to the next rail item, Shift+Tab goes back, and ArrowRight and ArrowLeft move between a rail item and its section. Escape closes the drawer (or, from xl up, ends a preview) and returns focus to the rail item. A modal drawer doesn't open on focus, so keyboard users can tab past the rail without it opening at every item.
+
+Below xl, each rail item with a section has `aria-expanded` and `aria-controls`, so screen readers announce whether its section is open. The drawer's `<nav>` is labelled "Section"; pass `aria-label` to change it.
+
+On a touchscreen from lg to xl, where there's no hover, tapping a rail item opens its section (or switches to it) instead of following the link, and tapping it again while its section is open goes to its page. This is decided per tap, so a mouse on a touchscreen laptop still follows the link. Below lg, the sections are in the rail.

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import Main from "../../components/Main.astro";
 import Heading from "../../components/Heading.astro";
 import P from "../../internal/mdx/P.astro";
 ---
@@ -8,11 +9,11 @@ import P from "../../internal/mdx/P.astro";
   title="Test | astro-components HenriFournier.dev"
   description="A collection of test pages for astro-components."
 >
-  <main id="main-content">
+  <Main class="px-8">
     <Heading level={1}>astro-components Tests</Heading>
 
     <P> A collection of test pages for astro-components. </P>
 
     <P>Pick a test from the sidebar to see its rendered result.</P>
-  </main>
+  </Main>
 </BaseLayout>

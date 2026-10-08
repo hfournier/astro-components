@@ -1,0 +1,36 @@
+---
+import type { ComponentProps } from "astro/types";
+import ButtonIcon from "./ButtonIcon.astro";
+
+type ButtonIconProps = ComponentProps<typeof ButtonIcon>;
+
+type Props = Omit<ButtonIconProps, "icon" | "label" | "selectedIcon">;
+const { class: classList, ...attrs } = Astro.props;
+---
+
+{
+  /* A disclosure button: it shows and hides other content (the expanded rail), so its state is
+     aria-expanded rather than a toggle's aria-pressed */
+}
+<ButtonIcon
+  class={classList}
+  icon="menu"
+  selectedIcon="menu_open"
+  label="Menu"
+  size="md"
+  aria-expanded="false"
+  data-ac-menu-toggle
+  {...attrs}
+/>
+
+<script>
+  // Flips aria-expanded on each click (keyboard activation fires click too)
+  document.addEventListener("click", (event) => {
+    const button = (event.target as Element).closest<HTMLButtonElement>(
+      "[data-ac-menu-toggle]"
+    );
+    if (!button || button.disabled) return;
+    const isExpanded = button.getAttribute("aria-expanded") === "true";
+    button.setAttribute("aria-expanded", String(!isExpanded));
+  });
+</script>

@@ -11,6 +11,7 @@ export type BgColorType =
   | "tertiary-container"
   | "tertiary-fixed"
   | "tertiary-fixed-dim"
+  | "surface"
   | "surface-dim"
   | "surface-bright"
   | "inverse-surface"

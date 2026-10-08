@@ -2,7 +2,7 @@
 import type { HTMLAttributes } from "astro/types";
 import type { ToCHeadingType } from "../types";
 import { twMerge } from "tailwind-merge";
-import Link from "../components/Link.astro";
+import Button from "../components/Button.astro";
 import Heading from "../components/Heading.astro";
 
 type Props = HTMLAttributes<"ul"> & {
@@ -15,44 +15,49 @@ const { headings, class: classList, ...attrs } = Astro.props;
 {
   headings && headings.length > 0 && (
     <ul
-      class:list={twMerge("space-y-1 [scroll-target-group:auto]", classList)}
+      class:list={twMerge("[scroll-target-group:auto]", classList)}
       {...attrs}
     >
       <>
         {headings.map((heading) => (
           <li>
             {heading.level === 1 ? (
-              <Heading class="text-xl" level={2}>
-                <Link
-                  class:list={[
-                    "flex min-h-6 items-center text-inherit no-underline",
-                    "[&:target-current]:text-(--theme-color-link-text) [&:target-current]:underline [&:target-current]:decoration-1 [&:target-current]:underline-offset-2",
-                    "[&:target-current]:hover:decoration-2 [&:target-current]:hover:underline-offset-4",
-                    "hover:text-(--theme-color-link-text) hover:underline hover:decoration-2 hover:underline-offset-4",
-                  ]}
-                  href={`#${heading.id}`}
-                >
-                  {heading.text}
-                </Link>
+              <Heading class="text-lg" level={2}>
+                {heading.text}
               </Heading>
             ) : (
-              <Link
+              <Button
+                as="a"
+                variant="text"
+                showFullwidth={true}
+                size="sm"
                 class:list={[
-                  "flex min-h-6 items-center text-inherit no-underline",
-                  "[&:target-current]:text-(--theme-color-link-text) [&:target-current]:underline [&:target-current]:decoration-1 [&:target-current]:underline-offset-2",
-                  "[&:target-current]:hover:decoration-2 [&:target-current]:hover:underline-offset-4",
-                  "hover:text-(--theme-color-link-text) hover:underline hover:decoration-2 hover:underline-offset-4",
+                  "justify-start [&:target-current]:[anchor-name:--ac-anchorname-toc-selected]",
                   heading.level === 2 && "pl-4",
                   heading.level === 3 && "pl-8",
                 ]}
                 href={`#${heading.id}`}
               >
                 {heading.text}
-              </Link>
+              </Button>
             )}
           </li>
         ))}
       </>
     </ul>
+
+  <div
+    class:list={[
+      // The current-section indicator is a progressive enhancement: only Chromium supports
+      // :target-current, so elsewhere no link gets the anchor name, and the indicator stays
+      // hidden rather than falling back to inset-0 around the whole menu
+      "hidden supports-[selector(:target-current)]:block",
+      "pointer-events-none absolute inset-0 border border-(--theme-color-outline-variant) rounded-full",
+      "top-[anchor(top)] bottom-[anchor(bottom)] left-[anchor(left)] right-[anchor(right)] [position-anchor:--ac-anchorname-toc-selected]",
+      "motion-safe:transition-[top,bottom,left,right] motion-safe:duration-(--theme-duration-base)",
+    ]}
+    aria-hidden="true"
+  >
+  </div>
   )
 }

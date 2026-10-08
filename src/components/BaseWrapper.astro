@@ -52,6 +52,8 @@ const colorClasses = {
     "[--theme-color-wrapper-bg:var(--theme-color-tertiary-fixed)] bg-(--theme-color-wrapper-bg) text-(--theme-color-on-tertiary-fixed)",
   "tertiary-fixed-dim":
     "[--theme-color-wrapper-bg:var(--theme-color-tertiary-fixed-dim)] bg-(--theme-color-wrapper-bg) text-(--theme-color-on-tertiary-fixed)",
+  surface:
+    "[--theme-color-wrapper-bg:var(--theme-color-surface)] bg-(--theme-color-wrapper-bg) text-(--theme-color-on-surface)",
   "surface-dim":
     "[--theme-color-wrapper-bg:var(--theme-color-surface-dim)] bg-(--theme-color-wrapper-bg) text-(--theme-color-on-surface)",
   "surface-bright":
@@ -86,10 +88,13 @@ const colorClasses = {
      that stays readable there. Hover keeps the same color - Link signals hover with its
      underline. --theme-color-focus-ring-on-bg
      (used by Button and Link) follows the link where secondary wouldn't contrast. transparent
-     sets nothing, so links inherit from the nearest wrapper (or the page). */
+     sets nothing, so links inherit from the nearest wrapper (or the page).
+     --theme-color-on-bg-variant (used by ButtonIcon) is for lower-emphasis content such as icons:
+     on-surface-variant on the surfaces, and elsewhere the on-color (the fixed colors' variant). */
   [data-ac-wrapper^="surface"] {
     --theme-color-link-text: var(--theme-color-primary);
     --theme-color-focus-ring-on-bg: var(--theme-color-secondary);
+    --theme-color-on-bg-variant: var(--theme-color-on-surface-variant);
   }
 
   /* Container tones depend on the scheme variant (Fidelity/Content tint them from the source
@@ -97,26 +102,31 @@ const colorClasses = {
   [data-ac-wrapper="primary-container"] {
     --theme-color-link-text: var(--theme-color-on-primary-container);
     --theme-color-focus-ring-on-bg: var(--theme-color-on-primary-container);
+    --theme-color-on-bg-variant: var(--theme-color-on-primary-container);
   }
 
   [data-ac-wrapper="secondary-container"] {
     --theme-color-link-text: var(--theme-color-on-secondary-container);
     --theme-color-focus-ring-on-bg: var(--theme-color-on-secondary-container);
+    --theme-color-on-bg-variant: var(--theme-color-on-secondary-container);
   }
 
   [data-ac-wrapper="tertiary-container"] {
     --theme-color-link-text: var(--theme-color-on-tertiary-container);
     --theme-color-focus-ring-on-bg: var(--theme-color-on-tertiary-container);
+    --theme-color-on-bg-variant: var(--theme-color-on-tertiary-container);
   }
 
   /* Fixed backgrounds stay light in dark mode, where primary/secondary (tone 80) would vanish. */
   [data-ac-wrapper^="primary-fixed"] {
     --theme-color-link-text: var(--theme-color-on-primary-fixed-variant);
     --theme-color-focus-ring-on-bg: var(--theme-color-on-primary-fixed-variant);
+    --theme-color-on-bg-variant: var(--theme-color-on-primary-fixed-variant);
   }
 
   [data-ac-wrapper^="secondary-fixed"] {
     --theme-color-link-text: var(--theme-color-on-secondary-fixed-variant);
+    --theme-color-on-bg-variant: var(--theme-color-on-secondary-fixed-variant);
     --theme-color-focus-ring-on-bg: var(
       --theme-color-on-secondary-fixed-variant
     );
@@ -124,6 +134,7 @@ const colorClasses = {
 
   [data-ac-wrapper^="tertiary-fixed"] {
     --theme-color-link-text: var(--theme-color-on-tertiary-fixed-variant);
+    --theme-color-on-bg-variant: var(--theme-color-on-tertiary-fixed-variant);
     --theme-color-focus-ring-on-bg: var(
       --theme-color-on-tertiary-fixed-variant
     );
@@ -133,5 +144,6 @@ const colorClasses = {
   [data-ac-wrapper="inverse-surface"] {
     --theme-color-link-text: var(--theme-color-inverse-primary);
     --theme-color-focus-ring-on-bg: var(--theme-color-inverse-primary);
+    --theme-color-on-bg-variant: var(--theme-color-inverse-on-surface);
   }
 </style>

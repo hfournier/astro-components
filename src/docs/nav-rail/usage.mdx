@@ -1,0 +1,27 @@
+---
+title: NavRail
+description: The following example shows an expandable NavRail with a FAB, three destinations and a section of sub-items for one of them, and a Header that leaves room at its start for the rail's menu button, which stays at the top left below lg. The rail adds its own menu button. Put it in your layout, so that it's on every page. For a rail that stays collapsed, with its sub-items in a drawer, see NavDrawer.
+show: code-only
+---
+
+<NavRail>
+  <Fab icon="search" label="Search" slot="fab" />
+
+  <NavRailItem href="/" icon="home" label="Start here" />
+  <NavRailItem href="/components" icon="code_blocks" label="Components" />
+  <NavRailItem href="/tests" icon="grading" label="Tests" />
+
+  <NavRailSubItems
+    slot="sub-items"
+    parentHref="/components"
+    sectionLabel="Forms"
+    subItems={[
+      { href: "/components/button", label: "Button" },
+      { href: "/components/fab", label: "Fab" },
+    ]}
+  />
+</NavRail>
+
+<Header class="flex items-center p-4 max-lg:min-h-24 max-lg:ps-21">
+  My site
+</Header>
