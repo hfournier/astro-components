@@ -1,0 +1,5 @@
+# Check text files out with LF on every OS, matching the repo and Prettier's endOfLine
+* text=auto eol=lf
+# cmd.exe misreads labels and goto in batch files with LF endings
+*.bat text eol=crlf
+*.cmd text eol=crlf
