@@ -8,6 +8,7 @@ import Heading from "../../components/Heading.astro";
 import Icon from "../../components/Icon.astro";
 import P from "../../internal/mdx/P.astro";
 import Link from "../../components/Link.astro";
+import Main from "../../components/Main.astro";
 
 const sourceColor = "#cc5500";
 const customColors: CustomColor[] = [
@@ -27,8 +28,8 @@ const { palettes } = themeColors(sourceColor, customColors, defaultVariant);
 ---
 
 <BaseLayout title="Colors" description="Astro Components">
-  <section
-    class="space-y-8 px-8"
+  <Main
+    class="mx-auto max-w-dvw space-y-10 px-4 medium:max-w-[calc(100dvw-96px)] medium:px-6 expanded:max-w-[calc(75ch+4rem)] expanded:px-8"
     data-theme-root
     data-custom-colors={JSON.stringify(customColors)}
   >
@@ -70,32 +71,32 @@ const { palettes } = themeColors(sourceColor, customColors, defaultVariant);
     <div class="grid gap-2">
       <div class="grid grid-cols-3 grid-rows-[100px_50px] gap-x-1">
         <div
-          class="bg-(--theme-color-primary) p-2 text-xs text-(--theme-color-on-primary) lg:text-sm"
+          class="bg-(--theme-color-primary) p-2 text-xs text-(--theme-color-on-primary) large:text-sm"
         >
           Primary
         </div>
         <div
-          class="bg-(--theme-color-secondary) p-2 text-xs text-(--theme-color-on-secondary) lg:text-sm"
+          class="bg-(--theme-color-secondary) p-2 text-xs text-(--theme-color-on-secondary) large:text-sm"
         >
           Secondary
         </div>
         <div
-          class="bg-(--theme-color-tertiary) p-2 text-xs text-(--theme-color-on-tertiary) lg:text-sm"
+          class="bg-(--theme-color-tertiary) p-2 text-xs text-(--theme-color-on-tertiary) large:text-sm"
         >
           Tertiary
         </div>
         <div
-          class="bg-(--theme-color-on-primary) p-2 text-xs text-(--theme-color-primary) lg:text-sm"
+          class="bg-(--theme-color-on-primary) p-2 text-xs text-(--theme-color-primary) large:text-sm"
         >
           On Primary
         </div>
         <div
-          class="bg-(--theme-color-on-secondary) p-2 text-xs text-(--theme-color-secondary) lg:text-sm"
+          class="bg-(--theme-color-on-secondary) p-2 text-xs text-(--theme-color-secondary) large:text-sm"
         >
           On Secondary
         </div>
         <div
-          class="bg-(--theme-color-on-tertiary) p-2 text-xs text-(--theme-color-tertiary) lg:text-sm"
+          class="bg-(--theme-color-on-tertiary) p-2 text-xs text-(--theme-color-tertiary) large:text-sm"
         >
           On Tertiary
         </div>
@@ -103,32 +104,32 @@ const { palettes } = themeColors(sourceColor, customColors, defaultVariant);
 
       <div class="grid grid-cols-3 grid-rows-[100px_50px] gap-x-1">
         <div
-          class="bg-(--theme-color-primary-container) p-2 text-xs text-(--theme-color-on-primary-container) lg:text-sm"
+          class="bg-(--theme-color-primary-container) p-2 text-xs text-(--theme-color-on-primary-container) large:text-sm"
         >
           Primary Container
         </div>
         <div
-          class="bg-(--theme-color-secondary-container) p-2 text-xs text-(--theme-color-on-secondary-container) lg:text-sm"
+          class="bg-(--theme-color-secondary-container) p-2 text-xs text-(--theme-color-on-secondary-container) large:text-sm"
         >
           Secondary Container
         </div>
         <div
-          class="bg-(--theme-color-tertiary-container) p-2 text-xs text-(--theme-color-on-tertiary-container) lg:text-sm"
+          class="bg-(--theme-color-tertiary-container) p-2 text-xs text-(--theme-color-on-tertiary-container) large:text-sm"
         >
           Tertiary Container
         </div>
         <div
-          class="bg-(--theme-color-on-primary-container) p-2 text-xs text-(--theme-color-primary-container) lg:text-sm"
+          class="bg-(--theme-color-on-primary-container) p-2 text-xs text-(--theme-color-primary-container) large:text-sm"
         >
           On Primary Container
         </div>
         <div
-          class="bg-(--theme-color-on-secondary-container) p-2 text-xs text-(--theme-color-secondary-container) lg:text-sm"
+          class="bg-(--theme-color-on-secondary-container) p-2 text-xs text-(--theme-color-secondary-container) large:text-sm"
         >
           On Secondary Container
         </div>
         <div
-          class="bg-(--theme-color-on-tertiary-container) p-2 text-xs text-(--theme-color-tertiary-container) lg:text-sm"
+          class="bg-(--theme-color-on-tertiary-container) p-2 text-xs text-(--theme-color-tertiary-container) large:text-sm"
         >
           On Tertiary Container
         </div>
@@ -136,65 +137,65 @@ const { palettes } = themeColors(sourceColor, customColors, defaultVariant);
 
       <div class="grid grid-cols-3 grid-rows-[100px_100px_50px_50px] gap-x-1">
         <div
-          class="bg-(--theme-color-primary-fixed) p-2 text-xs text-(--theme-color-on-primary-fixed) lg:text-sm"
+          class="bg-(--theme-color-primary-fixed) p-2 text-xs text-(--theme-color-on-primary-fixed) large:text-sm"
         >
           Primary Fixed
         </div>
         <div
-          class="bg-(--theme-color-secondary-fixed) p-2 text-xs text-(--theme-color-on-secondary-fixed) lg:text-sm"
+          class="bg-(--theme-color-secondary-fixed) p-2 text-xs text-(--theme-color-on-secondary-fixed) large:text-sm"
         >
           Secondary Fixed
         </div>
         <div
-          class="bg-(--theme-color-tertiary-fixed) p-2 text-xs text-(--theme-color-on-tertiary-fixed) lg:text-sm"
+          class="bg-(--theme-color-tertiary-fixed) p-2 text-xs text-(--theme-color-on-tertiary-fixed) large:text-sm"
         >
           Tertiary Fixed
         </div>
 
         <div
-          class="bg-(--theme-color-primary-fixed-dim) p-2 text-xs text-(--theme-color-on-primary-fixed) lg:text-sm"
+          class="bg-(--theme-color-primary-fixed-dim) p-2 text-xs text-(--theme-color-on-primary-fixed) large:text-sm"
         >
           Primary Fixed Dim
         </div>
         <div
-          class="bg-(--theme-color-secondary-fixed-dim) p-2 text-xs text-(--theme-color-on-secondary-fixed) lg:text-sm"
+          class="bg-(--theme-color-secondary-fixed-dim) p-2 text-xs text-(--theme-color-on-secondary-fixed) large:text-sm"
         >
           Secondary Fixed Dim
         </div>
         <div
-          class="bg-(--theme-color-tertiary-fixed-dim) p-2 text-xs text-(--theme-color-on-tertiary-fixed) lg:text-sm"
+          class="bg-(--theme-color-tertiary-fixed-dim) p-2 text-xs text-(--theme-color-on-tertiary-fixed) large:text-sm"
         >
           Tertiary Fixed Dim
         </div>
 
         <div
-          class="bg-(--theme-color-on-primary-fixed) p-2 text-xs text-(--theme-color-primary-fixed) lg:text-sm"
+          class="bg-(--theme-color-on-primary-fixed) p-2 text-xs text-(--theme-color-primary-fixed) large:text-sm"
         >
           On Primary Fixed
         </div>
         <div
-          class="bg-(--theme-color-on-secondary-fixed) p-2 text-xs text-(--theme-color-secondary-fixed) lg:text-sm"
+          class="bg-(--theme-color-on-secondary-fixed) p-2 text-xs text-(--theme-color-secondary-fixed) large:text-sm"
         >
           On Secondary Fixed
         </div>
         <div
-          class="bg-(--theme-color-on-tertiary-fixed) p-2 text-xs text-(--theme-color-tertiary-fixed) lg:text-sm"
+          class="bg-(--theme-color-on-tertiary-fixed) p-2 text-xs text-(--theme-color-tertiary-fixed) large:text-sm"
         >
           On Tertiary Fixed
         </div>
 
         <div
-          class="bg-(--theme-color-on-primary-fixed-variant) p-2 text-xs text-(--theme-color-primary-fixed) lg:text-sm"
+          class="bg-(--theme-color-on-primary-fixed-variant) p-2 text-xs text-(--theme-color-primary-fixed) large:text-sm"
         >
           On Primary Fixed Variant
         </div>
         <div
-          class="bg-(--theme-color-on-secondary-fixed-variant) p-2 text-xs text-(--theme-color-secondary-fixed) lg:text-sm"
+          class="bg-(--theme-color-on-secondary-fixed-variant) p-2 text-xs text-(--theme-color-secondary-fixed) large:text-sm"
         >
           On Secondary Fixed Variant
         </div>
         <div
-          class="bg-(--theme-color-on-tertiary-fixed-variant) p-2 text-xs text-(--theme-color-tertiary-fixed) lg:text-sm"
+          class="bg-(--theme-color-on-tertiary-fixed-variant) p-2 text-xs text-(--theme-color-tertiary-fixed) large:text-sm"
         >
           On Tertiary Fixed Variant
         </div>
@@ -203,50 +204,50 @@ const { palettes } = themeColors(sourceColor, customColors, defaultVariant);
 
       <div class="grid grid-cols-4 grid-rows-[100px_50px] gap-x-1">
         <div
-          class="bg-(--theme-color-surface-dim) p-2 text-xs text-(--theme-color-on-surface) lg:text-sm"
+          class="bg-(--theme-color-surface-dim) p-2 text-xs text-(--theme-color-on-surface) large:text-sm"
         >
           Surface Dim
         </div>
         <div
-          class="bg-(--theme-color-surface) p-2 text-xs text-(--theme-color-on-surface) lg:text-sm"
+          class="bg-(--theme-color-surface) p-2 text-xs text-(--theme-color-on-surface) large:text-sm"
         >
           Surface
         </div>
         <div
-          class="bg-(--theme-color-surface-bright) p-2 text-xs text-(--theme-color-on-surface) lg:text-sm"
+          class="bg-(--theme-color-surface-bright) p-2 text-xs text-(--theme-color-on-surface) large:text-sm"
         >
           Surface Bright
         </div>
         <div class="grid">
           <div
-            class="bg-(--theme-color-inverse-surface) p-2 text-xs text-(--theme-color-inverse-on-surface) lg:text-sm"
+            class="bg-(--theme-color-inverse-surface) p-2 text-xs text-(--theme-color-inverse-on-surface) large:text-sm"
           >
             Inverse Surface
           </div>
           <div
-            class="bg-(--theme-color-inverse-primary) p-2 text-xs text-[contrast-color(var(--theme-color-inverse-primary))] lg:text-sm"
+            class="bg-(--theme-color-inverse-primary) p-2 text-xs text-[contrast-color(var(--theme-color-inverse-primary))] large:text-sm"
           >
             Inverse Primary
           </div>
         </div>
 
         <div
-          class="bg-(--theme-color-on-surface) p-2 text-xs text-(--theme-color-surface) lg:text-sm"
+          class="bg-(--theme-color-on-surface) p-2 text-xs text-(--theme-color-surface) large:text-sm"
         >
           On Surface
         </div>
         <div
-          class="bg-(--theme-color-on-surface) p-2 text-xs text-(--theme-color-surface) lg:text-sm"
+          class="bg-(--theme-color-on-surface) p-2 text-xs text-(--theme-color-surface) large:text-sm"
         >
           On Surface
         </div>
         <div
-          class="bg-(--theme-color-on-surface-variant) p-2 text-xs text-(--theme-color-surface) lg:text-sm"
+          class="bg-(--theme-color-on-surface-variant) p-2 text-xs text-(--theme-color-surface) large:text-sm"
         >
           On Surface Variant
         </div>
         <div
-          class="bg-(--theme-color-inverse-on-surface) p-2 text-xs text-(--theme-color-inverse-surface) lg:text-sm"
+          class="bg-(--theme-color-inverse-on-surface) p-2 text-xs text-(--theme-color-inverse-surface) large:text-sm"
         >
           On Inverse Surface
         </div>
@@ -254,27 +255,27 @@ const { palettes } = themeColors(sourceColor, customColors, defaultVariant);
 
       <div class="grid grid-cols-5 grid-rows-[100px] gap-x-1">
         <div
-          class="bg-(--theme-color-surface-container-lowest) p-2 text-xs text-(--theme-color-on-surface) lg:text-sm"
+          class="bg-(--theme-color-surface-container-lowest) p-2 text-xs text-(--theme-color-on-surface) large:text-sm"
         >
           Surface Container Lowest
         </div>
         <div
-          class="bg-(--theme-color-surface-container-low) p-2 text-xs text-(--theme-color-on-surface) lg:text-sm"
+          class="bg-(--theme-color-surface-container-low) p-2 text-xs text-(--theme-color-on-surface) large:text-sm"
         >
           Surface Container Low
         </div>
         <div
-          class="bg-(--theme-color-surface-container) p-2 text-xs text-(--theme-color-on-surface) lg:text-sm"
+          class="bg-(--theme-color-surface-container) p-2 text-xs text-(--theme-color-on-surface) large:text-sm"
         >
           Surface Container
         </div>
         <div
-          class="bg-(--theme-color-surface-container-high) p-2 text-xs text-(--theme-color-on-surface) lg:text-sm"
+          class="bg-(--theme-color-surface-container-high) p-2 text-xs text-(--theme-color-on-surface) large:text-sm"
         >
           Surface Container High
         </div>
         <div
-          class="bg-(--theme-color-surface-container-highest) p-2 text-xs text-(--theme-color-on-surface) lg:text-sm"
+          class="bg-(--theme-color-surface-container-highest) p-2 text-xs text-(--theme-color-on-surface) large:text-sm"
         >
           Surface Container Highest
         </div>
@@ -282,22 +283,22 @@ const { palettes } = themeColors(sourceColor, customColors, defaultVariant);
 
       <div class="grid grid-cols-4 grid-rows-[50px] gap-x-1">
         <div
-          class="bg-(--theme-color-outline) p-2 text-xs text-[contrast-color(var(--theme-color-outline))] lg:text-sm"
+          class="bg-(--theme-color-outline) p-2 text-xs text-[contrast-color(var(--theme-color-outline))] large:text-sm"
         >
           Outline
         </div>
         <div
-          class="bg-(--theme-color-outline-variant) p-2 text-xs text-[contrast-color(var(--theme-color-outline-variant))] lg:text-sm"
+          class="bg-(--theme-color-outline-variant) p-2 text-xs text-[contrast-color(var(--theme-color-outline-variant))] large:text-sm"
         >
           Outline Variant
         </div>
         <div
-          class="bg-(--theme-color-shadow) p-2 text-xs text-[contrast-color(var(--theme-color-shadow))] lg:text-sm"
+          class="bg-(--theme-color-shadow) p-2 text-xs text-[contrast-color(var(--theme-color-shadow))] large:text-sm"
         >
           Shadow
         </div>
         <div
-          class="bg-(--theme-color-scrim) p-2 text-xs text-[contrast-color(var(--theme-color-scrim))] lg:text-sm"
+          class="bg-(--theme-color-scrim) p-2 text-xs text-[contrast-color(var(--theme-color-scrim))] large:text-sm"
         >
           Scrim
         </div>
@@ -305,22 +306,22 @@ const { palettes } = themeColors(sourceColor, customColors, defaultVariant);
 
       <div class="grid grid-cols-4 grid-rows-[50px] gap-x-1">
         <div
-          class="bg-(--theme-color-error) p-2 text-xs text-(--theme-color-on-error) lg:text-sm"
+          class="bg-(--theme-color-error) p-2 text-xs text-(--theme-color-on-error) large:text-sm"
         >
           Error
         </div>
         <div
-          class="bg-(--theme-color-on-error) p-2 text-xs text-(--theme-color-error) lg:text-sm"
+          class="bg-(--theme-color-on-error) p-2 text-xs text-(--theme-color-error) large:text-sm"
         >
           On Error
         </div>
         <div
-          class="bg-(--theme-color-error-container) p-2 text-xs text-(--theme-color-on-error-container) lg:text-sm"
+          class="bg-(--theme-color-error-container) p-2 text-xs text-(--theme-color-on-error-container) large:text-sm"
         >
           Error Container
         </div>
         <div
-          class="bg-(--theme-color-on-error-container) p-2 text-xs text-(--theme-color-error-container) lg:text-sm"
+          class="bg-(--theme-color-on-error-container) p-2 text-xs text-(--theme-color-error-container) large:text-sm"
         >
           On Error Container
         </div>
@@ -328,22 +329,22 @@ const { palettes } = themeColors(sourceColor, customColors, defaultVariant);
 
       <div class="grid grid-cols-4 grid-rows-[50px] gap-x-1">
         <div
-          class="bg-(--theme-color-warning) p-2 text-xs text-(--theme-color-on-warning) lg:text-sm"
+          class="bg-(--theme-color-warning) p-2 text-xs text-(--theme-color-on-warning) large:text-sm"
         >
           Warning
         </div>
         <div
-          class="bg-(--theme-color-on-warning) p-2 text-xs text-(--theme-color-warning) lg:text-sm"
+          class="bg-(--theme-color-on-warning) p-2 text-xs text-(--theme-color-warning) large:text-sm"
         >
           On Warning
         </div>
         <div
-          class="bg-(--theme-color-warning-container) p-2 text-xs text-(--theme-color-on-warning-container) lg:text-sm"
+          class="bg-(--theme-color-warning-container) p-2 text-xs text-(--theme-color-on-warning-container) large:text-sm"
         >
           Warning Container
         </div>
         <div
-          class="bg-(--theme-color-on-warning-container) p-2 text-xs text-(--theme-color-warning-container) lg:text-sm"
+          class="bg-(--theme-color-on-warning-container) p-2 text-xs text-(--theme-color-warning-container) large:text-sm"
         >
           On Warning Container
         </div>
@@ -351,22 +352,22 @@ const { palettes } = themeColors(sourceColor, customColors, defaultVariant);
 
       <div class="grid grid-cols-4 grid-rows-[50px] gap-x-1">
         <div
-          class="bg-(--theme-color-success) p-2 text-xs text-(--theme-color-on-success) lg:text-sm"
+          class="bg-(--theme-color-success) p-2 text-xs text-(--theme-color-on-success) large:text-sm"
         >
           Success
         </div>
         <div
-          class="bg-(--theme-color-on-success) p-2 text-xs text-(--theme-color-success) lg:text-sm"
+          class="bg-(--theme-color-on-success) p-2 text-xs text-(--theme-color-success) large:text-sm"
         >
           On Success
         </div>
         <div
-          class="bg-(--theme-color-success-container) p-2 text-xs text-(--theme-color-on-success-container) lg:text-sm"
+          class="bg-(--theme-color-success-container) p-2 text-xs text-(--theme-color-on-success-container) large:text-sm"
         >
           Success Container
         </div>
         <div
-          class="bg-(--theme-color-on-success-container) p-2 text-xs text-(--theme-color-success-container) lg:text-sm"
+          class="bg-(--theme-color-on-success-container) p-2 text-xs text-(--theme-color-success-container) large:text-sm"
         >
           On Success Container
         </div>
@@ -380,7 +381,7 @@ const { palettes } = themeColors(sourceColor, customColors, defaultVariant);
           <div class="grid auto-cols-fr grid-flow-col border-stone-600">
             {Object.keys(steps).map((tone) => (
               <div
-                class="xl:tetx-base grid aspect-2/3 place-items-center border-stone-600 text-[9px] not-last:border-r sm:text-xs lg:text-sm"
+                class="grid aspect-2/3 place-items-center border-stone-600 text-[9px] not-last:border-r medium:text-xs large:text-sm xlarge:text-base"
                 style={`background-color: var(--color-theme-${name}-${tone}); color: contrast-color(var(--color-theme-${name}-${tone}));`}
               >
                 {tone}
@@ -427,7 +428,7 @@ const { palettes } = themeColors(sourceColor, customColors, defaultVariant);
         <Icon name="content_copy" class="size-4" />
       </Button>
     </div>
-  </section>
+  </Main>
 </BaseLayout>
 
 <script>

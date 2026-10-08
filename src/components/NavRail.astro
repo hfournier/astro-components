@@ -7,7 +7,7 @@ import MenuToggle from "./MenuToggle.astro";
 
 type Props = HTMLAttributes<"div"> & {
   bgColor?: BgColorType;
-  // The rail's width when expanded (always, below lg): M3's minimum (220px) or maximum (360px). For another
+  // The rail's width when expanded (always, below medium): M3's minimum (220px) or maximum (360px). For another
   // width, pass a class such as `[--ac-nav-rail-expanded-width:300px]`; it's kept within those limits.
   expandedWidth?: "narrow" | "wide";
   isExpandable?: boolean;
@@ -34,7 +34,7 @@ const expandedWidthClasses = {
      collapsed and expanded widths). A container's width can't depend on its content, so the
      expanded rail has a set width rather than growing to fit its labels.
 
-     Below lg it's a modal overlay, off the left edge until its MenuToggle, which stays in place over
+     Below medium it's a modal overlay, off the left edge until its MenuToggle, which stays in place over
      the page, slides it in. Open while data-open is set (by the script); closed, it's invisible
      (all but the toggle), so it can't be focused or reached by assistive tech. */
 }
@@ -43,23 +43,23 @@ const expandedWidthClasses = {
     // M3 collapsed rail: a fixed 96px wide. No padding here: the container query measures the
     // content box, so the padding is on the inner div.
     "peer/nav-rail @container/rail sticky top-0 z-30 h-screen w-24 min-w-0 shrink-0 overflow-y-auto",
-    // Below lg: M3's modal expanded rail, every rail (one that isn't expandable gets its
+    // Below medium: M3's modal expanded rail, every rail (one that isn't expandable gets its
     // NavDrawer's sections), at its expanded width, fixed to the left edge at elevation 1, corner
     // large on its end side. It slides in, visible straight away so focus can move into it, and
     // slides back out, still visible until it's gone. It slides by `left`, not `translate`: a
     // transform would make the rail the containing block of its fixed MenuToggle, which would then
     // slide with it. Closed, it's its own (clamped) width off the left edge, plus its shadow.
     expandedWidthClasses,
-    "max-lg:w-(--ac-nav-rail-expanded-width) max-lg:max-w-90 max-lg:min-w-55",
-    "max-lg:invisible max-lg:fixed max-lg:left-[calc(-1*clamp(220px,var(--ac-nav-rail-expanded-width),360px)-1rem)] max-lg:h-dvh max-lg:rounded-r-2xl max-lg:shadow-theme-elevation-1",
-    "max-lg:data-open:visible max-lg:data-open:left-0",
-    "max-lg:motion-safe:transition-[left,visibility] max-lg:motion-safe:data-open:transition-[left] max-lg:motion-safe:duration-(--theme-duration-base)",
-    // From lg up, an expandable rail expands while its MenuToggle is expanded, and always from xl
+    "max-medium:w-(--ac-nav-rail-expanded-width) max-medium:max-w-90 max-medium:min-w-55",
+    "max-medium:invisible max-medium:fixed max-medium:left-[calc(-1*clamp(220px,var(--ac-nav-rail-expanded-width),360px)-1rem)] max-medium:h-dvh max-medium:rounded-r-2xl max-medium:shadow-theme-elevation-1",
+    "max-medium:data-open:visible max-medium:data-open:left-0",
+    "max-medium:motion-safe:transition-[left,visibility] max-medium:motion-safe:data-open:transition-[left] max-medium:motion-safe:duration-(--theme-duration-base)",
+    // From medium up, an expandable rail expands while its MenuToggle is expanded, and always from large
     // up (where the toggle is hidden), to its expanded width, kept within M3's 220-360px
     isExpandable && [
       "has-[[data-ac-menu-toggle][aria-expanded=true]]:w-(--ac-nav-rail-expanded-width) has-[[data-ac-menu-toggle][aria-expanded=true]]:max-w-90 has-[[data-ac-menu-toggle][aria-expanded=true]]:min-w-55",
-      "xl:w-(--ac-nav-rail-expanded-width) xl:max-w-90 xl:min-w-55",
-      "lg:motion-safe:transition-[width,min-width] lg:motion-safe:duration-(--theme-duration-base)",
+      "large:w-(--ac-nav-rail-expanded-width) large:max-w-90 large:min-w-55",
+      "medium:motion-safe:transition-[width,min-width] medium:motion-safe:duration-(--theme-duration-base)",
     ],
     classList
   )}
@@ -75,15 +75,15 @@ const expandedWidthClasses = {
     ]}
   >
     {
-      /* An expandable rail's toggle expands it from lg to xl. Every rail has one below lg, where
+      /* An expandable rail's toggle expands it from medium to large. Every rail has one below medium, where
          it opens and closes the modal rail: fixed where it sits in the open rail, and visible while
          the rest of the rail isn't, so it stays in place over the page whether the rail is open or
          not. It's filled with the rail's background, so it's readable over whatever is behind it
          while the rail is closed, and blends into the rail when it's open. The div keeps its place
          in the rail. */
     }
-    <div class:list={["size-14 shrink-0", isExpandable ? "xl:hidden" : "lg:hidden"]}>
-      <MenuToggle class="max-lg:visible max-lg:fixed max-lg:top-5 max-lg:left-5 max-lg:z-10 max-lg:bg-(--theme-color-wrapper-bg)" />
+    <div class:list={["size-14 shrink-0", isExpandable ? "large:hidden" : "medium:hidden"]}>
+      <MenuToggle class="max-medium:visible max-medium:fixed max-medium:top-5 max-medium:left-5 max-medium:z-10 max-medium:bg-(--theme-color-wrapper-bg)" />
     </div>
 
     <slot name="fab" />
@@ -103,13 +103,13 @@ const expandedWidthClasses = {
 </BaseWrapper>
 
 {
-  /* M3 modal scrim below lg: 32% scrim over the page, under the rail */
+  /* M3 modal scrim below medium: 32% scrim over the page, under the rail */
 }
 <div
   class:list={[
     "invisible fixed inset-0 z-10 bg-(--theme-color-scrim)/32 opacity-0",
     "peer-data-open/nav-rail:visible peer-data-open/nav-rail:opacity-100",
-    "motion-safe:transition-[opacity,visibility] motion-safe:duration-(--theme-duration-base) lg:hidden",
+    "motion-safe:transition-[opacity,visibility] motion-safe:duration-(--theme-duration-base) medium:hidden",
   ]}
   aria-hidden="true"
   data-ac-nav-rail-scrim
@@ -117,11 +117,12 @@ const expandedWidthClasses = {
 </div>
 
 <script>
-  // Below lg the rail's MenuToggle opens it as a modal: the rest of the page is inert under a
+  // Below medium the rail's MenuToggle opens it as a modal: the rest of the page is inert under a
   // scrim. It closes with the toggle, Escape or a click on the scrim. The toggle stays in place, so
   // focus stays on it, except that Escape from inside the rail brings focus back to it. Its
   // aria-expanded is the open state: MenuToggle flips it on click, and the rail follows.
-  const lg = window.matchMedia("(width >= 64rem)");
+  // M3's medium window size; keep in step with --breakpoint-medium in theme.css
+  const medium = window.matchMedia("(width >= 37.5rem)");
 
   document
     .querySelectorAll<HTMLElement>("[data-ac-nav-rail]")
@@ -162,14 +163,14 @@ const expandedWidthClasses = {
         if (!isOpen()) return;
         rail.removeAttribute("data-open");
         setInert(false);
-        // From lg up an expandable rail's toggle expands it, so it starts collapsed there
+        // From medium up an expandable rail's toggle expands it, so it starts collapsed there
         if (toggle.getAttribute("aria-expanded") === "true")
           toggle.setAttribute("aria-expanded", "false");
       };
 
-      // From lg up the toggle only expands an expandable rail, in CSS
+      // From medium up the toggle only expands an expandable rail, in CSS
       new MutationObserver(() => {
-        if (lg.matches) return;
+        if (medium.matches) return;
         if (toggle.getAttribute("aria-expanded") === "true") open();
         else close();
       }).observe(toggle, { attributeFilter: ["aria-expanded"] });
@@ -186,8 +187,8 @@ const expandedWidthClasses = {
         if (isOpen() && !rail.contains(event.target as Node)) close();
       });
 
-      // From lg up the rail is in the layout. Crossing lg either way starts the toggle collapsed.
-      lg.addEventListener("change", () => {
+      // From medium up the rail is in the layout. Crossing medium either way starts the toggle collapsed.
+      medium.addEventListener("change", () => {
         close();
         toggle.setAttribute("aria-expanded", "false");
       });

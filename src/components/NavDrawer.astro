@@ -9,11 +9,11 @@ import type { BgColorType } from "../types";
 // NavRailSubItems sections and showing one at a time: the current page's, or the section of the
 // rail item being hovered or focused (matched by the item's href and the section's parentHref).
 //
-// - xl and up: a standard drawer, in the layout right after the rail and always visible. Hovering
+// - large and up: a standard drawer, in the layout right after the rail and always visible. Hovering
 //   or focusing a rail item previews its section until the pointer and focus leave.
-// - Below lg: unused. The rail opens as a modal expanded rail, and the drawer moves its sections
+// - Below medium: unused. The rail opens as a modal expanded rail, and the drawer moves its sections
 //   into it, after the rail's destinations.
-// - lg to xl: an overlay that slides out from under the rail.
+// - medium to large: an overlay that slides out from under the rail.
 //   - Modal (default): M3's modal drawer. A scrim covers the page, which is inert until the drawer
 //     closes (the rail stays usable, so hovering another item switches sections). Opens on hover,
 //     a tap, or ArrowRight on a focused rail item; closes with Escape or a click on the scrim.
@@ -49,13 +49,13 @@ const widthClasses = {
 ---
 
 {
-  /* Below xl the drawer is a fixed overlay stacked under the rail (NavRail is z-30), so it slides
+  /* Below large the drawer is a fixed overlay stacked under the rail (NavRail is z-30), so it slides
      out from under the rail's edge, and its scrim sits under both. Open while data-open is set
      (by the script); closed, it's invisible, so it can't be focused or reached by assistive tech. */
 }
 <BaseWrapper
   class={twMerge(
-    // Below xl: beside the 96px collapsed rail, full height, corner large on its end side, at
+    // Below large: beside the 96px collapsed rail, full height, corner large on its end side, at
     // elevation 1. 220-360px wide (and never wider than the viewport beside the rail). It's a rail
     // container too, as NavRailSubItems sections only show in a rail wider than 160px.
     "peer/nav-drawer @container/rail fixed top-0 left-24 z-20 h-dvh overflow-y-auto rounded-r-2xl border-l border-(--theme-color-outline-variant) px-3 py-5 shadow-theme-elevation-1",
@@ -65,8 +65,8 @@ const widthClasses = {
     // move into it; still visible while it slides back when closing.
     "invisible -translate-x-full data-open:visible data-open:translate-x-0",
     "motion-safe:transition-[translate,visibility] motion-safe:data-open:transition-[translate] motion-safe:duration-(--theme-duration-base)",
-    // xl and up: always visible, in the layout right after the rail
-    "xl:visible xl:sticky xl:left-auto xl:z-auto xl:translate-x-0 xl:rounded-none xl:shadow-none xl:transition-none",
+    // large and up: always visible, in the layout right after the rail
+    "large:visible large:sticky large:left-auto large:z-auto large:translate-x-0 large:rounded-none large:shadow-none large:transition-none",
     classList
   )}
   {bgColor}
@@ -94,7 +94,7 @@ const widthClasses = {
       class:list={[
         "invisible fixed inset-0 z-10 bg-(--theme-color-scrim)/32 opacity-0",
         "peer-data-open/nav-drawer:visible peer-data-open/nav-drawer:opacity-100",
-        "motion-safe:transition-[opacity,visibility] motion-safe:duration-(--theme-duration-base) xl:hidden",
+        "motion-safe:transition-[opacity,visibility] motion-safe:duration-(--theme-duration-base) large:hidden",
       ]}
       aria-hidden="true"
       data-ac-nav-drawer-scrim
@@ -103,8 +103,9 @@ const widthClasses = {
 }
 
 <script>
-  const lg = window.matchMedia("(width >= 64rem)");
-  const xl = window.matchMedia("(width >= 80rem)");
+  // M3's medium and large window sizes; keep in step with --breakpoint-* in theme.css
+  const medium = window.matchMedia("(width >= 37.5rem)");
+  const large = window.matchMedia("(width >= 75rem)");
   const openDelay = 200; // so the pointer can cross the rail without opening the drawer
   const closeDelay = 300; // time to move the pointer between a rail item and the drawer
 
@@ -139,11 +140,11 @@ const widthClasses = {
       let timer: number | undefined;
       const inerted: HTMLElement[] = [];
 
-      // From lg to xl, where the drawer opens and closes. Below lg it does neither: its sections
+      // From medium to large, where the drawer opens and closes. Below medium it does neither: its sections
       // are in the rail, which opens expanded (see place()).
-      const isOverlay = () => lg.matches && !xl.matches;
+      const isOverlay = () => medium.matches && !large.matches;
       const isOpen = () => drawer.hasAttribute("data-open");
-      // Below xl the modal drawer stays open until dismissed; otherwise leaving closes it
+      // Below large the modal drawer stays open until dismissed; otherwise leaving closes it
       const closesOnLeave = () => !isModal || !isOverlay();
       const links = () =>
         Array.from(
@@ -172,7 +173,7 @@ const widthClasses = {
             delete section.dataset.fading;
           });
         };
-        const isDrawerVisible = isOpen() || xl.matches;
+        const isDrawerVisible = isOpen() || large.matches;
         const fadeMs = outgoing[0]
           ? parseFloat(getComputedStyle(outgoing[0]).transitionDuration) * 1000
           : 0;
@@ -184,7 +185,7 @@ const widthClasses = {
         window.setTimeout(swapIn, fadeMs);
       };
 
-      // Below xl the drawer is a disclosure its rail items open; at xl it's always visible
+      // Below large the drawer is a disclosure its rail items open; at large it's always visible
       const syncAria = () => {
         items.forEach((item) => {
           if (isOverlay()) {
@@ -222,7 +223,7 @@ const widthClasses = {
       };
 
       const open = (item: HTMLAnchorElement, moveFocus = false) => {
-        if (!lg.matches) return;
+        if (!medium.matches) return;
         clearTimeout(timer);
         opener = item;
         show(pathOf(item));
@@ -289,7 +290,7 @@ const widthClasses = {
           if (closesOnLeave()) closeSoon();
           else if (!isOpen()) clearTimeout(timer); // cancel a pending open
         });
-        // Below xl, a tap on a rail item opens its section (or switches to it) rather than
+        // Below large, a tap on a rail item opens its section (or switches to it) rather than
         // following the link; a second tap, while its section is open, goes to its page. Decided
         // per tap, so a touchscreen laptop's mouse still follows the link.
         let pointerType = "";
@@ -313,7 +314,7 @@ const widthClasses = {
           if (closesOnLeave()) closeSoon();
         });
         item.addEventListener("keydown", (event) => {
-          if (!lg.matches) return;
+          if (!medium.matches) return;
           if (event.key === "ArrowRight") {
             event.preventDefault();
             open(item, true);
@@ -373,17 +374,17 @@ const widthClasses = {
         if (!drawer.contains(target) && !rail.contains(target)) close();
       });
 
-      // Below lg the rail opens as a modal expanded rail, and the sections go into its <nav>, after
+      // Below medium the rail opens as a modal expanded rail, and the sections go into its <nav>, after
       // its destinations, as an expandable rail's sub-items are (where only the current page's
-      // shows). From lg up they're back in the drawer.
+      // shows). From medium up they're back in the drawer.
       const drawerNav = drawer.querySelector("nav");
       const railNav = rail.querySelector("nav");
       const place = () => {
-        const target = lg.matches ? drawerNav : railNav;
+        const target = medium.matches ? drawerNav : railNav;
         if (target) sections.forEach((section) => target.append(section));
       };
 
-      // Crossing the lg or xl breakpoint switches between the drawer's modes
+      // Crossing the medium or large breakpoint switches between the drawer's modes
       const reset = () => {
         opener = null;
         drawer.removeAttribute("data-open");
@@ -392,8 +393,8 @@ const widthClasses = {
         show(null);
         syncAria();
       };
-      lg.addEventListener("change", reset);
-      xl.addEventListener("change", reset);
+      medium.addEventListener("change", reset);
+      large.addEventListener("change", reset);
 
       place();
       syncAria();

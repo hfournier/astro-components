@@ -120,14 +120,16 @@ if (examples && examples.length > 0) {
 <BaseLayout
   title={component.data.meta.title}
   description={component.data.meta.description}
-  classListHtml="scroll-pt-15 xl:scroll-pt-0"
+  classListHtml="scroll-pt-15 large:scroll-pt-0"
 >
   <Main
-    class="relative grid grid-rows-[0px_1fr] px-2 xl:grid-cols-[minmax(0,1fr)_fit-content(360px)] xl:grid-rows-1 xl:gap-8 xl:pr-8"
+    class="relative grid grid-rows-[0px_1fr] px-2 large:grid-cols-[minmax(0,1fr)_fit-content(360px)] large:grid-rows-1 large:gap-8 large:pr-8"
   >
     <TableOfContents {headings} />
 
-    <article class="mx-auto max-w-[75ch] space-y-8 px-4 sm:px-6 md:px-8">
+    <article
+      class="mx-auto max-w-[calc(75ch+4rem)] space-y-8 px-4 medium:px-6 expanded:px-8"
+    >
       <Heading level={1}>{component.data.name} Component</Heading>
 
       <MarkdownParagraphs text={component.data.description} />

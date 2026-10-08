@@ -41,7 +41,7 @@ const testItems = tests.map((test) => ({
   <BaseHead {title} {description} />
   <body
     class:list={twMerge(
-      "grid grid-cols-1 bg-(--theme-color-surface) text-(--theme-color-on-surface) lg:grid-cols-[auto_1fr] xl:grid-cols-[auto_auto_1fr]",
+      "grid grid-cols-1 bg-(--theme-color-surface) text-(--theme-color-on-surface) medium:grid-cols-[auto_1fr] large:grid-cols-[auto_auto_1fr]",
       classListBody
     )}
   >
@@ -79,9 +79,11 @@ const testItems = tests.map((test) => ({
       <NavRailSubItems parentHref="/tests" subItems={testItems} />
     </NavDrawer>
 
-    <div class="grid grid-rows-[auto_1fr_auto] gap-4 md:gap-6 lg:gap-8">
+    <div
+      class="grid grid-rows-[auto_1fr_auto] gap-4 expanded:gap-6 large:gap-8"
+    >
       <Header
-        class="col-span-full flex min-h-24 items-center justify-between py-4 ps-21 pe-8 lg:min-h-18 lg:px-6"
+        class="col-span-full flex min-h-24 items-center justify-between py-4 ps-21 pe-8 medium:min-h-18 medium:px-6"
         bgColor="primary-container"
       >
         <div class="font-semibold">

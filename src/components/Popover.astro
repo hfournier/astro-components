@@ -25,7 +25,7 @@ const {
   {as}
   class:list={twMerge(
     "rounded-xl border border-(--theme-color-outline-variant) p-4",
-    showCloseX && "m-5 md:mx-7 md:my-6 lg:mx-9 lg:my-7",
+    showCloseX && "m-5 expanded:mx-7 expanded:my-6 large:mx-9 large:my-7",
     classList
   )}
   {id}
@@ -38,9 +38,9 @@ const {
     showCloseX && (
       <button
         class:list={[
-          "grid size-11 cursor-pointer place-items-center rounded-full border border-(--theme-color-outline-variant) bg-inherit md:size-11 lg:size-12",
+          "grid size-11 cursor-pointer place-items-center rounded-full border border-(--theme-color-outline-variant) bg-inherit expanded:size-11 large:size-12",
           "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
-          "fixed top-[calc(anchor(top)-1rem)] right-[calc(anchor(right)-1rem)] md:top-[calc(anchor(top)-1.125rem)] md:right-[calc(anchor(right)-1.125rem)] lg:top-[calc(anchor(top)-1.25rem)] lg:right-[calc(anchor(right)-1.25rem)]",
+          "fixed top-[calc(anchor(top)-1rem)] right-[calc(anchor(right)-1rem)] expanded:top-[calc(anchor(top)-1.125rem)] expanded:right-[calc(anchor(right)-1.125rem)] large:top-[calc(anchor(top)-1.25rem)] large:right-[calc(anchor(right)-1.25rem)]",
           "[position-anchor:var(--ac-anchorname-overlay)]",
           // M3 icon-button hover: an 8% state layer in the icon's color, so it works on any surface.
           "before:absolute before:inset-0 before:rounded-full before:bg-current before:opacity-0 hover:before:opacity-8 motion-safe:before:transition-opacity",

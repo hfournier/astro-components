@@ -7,6 +7,18 @@
   --font-sans: var(--font-roboto-flex);
 }
 
+/* breakpoints: M3's window size classes in place of Tailwind's sm-2xl, which are cleared so a
+   leftover lg: generates nothing rather than quietly meaning another width. Compact is below
+   medium, so it has no variant. In rem, so they follow the reader's font size. NavRail and
+   NavDrawer repeat medium and large in their matchMedia() calls. */
+@theme {
+  --breakpoint-*: initial;
+  --breakpoint-medium: 37.5rem; /* 600px */
+  --breakpoint-expanded: 52.5rem; /* 840px */
+  --breakpoint-large: 75rem; /* 1200px */
+  --breakpoint-xlarge: 100rem; /* 1600px */
+}
+
 @theme {
   /* easing: Tailwind's native namespace, role layer on top (ADR-0006) */
   --ease-theme-overlay: var(--ease-out);
