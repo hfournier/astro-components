@@ -119,9 +119,7 @@ test.describe("Tabs", () => {
     await expect(panels.nth(1)).toBeVisible();
   });
 
-  test("clicking a tab's label or badge selects that tab", async ({
-    page,
-  }) => {
+  test("clicking a tab's label or badge selects that tab", async ({ page }) => {
     // The Badges example (last on the page): a click on the label text or the inline badge
     // targets the tab's inner spans, not the button itself
     const group = page.locator("[data-ac-tablist-container]").last();

@@ -99,7 +99,7 @@ const textPadding =
       class={twMerge(
         // M3 rich tooltip: surface-container at elevation 2, corner medium, 16px side padding,
         // at most 320px wide, 4px from its anchor. A popover, so it sits in the top layer.
-        "shadow-theme-elevation-2 inset-auto m-0 mt-1 min-h-6 w-max max-w-80 min-w-10 overflow-visible rounded-xl border-0 px-4 text-left",
+        "inset-auto m-0 mt-1 min-h-6 w-max max-w-80 min-w-10 overflow-visible rounded-xl border-0 px-4 text-left shadow-theme-elevation-2",
         // subhead and supporting text are both on-surface-variant
         "text-(--theme-color-on-surface-variant)",
         "[position-area:bottom] [position-try-fallbacks:bottom_span-left,bottom_span-right,flip-block]",
@@ -139,8 +139,12 @@ const textPadding =
   // Plain tooltips: a manual popover, opened while its element is hovered or focused so it's in
   // the top layer; its CSS handles the delay and fade. Opening it afresh each time also puts it
   // above any popover or dialog opened since.
-  const plainTooltips = document.querySelectorAll<HTMLElement>("[data-ac-tooltip]");
-  const tooltipParents = Array.from(plainTooltips, (tooltip) => tooltip.parentElement!);
+  const plainTooltips =
+    document.querySelectorAll<HTMLElement>("[data-ac-tooltip]");
+  const tooltipParents = Array.from(
+    plainTooltips,
+    (tooltip) => tooltip.parentElement!
+  );
 
   plainTooltips.forEach((tooltip) => {
     const parent = tooltip.parentElement!;
@@ -148,7 +152,10 @@ const textPadding =
       if (!tooltip.matches(":popover-open")) tooltip.showPopover();
     };
     const close = () => {
-      if (tooltip.matches(":popover-open") && !parent.matches(":hover, :focus-visible")) {
+      if (
+        tooltip.matches(":popover-open") &&
+        !parent.matches(":hover, :focus-visible")
+      ) {
         tooltip.hidePopover();
       }
     };

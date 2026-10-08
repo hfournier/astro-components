@@ -53,7 +53,7 @@ const expandedWidthClasses = {
     "max-medium:w-(--ac-nav-rail-expanded-width) max-medium:max-w-90 max-medium:min-w-55",
     "max-medium:invisible max-medium:fixed max-medium:left-[calc(-1*clamp(220px,var(--ac-nav-rail-expanded-width),360px)-1rem)] max-medium:h-dvh max-medium:rounded-r-2xl max-medium:shadow-theme-elevation-1",
     "max-medium:data-open:visible max-medium:data-open:left-0",
-    "max-medium:motion-safe:transition-[left,visibility] max-medium:motion-safe:data-open:transition-[left] max-medium:motion-safe:duration-(--theme-duration-base)",
+    "max-medium:motion-safe:transition-[left,visibility] max-medium:motion-safe:duration-(--theme-duration-base) max-medium:motion-safe:data-open:transition-[left]",
     // From medium up, an expandable rail expands while its MenuToggle is expanded, and always from large
     // up (where the toggle is hidden), to its expanded width, kept within M3's 220-360px
     isExpandable && [
@@ -82,8 +82,15 @@ const expandedWidthClasses = {
          while the rail is closed, and blends into the rail when it's open. The div keeps its place
          in the rail. */
     }
-    <div class:list={["size-14 shrink-0", isExpandable ? "large:hidden" : "medium:hidden"]}>
-      <MenuToggle class="max-medium:visible max-medium:fixed max-medium:top-5 max-medium:left-5 max-medium:z-10 max-medium:bg-(--theme-color-wrapper-bg)" />
+    <div
+      class:list={[
+        "size-14 shrink-0",
+        isExpandable ? "large:hidden" : "medium:hidden",
+      ]}
+    >
+      <MenuToggle
+        class="max-medium:visible max-medium:fixed max-medium:top-5 max-medium:left-5 max-medium:z-10 max-medium:bg-(--theme-color-wrapper-bg)"
+      />
     </div>
 
     <slot name="fab" />
@@ -102,9 +109,7 @@ const expandedWidthClasses = {
   </div>
 </BaseWrapper>
 
-{
-  /* M3 modal scrim below medium: 32% scrim over the page, under the rail */
-}
+{/* M3 modal scrim below medium: 32% scrim over the page, under the rail */}
 <div
   class:list={[
     "invisible fixed inset-0 z-10 bg-(--theme-color-scrim)/32 opacity-0",

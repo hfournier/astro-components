@@ -57,7 +57,7 @@ const labelId = sectionLabel
     "hidden @min-[160px]/rail:block",
     // When a NavDrawer swaps sections, it fades this out (data-fading) and in (data-swapped-in,
     // from display: none). Not on page load, where it's just shown.
-    "motion-safe:transition-opacity motion-safe:duration-(--theme-duration-fast) data-fading:opacity-0 starting:data-swapped-in:opacity-0",
+    "data-fading:opacity-0 motion-safe:transition-opacity motion-safe:duration-(--theme-duration-fast) starting:data-swapped-in:opacity-0",
     classList,
   ]}
   hidden={!isCurrentSection}

@@ -168,7 +168,8 @@ const widthClasses = {
           if (id !== swap) return;
           sections.forEach((section) => {
             // fades in from its starting style (see NavRailSubItems)
-            if (section.hidden && isShown(section)) section.dataset.swappedIn = "";
+            if (section.hidden && isShown(section))
+              section.dataset.swappedIn = "";
             section.hidden = !isShown(section);
             delete section.dataset.fading;
           });

@@ -37,11 +37,7 @@ const Tag = `h${level}` as const;
 {
   id ? (
     <div class="group/heading flex items-center gap-2">
-      <Tag
-        class:list={twMerge(headingClasses, classList)}
-        {id}
-        {...attrs}
-      >
+      <Tag class:list={twMerge(headingClasses, classList)} {id} {...attrs}>
         <slot />
       </Tag>
 
@@ -62,11 +58,7 @@ const Tag = `h${level}` as const;
       </a>
     </div>
   ) : (
-    <Tag
-      class:list={twMerge(headingClasses, classList)}
-      {id}
-      {...attrs}
-    >
+    <Tag class:list={twMerge(headingClasses, classList)} {id} {...attrs}>
       <slot />
     </Tag>
   )
