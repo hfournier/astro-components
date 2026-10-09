@@ -1,9 +1,8 @@
 ---
-import type { HTMLAttributes } from "astro/types";
+import type { ComponentProps } from "astro/types";
 import crypto from "node:crypto";
 import { twMerge } from "tailwind-merge";
 import BaseWrapper from "./BaseWrapper.astro";
-import type { BgColorType } from "../types";
 
 // An M3 navigation drawer beside a collapsed (not expandable) NavRail, holding the rail's
 // NavRailSubItems sections and showing one at a time: the current page's, or the section of the
@@ -22,8 +21,9 @@ import type { BgColorType } from "../types";
 //   On touch, a second tap on the rail item whose section is open goes to its page.
 // In every mode, Tab goes from a rail item into its section's links and then on to the next rail
 // item, and ArrowRight/ArrowLeft move between a rail item and its section.
-type Props = HTMLAttributes<"div"> & {
-  bgColor?: BgColorType;
+type BaseWrapperProps = ComponentProps<typeof BaseWrapper>;
+
+type Props = Omit<BaseWrapperProps, "as"> & {
   isModal?: boolean;
   // The drawer's width, as an expanded NavRail's: 220px or 360px. For another width, pass a class
   // such as `[--ac-nav-drawer-width:300px]`; it's kept within those limits.
@@ -57,7 +57,7 @@ const widthClasses = {
   class={twMerge(
     // Below large: beside the 96px collapsed rail, full height, corner large on its end side, at
     // elevation 1. 220-360px wide (and never wider than the viewport beside the rail). It's a rail
-    // container too, as NavRailSubItems sections only show in a rail wider than 160px.
+    // container too, as NavRailSubItems sections only show in an expanded (rail-expanded) one.
     "peer/nav-drawer @container/rail fixed top-0 left-24 z-20 h-dvh overflow-y-auto rounded-r-2xl border-l border-(--theme-color-outline-variant) px-3 py-5 shadow-theme-elevation-1",
     widthClasses,
     "w-(--ac-nav-drawer-width) min-w-55 max-w-[min(360px,calc(100vw-6rem))]",
@@ -103,13 +103,14 @@ const widthClasses = {
 }
 
 <script>
+  import { trimSlash } from "../utils";
+
   // M3's medium and large window sizes; keep in step with --breakpoint-* in theme.css
   const medium = window.matchMedia("(width >= 37.5rem)");
   const large = window.matchMedia("(width >= 75rem)");
   const openDelay = 200; // so the pointer can cross the rail without opening the drawer
   const closeDelay = 300; // time to move the pointer between a rail item and the drawer
 
-  const trimSlash = (path: string) => path.replace(/(.)\/$/, "$1");
   const pathOf = (link: HTMLAnchorElement) =>
     trimSlash(new URL(link.href).pathname);
   const isVisible = (element: HTMLElement) =>

@@ -14,7 +14,7 @@ const TITLE_MEDIUM = {
   style: "Title Medium",
   size: 16,
   lineHeight: 24,
-  tracking: "0.2px",
+  tracking: "0.15px",
 };
 
 const SIZES = [

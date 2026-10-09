@@ -1,0 +1,20 @@
+---
+name: Main
+description: A themed wrapper that renders as a native `<main>` element, built on BaseWrapper. Its id is `main-content`, the target of SkipToContent, so the skip link works without any setup.
+category: Content sectioning
+role: pattern
+meta:
+  title: Main | astro-components HenriFournier.dev
+  description: A themed wrapper that renders as a native `<main>` element, built on BaseWrapper, and the target of SkipToContent.
+extends:
+  kind: component
+  name: BaseWrapper
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/main
+props: []
+slots:
+  - name: default
+    description: The page's main content.
+    kind: any
+---
+
+A page has one `<main>`, so use Main once per page, usually in your layout around the page's own content. Passing an `id` replaces `main-content`; if you do, point SkipToContent's `href` at the new id.

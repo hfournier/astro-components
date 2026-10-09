@@ -16,6 +16,7 @@ export { default as Header } from "./components/Header.astro";
 export { default as Heading } from "./components/Heading.astro";
 export { default as Icon } from "./components/Icon.astro";
 export { default as Link } from "./components/Link.astro";
+export { default as Main } from "./components/Main.astro";
 export { default as MenuToggle } from "./components/MenuToggle.astro";
 export { default as NavDrawer } from "./components/NavDrawer.astro";
 export { default as NavDrawerItem } from "./components/NavDrawerItem.astro";

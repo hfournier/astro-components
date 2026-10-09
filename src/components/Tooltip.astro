@@ -75,8 +75,10 @@ const textPadding =
           // The script opens the popover as soon as its element is hovered or focused; these rules
           // decide when it shows. The starting style lets it fade in, with the hover delay, from
           // display: none, and transition-discrete keeps it in place while it fades out once closed.
+          // Only the fade is motion: with reduced motion, visibility still transitions (it's
+          // discrete, so it just flips after the delay), keeping the hover delay but not the fade.
           "invisible opacity-0 starting:invisible! starting:opacity-0!",
-          "transition-[opacity,visibility,display,overlay] transition-discrete duration-(--theme-duration-feedback)",
+          "transition-[visibility,display,overlay] transition-discrete duration-(--theme-duration-feedback) motion-safe:transition-[opacity,visibility,display,overlay]",
           // on its parent's hover (only on devices that can hover) and keyboard focus
           "[@media(hover:hover)]:[:hover>&]:visible [@media(hover:hover)]:[:hover>&]:opacity-100 [@media(hover:hover)]:[:hover>&]:delay-500",
           "[:focus-visible>&]:visible [:focus-visible>&]:opacity-100 [:focus-visible>&]:delay-0",
@@ -105,7 +107,8 @@ const textPadding =
         "[position-area:bottom] [position-try-fallbacks:bottom_span-left,bottom_span-right,flip-block]",
         // bridges the 4px gap, so the pointer can move onto the tooltip without it closing
         "before:absolute before:-inset-1 before:-z-10",
-        "opacity-0 transition-[opacity,display,overlay] transition-discrete duration-(--theme-duration-feedback) open:opacity-100 starting:open:opacity-0",
+        // its show and hide delays are in the script, so with reduced motion it just appears
+        "opacity-0 open:opacity-100 motion-safe:transition-[opacity,display,overlay] motion-safe:transition-discrete motion-safe:duration-(--theme-duration-feedback) motion-safe:starting:open:opacity-0",
         classList
       )}
       style={`position-anchor: ${anchorName}`}

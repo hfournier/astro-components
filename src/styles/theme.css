@@ -19,6 +19,13 @@
   --breakpoint-xlarge: 100rem; /* 1600px */
 }
 
+/* rail state: NavRail and NavDrawer are size containers named `rail`, and what's inside them (rail
+   items, the FAB, sub-item sections) restyles itself by the rail's width. 160px sits between M3's
+   collapsed (96px) and expanded (220px+) rail widths, so expanded means wider than a collapsed
+   rail, whatever expanded width is set. */
+@custom-variant rail-expanded (@container rail (width >= 160px));
+@custom-variant rail-collapsed (@container rail (width < 160px));
+
 @theme {
   /* easing: Tailwind's native namespace, role layer on top (ADR-0006) */
   --ease-theme-overlay: var(--ease-out);

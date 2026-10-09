@@ -50,7 +50,7 @@ cssProps:
 
 Collapsed, the rail is 96px wide, with each destination's icon in a pill above its label. Expanded, it's 220-360px wide (see `expandedWidth`), with 20px side padding; each destination is a row with its label beside its icon, the FAB is extended, and the `sub-items` slot shows. The rail animates between the two widths.
 
-The rail is the only thing whose state decides this: it's a size container named `rail`, and NavRailItem, Fab, NavRailSubItems and the rail's own content restyle themselves once it's wider than 160px (between the collapsed and expanded widths) with `@min-[160px]/rail:` variants. A container's width can't depend on its content, so the expanded rail has a set width rather than growing to fit its labels; a label too long for it overflows.
+The rail is the only thing whose state decides this: it's a size container named `rail`, and NavRailItem, Fab, NavRailSubItems and the rail's own content restyle themselves once it's wider than 160px (between the collapsed and expanded widths), with the `rail-expanded:` and `rail-collapsed:` variants defined in `theme.css`. A container's width can't depend on its content, so the expanded rail has a set width rather than growing to fit its labels; a label too long for it overflows.
 
 ## Small screens
 

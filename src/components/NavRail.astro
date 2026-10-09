@@ -1,12 +1,12 @@
 ---
-import type { HTMLAttributes } from "astro/types";
+import type { ComponentProps } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import BaseWrapper from "./BaseWrapper.astro";
-import type { BgColorType } from "../types";
 import MenuToggle from "./MenuToggle.astro";
 
-type Props = HTMLAttributes<"div"> & {
-  bgColor?: BgColorType;
+type BaseWrapperProps = ComponentProps<typeof BaseWrapper>;
+
+type Props = Omit<BaseWrapperProps, "as"> & {
   // The rail's width when expanded (always, below medium): M3's minimum (220px) or maximum (360px). For another
   // width, pass a class such as `[--ac-nav-rail-expanded-width:300px]`; it's kept within those limits.
   expandedWidth?: "narrow" | "wide";
@@ -30,7 +30,8 @@ const expandedWidthClasses = {
 
 {
   /* The rail is a size container: only its width depends on whether it's expanded, and the inner
-     div, NavRailItem and Fab restyle themselves from that width (wider than 160px, between M3's
+     div, NavRailItem and Fab restyle themselves from that width (the rail-expanded and
+     rail-collapsed variants in theme.css: wider than 160px, between M3's
      collapsed and expanded widths). A container's width can't depend on its content, so the
      expanded rail has a set width rather than growing to fit its labels.
 
@@ -71,7 +72,7 @@ const expandedWidthClasses = {
     class:list={[
       "flex min-h-full flex-col items-center gap-1 px-1 py-5",
       // M3 expanded rail: 20px side padding, items aligned to the start
-      "@min-[160px]/rail:items-start @min-[160px]/rail:px-5",
+      "rail-expanded:items-start rail-expanded:px-5",
     ]}
   >
     {
@@ -99,7 +100,7 @@ const expandedWidthClasses = {
       /* M3: 16px between destinations; none when expanded, where each is 56px high */
     }
     <nav
-      class="mt-10 flex w-full flex-col gap-4 @min-[160px]/rail:gap-0"
+      class="mt-10 flex w-full flex-col gap-4 rail-expanded:gap-0"
       aria-label="Main"
     >
       <slot />

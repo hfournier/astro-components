@@ -11,8 +11,8 @@ type Props = HTMLAttributes<"button"> & {
   // An M3 extended FAB, showing its label beside the icon. In a NavRail, the rail decides instead:
   // extended while the rail is expanded, a plain FAB while it's collapsed.
   isExtended?: boolean;
-  size?: "base" | "md" | "lg";
-  variant?:
+  size?: "default" | "md" | "lg";
+  color?:
     | "primary"
     | "primary-container"
     | "secondary"
@@ -25,14 +25,14 @@ const {
   icon,
   label,
   isExtended = false,
-  size = "base",
-  variant = "primary-container",
+  size = "default",
+  color = "primary-container",
   class: classList,
   type,
   ...attrs
 } = Astro.props;
 
-const variantClasses = {
+const colorClasses = {
   primary: "bg-(--theme-color-primary) text-(--theme-color-on-primary)",
   "primary-container":
     "bg-(--theme-color-primary-container) text-(--theme-color-on-primary-container)",
@@ -42,52 +42,54 @@ const variantClasses = {
   tertiary: "bg-(--theme-color-tertiary) text-(--theme-color-on-tertiary)",
   "tertiary-container":
     "bg-(--theme-color-tertiary-container) text-(--theme-color-on-tertiary-container)",
-}[variant];
+}[color];
 
 // M3 FAB (56px, corner large), medium FAB (80px, corner large increased) and large FAB
 // (96px, corner extra large), with 24px, 28px and 32px icons
 const sizeClasses = {
-  base: "size-14 rounded-2xl",
+  default: "size-14 rounded-2xl",
   md: "size-20 rounded-[20px]",
   lg: "size-24 rounded-[28px]",
 }[size];
 
 const iconSizeClasses = {
-  base: "size-6",
+  default: "size-6",
   md: "size-7",
   lg: "size-8",
 }[size];
 
 // M3 small, medium or large extended FAB: the FAB's height and corners, as wide as its icon and
-// label. In a NavRail, the rail's width decides: extended in an expanded rail (wider than 160px,
-// see NavRail), a plain FAB in a collapsed one. Outside a rail there's no `rail` container, so
+// label. In a NavRail, the rail's width decides: extended in an expanded rail (rail-expanded, see
+// theme.css), a plain FAB in a collapsed one. Outside a rail there's no `rail` container, so
 // neither query matches and isExtended decides. Each set is written out in full so Tailwind
 // generates it.
 const extendedClasses = isExtended
   ? {
-      base: "w-auto gap-2 px-4 text-base leading-6 font-medium tracking-[0.15px]",
+      default:
+        "w-auto gap-2 px-4 text-base leading-6 font-medium tracking-[0.15px]",
       md: "w-auto gap-3 px-[26px] text-[22px] leading-7 font-normal",
       lg: "w-auto gap-4 px-7 text-2xl leading-8 font-normal",
     }[size]
   : {
-      base: "@min-[160px]/rail:w-auto @min-[160px]/rail:gap-2 @min-[160px]/rail:px-4 @min-[160px]/rail:text-base @min-[160px]/rail:leading-6 @min-[160px]/rail:font-medium @min-[160px]/rail:tracking-[0.15px]",
-      md: "@min-[160px]/rail:w-auto @min-[160px]/rail:gap-3 @min-[160px]/rail:px-[26px] @min-[160px]/rail:text-[22px] @min-[160px]/rail:leading-7 @min-[160px]/rail:font-normal",
-      lg: "@min-[160px]/rail:w-auto @min-[160px]/rail:gap-4 @min-[160px]/rail:px-7 @min-[160px]/rail:text-2xl @min-[160px]/rail:leading-8 @min-[160px]/rail:font-normal",
+      default:
+        "rail-expanded:w-auto rail-expanded:gap-2 rail-expanded:px-4 rail-expanded:text-base rail-expanded:leading-6 rail-expanded:font-medium rail-expanded:tracking-[0.15px]",
+      md: "rail-expanded:w-auto rail-expanded:gap-3 rail-expanded:px-[26px] rail-expanded:text-[22px] rail-expanded:leading-7 rail-expanded:font-normal",
+      lg: "rail-expanded:w-auto rail-expanded:gap-4 rail-expanded:px-7 rail-expanded:text-2xl rail-expanded:leading-8 rail-expanded:font-normal",
     }[size];
 
 // An extended FAB in a collapsed NavRail goes back to a plain FAB
 const collapsedRailClasses = isExtended
   ? {
-      base: "@max-[160px]/rail:w-14 @max-[160px]/rail:gap-0 @max-[160px]/rail:px-0",
-      md: "@max-[160px]/rail:w-20 @max-[160px]/rail:gap-0 @max-[160px]/rail:px-0",
-      lg: "@max-[160px]/rail:w-24 @max-[160px]/rail:gap-0 @max-[160px]/rail:px-0",
+      default: "rail-collapsed:w-14 rail-collapsed:gap-0 rail-collapsed:px-0",
+      md: "rail-collapsed:w-20 rail-collapsed:gap-0 rail-collapsed:px-0",
+      lg: "rail-collapsed:w-24 rail-collapsed:gap-0 rail-collapsed:px-0",
     }[size]
   : "";
 
 // The label is always the accessible name; it's visually hidden unless the FAB is extended
 const labelClasses = isExtended
-  ? "@max-[160px]/rail:sr-only"
-  : "sr-only @min-[160px]/rail:not-sr-only";
+  ? "rail-collapsed:sr-only"
+  : "sr-only rail-expanded:not-sr-only";
 ---
 
 <button
@@ -100,7 +102,7 @@ const labelClasses = isExtended
     "hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10",
     "motion-safe:transition-shadow motion-safe:duration-(--theme-duration-feedback) motion-safe:before:transition-opacity",
     "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
-    variantClasses,
+    colorClasses,
     sizeClasses,
     extendedClasses,
     collapsedRailClasses,

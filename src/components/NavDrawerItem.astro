@@ -3,6 +3,7 @@ import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import type { SvgIconNameTypes } from "../svgs";
 import Icon from "./Icon.astro";
+import { isCurrentPath } from "../utils";
 
 // An M3 navigation drawer item: a full-width 56px row with an optional icon and a Label Large
 // label, used for NavRailSubItems in a NavDrawer or an expanded NavRail. Unlike NavRailItem,
@@ -13,18 +14,9 @@ type Props = HTMLAttributes<"a"> & {
 };
 const { icon, label, href, class: classList, ...attrs } = Astro.props;
 
-// The current page's destination is its own href, or a page under it ("/components" for
-// "/components/button"). "/" only matches itself, or it would match every page. An explicit
-// `aria-current` passed by the consumer still wins, since `attrs` is spread after it. (The same
-// logic as NavRailItem's, kept here so each component can be copied on its own.)
-const trimSlash = (path: string) => path.replace(/(.)\/$/, "$1");
-const path = trimSlash(Astro.url.pathname);
-const target = href ? trimSlash(String(href)) : undefined;
-const isCurrent =
-  target !== undefined &&
-  (target === "/"
-    ? path === "/"
-    : path === target || path.startsWith(`${target}/`));
+// The current page's destination is its own href, or a page under it (see isCurrentPath). An
+// explicit `aria-current` passed by the consumer still wins, since `attrs` is spread after it.
+const isCurrent = isCurrentPath(Astro.url.pathname, href);
 ---
 
 <a

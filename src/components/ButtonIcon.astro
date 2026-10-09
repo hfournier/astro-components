@@ -171,7 +171,7 @@ const variantClasses = {
   type={type ? type : "button"}
   aria-label={label}
   aria-pressed={isToggle ? (isSelected ? "true" : "false") : undefined}
-  data-ac-icon-toggle={isToggle ? "" : undefined}
+  data-ac-icon-toggle={isToggle ? "aria-pressed" : undefined}
   {...attrs}
 >
   {
@@ -201,13 +201,15 @@ const variantClasses = {
 </button>
 
 <script>
-  // Toggle buttons flip aria-pressed on each click (keyboard activation fires click too)
+  // Each click flips the state attribute named by data-ac-icon-toggle (keyboard activation fires
+  // click too): aria-pressed for a toggle, or aria-expanded for a disclosure such as MenuToggle
   document.addEventListener("click", (event) => {
     const button = (event.target as Element).closest<HTMLButtonElement>(
       "[data-ac-icon-toggle]"
     );
     if (!button || button.disabled) return;
-    const isPressed = button.getAttribute("aria-pressed") === "true";
-    button.setAttribute("aria-pressed", String(!isPressed));
+    const attribute = button.dataset.acIconToggle!;
+    const isOn = button.getAttribute(attribute) === "true";
+    button.setAttribute(attribute, String(!isOn));
   });
 </script>

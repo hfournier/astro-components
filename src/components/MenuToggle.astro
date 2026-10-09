@@ -10,7 +10,8 @@ const { class: classList, ...attrs } = Astro.props;
 
 {
   /* A disclosure button: it shows and hides other content (the expanded rail), so its state is
-     aria-expanded rather than a toggle's aria-pressed */
+     aria-expanded rather than a toggle's aria-pressed. ButtonIcon's script flips it on each click,
+     as data-ac-icon-toggle names it. */
 }
 <ButtonIcon
   class={classList}
@@ -19,18 +20,7 @@ const { class: classList, ...attrs } = Astro.props;
   label="Menu"
   size="md"
   aria-expanded="false"
+  data-ac-icon-toggle="aria-expanded"
   data-ac-menu-toggle
   {...attrs}
 />
-
-<script>
-  // Flips aria-expanded on each click (keyboard activation fires click too)
-  document.addEventListener("click", (event) => {
-    const button = (event.target as Element).closest<HTMLButtonElement>(
-      "[data-ac-menu-toggle]"
-    );
-    if (!button || button.disabled) return;
-    const isExpanded = button.getAttribute("aria-expanded") === "true";
-    button.setAttribute("aria-expanded", String(!isExpanded));
-  });
-</script>

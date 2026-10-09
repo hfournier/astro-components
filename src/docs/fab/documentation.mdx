@@ -19,21 +19,21 @@ props:
     type: string
     required: true
     description: What the FAB does, such as `"Compose"`. It's always the FAB's accessible name, and an extended FAB shows it beside the icon. A FAB that shows only its icon keeps it as visually hidden text for screen readers.
+  - name: color
+    type: '"primary" | "primary-container" | "secondary" | "secondary-container" | "tertiary" | "tertiary-container"'
+    required: false
+    default: '"primary-container"'
+    description: The FAB's M3 color set, a color role and its on-color. M3's default is `primary-container`. The `-container` sets are the softer ones.
   - name: isExtended
     type: boolean
     required: false
     default: "false"
     description: Makes the FAB an M3 extended FAB, with its label beside the icon. It keeps the FAB's height and corners, and grows to fit the label, with the padding, spacing and label type of M3's small, medium or large extended FAB (per `size`). In a NavRail, the rail decides instead (see NavRail).
   - name: size
-    type: '"base" | "md" | "lg"'
+    type: '"default" | "md" | "lg"'
     required: false
-    default: '"base"'
+    default: '"default"'
     description: M3's FAB (56px), medium FAB (80px) or large FAB (96px). The corner radius and the icon grow with it.
-  - name: variant
-    type: '"primary" | "primary-container" | "secondary" | "secondary-container" | "tertiary" | "tertiary-container"'
-    required: false
-    default: '"primary-container"'
-    description: The FAB's M3 color set, a color role and its on-color. M3's default is `primary-container`. The `-container` sets are the softer ones.
 ---
 
 ## Placement

@@ -1,19 +1,17 @@
 ---
 import type { HTMLAttributes } from "astro/types";
 import crypto from "node:crypto";
+import { twMerge } from "tailwind-merge";
+import type { NavSubItemType } from "../types";
 import Divider from "./Divider.astro";
-import type { SvgIconNameTypes } from "../svgs";
 import NavDrawerItem from "./NavDrawerItem.astro";
+import { isCurrentPath, trimSlash } from "../utils";
 
 type Props = HTMLAttributes<"div"> & {
   // The href of the NavRailItem this section belongs to, e.g. "/tests"
   parentHref: string;
   sectionLabel?: string;
-  subItems: {
-    href: string | URL;
-    icon?: SvgIconNameTypes;
-    label: string;
-  }[];
+  subItems: NavSubItemType[];
 };
 const {
   parentHref,
@@ -29,15 +27,8 @@ const {
 
 // The section is current on its own pages: under its parent's href ("/tests" or "/tests/a"), or
 // on one of its own links (for sections whose pages share no path, such as "/" and "/colors").
-// Same matching as NavRailItem: "/" only matches itself, or it would match every page.
-const trimSlash = (path: string) => path.replace(/(.)\/$/, "$1");
-const path = trimSlash(Astro.url.pathname);
-const isUnder = (href: string | URL) => {
-  const target = trimSlash(typeof href === "string" ? href : href.pathname);
-  return target === "/"
-    ? path === "/"
-    : path === target || path.startsWith(`${target}/`);
-};
+// Same matching as NavRailItem (see isCurrentPath).
+const isUnder = (href: string | URL) => isCurrentPath(Astro.url.pathname, href);
 const isCurrentSection =
   isUnder(parentHref) || subItems.some((item) => isUnder(item.href));
 
@@ -53,13 +44,13 @@ const labelId = sectionLabel
      hovered or focused, swaps in that item's section, matched by data-ac-nav-section. */
 }
 <div
-  class:list={[
-    "hidden @min-[160px]/rail:block",
+  class:list={twMerge(
+    "hidden rail-expanded:block",
     // When a NavDrawer swaps sections, it fades this out (data-fading) and in (data-swapped-in,
     // from display: none). Not on page load, where it's just shown.
     "data-fading:opacity-0 motion-safe:transition-opacity motion-safe:duration-(--theme-duration-fast) starting:data-swapped-in:opacity-0",
-    classList,
-  ]}
+    classList
+  )}
   hidden={!isCurrentSection}
   role={labelId ? "group" : undefined}
   aria-labelledby={labelId}

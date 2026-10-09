@@ -234,6 +234,10 @@ test.describe("Details", () => {
 
   test("hovering the summary shows the M3 state layer", async ({ page }) => {
     const summary = allDetails(page).first().locator("summary");
+    // With smooth scrolling, the summary is still moving when hover() scrolls it into view and
+    // puts the pointer on it, and WebKit doesn't apply :hover until the pointer moves again.
+    // Reduced motion makes the scroll instant.
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await summary.hover();
 
     await expect

@@ -3,6 +3,7 @@ import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import type { SvgIconNameTypes } from "../svgs";
 import Icon from "./Icon.astro";
+import { isCurrentPath } from "../utils";
 
 type Props = Omit<HTMLAttributes<"a">, "href"> & {
   href: string | URL;
@@ -11,17 +12,9 @@ type Props = Omit<HTMLAttributes<"a">, "href"> & {
 };
 const { href, icon, label, class: classList, ...attrs } = Astro.props;
 
-// The current page's destination is its own href, or a page under it ("/components" for
-// "/components/button"). "/" only matches itself, or it would match every page. An explicit
-// `aria-current` passed by the consumer still wins, since `attrs` is spread after it.
-const trimSlash = (path: string) => path.replace(/(.)\/$/, "$1");
-const path = trimSlash(Astro.url.pathname);
-const target = href ? trimSlash(String(href)) : undefined;
-const isCurrent =
-  target !== undefined &&
-  (target === "/"
-    ? path === "/"
-    : path === target || path.startsWith(`${target}/`));
+// The current page's destination is its own href, or a page under it (see isCurrentPath). An
+// explicit `aria-current` passed by the consumer still wins, since `attrs` is spread after it.
+const isCurrent = isCurrentPath(Astro.url.pathname, href);
 ---
 
 <a
@@ -31,10 +24,10 @@ const isCurrent =
     "text-(--theme-color-on-surface-variant) aria-[current=page]:text-(--theme-color-secondary)",
     // M3 expanded rail item: icon and Label Large side by side, 8px apart, in a 56px high active
     // indicator that hugs them with 16px either side. The item itself is the indicator here.
-    "@min-[160px]/rail:h-14 @min-[160px]/rail:w-fit @min-[160px]/rail:flex-row @min-[160px]/rail:gap-2 @min-[160px]/rail:rounded-full @min-[160px]/rail:px-4 @min-[160px]/rail:text-sm @min-[160px]/rail:leading-5 @min-[160px]/rail:tracking-[0.1px] @min-[160px]/rail:whitespace-nowrap",
-    "@min-[160px]/rail:aria-[current=page]:bg-(--theme-color-secondary-container) @min-[160px]/rail:aria-[current=page]:text-(--theme-color-on-secondary-container)",
+    "rail-expanded:h-14 rail-expanded:w-fit rail-expanded:flex-row rail-expanded:gap-2 rail-expanded:rounded-full rail-expanded:px-4 rail-expanded:text-sm rail-expanded:leading-5 rail-expanded:tracking-[0.1px] rail-expanded:whitespace-nowrap",
+    "rail-expanded:aria-[current=page]:bg-(--theme-color-secondary-container) rail-expanded:aria-[current=page]:text-(--theme-color-on-secondary-container)",
     // expanded state layer, on the whole indicator (collapsed, it's on the icon's indicator below)
-    "before:absolute before:inset-0 before:-z-10 before:hidden before:rounded-full before:bg-(--theme-color-on-secondary-container) before:opacity-0 @min-[160px]/rail:before:block",
+    "before:absolute before:inset-0 before:-z-10 before:hidden before:rounded-full before:bg-(--theme-color-on-secondary-container) before:opacity-0 rail-expanded:before:block",
     "hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10",
     "motion-safe:transition-colors motion-safe:duration-(--theme-duration-feedback) motion-safe:before:transition-opacity",
     // the focus ring goes around the whole item, icon and label
@@ -55,7 +48,7 @@ const isCurrent =
       "motion-safe:transition-colors motion-safe:duration-(--theme-duration-feedback) motion-safe:before:transition-opacity",
       // expanded, the item is the indicator, so this is just the icon. ! because the
       // group-aria-[current=page] background above is more specific.
-      "@min-[160px]/rail:size-auto @min-[160px]/rail:bg-transparent! @min-[160px]/rail:before:hidden",
+      "rail-expanded:size-auto rail-expanded:bg-transparent! rail-expanded:before:hidden",
     ]}
   >
     <Icon name={icon} />

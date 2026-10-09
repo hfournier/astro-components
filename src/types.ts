@@ -70,6 +70,13 @@ export type LayoutPropsType = {
   title: string;
 };
 
+// One link in a NavRailSubItems section, rendered as a NavDrawerItem
+export type NavSubItemType = {
+  href: string | URL;
+  icon?: SvgIconNameTypes;
+  label: string;
+};
+
 export type OverlayTransitionType = "fade" | "fade-scale" | "fade-down";
 
 // A prop/slot paired with the heading id already assigned to it in the table

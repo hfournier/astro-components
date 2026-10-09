@@ -20,9 +20,9 @@ props:
     required: false
     description: A heading for the section, in Label Medium and `on-surface-variant` (smaller than the items, so it reads as a caption rather than another link), with a Divider above it. A labelled section is a group named by its label, so screen readers announce it, e.g. "Forms, group". In a NavDrawer, the first section shown drops its Divider.
   - name: subItems
-    type: "{ href: string | URL; icon?: SvgIconNameTypes; label: string }[]"
+    type: "NavSubItemType[]"
     required: true
-    description: The section's links, each rendered as a NavDrawerItem, with an optional icon. The current page's link is marked with `aria-current="page"`.
+    description: "The section's links, each rendered as a NavDrawerItem, with an optional icon. The current page's link is marked with `aria-current=\"page\"`. `NavSubItemType`, in `src/types.ts`, is `{ href: string | URL; icon?: SvgIconNameTypes; label: string }`."
 ---
 
 ## Where it goes
