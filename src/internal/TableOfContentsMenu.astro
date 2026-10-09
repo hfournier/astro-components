@@ -14,11 +14,11 @@ const { headings, class: classList, ...attrs } = Astro.props;
 
 {
   headings && headings.length > 0 && (
-    <ul
-      class:list={twMerge("[scroll-target-group:auto]", classList)}
-      {...attrs}
-    >
-      <>
+    <>
+      <ul
+        class:list={twMerge("[scroll-target-group:auto]", classList)}
+        {...attrs}
+      >
         {headings.map((heading) => (
           <li>
             {heading.level === 1 ? (
@@ -43,21 +43,20 @@ const { headings, class: classList, ...attrs } = Astro.props;
             )}
           </li>
         ))}
-      </>
-    </ul>
+      </ul>
 
-  <div
-    class:list={[
-      // The current-section indicator is a progressive enhancement: only Chromium supports
-      // :target-current, so elsewhere no link gets the anchor name, and the indicator stays
-      // hidden rather than falling back to inset-0 around the whole menu
-      "hidden supports-[selector(:target-current)]:block",
-      "pointer-events-none absolute inset-0 border border-(--theme-color-outline-variant) rounded-full",
-      "top-[anchor(top)] bottom-[anchor(bottom)] left-[anchor(left)] right-[anchor(right)] [position-anchor:--ac-anchorname-toc-selected]",
-      "motion-safe:transition-[top,bottom,left,right] motion-safe:duration-(--theme-duration-base)",
-    ]}
-    aria-hidden="true"
-  >
-  </div>
+      <div
+        class:list={[
+          // The current-section indicator is a progressive enhancement: only Chromium supports
+          // :target-current, so elsewhere no link gets the anchor name, and the indicator stays
+          // hidden rather than falling back to inset-0 around the whole menu
+          "hidden supports-[selector(:target-current)]:block",
+          "pointer-events-none absolute inset-0 rounded-full border border-(--theme-color-outline-variant)",
+          "top-[anchor(top)] right-[anchor(right)] bottom-[anchor(bottom)] left-[anchor(left)] [position-anchor:--ac-anchorname-toc-selected]",
+          "motion-safe:transition-[top,bottom,left,right] motion-safe:duration-(--theme-duration-base)",
+        ]}
+        aria-hidden="true"
+      />
+    </>
   )
 }
