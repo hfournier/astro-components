@@ -28,7 +28,7 @@ const { Content } = await render(usage);
         <CodePreview>
           {usage.data.show !== "preview-only" && usage.body && (
             <Code
-              class="p-4"
+              class="bg-(--theme-color-surface-container-lowest)! p-4"
               code={usage.body}
               lang="jsx"
               themes={{

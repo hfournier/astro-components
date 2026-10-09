@@ -71,9 +71,11 @@ const labelId = sectionLabel
     sectionLabel && (
       <>
         <Divider />
-        {/* M3 drawer headline: Title Small in on-surface-variant, lined up with the items' icons */}
+        {/* M3's drawer headline is Title Small, the same type as the items' Label Large, so
+            beside items without icons it looked like one more link. Label Medium, smaller and
+            wider-spaced, reads as a caption over the group. Lined up with the items' content. */}
         <div
-          class="px-4 pt-3 pb-2 text-sm leading-5 font-medium tracking-[0.1px] text-(--theme-color-on-surface-variant)"
+          class="px-4 pt-3 pb-1 text-xs leading-4 font-medium tracking-[0.5px] text-(--theme-color-on-surface-variant)"
           id={labelId}
         >
           {sectionLabel}

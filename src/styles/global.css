@@ -9,6 +9,12 @@
   @media (prefers-reduced-motion: no-preference) {
     scroll-behavior: smooth;
   }
+
+  /* M3 has no scrollbar spec. Thin, with a transparent track, so it blends into whatever
+     surface it's on; inherited, so the rail, drawer, dialogs and code blocks match. Browsers
+     without these properties keep their own scrollbars. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--theme-color-outline-variant) transparent;
 }
 
 /* Inline code is a small chip that sets its own text color too, so it reads the same on any
