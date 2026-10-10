@@ -65,8 +65,8 @@ const widthClasses = {
     // move into it; still visible while it slides back when closing.
     "invisible -translate-x-full data-open:visible data-open:translate-x-0",
     "motion-safe:transition-[translate,visibility] motion-safe:data-open:transition-[translate] motion-safe:duration-(--theme-duration-base)",
-    // large and up: always visible, in the layout right after the rail
-    "large:visible large:sticky large:left-auto large:z-auto large:translate-x-0 large:rounded-none large:shadow-none large:transition-none",
+    // large and up: always visible, in the layout right after the rail, keeping M3's end corners
+    "large:visible large:sticky large:left-auto large:z-auto large:translate-x-0 large:shadow-none large:transition-none",
     classList
   )}
   {bgColor}

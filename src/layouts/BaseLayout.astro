@@ -80,7 +80,11 @@ const testItems = tests.map((test) => ({
     </NavDrawer>
 
     <div
-      class="grid grid-rows-[auto_1fr_auto] gap-4 expanded:gap-6 large:gap-8"
+      class:list={[
+        "grid grid-rows-[auto_1fr_auto] gap-y-4 expanded:gap-y-6 large:gap-y-8",
+        // a second column for the page's side sheet, if it has one
+        Astro.slots.has("sheet") && "large:grid-cols-[minmax(0,1fr)_auto]",
+      ]}
     >
       <Header
         class="col-span-full flex min-h-24 items-center justify-between py-4 ps-21 pe-8 medium:min-h-18 medium:px-6"
@@ -101,6 +105,19 @@ const testItems = tests.map((test) => ({
       </Header>
 
       <slot />
+
+      {
+        /* A page's side sheet (see SheetSide), from large up: beside the page's <main>, below the
+           header, docked to the window's end edge. The wrapper fills only the sheet's grid row, so
+           a sticky sheet stops at the end of <main> rather than sliding over the footer. */
+      }
+      {
+        Astro.slots.has("sheet") && (
+          <div class="hidden large:block">
+            <slot name="sheet" />
+          </div>
+        )
+      }
 
       <Footer
         class="col-span-full p-4 text-center"

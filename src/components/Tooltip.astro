@@ -47,11 +47,9 @@ const anchorName = `--ac-anchorname-tooltip-${randomId}`;
 const descriptionId = `ac-tooltip-description-${randomId}`;
 const hasActions = Astro.slots.has("actions");
 
-// M3 positions a rich tooltip's text from its baselines (subhead 28px from the top, supporting
-// text 24px below that, 16px under the text). For 14/20 text the baseline sits about 15px into
-// the line, which gives these paddings. Without a subhead or actions, it pads like a plain tooltip.
-const textPadding =
-  subhead || hasActions ? [subhead ? "pt-1" : "pt-[9px]", "pb-4"] : "py-1";
+// Inside a rich tooltip's 12px top and 8px bottom padding: 4px between the subhead and the
+// supporting text, and 12px between the text and the actions
+const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
 ---
 
 {
@@ -99,9 +97,10 @@ const textPadding =
     <BaseWrapper
       bgColor="surface-container"
       class={twMerge(
-        // M3 rich tooltip: surface-container at elevation 2, corner medium, 16px side padding,
-        // at most 320px wide, 4px from its anchor. A popover, so it sits in the top layer.
-        "inset-auto m-0 mt-1 min-h-6 w-max max-w-80 min-w-10 overflow-visible rounded-xl border-0 px-4 text-left shadow-theme-elevation-2",
+        // M3 rich tooltip: surface-container at elevation 2, corner medium, 12px padding at the top,
+        // 8px at the bottom and 16px at the sides, at most 320px wide, 4px from its anchor. A
+        // popover, so it sits in the top layer.
+        "inset-auto m-0 mt-1 min-h-6 w-max max-w-80 min-w-10 overflow-visible rounded-xl border-0 px-4 pt-3 pb-2 text-left shadow-theme-elevation-2",
         // subhead and supporting text are both on-surface-variant
         "text-(--theme-color-on-surface-variant)",
         "[position-area:bottom] [position-try-fallbacks:bottom_span-left,bottom_span-right,flip-block]",
@@ -120,7 +119,7 @@ const textPadding =
       <div id={descriptionId}>
         {subhead && (
           // M3 Title Small
-          <p class="pt-3.25 text-sm leading-5 font-medium tracking-[0.1px]">
+          <p class="text-sm leading-5 font-medium tracking-[0.1px]">
             {subhead}
           </p>
         )}
@@ -130,7 +129,7 @@ const textPadding =
         </div>
       </div>
       {hasActions && (
-        <div class="flex min-h-9 flex-wrap items-center gap-2 pb-2">
+        <div class="flex min-h-9 flex-wrap items-center gap-2">
           <slot name="actions" />
         </div>
       )}

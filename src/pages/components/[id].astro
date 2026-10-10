@@ -123,12 +123,18 @@ if (examples && examples.length > 0) {
   classListHtml="scroll-pt-15 large:scroll-pt-0"
 >
   <Main
-    class="relative grid grid-rows-[0px_1fr] px-2 large:grid-cols-[minmax(0,calc(75ch+4rem))_fit-content(360px)] large:grid-rows-1 large:justify-center large:gap-6 large:pr-6"
+    class="relative grid grid-cols-[minmax(0,1fr)] grid-rows-[0px_1fr] px-2 large:grid-rows-1"
   >
     <TableOfContents {headings} />
 
+    {
+      /* A long code line mustn't widen the article past <main> (under the side sheet), so its
+         code block scrolls instead: <main>'s column is minmax(0,1fr) rather than growing to fit
+         its content, and the article fills that column (w-full) rather than fitting its content,
+         up to 75ch. */
+    }
     <article
-      class="mx-auto max-w-[calc(75ch+4rem)] space-y-8 px-4 medium:px-6 expanded:px-8"
+      class="mx-auto w-full max-w-[calc(75ch+4rem)] space-y-8 px-4 medium:px-6 expanded:px-8"
     >
       <Heading level={1}>{component.data.name} Component</Heading>
 
@@ -194,4 +200,6 @@ if (examples && examples.length > 0) {
       }
     </article>
   </Main>
+
+  <TableOfContents slot="sheet" isDocked {headings} />
 </BaseLayout>

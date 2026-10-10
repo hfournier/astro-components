@@ -15,6 +15,16 @@ type Props = {
 const { headingId, usage } = Astro.props;
 
 const { Content } = await render(usage);
+
+const showCode = usage.data.show !== "preview-only" && !!usage.body;
+const showPreview = usage.data.show !== "code-only";
+const codeProps = {
+  class: "bg-(--theme-color-surface-container-lowest)! p-4",
+  code: usage.body ?? "",
+  lang: "jsx",
+  themes: { light: "github-light-default", dark: "github-dark-default" },
+  defaultColor: "light-dark()",
+} as const;
 ---
 
 <Section class="space-y-8">
@@ -23,27 +33,27 @@ const { Content } = await render(usage);
   <MarkdownParagraphs text={usage.data.description} />
 
   {
-    usage.data.show !== "none" && (
-      <>
+    /* One CodePreview per combination: Astro counts a slot as filled even when the expression
+       inside it renders nothing, so toggling the code or preview inside one CodePreview left an
+       empty "Preview" box on code-only usages. */
+  }
+  {
+    usage.data.show !== "none" &&
+      (showCode && showPreview ? (
         <CodePreview>
-          {usage.data.show !== "preview-only" && usage.body && (
-            <Code
-              class="bg-(--theme-color-surface-container-lowest)! p-4"
-              code={usage.body}
-              lang="jsx"
-              themes={{
-                light: "github-light-default",
-                dark: "github-dark-default",
-              }}
-              defaultColor="light-dark()"
-              slot="code"
-            />
-          )}
-          {usage.data.show !== "code-only" && (
-            <Content components={{ ...mdxComponents }} slot="preview" />
-          )}
+          <Code {...codeProps} slot="code" />
+          <Content components={{ ...mdxComponents }} slot="preview" />
         </CodePreview>
-      </>
-    )
+      ) : showCode ? (
+        <CodePreview>
+          <Code {...codeProps} slot="code" />
+        </CodePreview>
+      ) : (
+        showPreview && (
+          <CodePreview>
+            <Content components={{ ...mdxComponents }} slot="preview" />
+          </CodePreview>
+        )
+      ))
   }
 </Section>

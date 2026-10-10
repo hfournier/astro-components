@@ -59,20 +59,20 @@ const iconSizeClasses = {
 }[size];
 
 // M3 small, medium or large extended FAB: the FAB's height and corners, as wide as its icon and
-// label. In a NavRail, the rail's width decides: extended in an expanded rail (rail-expanded, see
-// theme.css), a plain FAB in a collapsed one. Outside a rail there's no `rail` container, so
-// neither query matches and isExtended decides. Each set is written out in full so Tailwind
-// generates it.
+// label (the small one at least 80px wide). In a NavRail, the rail's width decides: extended in
+// an expanded rail (rail-expanded, see theme.css), a plain FAB in a collapsed one. Outside a rail
+// there's no `rail` container, so neither query matches and isExtended decides. Each set is
+// written out in full so Tailwind generates it.
 const extendedClasses = isExtended
   ? {
       default:
-        "w-auto gap-2 px-4 text-base leading-6 font-medium tracking-[0.15px]",
+        "w-auto min-w-20 gap-2 px-4 text-base leading-6 font-medium tracking-[0.15px]",
       md: "w-auto gap-3 px-[26px] text-[22px] leading-7 font-normal",
       lg: "w-auto gap-4 px-7 text-2xl leading-8 font-normal",
     }[size]
   : {
       default:
-        "rail-expanded:w-auto rail-expanded:gap-2 rail-expanded:px-4 rail-expanded:text-base rail-expanded:leading-6 rail-expanded:font-medium rail-expanded:tracking-[0.15px]",
+        "rail-expanded:w-auto rail-expanded:min-w-20 rail-expanded:gap-2 rail-expanded:px-4 rail-expanded:text-base rail-expanded:leading-6 rail-expanded:font-medium rail-expanded:tracking-[0.15px]",
       md: "rail-expanded:w-auto rail-expanded:gap-3 rail-expanded:px-[26px] rail-expanded:text-[22px] rail-expanded:leading-7 rail-expanded:font-normal",
       lg: "rail-expanded:w-auto rail-expanded:gap-4 rail-expanded:px-7 rail-expanded:text-2xl rail-expanded:leading-8 rail-expanded:font-normal",
     }[size];
@@ -80,7 +80,8 @@ const extendedClasses = isExtended
 // An extended FAB in a collapsed NavRail goes back to a plain FAB
 const collapsedRailClasses = isExtended
   ? {
-      default: "rail-collapsed:w-14 rail-collapsed:gap-0 rail-collapsed:px-0",
+      default:
+        "rail-collapsed:w-14 rail-collapsed:min-w-0 rail-collapsed:gap-0 rail-collapsed:px-0",
       md: "rail-collapsed:w-20 rail-collapsed:gap-0 rail-collapsed:px-0",
       lg: "rail-collapsed:w-24 rail-collapsed:gap-0 rail-collapsed:px-0",
     }[size]

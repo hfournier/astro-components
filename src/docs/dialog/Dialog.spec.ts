@@ -132,6 +132,17 @@ test.describe("Dialog", () => {
     );
   });
 
+  test("spacing matches M3: 16px from the title to the body, 24px from the body to the actions, title start-aligned", async ({
+    page,
+  }) => {
+    await activate(openDialog(page));
+
+    const dialog = page.locator("#dialog-usage");
+    await expect(dialog.locator("header")).toHaveCSS("padding-bottom", "16px");
+    await expect(dialog.locator("footer")).toHaveCSS("padding-top", "24px");
+    await expect(dialog.locator("h2")).toHaveCSS("text-align", "start");
+  });
+
   test("headline and supporting text use M3's type styles and colors", async ({
     page,
   }) => {
@@ -304,6 +315,9 @@ test.describe("DialogAcknowledge", () => {
     const dialog = page.locator("#dialog-acknowledge-icon");
     await expect(dialog.locator("header")).toHaveCSS("align-items", "center");
     await expect(dialog.locator("h2")).toHaveCSS("text-align", "center");
+    // M3: 16px between the icon and the title, 8px between the action buttons
+    await expect(dialog.locator("header")).toHaveCSS("row-gap", "16px");
+    await expect(dialog.locator("footer menu")).toHaveCSS("column-gap", "8px");
 
     const icon = dialog.locator("header svg");
     await expect(icon).toHaveAttribute("aria-hidden", "true");

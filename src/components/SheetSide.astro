@@ -1,0 +1,180 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import crypto from "node:crypto";
+import { twMerge } from "tailwind-merge";
+import type { BgColorType } from "../types";
+import BaseWrapper from "./BaseWrapper.astro";
+import ButtonIcon from "./ButtonIcon.astro";
+
+// An M3 side sheet: supplementary content on the start or end edge of the window, in two kinds.
+//
+// - Standard (default): an <aside> beside the main content, both usable at once. Docked, it runs
+//   the window's full height with a divider on its inner edge; place it in your layout, e.g. as
+//   the last column of a grid, so the content beside it narrows to make room (M3's coplanar sheet).
+// - Modal (isModal): a <dialog> that slides in over the page under a scrim, opened with
+//   showModal(), so focus stays inside it, Escape closes it and the page is inert until it does.
+//   Open it with a button carrying command="show-modal" and commandfor set to the sheet's id. It
+//   also closes on a click on the scrim.
+//
+// Either kind can be detached (isDetached): 16px from the window's edges, with all four corners
+// rounded, rather than docked flush to its edge.
+type Props = Omit<HTMLAttributes<"aside" | "dialog">, "id"> & {
+  bgColor?: BgColorType;
+  edge?: "start" | "end";
+  headline?: string;
+  // Needed to open a modal sheet with commandfor; one is made up if it's left out
+  id?: string;
+  isDetached?: boolean;
+  isModal?: boolean;
+  showCloseX?: boolean;
+};
+const {
+  isModal = false,
+  bgColor = isModal ? "surface-container-low" : "surface",
+  edge = "end",
+  headline,
+  id = `ac-sheet-side-${crypto.randomUUID()}`,
+  isDetached = false,
+  showCloseX = isModal,
+  class: classList,
+  ...attrs
+} = Astro.props;
+
+const Tag = isModal ? "dialog" : "aside";
+const headlineId = headline ? `${id}-headline` : undefined;
+const hasActions = Astro.slots.has("actions");
+
+// M3: 256px wide, at most 400px. Set as a custom property, so a consumer overrides it with one
+// class, such as `[--ac-sheet-side-width:320px]`. Never wider than the window, less its margins.
+const widthClasses =
+  "[--ac-sheet-side-width:256px] w-(--ac-sheet-side-width) max-w-[min(400px,100vw-2rem)]";
+
+// Docked, it runs the window's full height; detached, it's 16px from the window's edges
+const placementClasses = isModal
+  ? [
+      // overriding the UA dialog's centring margins and size limits
+      "fixed m-0 max-h-none max-w-none overflow-visible bg-transparent p-0 outline-none",
+      isDetached ? "inset-y-4 h-auto" : "inset-y-0 h-dvh",
+      {
+        start: isDetached ? "start-4 end-auto" : "start-0 end-auto",
+        end: isDetached ? "end-4 start-auto" : "end-0 start-auto",
+      }[edge],
+    ]
+  : [
+      "sticky shrink-0 self-start",
+      isDetached ? "top-4 m-4 h-[calc(100dvh-2rem)]" : "top-0 h-dvh",
+    ];
+
+// A modal sheet slides in from off its edge (past a detached sheet's margin too), and back out,
+// still showing until it's gone, over a 32% scrim that fades in and out. rtl: flips the slide,
+// since translate is physical.
+const modalClasses = isModal && [
+  {
+    start:
+      "-translate-x-[calc(100%+1rem)] rtl:translate-x-[calc(100%+1rem)] motion-safe:starting:open:-translate-x-[calc(100%+1rem)] motion-safe:rtl:starting:open:translate-x-[calc(100%+1rem)]",
+    end: "translate-x-[calc(100%+1rem)] rtl:-translate-x-[calc(100%+1rem)] motion-safe:starting:open:translate-x-[calc(100%+1rem)] motion-safe:rtl:starting:open:-translate-x-[calc(100%+1rem)]",
+  }[edge],
+  "open:translate-x-0 rtl:open:translate-x-0",
+  "motion-safe:transition-[display,overlay,translate] motion-safe:transition-discrete motion-safe:duration-(--theme-duration-base)",
+  "backdrop:bg-(--theme-color-scrim)/32 backdrop:opacity-0 open:backdrop:opacity-100 motion-safe:starting:open:backdrop:opacity-0",
+  "motion-safe:backdrop:transition-[display,opacity,overlay] motion-safe:backdrop:transition-discrete motion-safe:backdrop:duration-(--theme-duration-base)",
+];
+
+// Detached, it's rounded all round (M3 corner large). Docked, a modal sheet rounds its inner
+// edge and sits at elevation 1; a standard one has a divider on its inner edge instead.
+const shapeClasses = isDetached
+  ? ["rounded-2xl", isModal && "shadow-theme-elevation-1"]
+  : isModal
+    ? [
+        { start: "rounded-e-2xl", end: "rounded-s-2xl" }[edge],
+        "shadow-theme-elevation-1",
+      ]
+    : {
+        start: "border-e border-(--theme-color-outline-variant)",
+        end: "border-s border-(--theme-color-outline-variant)",
+      }[edge];
+
+// A modal sheet's close button closes its dialog; a standard sheet's hides it (see the script)
+const closeAttrs = isModal
+  ? { command: "close", commandfor: id }
+  : { "data-ac-sheet-side-close": "" };
+---
+
+<Tag
+  class:list={twMerge(placementClasses, widthClasses, modalClasses, classList)}
+  id={id}
+  aria-labelledby={headlineId}
+  data-ac-sheet-side={isModal ? "modal" : "standard"}
+  {...attrs}
+>
+  {
+    /* M3: 24px start and end padding, 12px between the top elements, and bottom actions in a
+       72px row (16px above, 24px below) aligned to the start, under a divider. Only the content
+       scrolls. The headline is M3 Title Large: 22/28px, weight 400, no tracking. A BaseWrapper,
+       so a modal sheet's focus rings and links follow its own surface, not the page it was
+       placed in. */
+  }
+  <BaseWrapper
+    {bgColor}
+    class:list={["flex h-full flex-col overflow-hidden", shapeClasses]}
+  >
+    {
+      (headline || showCloseX) && (
+        <div class="flex shrink-0 items-center gap-3 px-6 pt-6 pb-4">
+          {headline && (
+            <h2
+              class="min-w-0 flex-1 text-[1.375rem] leading-7 font-normal tracking-normal"
+              id={headlineId}
+            >
+              {headline}
+            </h2>
+          )}
+          {showCloseX && (
+            <ButtonIcon
+              class="ms-auto -me-2"
+              icon="close"
+              label="Close"
+              showTooltip={false}
+              {...closeAttrs}
+            />
+          )}
+        </div>
+      )
+    }
+    <div
+      class:list={[
+        "min-h-0 flex-1 overflow-y-auto px-6 pb-6",
+        !headline && !showCloseX && "pt-6",
+      ]}
+    >
+      <slot />
+    </div>
+    {
+      hasActions && (
+        <div class="flex min-h-18 shrink-0 items-center justify-start gap-2 border-t border-(--theme-color-outline-variant) px-6 pt-4 pb-6">
+          <slot name="actions" />
+        </div>
+      )
+    }
+  </BaseWrapper>
+</Tag>
+
+<script>
+  // A modal sheet closes on a click on its scrim: its content fills the dialog, so a click that
+  // lands on the dialog itself is on its ::backdrop
+  document
+    .querySelectorAll<HTMLDialogElement>('[data-ac-sheet-side="modal"]')
+    .forEach((sheet) => {
+      sheet.addEventListener("click", (event) => {
+        if (event.target === sheet) sheet.close();
+      });
+    });
+
+  // A standard sheet's close button hides it; remove its hidden attribute to show it again
+  document.addEventListener("click", (event) => {
+    const sheet = (event.target as Element)
+      .closest("[data-ac-sheet-side-close]")
+      ?.closest<HTMLElement>('[data-ac-sheet-side="standard"]');
+    if (sheet) sheet.hidden = true;
+  });
+</script>

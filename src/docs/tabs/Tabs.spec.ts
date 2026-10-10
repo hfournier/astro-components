@@ -240,4 +240,62 @@ test.describe("Tabs", () => {
     await expect(tablist).toHaveCSS("border-bottom-width", "1px");
     await expect(tablist).toHaveCSS("border-bottom-color", expectedColor);
   });
+
+  // Tablists in page order: usage (primary, labels only), example-01 (primary with icons),
+  // example-02 (secondary), example-03 (secondary with icons), example-04, example-05,
+  // example-06 (primary with icons and badges, then secondary with badges)
+  const tablist = (page: Page, i: number) => page.getByRole("tablist").nth(i);
+  const height = async (target: Locator) =>
+    (await target.boundingBox())!.height;
+
+  test("tabs are 48px high with labels only, 64px with stacked icons", async ({
+    page,
+  }) => {
+    expect(await height(tablist(page, 0).getByRole("tab").first())).toBe(48);
+    expect(await height(tablist(page, 2).getByRole("tab").first())).toBe(48);
+    expect(await height(tablist(page, 1).getByRole("tab").first())).toBe(64);
+    await expect(tablist(page, 1).locator("svg").first()).toHaveCSS(
+      "width",
+      "24px"
+    );
+  });
+
+  test("the primary indicator is 3px high with 3px top corners and at least 24px long; the secondary 2px", async ({
+    page,
+  }) => {
+    const primary = tablist(page, 0).locator("[data-ac-tab-indicator]");
+    const secondary = tablist(page, 2).locator("[data-ac-tab-indicator]");
+
+    await expect(primary).toHaveCSS("height", "3px");
+    await expect(primary).toHaveCSS("border-top-left-radius", "3px");
+    await expect(primary).toHaveCSS("border-bottom-left-radius", "0px");
+    await expect(primary).toHaveCSS("min-width", "24px");
+    await expect(secondary).toHaveCSS("height", "2px");
+  });
+
+  test("an inline icon is 8px from its label, and an inline badge 4px", async ({
+    page,
+  }) => {
+    const inlineIcon = tablist(page, 3)
+      .getByRole("tab")
+      .first()
+      .locator(":scope > span");
+    const inlineBadge = tablist(page, 7)
+      .getByRole("tab")
+      .first()
+      .locator('span[aria-hidden="true"]');
+
+    await expect(inlineIcon).toHaveCSS("column-gap", "8px");
+    await expect(inlineBadge).toHaveCSS("margin-inline-start", "4px");
+  });
+
+  test("a dot badge on a stacked icon overlaps it by 6px", async ({ page }) => {
+    const tab = tablist(page, 6).getByRole("tab", { name: "Updates" });
+    const icon = (await tab.locator("svg").boundingBox())!;
+    const dot = (await tab.locator('span[aria-hidden="true"]').boundingBox())!;
+
+    // the dot sits inside the icon's top-end corner
+    expect(icon.x + icon.width - dot.x).toBeCloseTo(6, 0);
+    expect(dot.y + dot.height - icon.y).toBeCloseTo(6, 0);
+  });
 });

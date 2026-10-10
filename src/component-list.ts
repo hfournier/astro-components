@@ -25,6 +25,7 @@ export { default as NavRailItem } from "./components/NavRailItem.astro";
 export { default as NavRailSubItems } from "./components/NavRailSubItems.astro";
 export { default as Popover } from "./components/Popover.astro";
 export { default as Section } from "./components/Section.astro";
+export { default as SheetSide } from "./components/SheetSide.astro";
 export { default as SkipToContent } from "./components/SkipToContent.astro";
 export { default as Tab } from "./components/Tab.astro";
 export { default as Tabs } from "./components/Tabs.astro";

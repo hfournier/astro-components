@@ -25,7 +25,7 @@ props:
     type: '"narrow" | "wide"'
     required: false
     default: '"narrow"'
-    description: The drawer's width, as an expanded NavRail's, 220px or 360px. For another width, see `--ac-nav-drawer-width`.
+    description: The drawer's width, as an expanded NavRail's, 220px or 360px. M3 specifies 360px (`"wide"`); the narrower default leaves the page's content 140px more room beside the rail and drawer, which matters most just above the large breakpoint (1200px), where the drawer first sits in the layout. For another width, see `--ac-nav-drawer-width`.
 slots:
   - name: default
     description: The sections to show, one for each rail item that has sub-items. Each section's `parentHref` is the `href` of its rail item.

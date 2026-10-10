@@ -91,4 +91,31 @@ test.describe("Badge", () => {
   test("caps a count over 999 at 999+", async ({ page }) => {
     await expect(badge(page, "Messages, 1500 unread")).toHaveText("999+");
   });
+
+  test("matches M3's large badge: 16px square for one digit, 4px padding, 8px corners", async ({
+    page,
+  }) => {
+    const target = badge(page, "Inbox, 3 unread");
+    const { width, height } = await box(target);
+
+    expect({ width, height }).toEqual({ width: 16, height: 16 });
+    await expect(target).toHaveCSS("padding-left", "4px");
+    await expect(target).toHaveCSS("padding-right", "4px");
+    await expect(target).toHaveCSS("border-top-left-radius", "8px");
+  });
+
+  test("its widest, 999+, is about M3's 34px", async ({ page }) => {
+    // M3 gives 16x34px; the font's rendering of 11px text with 0.5px tracking varies by about 1px
+    const { width, height } = await box(badge(page, "Messages, 1500 unread"));
+
+    expect(height).toBe(16);
+    expect(Math.abs(width - 34)).toBeLessThanOrEqual(1.5);
+  });
+
+  test("the dot has M3's 3px corners", async ({ page }) => {
+    await expect(badge(page, "Notifications, new activity")).toHaveCSS(
+      "border-top-left-radius",
+      "3px"
+    );
+  });
 });

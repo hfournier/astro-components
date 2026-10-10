@@ -102,6 +102,17 @@ test.describe("Fab", () => {
     }
   });
 
+  test("the default extended FAB matches M3: 16px padding and corners, at least 80px wide", async ({
+    page,
+  }) => {
+    const fab = fabs(page, "Compose").nth(1);
+
+    await expect(fab).toHaveCSS("padding-left", "16px");
+    await expect(fab).toHaveCSS("padding-right", "16px");
+    await expect(fab).toHaveCSS("border-top-left-radius", "16px");
+    await expect(fab).toHaveCSS("min-width", "80px");
+  });
+
   test("sits at elevation 3, rising to 4 on hover", async ({ page }) => {
     const usage = fabs(page, "Compose").first();
     const shadow = () => usage.evaluate((el) => getComputedStyle(el).boxShadow);

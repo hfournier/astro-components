@@ -11,7 +11,11 @@ const hasPreviewSlot = Astro.slots.has("preview");
      tab stops here only slowed keyboard users down on the way to the preview's controls. */
 }
 <div
-  class:list={["grid border border-(--theme-color-outline-variant)"]}
+  class:list={[
+    // minmax(0,1fr): the column stays the page's width rather than growing to fit wide code or a
+    // wide preview, which scroll inside it instead
+    "grid grid-cols-[minmax(0,1fr)] border border-(--theme-color-outline-variant)",
+  ]}
   data-testid="code-preview"
 >
   {

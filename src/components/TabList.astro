@@ -104,7 +104,8 @@ const { randomId, tabs, variant } = Astro.props;
     class:list={[
       "pointer-events-none absolute bottom-0",
       "right-[anchor(right)] left-[anchor(left)] [position-anchor:var(--ac-anchorname-tab-selected)]",
-      variant === "primary" ? "h-0.75 min-w-6 rounded-t-full" : "h-0.5",
+      // M3: primary 3px high, at least 24px long, 3px top corners; secondary 2px, square
+      variant === "primary" ? "h-0.75 min-w-6 rounded-t-[3px]" : "h-0.5",
       "bg-(--theme-color-primary)",
       "motion-safe:transition-[left,right] motion-safe:duration-(--theme-duration-overlay)",
     ]}

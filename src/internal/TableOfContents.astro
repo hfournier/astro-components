@@ -1,74 +1,81 @@
 ---
-import BaseWrapper from "../components/BaseWrapper.astro";
 import ButtonIcon from "../components/ButtonIcon.astro";
-import Popover from "../components/Popover.astro";
+import SheetSide from "../components/SheetSide.astro";
 import TableOfContentsMenu from "./TableOfContentsMenu.astro";
 import type { ToCHeadingType } from "../types";
 
 type Props = {
   headings: ToCHeadingType[];
+  // The large-and-up sheet, docked to the window's end edge: render it in BaseLayout's `sheet`
+  // slot, beside the page's column. Otherwise, the button and modal sheet used below large, in
+  // the page's <main>.
+  isDocked?: boolean;
 };
 
-const { headings } = Astro.props;
+const { headings, isDocked = false } = Astro.props;
 ---
 
-<nav
-  class="group/toc sticky top-5 right-5 justify-self-end large:hidden"
-  aria-label="Table of contents"
->
-  <ButtonIcon
-    class="[anchor-name:--ac-anchorname-toc-button] hover:opacity-100"
-    icon="more_vert"
-    size="md"
-    variant="outlined"
-    command="show-popover"
-    commandfor="table-of-contents"
-    aria-expanded="false"
-    label="Show table of contents"
-  />
+{
+  /* M3's supporting pane: from large up, a standard side sheet docked to the window's end edge;
+     below large, a modal side sheet behind a button that stays at the top of the page. Each nav is
+     relative, so the menu's current-section indicator scrolls with its links. */
+}
+{
+  isDocked ? (
+    <SheetSide class="hidden large:block" headline="On this page">
+      <nav class="relative" aria-label="Table of contents">
+        <TableOfContentsMenu {headings} />
+      </nav>
+    </SheetSide>
+  ) : (
+    <>
+      <div class="sticky top-5 right-5 justify-self-end large:hidden">
+        <ButtonIcon
+          icon="more_vert"
+          size="md"
+          variant="outlined"
+          command="show-modal"
+          commandfor="table-of-contents"
+          aria-haspopup="dialog"
+          label="Show table of contents"
+        />
+      </div>
 
-  <Popover
-    class="mt-1"
-    overlayClass="m-0 top-[anchor(bottom)] left-auto right-[anchor(right)] [position-anchor:--ac-anchorname-toc-button]"
-    id="table-of-contents"
-    showBlur={false}
-  >
-    <div
-      class="mb-4 text-[11px] leading-4 font-medium tracking-[0.5px] uppercase"
-    >
-      On this page
-    </div>
-
-    <TableOfContentsMenu {headings} />
-  </Popover>
-</nav>
-
-<BaseWrapper
-  bgColor="surface-container-low"
-  class="order-2 hidden min-w-55 border border-(--theme-color-outline-variant) p-4 large:block"
->
-  <nav class="sticky top-0 space-y-4" aria-label="Table of contents">
-    <div class="text-[11px] leading-4 font-medium tracking-[0.5px] uppercase">
-      On this page
-    </div>
-
-    <TableOfContentsMenu {headings} />
-  </nav>
-</BaseWrapper>
+      <SheetSide
+        class="large:hidden"
+        id="table-of-contents"
+        headline="On this page"
+        isModal
+      >
+        <nav class="relative" aria-label="Table of contents">
+          <TableOfContentsMenu {headings} />
+        </nav>
+      </SheetSide>
+    </>
+  )
+}
 
 <script>
   const toc = document.getElementById("table-of-contents");
-  const tocButton = document.querySelector('[commandfor="table-of-contents"]');
 
-  toc?.addEventListener("click", (e) => {
-    if (e.target instanceof Element && e.target.closest('a[href^="#"]')) {
-      toc.hidePopover();
-    }
-  });
+  if (toc instanceof HTMLDialogElement) {
+    // Following a link in the modal sheet closes it, so the section it goes to isn't left under it
+    toc.addEventListener("click", (event) => {
+      if (
+        event.target instanceof Element &&
+        event.target.closest('a[href^="#"]')
+      ) {
+        toc.close();
+      }
+    });
 
-  // Native invokers (command/commandfor) don't manage aria-expanded on the
-  // trigger themselves - keep it in sync with the popover's actual state.
-  toc?.addEventListener("toggle", (e) => {
-    tocButton?.setAttribute("aria-expanded", String(e.newState === "open"));
-  });
+    // From large up the docked sheet takes over, so an open modal one closes rather than staying
+    // hidden (large:hidden) with the page still inert. M3's large window size; keep in step with
+    // --breakpoint-large in theme.css.
+    window
+      .matchMedia("(width >= 75rem)")
+      .addEventListener("change", (event) => {
+        if (event.matches) toc.close();
+      });
+  }
 </script>

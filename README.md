@@ -60,6 +60,7 @@ roles) and [`docs/adr/`](./docs/adr) for the design decisions behind it.
 | `NavRailSubItems`                | pattern   | A labelled section of sub-items for one NavRail destination, shown in a NavDrawer or an expanded NavRail.        |
 | `Popover`                        | pattern   | A `<div popover>` with M3 overlay surfaces and an optional close button.                                          |
 | `Section`                        | pattern   | A themed wrapper that renders as a native `<section>`, built on BaseWrapper.                                      |
+| `SheetSide`                      | pattern   | An M3 side sheet on the start or end edge: standard beside the content, or modal over it; docked or detached.    |
 | `SkipToContent`                  | pattern   | A visually-hidden-until-focused link that lets keyboard users skip to the main content.                           |
 | `Tabs` / `Tab`                   | pattern   | M3 primary or secondary tabs with optional icons and badges; each `Tab` holds one tab's label and content.        |
 | `Tooltip`                        | pattern   | M3 plain and rich tooltips, shown on hover and keyboard focus and placed with CSS anchor positioning.             |

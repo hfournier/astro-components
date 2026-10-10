@@ -22,8 +22,9 @@ const isCurrent = isCurrentPath(Astro.url.pathname, href);
 <a
   class:list={twMerge(
     // M3 drawer item: the full width (the drawer's 12px padding either side), 56px high, fully
-    // rounded, 16px before and 24px after its content, 12px between the icon and Label Large
-    "relative isolate flex h-14 w-full items-center gap-3 rounded-full ps-4 pe-6 text-sm leading-5 font-medium tracking-[0.1px]",
+    // rounded, 16px either side of its content (28px from the drawer's edges), 12px between the
+    // icon and Label Large
+    "relative isolate flex h-14 w-full items-center gap-3 rounded-full px-4 text-sm leading-5 font-medium tracking-[0.1px]",
     // inactive: on-surface-variant, on-surface while hovered, focused or pressed
     "text-(--theme-color-on-surface-variant) not-aria-[current=page]:hover:text-(--theme-color-on-surface) not-aria-[current=page]:focus-visible:text-(--theme-color-on-surface) not-aria-[current=page]:active:text-(--theme-color-on-surface)",
     // current page: the active indicator
