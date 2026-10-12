@@ -183,6 +183,21 @@ test.describe("SheetSide as the table of contents", () => {
     await expect(tocButton(page)).toBeHidden();
   });
 
+  test("it's 256px until the article has its full width, then grows to fit its headings", async ({
+    page,
+  }) => {
+    // "Badge with a label over 999" is the longest heading on any page, too long for 256px
+    await page.goto("/components/badge");
+    const tocWidth = async () => (await box(docked(page))).width;
+
+    await page.setViewportSize({ width: 1200, height: 800 });
+    expect(await tocWidth()).toBe(256);
+
+    await page.setViewportSize({ width: 1600, height: 800 });
+    await expect.poll(tocWidth).toBeGreaterThan(256);
+    expect(await tocWidth()).toBeLessThanOrEqual(400);
+  });
+
   test("below large, its button opens it as a modal, and following a link closes it", async ({
     page,
   }) => {

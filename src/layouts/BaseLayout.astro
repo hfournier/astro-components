@@ -82,8 +82,10 @@ const testItems = tests.map((test) => ({
     <div
       class:list={[
         "grid grid-rows-[auto_1fr_auto] gap-y-4 expanded:gap-y-6 large:gap-y-8",
-        // a second column for the page's side sheet, if it has one
-        Astro.slots.has("sheet") && "large:grid-cols-[minmax(0,1fr)_auto]",
+        // a second column for the page's side sheet, if it has one. A size container too, so the
+        // sheet can measure the room left beside a full-width article (see TableOfContents).
+        Astro.slots.has("sheet") &&
+          "large:@container/page large:grid-cols-[minmax(0,1fr)_auto]",
       ]}
     >
       <Header

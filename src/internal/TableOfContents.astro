@@ -22,7 +22,13 @@ const { headings, isDocked = false } = Astro.props;
 }
 {
   isDocked ? (
-    <SheetSide class="hidden large:block" headline="On this page">
+    // 256px, M3's sheet width, unless there's room beside the article at its full 75ch (plus its
+    // 4rem padding and <main>'s 1rem): then it grows to fit its longest heading, up to M3's 400px.
+    // 100cqw is the page column, BaseLayout's size container.
+    <SheetSide
+      class="hidden w-fit max-w-[clamp(var(--ac-sheet-side-width),100cqw-75ch-5rem,400px)] min-w-(--ac-sheet-side-width) large:block"
+      headline="On this page"
+    >
       <nav class="relative" aria-label="Table of contents">
         <TableOfContentsMenu {headings} />
       </nav>
