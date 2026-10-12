@@ -120,6 +120,18 @@ const components = [
     shared: ["types", "icons"],
   },
   {
+    name: "NavBar",
+    id: "nav-bar",
+    needs: ["BaseWrapper"],
+    shared: ["types"],
+  },
+  {
+    name: "NavBarItem",
+    id: "nav-bar-item",
+    needs: ["Badge", "Icon"],
+    shared: ["icons"],
+  },
+  {
     name: "NavDrawer",
     id: "nav-drawer",
     needs: ["BaseWrapper"],
@@ -134,7 +146,7 @@ const components = [
   {
     name: "NavRailItem",
     id: "nav-rail-item",
-    needs: ["Icon"],
+    needs: ["Badge", "Icon"],
     shared: ["icons"],
   },
   {

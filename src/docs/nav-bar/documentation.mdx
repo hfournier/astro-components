@@ -1,0 +1,42 @@
+---
+name: NavBar
+description: A Material 3 flexible navigation bar, the row of three to five main destinations along the bottom of the viewport, built on BaseWrapper with a `<nav>` of NavBarItems inside. Below medium, each destination shows its icon above its label and they share the bar's width equally; from medium up, each shows its label beside its icon and they're grouped in the middle of the bar.
+category: Content sectioning
+role: pattern
+meta:
+  title: NavBar | astro-components HenriFournier.dev
+  description: A Material 3 flexible navigation bar along the bottom of the viewport, with three to five destinations.
+extends:
+  kind: component
+  name: BaseWrapper
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/nav
+props:
+  - name: bgColor
+    type: BgColorType
+    required: false
+    default: '"surface-container"'
+    description: The bar's background role, M3's `surface-container` by default. Text, icons and focus rings follow the chosen background.
+  - name: label
+    type: string
+    required: false
+    default: '"Main"'
+    description: The accessible name of the bar's `<nav>`. Keep the default when the bar is the page's main navigation, and pass another name when the page has other navigation landmarks shown at the same time.
+slots:
+  - name: default
+    description: The bar's destinations, three to five of them, as M3 requires. Any other number of NavBarItems throws an error when the page renders.
+    kind: component
+    component: NavBarItem
+    multiple: true
+---
+
+## Compact and medium
+
+The bar is 64px high, on `surface-container`. Below the medium breakpoint (600px), its destinations are M3's vertical items: each takes an equal share of the bar's width, with its icon in a 56×32px active indicator and its label 4px below it. From medium up, they're M3's horizontal items, grouped in the middle of the bar: each has its icon and label side by side in a 40px-high indicator. The items follow the window's width rather than the bar's, since M3 bases the change on the window size class.
+
+## Layout
+
+The bar is `fixed` to the bottom of the viewport at `z-30`. It adds the device's bottom safe area (`env(safe-area-inset-bottom)`) below its 64px, so on a phone with a home indicator it sits above the indicator, with its background filling the space under it. The safe area is only non-zero with `viewport-fit=cover` in the page's viewport meta tag. Since the bar is out of the page flow, leave room for it under the page's content, for example with `pb-[calc(4rem+env(safe-area-inset-bottom))]` on the `<body>`.
+
+M3 uses a navigation bar in compact windows and a navigation rail from medium up. For that pattern, put a NavBar and a NavRail on the same page, hide the bar from medium up with `class="medium:hidden"`, and hide the rail below medium with `class="max-medium:hidden"` (it then never opens as a modal). Both are labelled "Main", which is fine, since only one is shown at a time.
+
+For a bar that isn't fixed, such as one inside a mockup, pass `class="static"`. The previews here do that, and give each bar its own `label`, so that they don't add more "Main" navigations to this page.

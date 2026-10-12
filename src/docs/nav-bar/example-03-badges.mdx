@@ -1,0 +1,11 @@
+---
+title: Badges
+description: Set a NavBarItem's `badgeLabel` to show a Badge on its icon - a count, or `""` for a dot. Below the medium breakpoint (600px) the badge sits on the icon's top-end corner; from medium up, a count follows the label instead, so it doesn't cover it, and a dot stays on the icon. A count is added to the item's accessible name, e.g. "Mail, 12".
+---
+
+<NavBar class="static" label="Badges">
+  <NavBarItem href="#" icon="mail" label="Mail" badgeLabel={12} aria-current="page" />
+  <NavBarItem href="#" icon="chat" label="Chat" badgeLabel="" />
+  <NavBarItem href="#" icon="group" label="Meet" />
+  <NavBarItem href="#" icon="notifications" label="Alerts" badgeLabel={1200} />
+</NavBar>

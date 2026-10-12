@@ -55,8 +55,9 @@ roles) and [`docs/adr/`](./docs/adr) for the design decisions behind it.
 | `Link`                           | pattern   | A styled native anchor whose color follows the background it sits on.                                            |
 | `Main`                           | pattern   | A themed wrapper that renders as a native `<main>`, built on BaseWrapper, with the id SkipToContent targets.     |
 | `MenuToggle`                     | pattern   | The menu toggle button at the top of a NavRail, which also opens the rail on small screens, built on ButtonIcon.  |
+| `NavBar` / `NavBarItem`          | pattern   | An M3 flexible navigation bar fixed to the bottom of the viewport, with its destinations stacked below the medium breakpoint (600px) and side by side from there up; each `NavBarItem` is one destination link, with an optional Badge. |
 | `NavDrawer`                      | pattern   | An M3 navigation drawer beside a NavRail, showing the current or hovered destination's NavRailSubItems section.  |
-| `NavRail` / `NavRailItem`        | pattern   | An M3 navigation rail, collapsed or expandable (adding its own menu button), with an optional FAB, opening as a modal from its menu button below the medium breakpoint (600px); each `NavRailItem` is one destination link. |
+| `NavRail` / `NavRailItem`        | pattern   | An M3 navigation rail, collapsed or expandable (adding its own menu button), with an optional FAB, opening as a modal from its menu button below the medium breakpoint (600px); each `NavRailItem` is one destination link, with an optional Badge. |
 | `NavRailSubItems`                | pattern   | A labelled section of sub-items for one NavRail destination, shown in a NavDrawer or an expanded NavRail.        |
 | `Popover`                        | pattern   | A `<div popover>` with M3 overlay surfaces and an optional close button.                                          |
 | `Section`                        | pattern   | A themed wrapper that renders as a native `<section>`, built on BaseWrapper.                                      |

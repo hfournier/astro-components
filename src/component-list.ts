@@ -18,6 +18,8 @@ export { default as Icon } from "./components/Icon.astro";
 export { default as Link } from "./components/Link.astro";
 export { default as Main } from "./components/Main.astro";
 export { default as MenuToggle } from "./components/MenuToggle.astro";
+export { default as NavBar } from "./components/NavBar.astro";
+export { default as NavBarItem } from "./components/NavBarItem.astro";
 export { default as NavDrawer } from "./components/NavDrawer.astro";
 export { default as NavDrawerItem } from "./components/NavDrawerItem.astro";
 export { default as NavRail } from "./components/NavRail.astro";

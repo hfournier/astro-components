@@ -1,7 +1,9 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import crypto from "node:crypto";
 import { twMerge } from "tailwind-merge";
 import type { SvgIconNameTypes } from "../svgs";
+import Badge from "./Badge.astro";
 import Icon from "./Icon.astro";
 import { isCurrentPath } from "../utils";
 
@@ -9,12 +11,29 @@ type Props = Omit<HTMLAttributes<"a">, "href"> & {
   href: string | URL;
   icon: SvgIconNameTypes;
   label: string;
+  // A Badge on the icon: a count, or "" for a dot. 0 shows no badge.
+  badgeLabel?: string | number;
 };
-const { href, icon, label, class: classList, ...attrs } = Astro.props;
+const {
+  href,
+  icon,
+  label,
+  badgeLabel,
+  class: classList,
+  ...attrs
+} = Astro.props;
 
 // The current page's destination is its own href, or a page under it (see isCurrentPath). An
 // explicit `aria-current` passed by the consumer still wins, since `attrs` is spread after it.
 const isCurrent = isCurrentPath(Astro.url.pathname, href);
+
+const hasBadge = badgeLabel !== undefined;
+// A badge with content, rather than a dot (Badge hides 0)
+const hasCount =
+  badgeLabel !== undefined && badgeLabel !== "" && Number(badgeLabel) !== 0;
+const badgeAnchorName = `--anchorname-${crypto.randomUUID()}-badge`;
+// The badge is aria-hidden, so its count joins the item's name
+const badgeName = hasCount ? `${label}, ${badgeLabel}` : undefined;
 ---
 
 <a
@@ -36,6 +55,8 @@ const isCurrent = isCurrentPath(Astro.url.pathname, href);
   )}
   href={href}
   aria-current={isCurrent ? "page" : undefined}
+  aria-label={badgeName}
+  data-ac-nav-rail-item
   {...attrs}
 >
   <span
@@ -51,7 +72,32 @@ const isCurrent = isCurrentPath(Astro.url.pathname, href);
       "rail-expanded:size-auto rail-expanded:bg-transparent! rail-expanded:before:hidden",
     ]}
   >
-    <Icon name={icon} />
+    <Icon
+      name={icon}
+      style={hasBadge ? `anchor-name: ${badgeAnchorName}` : undefined}
+    />
   </span>
-  <span>{label}</span>
+  <span>
+    {label}
+    {
+      hasCount && (
+        // Expanded, a count follows the label rather than covering it, 8px from the icon (see
+        // Badge for its inline alignment); collapsed, it's on the icon below
+        <Badge
+          class="ms-1 rail-collapsed:hidden"
+          label={badgeLabel}
+          placement="inline"
+        />
+      )
+    }
+  </span>
+  {
+    hasBadge && (
+      <Badge
+        class:list={[hasCount && "rail-expanded:hidden"]}
+        label={badgeLabel}
+        style={`--ac-anchorname-badge: ${badgeAnchorName}`}
+      />
+    )
+  }
 </a>

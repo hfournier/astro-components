@@ -20,6 +20,17 @@ const {
   ...attrs
 } = Astro.props;
 
+// M3: a navigation rail has three to seven destinations. They're counted in the rendered slot by
+// the marker attribute on each NavRailItem's opening <a> tag.
+const items = await Astro.slots.render("default");
+const itemCount =
+  items.match(/<a\b[^>]*\sdata-ac-nav-rail-item[\s=>]/g)?.length ?? 0;
+if (itemCount < 3 || itemCount > 7) {
+  throw new Error(
+    `NavRail: M3 navigation rails have 3 to 7 destinations (NavRailItems), but this one has ${itemCount}.`
+  );
+}
+
 // Set as a custom property, so a consumer overrides it with one class rather than repeating both
 // expanded-state variants below
 const expandedWidthClasses = {
@@ -103,7 +114,7 @@ const expandedWidthClasses = {
       class="mt-10 flex w-full flex-col gap-4 rail-expanded:gap-0"
       aria-label="Main"
     >
-      <slot />
+      <Fragment set:html={items} />
 
       {isExpandable && <slot name="sub-items" />}
     </nav>
