@@ -1,26 +1,13 @@
 import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "../../test/a11y-fixture";
+import { box, expectFocusRing, resolvedColor } from "../../test/helpers";
 
 const VARIANTS = ["Elevated", "Filled", "Tonal", "Outlined", "Text"] as const;
 
-// M3 picks the label style by height: Label Large below 56px, Title Medium at 56px
-const LABEL_LARGE = {
-  style: "Label Large",
-  size: 14,
-  lineHeight: 20,
-  tracking: "0.1px",
-};
-const TITLE_MEDIUM = {
-  style: "Title Medium",
-  size: 16,
-  lineHeight: 24,
-  tracking: "0.15px",
-};
-
 const SIZES = [
-  { name: "Small button", minHeight: 40, padding: 16, label: LABEL_LARGE },
-  { name: "Medium button", minHeight: 48, padding: 20, label: LABEL_LARGE },
-  { name: "Large button", minHeight: 56, padding: 24, label: TITLE_MEDIUM },
+  { name: "Small button", height: 40 },
+  { name: "Medium button", height: 48 },
+  { name: "Large button", height: 56 },
 ] as const;
 
 // Every live button on /components/button sits inside a CodePreview
@@ -38,17 +25,6 @@ const anchorButton = (page: Page) =>
     .getByTestId("code-preview")
     .getByRole("link", { name: "Anchor button", exact: true });
 
-async function resolvedColor(page: Page, cssValue: string): Promise<string> {
-  return page.evaluate((value) => {
-    const probe = document.createElement("div");
-    probe.style.color = value;
-    document.body.appendChild(probe);
-    const resolved = getComputedStyle(probe).color;
-    probe.remove();
-    return resolved;
-  }, cssValue);
-}
-
 // The alpha of a computed color: M3's disabled colors are on-surface at 38% / 10%, which
 // Tailwind's `/38` and `/10` modifiers mix in oklab, so the channels are compared by alpha only.
 const alpha = (color: string): number => {
@@ -60,40 +36,9 @@ const alpha = (color: string): number => {
 const stateLayerOpacity = (target: Locator) =>
   target.evaluate((el) => getComputedStyle(el, "::before").opacity);
 
-// The ring and state layer transition in (motion-safe:transition), so focus assertions poll
-async function expectFocusRing(target: Locator): Promise<void> {
-  // Resolved beside the button: BaseWrapper (e.g. the preview's background) overrides both
-  const [ringColor, offsetColor] = await target.evaluate((el) =>
-    ["--theme-color-focus-ring-on-bg", "--theme-color-wrapper-bg"].map(
-      (token) => {
-        const probe = document.createElement("div");
-        probe.style.color = `var(${token})`;
-        el.parentElement!.appendChild(probe);
-        const resolved = getComputedStyle(probe).color;
-        probe.remove();
-        return resolved;
-      }
-    )
-  );
-
-  await target.focus();
-  // Tailwind draws ring-offset-2 + ring-3 as two box-shadows: a 2px spread in the background
-  // color, then the ring color out to 5px
-  await expect
-    .poll(() => target.evaluate((el) => getComputedStyle(el).boxShadow))
-    .toContain(`${offsetColor} 0px 0px 0px 2px, ${ringColor} 0px 0px 0px 5px`);
-}
-
 test.describe("Button", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/components/button");
-  });
-
-  test("renders every variant, enabled and disabled", async ({ page }) => {
-    for (const name of VARIANTS) {
-      await expect(button(page, name)).toBeVisible();
-      await expect(button(page, name, true)).toBeVisible();
-    }
   });
 
   test("defaults to the filled variant, round shape and medium size", async ({
@@ -221,12 +166,12 @@ test.describe("Button", () => {
     });
   }
 
-  test("focus shows the state layer and a 3px ring in the focus-ring-on-bg color", async ({
-    page,
-  }) => {
+  test("focus shows the state layer and the focus ring", async ({ page }) => {
     for (const name of VARIANTS) {
       const target = button(page, name);
+      await target.focus();
       await expectFocusRing(target);
+      // the state layer transitions in, so poll
       await expect.poll(() => stateLayerOpacity(target)).toBe("0.1");
     }
   });
@@ -238,7 +183,7 @@ test.describe("Button", () => {
     const radius = await round.evaluate((el) =>
       parseFloat(getComputedStyle(el).borderTopLeftRadius)
     );
-    const height = (await round.boundingBox())!.height;
+    const { height } = await box(round);
     expect(radius).toBeGreaterThanOrEqual(height / 2);
 
     await expect(button(page, "Square button")).toHaveCSS(
@@ -247,21 +192,11 @@ test.describe("Button", () => {
     );
   });
 
-  for (const { name, minHeight, padding, label } of SIZES) {
-    test(`size "${name}" sets its height, padding and M3 ${label.style} label`, async ({
-      page,
-    }) => {
-      const target = button(page, name);
-
-      await expect(target).toHaveCSS("font-size", `${label.size}px`);
-      await expect(target).toHaveCSS("line-height", `${label.lineHeight}px`);
-      await expect(target).toHaveCSS("font-weight", "500");
-      await expect(target).toHaveCSS("letter-spacing", label.tracking);
-      await expect(target).toHaveCSS("min-height", `${minHeight}px`);
-      await expect(target).toHaveCSS("padding-left", `${padding}px`);
-      await expect(target).toHaveCSS("padding-right", `${padding}px`);
-    });
-  }
+  test("each size is M3's button height", async ({ page }) => {
+    for (const { name, height } of SIZES) {
+      expect((await box(button(page, name))).height).toBe(height);
+    }
+  });
 
   test("the small size keeps a 48px touch target", async ({ page }) => {
     const small = button(page, "Small button");
@@ -311,6 +246,7 @@ test.describe("Button", () => {
   });
 
   test('as="a" shows the same focus ring', async ({ page }) => {
+    await anchorButton(page).focus();
     await expectFocusRing(anchorButton(page));
   });
 

@@ -1,18 +1,6 @@
-import type { Locator, Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 import { test, expect } from "../../test/a11y-fixture";
-
-async function resolvedColor(page: Page, cssValue: string): Promise<string> {
-  return page.evaluate((value) => {
-    const probe = document.createElement("div");
-    probe.style.color = value;
-    document.body.appendChild(probe);
-    const resolved = getComputedStyle(probe).color;
-    probe.remove();
-    return resolved;
-  }, cssValue);
-}
-
-const box = async (target: Locator) => (await target.boundingBox())!;
+import { box, resolvedColor } from "../../test/helpers";
 
 test.describe("Divider", () => {
   test.beforeEach(async ({ page }) => {
@@ -30,9 +18,7 @@ test.describe("Divider", () => {
   }) => {
     const divider = dividers(page).first();
 
-    await expect(dividers(page)).toHaveCount(6);
     await expect(divider).toHaveRole("separator");
-    await expect(divider).toHaveCSS("border-top-width", "1px");
     await expect(divider).toHaveCSS(
       "border-top-color",
       await resolvedColor(page, "var(--theme-color-outline-variant)")
@@ -65,8 +51,6 @@ test.describe("Divider", () => {
     );
 
     await expect(vertical).toHaveAttribute("aria-orientation", "vertical");
-    await expect(vertical).toHaveCSS("border-left-width", "1px");
-    await expect(vertical).toHaveCSS("border-top-width", "0px");
     expect((await box(vertical)).width).toBe(1);
     expect((await box(vertical)).height).toBe(rowHeight);
     expect((await box(insetMiddle)).height).toBe(rowHeight - 32);

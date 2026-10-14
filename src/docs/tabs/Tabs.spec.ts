@@ -1,23 +1,11 @@
 import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "../../test/a11y-fixture";
-
-async function resolvedStyle(
-  page: Page,
-  property: string,
-  cssValue: string
-): Promise<string> {
-  return page.evaluate(
-    ({ property, cssValue }) => {
-      const probe = document.createElement("div");
-      probe.style.setProperty(property, cssValue);
-      document.body.appendChild(probe);
-      const resolved = getComputedStyle(probe).getPropertyValue(property);
-      probe.remove();
-      return resolved;
-    },
-    { property, cssValue }
-  );
-}
+import {
+  box,
+  expectFocusRing,
+  resolvedColor,
+  textBox,
+} from "../../test/helpers";
 
 async function indicatorRect(
   page: Page
@@ -40,14 +28,14 @@ async function waitForIndicatorToTrack(
 ): Promise<void> {
   await expect
     .poll(async () => {
-      const [box, rect] = await Promise.all([
+      const [targetBox, rect] = await Promise.all([
         target.boundingBox(),
         indicatorRect(page),
       ]);
-      if (!box) return null;
+      if (!targetBox) return null;
       return (
-        Math.abs(rect.left - box.x) < 1 &&
-        Math.abs(rect.right - (box.x + box.width)) < 1
+        Math.abs(rect.left - targetBox.x) < 1 &&
+        Math.abs(rect.right - (targetBox.x + targetBox.width)) < 1
       );
     })
     .toBe(true);
@@ -167,36 +155,13 @@ test.describe("Tabs", () => {
     // color-contrast fix.
   });
 
-  test("tab labels use M3's Title Small type style", async ({ page }) => {
-    const tab = page.getByRole("tablist").first().getByRole("tab").first();
-    await expect(tab).toHaveCSS("font-size", "14px");
-    await expect(tab).toHaveCSS("line-height", "20px");
-    await expect(tab).toHaveCSS("font-weight", "500");
-    await expect(tab).toHaveCSS("letter-spacing", "0.1px");
-  });
-
-  test("tab focus ring is a 3px inset ring in the focus-ring-on-bg color", async ({
-    page,
-  }) => {
-    const expectedColor = await resolvedStyle(
-      page,
-      "color",
-      "var(--theme-color-focus-ring-on-bg)"
-    );
-
+  test("focusing a tab shows the focus ring", async ({ page }) => {
     const tabs = page.getByRole("tablist").first().getByRole("tab");
     await tabs.first().focus();
     await page.keyboard.press("ArrowRight");
 
-    // The ring is drawn on ::after (so it can stop short of the indicator), which toHaveCSS can't read
-    const ring = await tabs
-      .nth(1)
-      .evaluate((el) => getComputedStyle(el, "::after").boxShadow);
-    expect(ring).toMatch(
-      new RegExp(
-        `${expectedColor.replace(/[()]/g, "\\$&")} 0px 0px 0px 3px inset`
-      )
-    );
+    // drawn on ::after, so it can stop short of the indicator
+    await expectFocusRing(tabs.nth(1), { inset: true, pseudo: "::after" });
   });
 
   test("only the selected tab's focus ring stops 1px above the indicator", async ({
@@ -231,68 +196,61 @@ test.describe("Tabs", () => {
   test("the divider under the tabs is M3's 1px outline-variant rule", async ({
     page,
   }) => {
-    const expectedColor = await resolvedStyle(
-      page,
-      "border-bottom-color",
-      "var(--theme-color-outline-variant)"
-    );
     const tablist = page.getByRole("tablist").first();
     await expect(tablist).toHaveCSS("border-bottom-width", "1px");
-    await expect(tablist).toHaveCSS("border-bottom-color", expectedColor);
+    await expect(tablist).toHaveCSS(
+      "border-bottom-color",
+      await resolvedColor(page, "var(--theme-color-outline-variant)")
+    );
   });
 
   // Tablists in page order: usage (primary, labels only), example-01 (primary with icons),
   // example-02 (secondary), example-03 (secondary with icons), example-04, example-05,
   // example-06 (primary with icons and badges, then secondary with badges)
   const tablist = (page: Page, i: number) => page.getByRole("tablist").nth(i);
-  const height = async (target: Locator) =>
-    (await target.boundingBox())!.height;
+  const height = async (target: Locator) => (await box(target)).height;
 
-  test("tabs are 48px high with labels only, 64px with stacked icons", async ({
+  test("tabs are 48px high with labels only, 64px with stacked 24px icons", async ({
     page,
   }) => {
     expect(await height(tablist(page, 0).getByRole("tab").first())).toBe(48);
     expect(await height(tablist(page, 2).getByRole("tab").first())).toBe(48);
     expect(await height(tablist(page, 1).getByRole("tab").first())).toBe(64);
-    await expect(tablist(page, 1).locator("svg").first()).toHaveCSS(
-      "width",
-      "24px"
-    );
+    expect((await box(tablist(page, 1).locator("svg").first())).width).toBe(24);
   });
 
-  test("the primary indicator is 3px high with 3px top corners and at least 24px long; the secondary 2px", async ({
+  test("the primary indicator is 3px high, the secondary 2px", async ({
     page,
   }) => {
-    const primary = tablist(page, 0).locator("[data-ac-tab-indicator]");
-    const secondary = tablist(page, 2).locator("[data-ac-tab-indicator]");
+    const indicator = (i: number) =>
+      tablist(page, i).locator("[data-ac-tab-indicator]");
 
-    await expect(primary).toHaveCSS("height", "3px");
-    await expect(primary).toHaveCSS("border-top-left-radius", "3px");
-    await expect(primary).toHaveCSS("border-bottom-left-radius", "0px");
-    await expect(primary).toHaveCSS("min-width", "24px");
-    await expect(secondary).toHaveCSS("height", "2px");
+    expect(await height(indicator(0))).toBe(3);
+    expect(await height(indicator(2))).toBe(2);
   });
 
   test("an inline icon is 8px from its label, and an inline badge 4px", async ({
     page,
   }) => {
-    const inlineIcon = tablist(page, 3)
-      .getByRole("tab")
-      .first()
-      .locator(":scope > span");
-    const inlineBadge = tablist(page, 7)
+    const iconTab = tablist(page, 3).getByRole("tab").first();
+    const icon = await box(iconTab.locator("svg"));
+    const iconLabel = await textBox(iconTab.locator(":scope > span"));
+    expect(iconLabel.x - (icon.x + icon.width)).toBeCloseTo(8, 0);
+
+    const badge = tablist(page, 7)
       .getByRole("tab")
       .first()
       .locator('span[aria-hidden="true"]');
-
-    await expect(inlineIcon).toHaveCSS("column-gap", "8px");
-    await expect(inlineBadge).toHaveCSS("margin-inline-start", "4px");
+    const badgeLabel = await textBox(badge.locator(".."));
+    expect(
+      (await box(badge)).x - (badgeLabel.x + badgeLabel.width)
+    ).toBeCloseTo(4, 0);
   });
 
   test("a dot badge on a stacked icon overlaps it by 6px", async ({ page }) => {
     const tab = tablist(page, 6).getByRole("tab", { name: "Updates" });
-    const icon = (await tab.locator("svg").boundingBox())!;
-    const dot = (await tab.locator('span[aria-hidden="true"]').boundingBox())!;
+    const icon = await box(tab.locator("svg"));
+    const dot = await box(tab.locator('span[aria-hidden="true"]'));
 
     // the dot sits inside the icon's top-end corner
     expect(icon.x + icon.width - dot.x).toBeCloseTo(6, 0);

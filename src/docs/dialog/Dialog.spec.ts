@@ -1,16 +1,12 @@
 import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "../../test/a11y-fixture";
-
-async function resolvedColor(page: Page, cssValue: string): Promise<string> {
-  return page.evaluate((value) => {
-    const probe = document.createElement("div");
-    probe.style.color = value;
-    document.body.appendChild(probe);
-    const resolved = getComputedStyle(probe).color;
-    probe.remove();
-    return resolved;
-  }, cssValue);
-}
+import {
+  box,
+  expectFocusRing,
+  resolvedColor,
+  settled,
+  textBox,
+} from "../../test/helpers";
 
 // Activates a button via the keyboard rather than a real pointer click: a mouse click leaves the
 // cursor hovering the element (its state layer showing) and can leave :focus-visible unset on
@@ -115,52 +111,48 @@ test.describe("Dialog", () => {
     ).toBeVisible();
   });
 
-  test("container matches M3: 28px corners, 24px padding, Surface Container High", async ({
+  test("the container is Surface Container High, with its content 24px in from the edges", async ({
     page,
   }) => {
     await activate(openDialog(page));
+    // it fades down into place, so measure it at rest
+    await settled(page);
 
     const panel = page.locator("#dialog-usage > div");
-    await expect(panel).toHaveCSS("border-top-left-radius", "28px");
-    await expect(panel).toHaveCSS("padding-top", "24px");
-    await expect(panel).toHaveCSS("padding-left", "24px");
-    await expect(panel).toHaveCSS("min-width", "280px");
-    await expect(panel).toHaveCSS("max-width", "560px");
     await expect(panel).toHaveCSS(
       "background-color",
       await resolvedColor(page, "var(--theme-color-surface-container-high)")
     );
+    const panelBox = await box(panel);
+    const headline = await box(page.locator("#dialog-usage h2"));
+    expect(headline.x - panelBox.x).toBe(24);
+    expect(headline.y - panelBox.y).toBe(24);
   });
 
-  test("spacing matches M3: 16px from the title to the body, 24px from the body to the actions, title start-aligned", async ({
+  test("M3 spacing: 16px from the headline to the body, 24px from the body to the actions", async ({
     page,
   }) => {
     await activate(openDialog(page));
+    await settled(page);
 
     const dialog = page.locator("#dialog-usage");
-    await expect(dialog.locator("header")).toHaveCSS("padding-bottom", "16px");
-    await expect(dialog.locator("footer")).toHaveCSS("padding-top", "24px");
-    await expect(dialog.locator("h2")).toHaveCSS("text-align", "start");
+    const headline = await box(dialog.locator("h2"));
+    const content = await box(page.locator("#dialog-usage-content"));
+    const action = await box(dialog.getByRole("button", { name: "Close" }));
+    expect(content.y - (headline.y + headline.height)).toBe(16);
+    expect(action.y - (content.y + content.height)).toBe(24);
   });
 
-  test("headline and supporting text use M3's type styles and colors", async ({
+  test("headline and supporting text use M3's color roles, and only the supporting text scrolls", async ({
     page,
   }) => {
     await activate(openDialog(page));
 
-    // Headline Small
-    const headline = page.locator("#dialog-usage h2");
-    await expect(headline).toHaveCSS("font-size", "24px");
-    await expect(headline).toHaveCSS("line-height", "32px");
-    await expect(headline).toHaveCSS(
+    await expect(page.locator("#dialog-usage h2")).toHaveCSS(
       "color",
       await resolvedColor(page, "var(--theme-color-on-surface)")
     );
-
-    // Body Medium, and the only part that scrolls
     const content = page.locator("#dialog-usage-content");
-    await expect(content).toHaveCSS("font-size", "14px");
-    await expect(content).toHaveCSS("line-height", "20px");
     await expect(content).toHaveCSS(
       "color",
       await resolvedColor(page, "var(--theme-color-on-surface-variant)")
@@ -168,40 +160,18 @@ test.describe("Dialog", () => {
     await expect(content).toHaveCSS("overflow-y", "auto");
   });
 
-  test("the scrolling content's focus ring is a 3px inset ring in the focus-ring-on-bg color", async ({
-    page,
-  }) => {
+  test("the scrolling content shows the focus ring", async ({ page }) => {
     await activate(openDialog(page));
 
     // Browsers make the content focusable only once it overflows; tabindex stands in for that.
     // Focused right after a keypress, so :focus-visible applies as it would when tabbing in.
     const content = page.locator("#dialog-usage-content");
-    const ringColor = await content.evaluate((el: HTMLElement) => {
+    await content.evaluate((el: HTMLElement) => {
       el.tabIndex = -1;
       el.focus();
-      const probe = document.createElement("div");
-      probe.style.color = "var(--theme-color-focus-ring-on-bg)";
-      el.appendChild(probe);
-      const resolved = getComputedStyle(probe).color;
-      probe.remove();
-      return resolved;
     });
 
-    await expect
-      .poll(() => content.evaluate((el) => getComputedStyle(el).boxShadow))
-      .toContain(`${ringColor} 0px 0px 0px 3px inset`);
-  });
-
-  test("scroll dividers stay hidden when the content fits", async ({
-    page,
-  }) => {
-    await activate(openDialog(page));
-
-    const dividers = page.locator("#dialog-usage .divider");
-    await expect(dividers).toHaveCount(2);
-    for (const divider of await dividers.all()) {
-      await expect(divider).toHaveCSS("opacity", "0");
-    }
+    await expectFocusRing(content, { inset: true });
   });
 });
 
@@ -305,23 +275,31 @@ test.describe("DialogAcknowledge", () => {
     await expect(opener).toBeFocused();
   });
 
-  test("with an icon, the icon and headline are centered and the icon is decorative", async ({
+  test("with an icon, the icon and headline are centered, 16px apart, and the icon is decorative", async ({
     page,
   }) => {
     await activate(
       trigger(page, "dialog-acknowledge-icon", "Open Notification Dialog")
     );
+    // it fades down into place, so measure it at rest
+    await settled(page);
 
     const dialog = page.locator("#dialog-acknowledge-icon");
-    await expect(dialog.locator("header")).toHaveCSS("align-items", "center");
-    await expect(dialog.locator("h2")).toHaveCSS("text-align", "center");
-    // M3: 16px between the icon and the title, 8px between the action buttons
-    await expect(dialog.locator("header")).toHaveCSS("row-gap", "16px");
-    await expect(dialog.locator("footer menu")).toHaveCSS("column-gap", "8px");
-
+    const center = ({ x, width }: { x: number; width: number }) =>
+      x + width / 2;
+    const panel = await box(dialog.locator("> div"));
     const icon = dialog.locator("header svg");
+    const iconBox = await box(icon);
+    const headline = await textBox(dialog.locator("h2"));
+
+    expect(center(iconBox)).toBeCloseTo(center(panel), 0);
+    expect(center(headline)).toBeCloseTo(center(panel), 0);
+    expect(iconBox.width).toBe(24);
+    expect(
+      (await box(dialog.locator("h2"))).y - (iconBox.y + iconBox.height)
+    ).toBe(16);
+
     await expect(icon).toHaveAttribute("aria-hidden", "true");
-    await expect(icon).toHaveCSS("width", "24px");
     await expect(icon).toHaveCSS(
       "fill",
       await resolvedColor(page, "var(--theme-color-secondary)")

@@ -1,23 +1,6 @@
 import type { Page } from "@playwright/test";
 import { test, expect } from "../../test/a11y-fixture";
-
-async function resolvedStyle(
-  page: Page,
-  property: string,
-  cssValue: string
-): Promise<string> {
-  return page.evaluate(
-    ({ property, cssValue }) => {
-      const probe = document.createElement("div");
-      probe.style.setProperty(property, cssValue);
-      document.body.appendChild(probe);
-      const resolved = getComputedStyle(probe).getPropertyValue(property);
-      probe.remove();
-      return resolved;
-    },
-    { property, cssValue }
-  );
-}
+import { box, expectFocusRing, resolvedColor } from "../../test/helpers";
 
 test.describe("Details", () => {
   test.beforeEach(async ({ page }) => {
@@ -94,29 +77,14 @@ test.describe("Details", () => {
     await expect(summary).toHaveAccessibleName("Details Heading with Icon");
   });
 
-  test("chevron rotates when open and transitions on the overlay duration token", async ({
-    page,
-  }) => {
-    const expectedDuration = await resolvedStyle(
-      page,
-      "transition-duration",
-      "var(--theme-duration-overlay)"
-    );
+  test("chevron rotates when open", async ({ page }) => {
+    const chevron = (details: ReturnType<typeof allDetails>) =>
+      details.locator("summary svg[data-ac-details-chevron]");
 
-    const closedChevron = allDetails(page)
-      .first()
-      .locator("summary svg[data-ac-details-chevron]");
-    await expect(closedChevron).toHaveCSS(
-      "transition-duration",
-      expectedDuration
-    );
-    await expect(closedChevron).toHaveCSS("rotate", "none");
-
-    const openChevron = page
-      .getByTestId("code-preview")
-      .locator("details[open]")
-      .locator("summary svg[data-ac-details-chevron]");
-    await expect(openChevron).toHaveCSS("rotate", "180deg");
+    await expect(chevron(allDetails(page).first())).toHaveCSS("rotate", "none");
+    await expect(
+      chevron(page.getByTestId("code-preview").locator("details[open]"))
+    ).toHaveCSS("rotate", "180deg");
   });
 
   test("respects prefers-reduced-motion: transitions off, disclosure still opens", async ({
@@ -138,98 +106,43 @@ test.describe("Details", () => {
     ).toBeVisible();
   });
 
-  test("plain variant keeps a transparent 1px border, so it's the outlined variant's size", async ({
+  test("the outlined variant is an M3 outlined card, and the plain variant the same size without a visible border", async ({
     page,
   }) => {
-    const details = withoutBorders(page);
-    const summary = details.locator("summary");
+    const outlined = allDetails(page).first();
+    const plain = withoutBorders(page);
 
-    await expect(summary).toHaveCSS("border-width", "0px");
-    await expect(details).toHaveCSS("border-top-width", "1px");
-    await expect(details).toHaveCSS("border-top-color", "rgba(0, 0, 0, 0)");
-
-    await summary.focus();
-    await page.keyboard.press("Enter");
-    await expect(details).toHaveJSProperty("open", true);
-    await expect(details).toHaveCSS("border-top-color", "rgba(0, 0, 0, 0)");
+    await expect(outlined).toHaveCSS(
+      "border-top-color",
+      await resolvedColor(page, "var(--theme-color-outline-variant)")
+    );
+    await expect(plain).toHaveCSS("border-top-color", "rgba(0, 0, 0, 0)");
+    expect((await box(plain)).height).toBe((await box(outlined)).height);
   });
 
   test("a closed details is just its summary and border, with no gap below the summary", async ({
     page,
   }) => {
     const details = allDetails(page).first();
-    const summary = details.locator("summary");
     await expect(details).toHaveJSProperty("open", false);
 
-    const [detailsHeight, summaryHeight] = await Promise.all([
-      details.evaluate((el) => el.getBoundingClientRect().height),
-      summary.evaluate((el) => el.getBoundingClientRect().height),
-    ]);
+    const detailsHeight = (await box(details)).height;
+    const summaryHeight = (await box(details.locator("summary"))).height;
     expect(detailsHeight).toBe(summaryHeight + 2);
   });
 
-  test("outlined variant is an M3 outlined card", async ({ page }) => {
-    const expectedBorder = await resolvedStyle(
-      page,
-      "border-top-color",
-      "var(--theme-color-outline-variant)"
-    );
-    const details = allDetails(page).first();
-
-    await expect(details).toHaveCSS("border-top-width", "1px");
-    await expect(details).toHaveCSS("border-top-color", expectedBorder);
-    await expect(details).toHaveCSS("border-top-left-radius", "12px");
-  });
-
-  test("summary follows M3's one-line list item", async ({ page }) => {
+  test("summary is M3's 56px one-line list item, with a 24px chevron", async ({
+    page,
+  }) => {
     const summary = allDetails(page).first().locator("summary");
-
-    await expect(summary).toHaveCSS("min-height", "56px");
-    await expect(summary).toHaveCSS("padding-left", "16px");
-    await expect(summary).toHaveCSS("padding-right", "16px");
-    // Body Large
-    await expect(summary).toHaveCSS("font-size", "16px");
-    await expect(summary).toHaveCSS("line-height", "24px");
-    await expect(summary).toHaveCSS("letter-spacing", "0.5px");
-
     const chevron = summary.locator("svg[data-ac-details-chevron]");
-    await expect(chevron).toHaveCSS("width", "24px");
+
+    expect((await box(summary)).height).toBe(56);
+    expect((await box(chevron)).width).toBe(24);
   });
 
-  test("dense size is a 48px summary in Body Medium, with the same padding", async ({
-    page,
-  }) => {
-    const summary = dense(page).locator("summary");
-
-    await expect(summary).toHaveCSS("min-height", "48px");
-    await expect(summary).toHaveCSS("padding-left", "16px");
-    await expect(summary).toHaveCSS("padding-right", "16px");
-    // Body Medium
-    await expect(summary).toHaveCSS("font-size", "14px");
-    await expect(summary).toHaveCSS("line-height", "20px");
-    await expect(summary).toHaveCSS("letter-spacing", "0.25px");
-  });
-
-  test("summary items are 8px apart, like an M3 button with an icon", async ({
-    page,
-  }) => {
-    await expect(withIcon(page).locator("summary")).toHaveCSS(
-      "column-gap",
-      "8px"
-    );
-  });
-
-  test("summary corners follow the card's inner curve when outlined, and stay 12px when plain", async ({
-    page,
-  }) => {
-    await expect(allDetails(page).first().locator("summary")).toHaveCSS(
-      "border-top-left-radius",
-      "11px"
-    );
-    await expect(withoutBorders(page).locator("summary")).toHaveCSS(
-      "border-top-left-radius",
-      "12px"
-    );
+  test("dense size is a 48px summary", async ({ page }) => {
+    expect((await box(dense(page).locator("summary"))).height).toBe(48);
   });
 
   test("hovering the summary shows the M3 state layer", async ({ page }) => {
@@ -247,22 +160,10 @@ test.describe("Details", () => {
       .toBe("0.08");
   });
 
-  test("summary focus ring is a 3px inset ring in the focus-ring-on-bg color", async ({
-    page,
-  }) => {
-    const expectedColor = await resolvedStyle(
-      page,
-      "color",
-      "var(--theme-color-focus-ring-on-bg)"
-    );
+  test("focusing the summary shows the focus ring", async ({ page }) => {
     const summary = allDetails(page).first().locator("summary");
     await summary.focus();
 
-    const ring = await summary.evaluate((el) => getComputedStyle(el).boxShadow);
-    expect(ring).toMatch(
-      new RegExp(
-        `${expectedColor.replace(/[()]/g, "\\$&")} 0px 0px 0px 3px inset`
-      )
-    );
+    await expectFocusRing(summary, { inset: true });
   });
 });

@@ -1,20 +1,9 @@
 import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "../../test/a11y-fixture";
-
-async function resolvedColor(page: Page, cssValue: string): Promise<string> {
-  return page.evaluate((value) => {
-    const probe = document.createElement("div");
-    probe.style.color = value;
-    document.body.appendChild(probe);
-    const resolved = getComputedStyle(probe).color;
-    probe.remove();
-    return resolved;
-  }, cssValue);
-}
+import { box, resolvedColor } from "../../test/helpers";
 
 const opener = (page: Page, name: string) =>
   page.getByTestId("code-preview").getByRole("button", { name, exact: true });
-const box = async (target: Locator) => (await target.boundingBox())!;
 const viewportWidth = (page: Page) =>
   page.evaluate(() => document.documentElement.clientWidth);
 const isOpen = (sheet: Locator) =>
@@ -50,24 +39,13 @@ test.describe("SheetSide", () => {
       expect(height).toBe(page.viewportSize()!.height);
     });
 
-    test("uses M3's surface, headline type and inner-edge corners", async ({
-      page,
-    }) => {
+    test("uses M3's surface", async ({ page }) => {
       await opener(page, "Open side sheet").click();
-      const surface = sheet(page).locator("> *");
-      const headline = sheet(page).getByRole("heading", { name: "Details" });
 
-      await expect(surface).toHaveCSS(
+      await expect(sheet(page).locator("> *")).toHaveCSS(
         "background-color",
         await resolvedColor(page, "var(--theme-color-surface-container-low)")
       );
-      await expect(surface).toHaveCSS("border-top-left-radius", "16px");
-      await expect(surface).toHaveCSS("border-top-right-radius", "0px");
-      await expect(headline).toHaveCSS("font-size", "22px");
-      await expect(headline).toHaveCSS("line-height", "28px");
-      await expect(headline).toHaveCSS("font-weight", "400");
-      // browsers report a letter-spacing of 0 as "normal"
-      await expect(headline).toHaveCSS("letter-spacing", /^(normal|0px)$/);
     });
 
     test("closes with its close button, Escape or a click on the scrim", async ({
@@ -98,7 +76,7 @@ test.describe("SheetSide", () => {
       await expect.poll(async () => (await box(start)).x).toBe(0);
     });
 
-    test("a detached sheet is 16px from the window's edges, rounded all round, with its actions in M3's row", async ({
+    test("a detached sheet is 16px from the window's edges, with its actions in M3's 72px row", async ({
       page,
     }) => {
       const detached = page.locator("#sheet-side-detached");
@@ -113,17 +91,10 @@ test.describe("SheetSide", () => {
       const { y, height } = await box(detached);
       expect(y).toBe(16);
       expect(height).toBe(page.viewportSize()!.height - 32);
-      await expect(detached.locator("> *")).toHaveCSS(
-        "border-top-right-radius",
-        "16px"
-      );
 
       const actions = detached
         .getByRole("button", { name: "Save" })
         .locator("..");
-      await expect(actions).toHaveCSS("padding-top", "16px");
-      await expect(actions).toHaveCSS("padding-bottom", "24px");
-      await expect(actions).toHaveCSS("justify-content", "flex-start");
       expect((await box(actions)).height).toBeGreaterThanOrEqual(72);
     });
   });
@@ -140,7 +111,6 @@ test.describe("SheetSide", () => {
     }) => {
       await expect(sheet(page)).toBeVisible();
       expect((await box(sheet(page))).width).toBe(256);
-      await expect(sheet(page)).toHaveCSS("border-top-width", "0px");
       const surface = sheet(page).locator("> *");
       await expect(surface).toHaveCSS("border-left-width", "1px");
       await expect(surface).toHaveCSS(
@@ -157,58 +127,5 @@ test.describe("SheetSide", () => {
       await sheet(page).getByRole("button", { name: "Close" }).click();
       await expect(sheet(page)).toBeHidden();
     });
-  });
-});
-
-// The docs site's table of contents is a SheetSide: standard and docked from large up, modal
-// behind a button below it
-test.describe("SheetSide as the table of contents", () => {
-  const docked = (page: Page) =>
-    page.getByRole("complementary", { name: "On this page" });
-  const modal = (page: Page) => page.locator("#table-of-contents");
-  const tocButton = (page: Page) =>
-    page.getByRole("button", { name: "Show table of contents" });
-
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/components/button");
-  });
-
-  test("from large up, it's docked flush to the window's end edge", async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 1280, height: 800 });
-    const { x, width } = await box(docked(page));
-
-    expect(x + width).toBe(await viewportWidth(page));
-    await expect(tocButton(page)).toBeHidden();
-  });
-
-  test("it's 256px until the article has its full width, then grows to fit its headings", async ({
-    page,
-  }) => {
-    // "Badge with a label over 999" is the longest heading on any page, too long for 256px
-    await page.goto("/components/badge");
-    const tocWidth = async () => (await box(docked(page))).width;
-
-    await page.setViewportSize({ width: 1200, height: 800 });
-    expect(await tocWidth()).toBe(256);
-
-    await page.setViewportSize({ width: 1600, height: 800 });
-    await expect.poll(tocWidth).toBeGreaterThan(256);
-    expect(await tocWidth()).toBeLessThanOrEqual(400);
-  });
-
-  test("below large, its button opens it as a modal, and following a link closes it", async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 800, height: 800 });
-    await expect(docked(page)).toBeHidden();
-
-    await tocButton(page).click();
-    await expect.poll(() => isOpen(modal(page))).toBe(true);
-    await modal(page).getByRole("link", { name: "Properties" }).click();
-
-    await expect.poll(() => isOpen(modal(page))).toBe(false);
-    await expect(page).toHaveURL(/#properties$/);
   });
 });

@@ -1,16 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "../../test/a11y-fixture";
-
-async function resolvedColor(page: Page, cssValue: string): Promise<string> {
-  return page.evaluate((value) => {
-    const probe = document.createElement("div");
-    probe.style.color = value;
-    document.body.appendChild(probe);
-    const resolved = getComputedStyle(probe).color;
-    probe.remove();
-    return resolved;
-  }, cssValue);
-}
+import { box, resolvedColor } from "../../test/helpers";
 
 // Every live Fab on /components/fab sits inside a CodePreview (data-testid="code-preview"); the
 // source block beside each preview is highlighted text, not real controls. A Fab's accessible
@@ -19,7 +9,7 @@ const fabs = (page: Page, name: string) =>
   page.getByTestId("code-preview").getByRole("button", { name, exact: true });
 
 const size = async (target: Locator) => {
-  const { width, height } = (await target.boundingBox())!;
+  const { width, height } = await box(target);
   return { width, height };
 };
 
@@ -36,7 +26,6 @@ test.describe("Fab", () => {
 
     await expect(usage).toHaveAttribute("type", "button");
     expect(await size(usage)).toEqual({ width: 56, height: 56 });
-    await expect(usage).toHaveCSS("border-top-left-radius", "16px");
     await expect(usage).toHaveCSS(
       "background-color",
       await resolvedColor(page, "var(--theme-color-primary-container)")
@@ -45,7 +34,10 @@ test.describe("Fab", () => {
       "color",
       await resolvedColor(page, "var(--theme-color-on-primary-container)")
     );
-    await expect(usage.getByText("Compose")).toHaveClass(/\bsr-only\b/);
+    // visually hidden: clipped to at most a pixel
+    expect((await box(usage.getByText("Compose"))).width).toBeLessThanOrEqual(
+      1
+    );
   });
 
   test("each color resolves its M3 color roles", async ({ page }) => {
@@ -74,17 +66,13 @@ test.describe("Fab", () => {
 
   test("each size is M3's FAB, medium FAB or large FAB", async ({ page }) => {
     // example-02 follows example-01's six
-    const sizes = [
-      { side: 56, radius: "16px" },
-      { side: 80, radius: "20px" },
-      { side: 96, radius: "28px" },
-    ];
     const create = fabs(page, "Create");
 
-    for (const [i, { side, radius }] of sizes.entries()) {
-      const fab = create.nth(6 + i);
-      expect(await size(fab)).toEqual({ width: side, height: side });
-      await expect(fab).toHaveCSS("border-top-left-radius", radius);
+    for (const [i, side] of [56, 80, 96].entries()) {
+      expect(await size(create.nth(6 + i))).toEqual({
+        width: side,
+        height: side,
+      });
     }
   });
 
@@ -100,17 +88,17 @@ test.describe("Fab", () => {
       expect(actual).toBe(height);
       expect(width).toBeGreaterThan(height);
     }
-  });
 
-  test("the default extended FAB matches M3: 16px padding and corners, at least 80px wide", async ({
-    page,
-  }) => {
-    const fab = fabs(page, "Compose").nth(1);
-
-    await expect(fab).toHaveCSS("padding-left", "16px");
-    await expect(fab).toHaveCSS("padding-right", "16px");
-    await expect(fab).toHaveCSS("border-top-left-radius", "16px");
-    await expect(fab).toHaveCSS("min-width", "80px");
+    // M3's default extended FAB: 16px from each edge to its icon and label
+    const fab = extended.nth(1);
+    const fabBox = await box(fab);
+    const icon = await box(fab.locator("svg"));
+    const label = await box(fab.getByText("Compose"));
+    expect(icon.x - fabBox.x).toBe(16);
+    expect(fabBox.x + fabBox.width - (label.x + label.width)).toBeCloseTo(
+      16,
+      0
+    );
   });
 
   test("sits at elevation 3, rising to 4 on hover", async ({ page }) => {

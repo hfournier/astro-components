@@ -30,7 +30,7 @@ test.describe("NavBarItem", () => {
 
     test("shows a count, a dot, 999+ or no badge", async ({ page }) => {
       await expect(badge(page, "Inbox, 3")).toHaveText("3");
-      await expect(badge(page, "Updates")).toHaveCSS("width", "6px");
+      expect((await badge(page, "Updates").boundingBox())!.width).toBe(6);
       await expect(badge(page, "Chat, 1500")).toHaveText("999+");
       await expect(badge(page, "Archive")).toHaveCount(0);
     });
@@ -78,7 +78,7 @@ test.describe("NavBarItem", () => {
       page,
     }) => {
       const count = badge(page, "Chat, 1500");
-      await expect(count).toHaveCSS("height", "16px");
+      expect((await count.boundingBox())!.height).toBe(16);
       // The count hangs below the label's line, so no element in the item that clips its
       // overflow may end above the count's bottom
       const clipped = await count.evaluate((element) => {

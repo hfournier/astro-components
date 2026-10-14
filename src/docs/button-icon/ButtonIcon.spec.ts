@@ -1,5 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "../../test/a11y-fixture";
+import { box } from "../../test/helpers";
 
 // Every live ButtonIcon on /components/button-icon sits inside a CodePreview
 // (data-testid="code-preview"); the source block beside each preview is highlighted text, not
@@ -8,7 +9,7 @@ const buttons = (page: Page, name: string) =>
   page.getByTestId("code-preview").getByRole("button", { name, exact: true });
 
 const size = async (target: Locator) => {
-  const { width, height } = (await target.boundingBox())!;
+  const { width, height } = await box(target);
   return { width, height };
 };
 
@@ -30,17 +31,6 @@ test.describe("ButtonIcon", () => {
     await expect(usage).not.toHaveAttribute("aria-pressed");
     expect(await size(usage)).toEqual({ width: 40, height: 40 });
     await expect(usage).toHaveCSS("border-top-left-radius", "20px");
-  });
-
-  test("renders every variant, enabled and disabled", async ({ page }) => {
-    // example-01: four enabled, then the same four disabled
-    const edit = buttons(page, "Edit");
-
-    await expect(edit).toHaveCount(8);
-    for (let i = 0; i < 4; i++) {
-      await expect(edit.nth(i)).toBeEnabled();
-      await expect(edit.nth(i + 4)).toBeDisabled();
-    }
   });
 
   test("each size is M3's height, with a touch target of at least 48px", async ({

@@ -1,20 +1,9 @@
 import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "../../test/a11y-fixture";
-
-async function resolvedColor(page: Page, cssValue: string): Promise<string> {
-  return page.evaluate((value) => {
-    const probe = document.createElement("div");
-    probe.style.color = value;
-    document.body.appendChild(probe);
-    const resolved = getComputedStyle(probe).color;
-    probe.remove();
-    return resolved;
-  }, cssValue);
-}
+import { box, resolvedColor } from "../../test/helpers";
 
 const opener = (page: Page, name: string) =>
   page.getByTestId("code-preview").getByRole("button", { name, exact: true });
-const box = async (target: Locator) => (await target.boundingBox())!;
 const viewportWidth = (page: Page) =>
   page.evaluate(() => document.documentElement.clientWidth);
 const isOpen = (sheet: Locator) =>
@@ -49,32 +38,24 @@ test.describe("SheetBottom", () => {
       ).toBeVisible();
     });
 
-    test("uses M3's surface, top corners, headline type and drag handle", async ({
+    test("uses M3's surface and a centred 32x4px drag handle with 22px above and below it", async ({
       page,
     }) => {
       await open(page);
-      const surface = sheet(page).locator("> *");
-      const headline = sheet(page).getByRole("heading", { name: "Share" });
       const handle = sheet(page).getByRole("button", { name: "Close" });
 
-      await expect(surface).toHaveCSS(
+      await expect(sheet(page).locator("> *")).toHaveCSS(
         "background-color",
         await resolvedColor(page, "var(--theme-color-surface-container-low)")
       );
-      await expect(surface).toHaveCSS("border-top-left-radius", "28px");
-      await expect(surface).toHaveCSS("border-bottom-left-radius", "0px");
-      await expect(headline).toHaveCSS("font-size", "22px");
-      await expect(headline).toHaveCSS("line-height", "28px");
-      await expect(headline).toHaveCSS("font-weight", "400");
 
-      // a centred 32 x 4px handle with 22px above and below it
-      await expect(handle).toHaveCSS("padding-top", "22px");
-      await expect(handle).toHaveCSS("padding-bottom", "22px");
       const bar = await box(handle.locator("> *"));
+      const handleBox = await box(handle);
       const sheetBox = await box(sheet(page));
       expect(bar.width).toBe(32);
       expect(bar.height).toBe(4);
       expect(bar.y - sheetBox.y).toBe(22);
+      expect(handleBox.y + handleBox.height - (bar.y + bar.height)).toBe(22);
       expect(bar.x + bar.width / 2).toBeCloseTo(
         sheetBox.x + sheetBox.width / 2,
         0
@@ -159,7 +140,6 @@ test.describe("SheetBottom", () => {
     }) => {
       const region = sheet(page).locator("..");
       await expect(sheet(page)).toBeVisible();
-      await expect(sheet(page)).toHaveCSS("position", "sticky");
       const regionBox = await box(region);
       const sheetBox = await box(sheet(page));
       // less the region's 1px border

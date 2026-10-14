@@ -1,22 +1,6 @@
-import type { Locator, Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 import { test, expect } from "../../test/a11y-fixture";
-
-async function resolvedColor(page: Page, cssValue: string): Promise<string> {
-  return page.evaluate((value) => {
-    const probe = document.createElement("div");
-    probe.style.color = value;
-    document.body.appendChild(probe);
-    const resolved = getComputedStyle(probe).color;
-    probe.remove();
-    return resolved;
-  }, cssValue);
-}
-
-const box = async (locator: Locator) => {
-  const rect = await locator.boundingBox();
-  if (!rect) throw new Error("element has no bounding box");
-  return rect;
-};
+import { box, resolvedColor } from "../../test/helpers";
 
 // Each live NavBar is `static` in its preview and has its own label: the usage's "Example" has
 // Home (current), Search and Settings. Its <nav> is inside the bar ([data-ac-nav-bar]).

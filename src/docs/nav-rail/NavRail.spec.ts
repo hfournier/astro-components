@@ -52,7 +52,10 @@ test.describe("NavRail", () => {
 
       await expect(menuToggle(page)).toBeHidden();
       expect({ width, height }).toEqual({ width: 56, height: 56 });
-      await expect(fab.getByText("Search")).toHaveClass(/\bsr-only\b/);
+      // its label is only an accessible name: visually hidden, clipped to at most a pixel
+      expect(
+        (await fab.getByText("Search").boundingBox())!.width
+      ).toBeLessThanOrEqual(1);
     });
   });
 

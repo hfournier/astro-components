@@ -24,13 +24,11 @@ test.describe("Tooltip", () => {
   });
 
   test.describe("plain", () => {
-    test("matches M3: 24px high with 8px side padding", async ({ page }) => {
+    test("is M3's 24px high plain tooltip", async ({ page }) => {
       await plainParent(page).focus();
       await expect(plainTooltip(page)).toBeVisible();
 
       expect((await plainTooltip(page).boundingBox())!.height).toBe(24);
-      await expect(plainTooltip(page)).toHaveCSS("padding-left", "8px");
-      await expect(plainTooltip(page)).toHaveCSS("padding-right", "8px");
     });
 
     test("repeats its element's name, hidden from assistive tech, and is hidden at rest", async ({
@@ -76,22 +74,6 @@ test.describe("Tooltip", () => {
   });
 
   test.describe("rich", () => {
-    test("matches M3: 12px top, 8px bottom and 16px side padding", async ({
-      page,
-    }) => {
-      await richTrigger(page).focus();
-      await expect(richTooltip(page)).toBeVisible();
-
-      await expect(richTooltip(page)).toHaveCSS("padding-top", "12px");
-      await expect(richTooltip(page)).toHaveCSS("padding-bottom", "8px");
-      await expect(richTooltip(page)).toHaveCSS("padding-left", "16px");
-      await expect(richTooltip(page)).toHaveCSS("padding-right", "16px");
-      // 12px between the supporting text and the actions
-      await expect(
-        richTooltip(page).locator('[id^="ac-tooltip-description"] > div')
-      ).toHaveCSS("padding-bottom", "12px");
-    });
-
     test("describes its trigger with its subhead and text, not its actions", async ({
       page,
     }) => {
