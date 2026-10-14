@@ -1,0 +1,33 @@
+---
+name: Divider
+description: A Material 3 divider, a thin line that separates groups of content, extending HTML's `<hr>` element. It can run horizontally or vertically, full length or inset.
+category: Text content
+role: pattern
+meta:
+  title: Divider | astro-components HenriFournier.dev
+  description: A Material 3 divider built on the native <hr> element, horizontal or vertical, full length or inset.
+extends:
+  kind: element
+  tag: [hr]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/hr
+props:
+  - name: inset
+    type: '"none" | "start" | "middle"'
+    required: false
+    default: '"none"'
+    description: How far the line stops short of its container's edges. `none` runs the full length. `start` leaves 16px at the start (before the line in a horizontal divider, above it in a vertical one), for example to line up with text that's indented past a leading icon. `middle` leaves 16px at both ends.
+  - name: orientation
+    type: '"horizontal" | "vertical"'
+    required: false
+    default: '"horizontal"'
+    description: The direction of the line. A vertical divider stretches to the height of its row, so it needs a flex or grid parent, or a height class such as `h-6`. It's exposed to assistive tech with `aria-orientation="vertical"`.
+---
+
+## When to use it
+
+As in M3, a divider is a 1px line in the `outline-variant` color. Use it sparingly, where spacing alone doesn't separate two groups of content clearly enough.
+
+A Divider is an `<hr>`, so screen readers announce it as a separator. That's right between sections of content, but not everywhere:
+
+- **Between list items:** an `<hr>` can't go directly inside `<ul>` or `<ol>`. Give the items a border instead, e.g. `divide-y divide-(--theme-color-outline-variant)` on the list.
+- **Purely visual lines:** where a line adds nothing for someone who can't see it, such as between rows that are already separate items, use a border so screen readers don't announce an empty separator.

@@ -1,0 +1,23 @@
+---
+title: NavRailSubItems
+description: The following example shows two sections in a NavDrawer, one with a `sectionLabel` and one with icons on its links. A section only shows in a NavDrawer or an expanded NavRail, so there's no live preview here.
+show: code-only
+---
+
+<NavDrawer>
+  <NavRailSubItems
+    parentHref="/components"
+    sectionLabel="Forms"
+    subItems={[
+      { href: "/components/button", label: "Button" },
+      { href: "/components/fab", label: "Fab" },
+    ]}
+  />
+  <NavRailSubItems
+    parentHref="/tests"
+    subItems={[
+      { href: "/tests/button", icon: "grading", label: "Button" },
+      { href: "/tests/details", icon: "grading", label: "Details" },
+    ]}
+  />
+</NavDrawer>

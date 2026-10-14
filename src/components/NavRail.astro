@@ -1,0 +1,210 @@
+---
+import type { ComponentProps } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import BaseWrapper from "./BaseWrapper.astro";
+import MenuToggle from "./MenuToggle.astro";
+
+type BaseWrapperProps = ComponentProps<typeof BaseWrapper>;
+
+type Props = Omit<BaseWrapperProps, "as"> & {
+  // The rail's width when expanded (always, below medium): M3's minimum (220px) or maximum (360px). For another
+  // width, pass a class such as `[--ac-nav-rail-expanded-width:300px]`; it's kept within those limits.
+  expandedWidth?: "narrow" | "wide";
+  isExpandable?: boolean;
+};
+const {
+  bgColor = "surface-container-low",
+  expandedWidth = "narrow",
+  isExpandable = true,
+  class: classList,
+  ...attrs
+} = Astro.props;
+
+// M3: a navigation rail has three to seven destinations. They're counted in the rendered slot by
+// the marker attribute on each NavRailItem's opening <a> tag.
+const items = await Astro.slots.render("default");
+const itemCount =
+  items.match(/<a\b[^>]*\sdata-ac-nav-rail-item[\s=>]/g)?.length ?? 0;
+if (itemCount < 3 || itemCount > 7) {
+  throw new Error(
+    `NavRail: M3 navigation rails have 3 to 7 destinations (NavRailItems), but this one has ${itemCount}.`
+  );
+}
+
+// Set as a custom property, so a consumer overrides it with one class rather than repeating both
+// expanded-state variants below
+const expandedWidthClasses = {
+  narrow: "[--ac-nav-rail-expanded-width:220px]",
+  wide: "[--ac-nav-rail-expanded-width:360px]",
+}[expandedWidth];
+---
+
+{
+  /* The rail is a size container: only its width depends on whether it's expanded, and the inner
+     div, NavRailItem and Fab restyle themselves from that width (the rail-expanded and
+     rail-collapsed variants in theme.css: wider than 160px, between M3's
+     collapsed and expanded widths). A container's width can't depend on its content, so the
+     expanded rail has a set width rather than growing to fit its labels.
+
+     Below medium it's a modal overlay, off the left edge until its MenuToggle, which stays in place over
+     the page, slides it in. Open while data-open is set (by the script); closed, it's invisible
+     (all but the toggle), so it can't be focused or reached by assistive tech. */
+}
+<BaseWrapper
+  class:list={twMerge(
+    // M3 collapsed rail. No padding here: the container query measures the
+    // content box, so the padding is on the inner div.
+    "peer/nav-rail @container/rail sticky top-0 z-30 h-screen w-24 min-w-0 shrink-0 overflow-y-auto",
+    // Below medium: M3's modal expanded rail, every rail (one that isn't expandable gets its
+    // NavDrawer's sections). It slides in, visible straight away so focus can move into it, and
+    // slides back out, still visible until it's gone. It slides by `left`, not `translate`: a
+    // transform would make the rail the containing block of its fixed MenuToggle, which would then
+    // slide with it. Closed, it's its own (clamped) width off the left edge, plus its shadow.
+    expandedWidthClasses,
+    "max-medium:w-(--ac-nav-rail-expanded-width) max-medium:max-w-90 max-medium:min-w-55",
+    "max-medium:invisible max-medium:fixed max-medium:left-[calc(-1*clamp(220px,var(--ac-nav-rail-expanded-width),360px)-1rem)] max-medium:h-dvh max-medium:rounded-r-2xl max-medium:shadow-theme-elevation-1",
+    "max-medium:data-open:visible max-medium:data-open:left-0",
+    "max-medium:motion-safe:transition-[left,visibility] max-medium:motion-safe:duration-(--theme-duration-base) max-medium:motion-safe:data-open:transition-[left]",
+    // From medium up, an expandable rail expands while its MenuToggle is expanded, and always from large
+    // up (where the toggle is hidden), to its expanded width, kept within M3's 220-360px
+    isExpandable && [
+      "has-[[data-ac-menu-toggle][aria-expanded=true]]:w-(--ac-nav-rail-expanded-width) has-[[data-ac-menu-toggle][aria-expanded=true]]:max-w-90 has-[[data-ac-menu-toggle][aria-expanded=true]]:min-w-55",
+      "large:w-(--ac-nav-rail-expanded-width) large:max-w-90 large:min-w-55",
+      "medium:motion-safe:transition-[width,min-width] medium:motion-safe:duration-(--theme-duration-base)",
+    ],
+    classList
+  )}
+  {bgColor}
+  data-ac-nav-rail
+  {...attrs}
+>
+  <div
+    class:list={[
+      "flex min-h-full flex-col items-center gap-1 px-1 py-5",
+      // M3 expanded rail
+      "rail-expanded:items-start rail-expanded:px-5",
+    ]}
+  >
+    {
+      /* An expandable rail's toggle expands it from medium to large. Every rail has one below medium, where
+         it opens and closes the modal rail: fixed where it sits in the open rail, and visible while
+         the rest of the rail isn't, so it stays in place over the page whether the rail is open or
+         not. It's filled with the rail's background, so it's readable over whatever is behind it
+         while the rail is closed, and blends into the rail when it's open. The div keeps its place
+         in the rail. */
+    }
+    <div
+      class:list={[
+        "size-14 shrink-0",
+        isExpandable ? "large:hidden" : "medium:hidden",
+      ]}
+    >
+      <MenuToggle
+        class="max-medium:visible max-medium:fixed max-medium:top-5 max-medium:left-5 max-medium:z-10 max-medium:bg-(--theme-color-wrapper-bg)"
+      />
+    </div>
+
+    <slot name="fab" />
+
+    {
+      /* No gap between destinations when expanded, where each item is its own indicator */
+    }
+    <nav
+      class="mt-10 flex w-full flex-col gap-4 rail-expanded:gap-0"
+      aria-label="Main"
+    >
+      <Fragment set:html={items} />
+
+      {isExpandable && <slot name="sub-items" />}
+    </nav>
+  </div>
+</BaseWrapper>
+
+{/* M3 modal scrim below medium: 32% scrim over the page, under the rail */}
+<div
+  class:list={[
+    "invisible fixed inset-0 z-10 bg-(--theme-color-scrim)/32 opacity-0",
+    "peer-data-open/nav-rail:visible peer-data-open/nav-rail:opacity-100",
+    "motion-safe:transition-[opacity,visibility] motion-safe:duration-(--theme-duration-base) medium:hidden",
+  ]}
+  aria-hidden="true"
+  data-ac-nav-rail-scrim
+>
+</div>
+
+<script>
+  // Below medium the rail's MenuToggle opens it as a modal: the rest of the page is inert under a
+  // scrim. It closes with the toggle, Escape or a click on the scrim. The toggle stays in place, so
+  // focus stays on it, except that Escape from inside the rail brings focus back to it. Its
+  // aria-expanded is the open state: MenuToggle flips it on click, and the rail follows.
+  // M3's medium window size; keep in step with --breakpoint-medium in theme.css
+  const medium = window.matchMedia("(width >= 37.5rem)");
+
+  document
+    .querySelectorAll<HTMLElement>("[data-ac-nav-rail]")
+    .forEach((rail) => {
+      const toggle = rail.querySelector<HTMLElement>("[data-ac-menu-toggle]");
+      if (!toggle) return;
+
+      const inerted: HTMLElement[] = [];
+      const isOpen = () => rail.hasAttribute("data-open");
+
+      const setInert = (isInert: boolean) => {
+        if (!isInert) {
+          inerted.splice(0).forEach((element) => (element.inert = false));
+          return;
+        }
+        Array.from(document.body.children).forEach((element) => {
+          if (
+            element instanceof HTMLElement &&
+            !element.inert &&
+            !(element instanceof HTMLScriptElement) &&
+            !element.matches("[data-ac-nav-rail-scrim]") &&
+            !element.contains(rail)
+          ) {
+            element.inert = true;
+            inerted.push(element);
+          }
+        });
+      };
+
+      const open = () => {
+        if (isOpen()) return;
+        rail.setAttribute("data-open", "");
+        setInert(true);
+      };
+
+      const close = () => {
+        if (!isOpen()) return;
+        rail.removeAttribute("data-open");
+        setInert(false);
+        // From medium up an expandable rail's toggle expands it, so it starts collapsed there
+        if (toggle.getAttribute("aria-expanded") === "true")
+          toggle.setAttribute("aria-expanded", "false");
+      };
+
+      // From medium up the toggle only expands an expandable rail, in CSS
+      new MutationObserver(() => {
+        if (medium.matches) return;
+        if (toggle.getAttribute("aria-expanded") === "true") open();
+        else close();
+      }).observe(toggle, { attributeFilter: ["aria-expanded"] });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape" || !isOpen()) return;
+        const hadFocus = rail.contains(document.activeElement);
+        close();
+        if (hadFocus) toggle.focus();
+      });
+
+      document.addEventListener("pointerdown", (event) => {
+        if (isOpen() && !rail.contains(event.target as Node)) close();
+      });
+
+      // From medium up the rail is in the layout. Crossing medium either way starts the toggle collapsed.
+      medium.addEventListener("change", () => {
+        close();
+        toggle.setAttribute("aria-expanded", "false");
+      });
+    });
+</script>

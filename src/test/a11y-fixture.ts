@@ -1,6 +1,6 @@
-import { test as base, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
-import type { Result } from 'axe-core';
+import { test as base, expect } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
+import type { Result } from "axe-core";
 
 /**
  * Shared fixture (ADR-0002): every test built on this `test` gets an axe-core
@@ -22,28 +22,35 @@ export const test = base.extend<{ skipA11yCheck: boolean }>({
       Promise.all(
         document
           .getAnimations()
-          .filter((animation) => animation.effect?.getComputedTiming().endTime !== Infinity)
-          .map((animation) => animation.finished.catch(() => undefined)),
-      ),
+          .filter(
+            (animation) =>
+              animation.effect?.getComputedTiming().endTime !== Infinity
+          )
+          .map((animation) => animation.finished.catch(() => undefined))
+      )
     );
 
     const results = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+      .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
       .analyze();
 
-    expect(results.violations, formatViolations(results.violations)).toEqual([]);
+    expect(results.violations, formatViolations(results.violations)).toEqual(
+      []
+    );
   },
 });
 
 function formatViolations(violations: Result[]): string {
-  if (violations.length === 0) return '';
+  if (violations.length === 0) return "";
 
   return violations
     .map((violation) => {
-      const targets = violation.nodes.map((node) => `  - ${node.target.join(' ')}`).join('\n');
+      const targets = violation.nodes
+        .map((node) => `  - ${node.target.join(" ")}`)
+        .join("\n");
       return `${violation.id} (${violation.impact}): ${violation.help}\n${targets}`;
     })
-    .join('\n\n');
+    .join("\n\n");
 }
 
 export { expect };

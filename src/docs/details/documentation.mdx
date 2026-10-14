@@ -19,11 +19,16 @@ props:
     type: SvgIconNameTypes
     required: false
     description: Icon displayed at the start of the summary, before the label text.
+  - name: size
+    type: '"md" | "lg"'
+    required: false
+    default: '"lg"'
+    description: '`lg` is an M3 one-line list item: a 56px summary in Body Large. `md` is a denser 48px summary in Body Medium. Both keep 16px of padding, so the content lines up the same way.'
   - name: variant
     type: '"outlined" | "plain"'
     required: false
     default: '"outlined"'
-    description: '`outlined` wraps the summary and content in an M3 outlined card (12px corners, `outline-variant` border) and pads the content. `plain` has no card, e.g. for navigation sections. In both, the content is inset to line up with the summary label.'
+    description: '`outlined` wraps the summary and content in an M3 outlined card (12px corners, `outline-variant` border) and pads the content. `plain` has no card, e.g. for navigation sections, but keeps a transparent 1px border, so switching variants never shifts the layout. In both, the content is inset to line up with the start of the summary (its icon, when it has one).'
 slots:
   - name: default
     description: The content revealed when the details is expanded.

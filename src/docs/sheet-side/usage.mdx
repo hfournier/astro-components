@@ -1,0 +1,10 @@
+---
+title: SheetSide
+description: The following example shows a modal SheetSide with a headline, opened by a button with `command="show-modal"` and `commandfor` set to the sheet's `id`, so no JavaScript is needed. It slides in from the end edge, and closes with its close button, Escape or a click on the scrim.
+---
+
+<Button command="show-modal" commandfor="sheet-side-usage">Open side sheet</Button>
+
+<SheetSide id="sheet-side-usage" headline="Details" isModal>
+  <p>Content that supports the page, such as details about a selected item.</p>
+</SheetSide>

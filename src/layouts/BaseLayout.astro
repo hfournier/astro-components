@@ -1,35 +1,95 @@
 ---
 import "../styles/global.css";
+import { getCollection } from "astro:content";
+import { twMerge } from "tailwind-merge";
 import type { LayoutPropsType } from "../types";
 import BaseHead from "../internal/BaseHead.astro";
-import Sidebar from "../internal/Sidebar.astro";
-import { twMerge } from "tailwind-merge";
 import SkipToContent from "../components/SkipToContent.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import Link from "../components/Link.astro";
 import Icon from "../components/Icon.astro";
+import NavRail from "../components/NavRail.astro";
+import Fab from "../components/Fab.astro";
+import NavRailItem from "../components/NavRailItem.astro";
+import NavRailSubItems from "../components/NavRailSubItems.astro";
+import { componentCategories } from "../types";
+import NavDrawer from "../components/NavDrawer.astro";
 
 type Props = LayoutPropsType;
 
 const { classListBody, classListHtml, description, title } = Astro.props;
+
+const components = await getCollection("components");
+const componentsByCategory = componentCategories
+  .map((category) => ({
+    category,
+    components: components
+      .filter((component) => component.data.category === category)
+      .sort((a, b) => a.data.name.localeCompare(b.data.name)),
+  }))
+  .filter((group) => group.components.length > 0);
+
+const tests = await getCollection("tests");
+const testItems = tests.map((test) => ({
+  href: `/tests/${test.id}`,
+  label: test.data.title,
+}));
 ---
 
 <html class:list={[classListHtml]} lang="en">
   <BaseHead {title} {description} />
   <body
     class:list={twMerge(
-      "mx-auto max-w-7xl bg-(--theme-color-surface) p-4 text-(--theme-color-on-surface) md:p-6 lg:p-8",
+      "grid grid-cols-1 bg-(--theme-color-surface) text-(--theme-color-on-surface) medium:grid-cols-[auto_1fr] large:grid-cols-[auto_auto_1fr]",
       classListBody
     )}
   >
     <SkipToContent />
 
+    <NavRail isExpandable={false}>
+      <Fab icon="search" label="Search" slot="fab" />
+
+      <NavRailItem href="/" icon="home" label="Start here" />
+      <NavRailItem href="/components" icon="code_blocks" label="Components" />
+      <NavRailItem href="/tests" icon="grading" label="Tests" />
+    </NavRail>
+
+    <NavDrawer>
+      <NavRailSubItems
+        parentHref="/"
+        subItems={[
+          { href: "/", label: "Getting started" },
+          { href: "/colors", label: "Colors" },
+        ]}
+      />
+      {
+        componentsByCategory.map((group) => (
+          <NavRailSubItems
+            parentHref="/components"
+            sectionLabel={group.category}
+            subItems={group.components.map((component) => ({
+              href: `/components/${component.id.replace("/documentation", "")}`,
+              label: component.data.name,
+            }))}
+          />
+        ))
+      }
+
+      <NavRailSubItems parentHref="/tests" subItems={testItems} />
+    </NavDrawer>
+
     <div
-      class="grid grid-rows-[auto_1fr_auto] gap-4 md:grid-cols-[fit-content(260px)_minmax(0,1fr)] md:gap-6 lg:gap-8"
+      class:list={[
+        "grid grid-rows-[auto_1fr_auto] gap-y-4 expanded:gap-y-6 large:gap-y-8",
+        // a second column for the page's side sheet, if it has one. A size container too, so the
+        // sheet can measure the room left beside a full-width article (see TableOfContents).
+        Astro.slots.has("sheet") &&
+          "large:@container/page large:grid-cols-[minmax(0,1fr)_auto]",
+      ]}
     >
       <Header
-        class="col-span-full flex items-center justify-between p-4"
+        class="col-span-full flex min-h-24 items-center justify-between py-4 ps-21 pe-8 medium:min-h-18 medium:px-6"
         bgColor="primary-container"
       >
         <div class="font-semibold">
@@ -46,8 +106,20 @@ const { classListBody, classListHtml, description, title } = Astro.props;
         </div>
       </Header>
 
-      <Sidebar />
       <slot />
+
+      {
+        /* A page's side sheet (see SheetSide), from large up: beside the page's <main>, below the
+           header, docked to the window's end edge. The wrapper fills only the sheet's grid row, so
+           a sticky sheet stops at the end of <main> rather than sliding over the footer. */
+      }
+      {
+        Astro.slots.has("sheet") && (
+          <div class="hidden large:block">
+            <slot name="sheet" />
+          </div>
+        )
+      }
 
       <Footer
         class="col-span-full p-4 text-center"

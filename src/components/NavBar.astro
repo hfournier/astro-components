@@ -1,0 +1,48 @@
+---
+import type { ComponentProps } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import BaseWrapper from "./BaseWrapper.astro";
+
+type BaseWrapperProps = ComponentProps<typeof BaseWrapper>;
+
+type Props = Omit<BaseWrapperProps, "as"> & {
+  label?: string;
+};
+const {
+  bgColor = "surface-container",
+  label = "Main",
+  class: classList,
+  ...attrs
+} = Astro.props;
+
+// M3: a navigation bar has three to five destinations. They're counted in the rendered slot by
+// the marker attribute on each NavBarItem's opening <a> tag.
+const items = await Astro.slots.render("default");
+const itemCount =
+  items.match(/<a\b[^>]*\sdata-ac-nav-bar-item[\s=>]/g)?.length ?? 0;
+if (itemCount < 3 || itemCount > 5) {
+  throw new Error(
+    `NavBar: M3 navigation bars have 3 to 5 destinations (NavBarItems), but this one has ${itemCount}.`
+  );
+}
+---
+
+{
+  /* M3 flexible navigation bar, fixed to the bottom of the viewport, above the
+     device's bottom safe area. Its destinations follow the window size, not the bar's own width:
+     below medium they're vertical items sharing the bar's width equally, and from medium up
+     they're horizontal items grouped in the middle (NavBarItem restyles itself with medium:). */
+}
+<BaseWrapper
+  class:list={twMerge(
+    "fixed inset-x-0 bottom-0 z-30 box-content h-16 pb-[env(safe-area-inset-bottom)]",
+    classList
+  )}
+  {bgColor}
+  data-ac-nav-bar
+  {...attrs}
+>
+  <nav class="flex h-full medium:justify-center" aria-label={label}>
+    <Fragment set:html={items} />
+  </nav>
+</BaseWrapper>

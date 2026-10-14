@@ -8,6 +8,7 @@ import {
 import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
 import { components as mdxComponents } from "../../mdx";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import Main from "../../components/Main.astro";
 import Heading from "../../components/Heading.astro";
 import Link from "../../components/Link.astro";
 import Usage from "../../internal/Usage.astro";
@@ -54,7 +55,8 @@ const examples = await getCollection("examples", (entry) =>
 const slugger = new GithubSlugger();
 const headings: ToCHeadingType[] = [];
 
-headings.push({ id: "top", text: `${component.data.name} Overview`, level: 1 });
+headings.push({ id: "", text: component.data.name, level: 1 });
+headings.push({ id: "top", text: "Overview", level: 2 });
 
 let usageHeadingId: string | undefined;
 if (usage) {
@@ -118,17 +120,22 @@ if (examples && examples.length > 0) {
 <BaseLayout
   title={component.data.meta.title}
   description={component.data.meta.description}
-  classListHtml="scroll-pt-15 xl:scroll-pt-0"
+  classListHtml="scroll-pt-15 large:scroll-pt-0"
 >
-  <main
-    class:list={[
-      "relative grid gap-4 md:gap-6 lg:gap-8 xl:grid-cols-[minmax(0,1fr)_fit-content(360px)]",
-    ]}
-    id="main-content"
+  <Main
+    class="relative grid grid-cols-[minmax(0,1fr)] grid-rows-[0px_1fr] px-2 large:grid-rows-1"
   >
     <TableOfContents {headings} />
 
-    <article class="space-y-8">
+    {
+      /* A long code line mustn't widen the article past <main> (under the side sheet), so its
+         code block scrolls instead: <main>'s column is minmax(0,1fr) rather than growing to fit
+         its content, and the article fills that column (w-full) rather than fitting its content,
+         up to 75ch. */
+    }
+    <article
+      class="mx-auto w-full max-w-[calc(75ch+4rem)] space-y-8 px-4 medium:px-6 expanded:px-8"
+    >
       <Heading level={1}>{component.data.name} Component</Heading>
 
       <MarkdownParagraphs text={component.data.description} />
@@ -192,5 +199,7 @@ if (examples && examples.length > 0) {
         )
       }
     </article>
-  </main>
+  </Main>
+
+  <TableOfContents slot="sheet" isDocked {headings} />
 </BaseLayout>

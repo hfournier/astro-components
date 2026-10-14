@@ -8,52 +8,60 @@ import Icon from "./Icon.astro";
 type Props = HTMLAttributes<"details"> & {
   label: string;
   icon?: SvgIconNameTypes;
+  size?: "md" | "lg";
   variant?: DetailsVariantType;
 };
 
 const {
   label,
   icon,
+  size = "lg",
   variant = "outlined",
   class: classList,
   ...attrs
 } = Astro.props;
+
+// lg is M3's one-line list item: 56px, Body Large. md is a denser 48px row in Body Medium. Both
+// keep the 16px padding, so the content's px-4 always lines up with the summary's leading edge.
+const sizeClasses = {
+  md: "min-h-12 text-sm leading-5 tracking-[0.25px]",
+  lg: "min-h-14 text-base leading-6 tracking-[0.5px]",
+}[size];
 ---
 
-<!-- M3 has no disclosure component: the summary follows M3's one-line list item (56px, 16px
-     padding and gaps, Body Large, 24px icons); the outlined variant wraps it in an outlined card.
-     Colors inherit the surrounding text color, so it works on any BaseWrapper background. -->
+{
+  /*  M3 has no disclosure component: the summary follows M3's one-line list item, with the gap
+     of an M3 button with an icon; the outlined variant wraps it in an outlined card. Colors
+     inherit the surrounding text color, so it works on any BaseWrapper background. */
+}
 <details
   class:list={twMerge(
-    "group/details overflow-hidden",
+    // Every variant has the 1px border, transparent unless outlined, so switching variant
+    // never shifts the layout
+    "group/details overflow-hidden border",
     "details-content:h-0 details-content:opacity-0 motion-safe:details-content:transition-[height,opacity,content-visibility] motion-safe:details-content:transition-discrete motion-safe:details-content:duration-(--theme-duration-overlay)",
     "details-content:starting:h-0 details-content:starting:opacity-0",
     "open:details-content:h-auto open:details-content:opacity-100",
-    variant === "outlined" &&
-      "rounded-xl border border-(--theme-color-outline-variant)",
+    variant === "outlined"
+      ? "rounded-xl border-(--theme-color-outline-variant)"
+      : "border-transparent",
     classList
   )}
   {...attrs}
 >
   <summary
-    class:list={[
-      "relative isolate flex min-h-14 cursor-pointer list-none items-center gap-4 rounded-xl px-4 py-2 [&::-webkit-details-marker]:hidden",
-      "text-base leading-6 tracking-[0.5px]",
+    class:list={twMerge(
+      "relative isolate flex cursor-pointer list-none items-center gap-2 rounded-xl px-4 py-2 [&::-webkit-details-marker]:hidden",
+      // inside the card's 1px border, its 12px corners leave an 11px curve for the state layer
+      variant === "outlined" && "rounded-[11px]",
       // M3 state layer, in the label color
       "before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0 hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10 motion-safe:before:transition-opacity motion-safe:before:duration-(--theme-duration-feedback)",
       // inset, so the card's overflow-hidden doesn't clip it
       "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-inset",
-    ]}
+      sizeClasses
+    )}
   >
-    {
-      icon && (
-        <Icon
-          class="shrink-0"
-          data-ac-details-icon="true"
-          name={icon}
-        />
-      )
-    }
+    {icon && <Icon class="shrink-0" data-ac-details-icon="true" name={icon} />}
     <span class="grow text-pretty">{label}</span>
     <Icon
       class:list={[
@@ -64,7 +72,11 @@ const {
       name="keyboard_arrow_down"
     />
   </summary>
-  <!-- content lines up with the summary label -->
+  {
+    /* Content lines up with the summary's leading edge (its icon, when it has one). Its spacing
+     lives here, not on the summary or ::details-content, so it collapses with the content when
+     closed. */
+  }
   <div class:list={["px-4", variant === "outlined" && "pb-4"]}>
     <slot />
   </div>

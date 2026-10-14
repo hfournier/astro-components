@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import Main from "../../components/Main.astro";
 import Heading from "../../components/Heading.astro";
 import P from "../../internal/mdx/P.astro";
 ---
@@ -8,7 +9,9 @@ import P from "../../internal/mdx/P.astro";
   title="Components | astro-components HenriFournier.dev"
   description="A personal library of accessible, Tailwind-styled Astro components, each documented with its usage, properties, slots, and live examples."
 >
-  <main id="main-content">
+  <Main
+    class="mx-auto max-w-dvw space-y-10 px-4 medium:max-w-[calc(100dvw-96px)] medium:px-6 expanded:max-w-[calc(75ch+4rem)] expanded:px-8"
+  >
     <Heading level={1}>astro-components</Heading>
 
     <P>
@@ -17,6 +20,6 @@ import P from "../../internal/mdx/P.astro";
       properties, slots, and live examples.
     </P>
 
-    <P>Pick a component from the sidebar to see its documentation.</P>
-  </main>
+    <P>Pick a component from the navigation to see its documentation.</P>
+  </Main>
 </BaseLayout>

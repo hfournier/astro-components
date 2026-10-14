@@ -5,6 +5,8 @@
 
 pnpm-lock.yaml
 package.json
+# pnpm rewrites it (in single quotes) when it adds a minimumReleaseAgeExclude entry
+pnpm-workspace.yaml
 
 ## Messes up spacing
 **.md

@@ -1,0 +1,13 @@
+---
+title: Vertical Divider
+description: Set `orientation="vertical"` for a line between items in a row. In a flex or grid row it stretches to the row's height, and `inset` shortens it at the top (`start`) or at both ends (`middle`).
+---
+
+<div class="flex h-16 items-center gap-4 px-2 border border-(--theme-color-outline-variant)">
+  <ButtonIcon icon="edit" label="Edit" />
+  <ButtonIcon icon="content_copy" label="Copy" />
+  <Divider orientation="vertical" />
+  <ButtonIcon icon="share" label="Share" />
+  <Divider orientation="vertical" inset="middle" />
+  <ButtonIcon icon="delete" label="Delete" />
+</div>

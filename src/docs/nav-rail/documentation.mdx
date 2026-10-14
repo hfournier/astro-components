@@ -1,0 +1,67 @@
+---
+name: NavRail
+description: A Material 3 navigation rail, the column of main destinations down the side of a page on larger screens, with an optional FAB above a `<nav>` of NavRailItems, built on BaseWrapper. An expandable rail has a menu button that widens it into M3's expanded rail, where the destinations show their labels beside their icons and the current destination's sub-items appear. A rail that isn't expandable stays collapsed, and a NavDrawer beside it shows the sub-items instead. Below medium, every rail is hidden, all but its menu button, which opens it as a modal expanded rail.
+category: Content sectioning
+role: pattern
+meta:
+  title: NavRail | astro-components HenriFournier.dev
+  description: A Material 3 navigation rail, collapsed or expandable, with an optional FAB, destinations and their sub-items.
+extends:
+  kind: component
+  name: BaseWrapper
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/nav
+props:
+  - name: bgColor
+    type: BgColorType
+    required: false
+    default: '"surface-container-low"'
+    description: The rail's background role. Text, icons and focus rings follow the chosen background. M3's rail sits on `surface`, the same as the page; the default sets it apart from a page on `surface`.
+  - name: isExpandable
+    type: boolean
+    required: false
+    default: "true"
+    description: Makes the rail expandable. It gets a MenuToggle at the top, and expands while the toggle is expanded, always from the large breakpoint (1200px) up (where the toggle is hidden), and always below medium, where it opens as a modal. Its `sub-items` slot shows while it's expanded. When `false`, the rail stays 96px wide from medium up, has no menu button there, and doesn't render its `sub-items` slot; put the sub-items in a NavDrawer instead. Below medium it still opens expanded, with the NavDrawer's sections moved into it.
+  - name: expandedWidth
+    type: '"narrow" | "wide"'
+    required: false
+    default: '"narrow"'
+    description: The rail's width while expanded (an expandable rail's, and every rail's below medium), M3's minimum (220px) or maximum (360px). For another width, see `--ac-nav-rail-expanded-width`.
+slots:
+  - name: fab
+    description: An optional floating action button below the menu button, for the page's most important action. It's extended, with its label beside the icon, while the rail is expanded.
+    kind: component
+    component: Fab
+  - name: default
+    description: The rail's destinations, three to seven of them, as M3 requires. Any other number of NavRailItems throws an error when the page renders.
+    kind: component
+    component: NavRailItem
+    multiple: true
+  - name: sub-items
+    description: An expandable rail's sections of sub-items, one for each destination that has them, shown after the destinations while the rail is expanded. Only the current page's section shows. Put `slot="sub-items"` on each.
+    kind: component
+    component: NavRailSubItems
+    multiple: true
+cssProps:
+  - name: --ac-nav-rail-expanded-width
+    description: The rail's width while expanded, set by `expandedWidth`. Override it with a class such as `[--ac-nav-rail-expanded-width:300px]`; it's kept within M3's 220-360px.
+---
+
+## Collapsed and expanded
+
+Collapsed, the rail is 96px wide, with each destination's icon in a pill above its label. Expanded, it's 220-360px wide (see `expandedWidth`), with 20px side padding; each destination is a row with its label beside its icon, the FAB is extended, and the `sub-items` slot shows. The rail animates between the two widths.
+
+The rail is the only thing whose state decides this: it's a size container named `rail`, and NavRailItem, Fab, NavRailSubItems and the rail's own content restyle themselves once it's wider than 160px (between the collapsed and expanded widths), with the `rail-expanded:` and `rail-collapsed:` variants defined in `theme.css`. A container's width can't depend on its content, so the expanded rail has a set width rather than growing to fit its labels; a label too long for it overflows.
+
+## Small screens
+
+Below the medium breakpoint (600px), the rail is hidden off the left edge of the page, all but its MenuToggle, which stays in place at the top left of the viewport (20px from each edge, where it sits in the open rail), over the page. Every rail has the toggle below medium; one that isn't expandable has it only there. Pressing it slides the rail in underneath it, and the toggle shows the menu-open icon; pressing it again slides the rail back out. Since the toggle never moves, focus stays on it. Below medium it's filled with the rail's background, so it's readable over whatever is behind it while the rail is closed (a header on any `bgColor`, say), and blends into the rail when it's open.
+
+The rail opens as M3's modal expanded rail, at its expanded width (see `expandedWidth`), at elevation 1 with large end corners: a scrim covers the page, which is inert until the rail closes. Only the current page's section of sub-items shows, after the destinations. A rail that isn't expandable gets those sections from its NavDrawer, which moves them into the rail below medium and back from medium up. The rail also closes with Escape, which brings focus back to the toggle, or a click on the scrim.
+
+The toggle sits over whatever is at the top left of the page, so leave room for it there: the toggle covers 20-76px from the top and left edges, so a Header that starts the page could be at least 96px high (`max-medium:min-h-24`, centering the toggle in it) with its content starting at 84px (`max-medium:ps-21`). It's `fixed` within the rail, which is why the rail slides by its `left` rather than a transform (a transform would make the toggle slide with it).
+
+## Layout
+
+From medium up, the rail is sticky, full height, and scrolls on its own when its content is taller than the viewport. Put it first in your layout, for example in a grid with `grid-cols-1 medium:grid-cols-[auto_1fr]` on its parent (with a NavDrawer after it, `large:grid-cols-[auto_auto_1fr]`); below medium it's out of the layout, so the page needs only one column. It's `z-30`, so a NavDrawer slides out from under it. It renders a scrim after itself, which is only ever shown below medium. Its destinations are in a `<nav>` labelled "Main", so the rail should be the page's only main navigation.
+
+There's no live preview here, since it would add a second "Main" navigation to the page. This site's own navigation rail, on the left of every page, is the live example.

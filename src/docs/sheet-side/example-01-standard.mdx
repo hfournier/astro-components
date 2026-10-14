@@ -1,0 +1,11 @@
+---
+title: Standard SheetSide
+description: A standard sheet sits beside the main content, and both can be used at once. Here it's the last column of a flex row, and a class sets its height to the row's, in place of the window's full height. Its close button, from `showCloseX`, hides it.
+---
+
+<div class="flex h-80 overflow-hidden border border-(--theme-color-outline-variant)">
+  <div class="flex-1 p-4">The main content.</div>
+  <SheetSide class="h-full" headline="Filters" showCloseX>
+    <p>Controls that filter the main content.</p>
+  </SheetSide>
+</div>

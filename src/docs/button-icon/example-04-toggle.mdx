@@ -1,0 +1,20 @@
+---
+title: ButtonIcon toggle
+description: Set `isToggle` to make a button switch between selected and unselected on each click, and `isSelected` to start it selected. A selected toggle changes color and swaps its shape, and `selectedIcon` swaps its icon, here to a filled bookmark. Click these to try them; the second row starts selected.
+---
+
+<div class="space-y-4">
+  <div class="flex flex-wrap items-center gap-2">
+    <ButtonIcon icon="bookmark" label="Bookmark" selectedIcon="bookmark-fill" isToggle variant="filled" />
+    <ButtonIcon icon="bookmark" label="Bookmark" selectedIcon="bookmark-fill" isToggle variant="tonal" />
+    <ButtonIcon icon="bookmark" label="Bookmark" selectedIcon="bookmark-fill" isToggle variant="outlined" />
+    <ButtonIcon icon="bookmark" label="Bookmark" selectedIcon="bookmark-fill" isToggle variant="standard" />
+  </div>
+
+  <div class="flex flex-wrap items-center gap-2">
+    <ButtonIcon icon="bookmark" label="Bookmark" selectedIcon="bookmark-fill" isToggle isSelected variant="filled" />
+    <ButtonIcon icon="bookmark" label="Bookmark" selectedIcon="bookmark-fill" isToggle isSelected variant="tonal" />
+    <ButtonIcon icon="bookmark" label="Bookmark" selectedIcon="bookmark-fill" isToggle isSelected variant="outlined" />
+    <ButtonIcon icon="bookmark" label="Bookmark" selectedIcon="bookmark-fill" isToggle isSelected variant="standard" />
+  </div>
+</div>

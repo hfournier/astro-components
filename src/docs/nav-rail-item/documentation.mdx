@@ -1,0 +1,39 @@
+---
+name: NavRailItem
+description: A single destination in a NavRail, extending HTML's `<a>` element. It shows an icon above a short label in a collapsed rail, or beside it in an expanded one, and highlights itself when it's the current page's destination.
+category: Content sectioning
+role: pattern
+meta:
+  title: NavRailItem | astro-components HenriFournier.dev
+  description: A destination in a Material 3 navigation rail, with an icon, a label and an active indicator for the current page.
+extends:
+  kind: element
+  tag: [a]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/a
+parents: [NavRail]
+props:
+  - name: icon
+    type: SvgIconNameTypes
+    required: true
+    description: The destination's icon, by its file name in `src/assets/svgs`. M3 uses a filled icon for the current destination, so if the icon has a `-fill` version, consider passing it on the current page.
+  - name: label
+    type: string
+    required: true
+    description: The destination's name, shown below the icon in a collapsed rail and beside it in an expanded one. Keep it to a word or two, since a collapsed rail is only 96px wide.
+  - name: badgeLabel
+    type: string | number
+    required: false
+    description: Shows a Badge on the destination. Pass a count, or `""` for a dot; `0` (or `"0"`) shows no badge. A count is added to the item's accessible name, e.g. "Inbox, 3", since the badge itself is hidden from assistive tech.
+---
+
+## Collapsed and expanded
+
+In a collapsed rail, the item is M3's vertical rail item: the icon in a 56×32px active indicator, with the label in Label Medium 4px below it. In an expanded rail (wider than 160px), it's M3's horizontal rail item: the icon and the label, in Label Large, side by side 8px apart, in a 56px-high indicator that fits them with 16px either side. It follows the rail's width with a container query, so it changes as the rail expands and collapses. For sub-items, which M3 doesn't require to have icons, NavRailSubItems uses NavDrawerItem instead.
+
+## Current page
+
+NavRailItem marks itself as the current destination (`aria-current="page"`) when its `href` is the current page's path or a parent of it, so `href="/components"` is also current on `/components/button`. `href="/"` is only current on the home page, or it would match every page. In a collapsed rail, the current destination's icon sits in a pill-shaped active indicator in the secondary container color, and its label turns secondary; in an expanded rail, the indicator holds both, with `on-secondary-container` text. To decide this yourself, pass `aria-current`.
+
+## Badges
+
+`badgeLabel` adds a Badge, as in M3: a count, or a dot for `""`. In a collapsed rail, it sits on the top-end corner of the icon. In an expanded rail, a count follows the label instead, so it doesn't cover it, and a dot stays on the icon. Like the rest of the item, it follows the rail's width, so it moves as the rail expands and collapses. Each item anchors its badge to its icon with its own anchor name, so there's nothing to set up. Keep `badgeLabel` in step with the count it shows, since it also sets the item's accessible name.

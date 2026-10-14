@@ -11,6 +11,7 @@ export type BgColorType =
   | "tertiary-container"
   | "tertiary-fixed"
   | "tertiary-fixed-dim"
+  | "surface"
   | "surface-dim"
   | "surface-bright"
   | "inverse-surface"
@@ -67,6 +68,13 @@ export type LayoutPropsType = {
   classListHtml?: string;
   description: string;
   title: string;
+};
+
+// One link in a NavRailSubItems section, rendered as a NavDrawerItem
+export type NavSubItemType = {
+  href: string | URL;
+  icon?: SvgIconNameTypes;
+  label: string;
 };
 
 export type OverlayTransitionType = "fade" | "fade-scale" | "fade-down";

@@ -1,0 +1,7 @@
+---
+title: Rich tooltip
+description: Use `variant="rich"` for a tooltip with a `subhead`, supporting text and actions. Place it right after the element it describes, and point it at that element with `for`. Here the ButtonIcon turns off its own plain tooltip with `showTooltip={false}`. Hover the button and move onto the tooltip, or Tab to the button and then on to the action.
+---
+
+<ButtonIcon id="tooltip-rich-trigger" icon="info" label="About autosave" showTooltip={false} variant="tonal" />
+<Tooltip variant="rich" for="tooltip-rich-trigger" subhead="Autosave is on">Changes are saved as you type, so there's no need to save before you leave.<Button slot="actions" size="sm" variant="text">Learn more</Button></Tooltip>

@@ -1,22 +1,6 @@
-import type { Locator, Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 import { test, expect } from "../../test/a11y-fixture";
-
-async function resolvedColor(page: Page, cssValue: string): Promise<string> {
-  return page.evaluate((value) => {
-    const probe = document.createElement("div");
-    probe.style.color = value;
-    document.body.appendChild(probe);
-    const resolved = getComputedStyle(probe).color;
-    probe.remove();
-    return resolved;
-  }, cssValue);
-}
-
-const box = async (locator: Locator) => {
-  const rect = await locator.boundingBox();
-  if (!rect) throw new Error("element has no bounding box");
-  return rect;
-};
+import { box, resolvedColor } from "../../test/helpers";
 
 // Each live Badge sits in its own CodePreview (data-testid="code-preview") beside the Icon it's
 // anchored to, and is the only aria-hidden <span> there. Previews are told apart by the
@@ -51,7 +35,6 @@ test.describe("Badge", () => {
       "color",
       await resolvedColor(page, "var(--theme-color-on-error)")
     );
-    await expect(target).toHaveCSS("height", "16px");
   });
 
   test("the anchor icon carries the count in the button's accessible name", async ({
@@ -60,6 +43,14 @@ test.describe("Badge", () => {
     await expect(
       preview(page, "Inbox, 3 unread").getByRole("button")
     ).toHaveAccessibleName("Inbox, 3 unread");
+  });
+
+  test("a one-digit count is M3's 16px square large badge", async ({
+    page,
+  }) => {
+    const { width, height } = await box(badge(page, "Inbox, 3 unread"));
+
+    expect({ width, height }).toEqual({ width: 16, height: 16 });
   });
 
   test("a badge with a count overlaps its anchor's top-end corner, per M3's offsets", async ({
@@ -79,16 +70,26 @@ test.describe("Badge", () => {
     const target = badge(page, iconName);
 
     await expect(target).toHaveText("");
-    await expect(target).toHaveCSS("width", "6px");
-    await expect(target).toHaveCSS("height", "6px");
 
     const icon = await box(anchor(page, iconName));
     const dot = await box(target);
+    expect({ width: dot.width, height: dot.height }).toEqual({
+      width: 6,
+      height: 6,
+    });
     expect(dot.x + dot.width).toBeCloseTo(icon.x + icon.width, 0);
     expect(dot.y).toBeCloseTo(icon.y, 0);
   });
 
   test("caps a count over 999 at 999+", async ({ page }) => {
     await expect(badge(page, "Messages, 1500 unread")).toHaveText("999+");
+  });
+
+  test("its widest, 999+, is about M3's 34px", async ({ page }) => {
+    // M3 gives 16x34px; the font's rendering of 11px text with 0.5px tracking varies by about 1px
+    const { width, height } = await box(badge(page, "Messages, 1500 unread"));
+
+    expect(height).toBe(16);
+    expect(Math.abs(width - 34)).toBeLessThanOrEqual(1.5);
   });
 });

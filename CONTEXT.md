@@ -29,7 +29,7 @@ A named alternative treatment of a component, selected via a `variant` prop, fol
 _Avoid_: style, mode, `color` (a variant is more than a color choice)
 
 **Background role**:
-The M3 color role a container paints behind its content, chosen with a `bgColor` prop (`surface-container-high`, `primary-container`, `inverse-surface`, `transparent`, ...). Choosing one also sets the matching "on" role for text and re-points the component color roles that must stay readable on it (`--theme-color-link-text`, `--theme-color-focus-ring-on-bg`). [[BaseWrapper]] owns the full set; overlays accept a narrower subset (`OverlayBgColorType`, `PopoverBgColorType`) limited to the surfaces M3 uses for them.
+The M3 color role a container paints behind its content, chosen with a `bgColor` prop (`surface-container-high`, `primary-container`, `inverse-surface`, `transparent`, ...). Choosing one also sets the matching "on" role for text and re-points the component color roles that must stay readable on it (`--theme-color-link-text`, `--theme-color-focus-ring-on-bg`, `--theme-color-on-bg-variant`). [[BaseWrapper]] owns the full set; overlays accept a narrower subset (`OverlayBgColorType`, `PopoverBgColorType`) limited to the surfaces M3 uses for them.
 _Avoid_: background color, theme (a theme is the whole token set)
 
 **Wrapper background**:

@@ -43,8 +43,11 @@ const placementClasses =
   value !== 0 && (
     <span
       class:list={twMerge(
-        "rounded-full bg-(--theme-color-error) text-(--theme-color-on-error)",
-        value ? "h-4 min-w-4 px-1 text-center leading-4" : "size-1.5",
+        "bg-(--theme-color-error) text-(--theme-color-on-error)",
+        // M3 large badge with a value; small badge (a dot) without
+        value
+          ? "h-4 min-w-4 rounded-lg px-1 text-center leading-4"
+          : "size-1.5 rounded-[3px]",
         placementClasses,
         classList
       )}

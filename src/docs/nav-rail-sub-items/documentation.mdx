@@ -1,0 +1,32 @@
+---
+name: NavRailSubItems
+description: A section of sub-items for one NavRail destination, such as the pages under "Components", optionally headed by a label. It's shown in a NavDrawer, or at the end of an expanded NavRail, and only on the section's own pages.
+category: Content sectioning
+role: pattern
+meta:
+  title: NavRailSubItems | astro-components HenriFournier.dev
+  description: A labelled section of sub-items for a NavRail destination, shown in a NavDrawer or an expanded NavRail.
+extends:
+  kind: element
+  tag: [div]
+parents: [NavRail, NavDrawer]
+props:
+  - name: parentHref
+    type: string
+    required: true
+    description: The `href` of the NavRailItem this section belongs to, such as `"/tests"`. The section is current on that page and the pages under it, or on one of its own links (for a section whose pages share no path, such as `"/"` and `"/colors"`). A NavDrawer also uses it to find the rail item that shows this section.
+  - name: sectionLabel
+    type: string
+    required: false
+    description: A heading for the section, in Label Medium and `on-surface-variant` (smaller than the items, so it reads as a caption rather than another link), with a Divider above it. A labelled section is a group named by its label, so screen readers announce it, e.g. "Forms, group". In a NavDrawer, the first section shown drops its Divider.
+  - name: subItems
+    type: "NavSubItemType[]"
+    required: true
+    description: "The section's links, each rendered as a NavDrawerItem, with an optional icon. The current page's link is marked with `aria-current=\"page\"`. `NavSubItemType`, in `src/types.ts`, is `{ href: string | URL; icon?: SvgIconNameTypes; label: string }`."
+---
+
+## Where it goes
+
+In a NavRail that isn't expandable, put the sections in a NavDrawer's default slot. In an expandable NavRail, put them in the rail's `sub-items` slot, with `slot="sub-items"` on each; they show at the end of the rail while it's expanded.
+
+Every section renders, but only the current page's shows: the others have the `hidden` attribute. A NavDrawer swaps in the section of a rail item that's hovered or focused, fading the links out and in. A section only shows in a container named `rail` that's wider than 160px, which an expanded NavRail and a NavDrawer both are, so it doesn't show on its own.

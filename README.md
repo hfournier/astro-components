@@ -41,21 +41,34 @@ roles) and [`docs/adr/`](./docs/adr) for the design decisions behind it.
 | `Aside`                          | pattern   | A themed wrapper that renders as a native `<aside>`, built on BaseWrapper.                                        |
 | `Badge`                          | pattern   | An M3 badge showing a count or status dot on another element (usually an icon), using CSS anchor positioning.    |
 | `Button`                         | pattern   | Extends `<button>` (or `<a>` via `as="a"`) with M3's elevated/filled/tonal/outlined/text variants, shapes and sizes. |
+| `ButtonIcon`                     | pattern   | An M3 icon button: four styles, five sizes, three widths, an optional toggle state and a tooltip with its label.  |
 | `Details`                        | pattern   | Extends `<details>` with an M3 summary row, optional leading icon and animated chevron; outlined or plain.        |
 | `Dialog`                         | pattern   | A modal `<dialog>` styled after M3, with optional icon and headline, scrolling content and an actions footer.     |
 | `DialogAcknowledge`              | pattern   | A ready-made `alertdialog` built on Dialog with a single acknowledgement action.                                  |
 | `DialogConfirm`                  | pattern   | A ready-made `alertdialog` built on Dialog with a dismissing and a confirming action.                             |
+| `Divider`                        | pattern   | An M3 divider built on `<hr>`, horizontal or vertical, full length or inset.                                      |
+| `Fab`                            | pattern   | An M3 floating action button in three sizes and six color sets, for a screen's most important action.            |
 | `Footer`                         | pattern   | A themed wrapper that renders as a native `<footer>`, built on BaseWrapper.                                       |
 | `Header`                         | pattern   | A themed wrapper that renders as a native `<header>`, built on BaseWrapper.                                       |
 | `Heading`                        | pattern   | Renders `h1`–`h6`, each level styled with one step of the M3 type scale.                                          |
 | `Icon`                           | pattern   | Renders one of the library's inline SVG icons (Material Symbols), sized and colored via CSS.                      |
 | `Link`                           | pattern   | A styled native anchor whose color follows the background it sits on.                                            |
+| `Main`                           | pattern   | A themed wrapper that renders as a native `<main>`, built on BaseWrapper, with the id SkipToContent targets.     |
+| `MenuToggle`                     | pattern   | The menu toggle button at the top of a NavRail, which also opens the rail on small screens, built on ButtonIcon.  |
+| `NavBar` / `NavBarItem`          | pattern   | An M3 flexible navigation bar fixed to the bottom of the viewport, with its destinations stacked below the medium breakpoint (600px) and side by side from there up; each `NavBarItem` is one destination link, with an optional Badge. |
+| `NavDrawer`                      | pattern   | An M3 navigation drawer beside a NavRail, showing the current or hovered destination's NavRailSubItems section.  |
+| `NavRail` / `NavRailItem`        | pattern   | An M3 navigation rail, collapsed or expandable (adding its own menu button), with an optional FAB, opening as a modal from its menu button below the medium breakpoint (600px); each `NavRailItem` is one destination link, with an optional Badge. |
+| `NavRailSubItems`                | pattern   | A labelled section of sub-items for one NavRail destination, shown in a NavDrawer or an expanded NavRail.        |
 | `Popover`                        | pattern   | A `<div popover>` with M3 overlay surfaces and an optional close button.                                          |
 | `Section`                        | pattern   | A themed wrapper that renders as a native `<section>`, built on BaseWrapper.                                      |
+| `SheetBottom`                    | pattern   | An M3 bottom sheet: standard at the bottom of the content, collapsing to its drag handle, or modal over it.      |
+| `SheetSide`                      | pattern   | An M3 side sheet on the start or end edge: standard beside the content, or modal over it; docked or detached.    |
 | `SkipToContent`                  | pattern   | A visually-hidden-until-focused link that lets keyboard users skip to the main content.                           |
 | `Tabs` / `Tab`                   | pattern   | M3 primary or secondary tabs with optional icons and badges; each `Tab` holds one tab's label and content.        |
+| `Tooltip`                        | pattern   | M3 plain and rich tooltips, shown on hover and keyboard focus and placed with CSS anchor positioning.             |
 | `BaseOverlay`                    | primitive | Renders as a native `<dialog>` or `<div popover>`, providing shared open/close transitions for Dialog and Popover. |
 | `BaseWrapper`                    | primitive | Renders a sectioning/grouping element on an M3 background role, setting readable text, link and focus-ring colors. |
+| `NavDrawerItem`                  | internal  | A full-width drawer link with an optional icon, rendered by NavRailSubItems for each sub-item.                    |
 | `TabList` / `TabPanels`          | internal  | Implementation details of `Tabs`, not meant to be used on their own.                                              |
 
 ## Theme
@@ -78,8 +91,8 @@ component color roles that background roles re-point) is hand-written in
 │   ├── components/        # the components, flat, as they're copied into a project
 │   ├── data/tests/        # visual test pages, rendered at /tests/<id>
 │   ├── docs/              # one folder per component: documentation, usage, examples, specs
-│   ├── internal/          # docs-site rendering helpers (sidebar, table of contents, code preview, MDX renderers, ...)
-│   ├── layouts/           # BaseLayout.astro - header, sidebar nav, footer
+│   ├── internal/          # docs-site rendering helpers (table of contents, code preview, MDX renderers, ...)
+│   ├── layouts/           # BaseLayout.astro - header, nav rail and drawer, footer
 │   ├── pages/             # routes: home, /components/[id], /colors (theme generator), /tests/[id]
 │   ├── styles/            # global.css (entry point), colors.css (generated M3 colors), theme.css (hand-written tokens)
 │   ├── svgs/              # icon name list (SvgIconNameTypes) and the SVG loader Icon uses

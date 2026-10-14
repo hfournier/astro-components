@@ -1,0 +1,52 @@
+---
+name: Tooltip
+description: A Material 3 tooltip, a short message that appears while an element is hovered or has keyboard focus. A plain tooltip labels an element, such as an icon button. A rich tooltip gives more context, with an optional subhead and actions. Both use CSS anchor positioning to sit 4px below their element, flipping above it or shifting sideways to stay on screen.
+category: Text content
+role: pattern
+meta:
+  title: Tooltip | astro-components HenriFournier.dev
+  description: Material 3 plain and rich tooltips, shown on hover and keyboard focus and placed with CSS anchor positioning.
+extends:
+  kind: element
+  tag: [span, div]
+props:
+  - name: variant
+    type: '"plain" | "rich"'
+    required: false
+    default: '"plain"'
+    description: '`plain` is a short label in the inverse surface color, at most 200px wide. `rich` is on a surface container, up to 320px wide, with an optional `subhead` and actions. The two are placed differently (see Placement).'
+  - name: for
+    type: string
+    required: false
+    description: Rich tooltips only, and required for them. The `id` of the element the tooltip describes.
+  - name: subhead
+    type: string
+    required: false
+    description: Rich tooltips only. A short heading above the supporting text.
+slots:
+  - name: default
+    description: The tooltip's text. Keep a plain tooltip's text to a few words.
+    kind: text
+  - name: actions
+    description: Rich tooltips only. One or two actions below the text, typically text Buttons, such as "Learn more".
+    kind: any
+cssProps:
+  - name: --ac-tooltip-anchor-inset
+    description: Plain tooltips only. Set it on the tooltip's element to minus that element's border width (e.g. `[--ac-tooltip-anchor-inset:-1px]`), so the tooltip is placed from the outside of the border rather than the inside. ButtonIcon sets it for you.
+---
+
+## Placement
+
+A **plain** tooltip goes inside the element it labels, and the element must be positioned (e.g. `relative`). It shows after a short delay while the element is hovered, and straight away while it has keyboard focus. ButtonIcon already includes one, so you only need a plain Tooltip for other elements.
+
+A **rich** tooltip can hold buttons, which can't go inside another button or link, so it goes right after the element it describes, with that element's `id` as `for`. It opens on hover and keyboard focus, and stays open while the pointer or focus is on either the element or the tooltip, so the pointer can move onto its actions. Keyboard users reach the actions with Tab.
+
+## Accessibility
+
+A plain tooltip is hidden from assistive tech, so its text should repeat its element's accessible name, such as an icon button's `label`. Don't put information only in a plain tooltip.
+
+A rich tooltip's subhead and text become its element's accessible description (`aria-describedby`); the actions aren't included. Both variants can be dismissed with Escape, and stay open while the pointer is over them, as WCAG 1.4.13 requires. Tooltips don't open on touchscreens, so don't rely on them for anything a touch user needs.
+
+## In MDX
+
+In an MDX file, keep a rich tooltip on one line, as in the examples below. Otherwise MDX wraps its text in a paragraph, which adds a margin, and can drop the `actions` slot.

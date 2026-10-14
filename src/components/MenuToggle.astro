@@ -1,0 +1,26 @@
+---
+import type { ComponentProps } from "astro/types";
+import ButtonIcon from "./ButtonIcon.astro";
+
+type ButtonIconProps = ComponentProps<typeof ButtonIcon>;
+
+type Props = Omit<ButtonIconProps, "icon" | "label" | "selectedIcon">;
+const { class: classList, ...attrs } = Astro.props;
+---
+
+{
+  /* A disclosure button: it shows and hides other content (the expanded rail), so its state is
+     aria-expanded rather than a toggle's aria-pressed. ButtonIcon's script flips it on each click,
+     as data-ac-icon-toggle names it. */
+}
+<ButtonIcon
+  class={classList}
+  icon="menu"
+  selectedIcon="menu_open"
+  label="Menu"
+  size="md"
+  aria-expanded="false"
+  data-ac-icon-toggle="aria-expanded"
+  data-ac-menu-toggle
+  {...attrs}
+/>

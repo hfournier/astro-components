@@ -1,0 +1,102 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import crypto from "node:crypto";
+import { twMerge } from "tailwind-merge";
+import type { SvgIconNameTypes } from "../svgs";
+import Badge from "./Badge.astro";
+import Icon from "./Icon.astro";
+import { isCurrentPath } from "../utils";
+
+type Props = Omit<HTMLAttributes<"a">, "href"> & {
+  href: string | URL;
+  icon: SvgIconNameTypes;
+  label: string;
+  // A Badge on the icon: a count, or "" for a dot. 0 shows no badge.
+  badgeLabel?: string | number;
+};
+const {
+  href,
+  icon,
+  label,
+  badgeLabel,
+  class: classList,
+  ...attrs
+} = Astro.props;
+
+// The current page's destination is its own href, or a page under it (see isCurrentPath). An
+// explicit `aria-current` passed by the consumer still wins, since `attrs` is spread after it.
+const isCurrent = isCurrentPath(Astro.url.pathname, href);
+
+const hasBadge = badgeLabel !== undefined;
+// A badge with content, rather than a dot (Badge hides 0)
+const hasCount =
+  badgeLabel !== undefined && badgeLabel !== "" && Number(badgeLabel) !== 0;
+const badgeAnchorName = `--anchorname-${crypto.randomUUID()}-badge`;
+// The badge is aria-hidden, so its count joins the item's name
+const badgeName = hasCount ? `${label}, ${badgeLabel}` : undefined;
+---
+
+<a
+  class:list={twMerge(
+    // M3 collapsed rail item: Label Medium below the icon's indicator
+    "group/item relative isolate flex w-full flex-col items-center gap-1 rounded-2xl text-center text-xs leading-4 font-medium tracking-[0.5px]",
+    "text-(--theme-color-on-surface-variant) aria-[current=page]:text-(--theme-color-secondary)",
+    // M3 expanded rail item: Label Large beside the icon. The item itself is the indicator here.
+    "rail-expanded:h-14 rail-expanded:w-fit rail-expanded:flex-row rail-expanded:gap-2 rail-expanded:rounded-full rail-expanded:px-4 rail-expanded:text-sm rail-expanded:leading-5 rail-expanded:tracking-[0.1px] rail-expanded:whitespace-nowrap",
+    "rail-expanded:aria-[current=page]:bg-(--theme-color-secondary-container) rail-expanded:aria-[current=page]:text-(--theme-color-on-secondary-container)",
+    // expanded state layer, on the whole indicator (collapsed, it's on the icon's indicator below)
+    "before:absolute before:inset-0 before:-z-10 before:hidden before:rounded-full before:bg-(--theme-color-on-secondary-container) before:opacity-0 rail-expanded:before:block",
+    "hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10",
+    "motion-safe:transition-colors motion-safe:duration-(--theme-duration-feedback) motion-safe:before:transition-opacity",
+    // the focus ring goes around the whole item, icon and label
+    "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
+    classList
+  )}
+  href={href}
+  aria-current={isCurrent ? "page" : undefined}
+  aria-label={badgeName}
+  data-ac-nav-rail-item
+  {...attrs}
+>
+  <span
+    class:list={[
+      "relative isolate flex h-8 w-14 items-center justify-center rounded-full",
+      "group-aria-[current=page]/item:bg-(--theme-color-secondary-container) group-aria-[current=page]/item:text-(--theme-color-on-secondary-container)",
+      // M3 state layer, on the indicator only, in on-secondary-container for active and inactive items
+      "before:absolute before:inset-0 before:-z-10 before:rounded-full before:bg-(--theme-color-on-secondary-container) before:opacity-0",
+      "group-hover/item:before:opacity-8 group-focus-visible/item:before:opacity-10 group-active/item:before:opacity-10",
+      "motion-safe:transition-colors motion-safe:duration-(--theme-duration-feedback) motion-safe:before:transition-opacity",
+      // expanded, the item is the indicator, so this is just the icon. ! because the
+      // group-aria-[current=page] background above is more specific.
+      "rail-expanded:size-auto rail-expanded:bg-transparent! rail-expanded:before:hidden",
+    ]}
+  >
+    <Icon
+      name={icon}
+      style={hasBadge ? `anchor-name: ${badgeAnchorName}` : undefined}
+    />
+  </span>
+  <span>
+    {label}
+    {
+      hasCount && (
+        // Expanded, a count follows the label rather than covering it, 8px from the icon (see
+        // Badge for its inline alignment); collapsed, it's on the icon below
+        <Badge
+          class="ms-1 rail-collapsed:hidden"
+          label={badgeLabel}
+          placement="inline"
+        />
+      )
+    }
+  </span>
+  {
+    hasBadge && (
+      <Badge
+        class:list={[hasCount && "rail-expanded:hidden"]}
+        label={badgeLabel}
+        style={`--ac-anchorname-badge: ${badgeAnchorName}`}
+      />
+    )
+  }
+</a>

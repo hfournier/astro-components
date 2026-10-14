@@ -1,0 +1,117 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import crypto from "node:crypto";
+import { twMerge } from "tailwind-merge";
+import type { SvgIconNameTypes } from "../svgs";
+import Badge from "./Badge.astro";
+import Icon from "./Icon.astro";
+import { isCurrentPath } from "../utils";
+
+type Props = Omit<HTMLAttributes<"a">, "href"> & {
+  href: string | URL;
+  icon: SvgIconNameTypes;
+  label: string;
+  // A Badge on the icon: a count, or "" for a dot. 0 shows no badge.
+  badgeLabel?: string | number;
+};
+const {
+  href,
+  icon,
+  label,
+  badgeLabel,
+  class: classList,
+  ...attrs
+} = Astro.props;
+
+// The current page's destination is its own href, or a page under it (see isCurrentPath). An
+// explicit `aria-current` passed by the consumer still wins, since `attrs` is spread after it.
+const isCurrent = isCurrentPath(Astro.url.pathname, href);
+
+const hasBadge = badgeLabel !== undefined;
+// A badge with content, rather than a dot (Badge hides 0)
+const hasCount =
+  badgeLabel !== undefined && badgeLabel !== "" && Number(badgeLabel) !== 0;
+const badgeAnchorName = `--anchorname-${crypto.randomUUID()}-badge`;
+// The badge is aria-hidden, so its count joins the item's name
+const badgeName = hasCount ? `${label}, ${badgeLabel}` : undefined;
+---
+
+<a
+  class:list={twMerge(
+    // M3 vertical bar item, below medium: the items share the bar's width equally
+    "group/item flex min-w-0 flex-1 justify-center py-1.5 outline-none",
+    // M3 horizontal bar item, from medium up: the items are grouped in the middle of the bar
+    "medium:flex-none medium:items-center medium:py-0",
+    "text-(--theme-color-on-surface-variant) aria-[current=page]:text-(--theme-color-secondary) medium:aria-[current=page]:text-(--theme-color-on-secondary-container)",
+    classList
+  )}
+  href={href}
+  aria-current={isCurrent ? "page" : undefined}
+  aria-label={badgeName}
+  data-ac-nav-bar-item
+  {...attrs}
+>
+  <span
+    class:list={[
+      // Below medium: the icon's indicator above the label in Label Medium, 4px apart
+      "relative isolate flex max-w-full flex-col items-center gap-1 rounded-2xl text-center text-xs leading-4 font-medium tracking-[0.5px]",
+      // From medium up: icon and label side by side, 4px apart, in a 40px high indicator that
+      // hugs them with 16px either side. This span is the indicator there.
+      "medium:h-10 medium:flex-row medium:rounded-full medium:px-4 medium:whitespace-nowrap",
+      "medium:group-aria-[current=page]/item:bg-(--theme-color-secondary-container)",
+      // state layer on the whole indicator from medium up (below it, it's on the icon's indicator)
+      "before:absolute before:inset-0 before:-z-10 before:hidden before:rounded-full before:bg-(--theme-color-on-secondary-container) before:opacity-0 medium:before:block",
+      "group-hover/item:before:opacity-8 group-focus-visible/item:before:opacity-10 group-active/item:before:opacity-10",
+      "motion-safe:transition-colors motion-safe:duration-(--theme-duration-feedback) motion-safe:before:transition-opacity",
+      // The focus ring goes around the item's content, icon and label, rather than the whole
+      // item, which is the bar's full height below medium
+      "group-focus-visible/item:ring-3 group-focus-visible/item:ring-(--theme-color-focus-ring-on-bg) group-focus-visible/item:ring-offset-2 group-focus-visible/item:ring-offset-(--theme-color-wrapper-bg)",
+    ]}
+  >
+    <span
+      class:list={[
+        "relative isolate flex h-8 w-14 shrink-0 items-center justify-center rounded-full",
+        "group-aria-[current=page]/item:bg-(--theme-color-secondary-container) group-aria-[current=page]/item:text-(--theme-color-on-secondary-container)",
+        // M3 state layer, on the indicator only, in on-secondary-container for active and inactive items
+        "before:absolute before:inset-0 before:-z-10 before:rounded-full before:bg-(--theme-color-on-secondary-container) before:opacity-0",
+        "group-hover/item:before:opacity-8 group-focus-visible/item:before:opacity-10 group-active/item:before:opacity-10",
+        "motion-safe:transition-colors motion-safe:duration-(--theme-duration-feedback) motion-safe:before:transition-opacity",
+        // From medium up, the span above is the indicator, so this is just the icon. ! because
+        // the group-aria-[current=page] background above is more specific.
+        "medium:size-auto medium:bg-transparent! medium:before:hidden",
+      ]}
+    >
+      <Icon
+        name={icon}
+        style={hasBadge ? `anchor-name: ${badgeAnchorName}` : undefined}
+      />
+    </span>
+    {
+      /* truncate only below medium, where the items share the bar's width: from medium up, its
+         overflow-hidden would clip the bottom of an inline count, which hangs below the label's
+         line (see Badge) */
+    }
+    <span class="max-w-full truncate medium:overflow-visible">
+      {label}
+      {
+        hasCount && (
+          // inline text flow, so the badge aligns to the label's baseline and cap height (see Badge)
+          <Badge
+            class="ms-1 max-medium:hidden"
+            label={badgeLabel}
+            placement="inline"
+          />
+        )
+      }
+    </span>
+  </span>
+  {
+    hasBadge && (
+      <Badge
+        class:list={[hasCount && "medium:hidden"]}
+        label={badgeLabel}
+        style={`--ac-anchorname-badge: ${badgeAnchorName}`}
+      />
+    )
+  }
+</a>
