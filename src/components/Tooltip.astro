@@ -62,8 +62,8 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
       />
       <span
         class:list={twMerge(
-          // M3 plain tooltip: inverse-surface, Body Small, corner extra small, 4px below its
-          // anchor, flipping above or shifting sideways to stay in the viewport. A popover, so it
+          // M3 plain tooltip: Body Small, corner extra small. It flips above or shifts sideways
+          // to stay in the viewport. A popover, so it
           // sits in the top layer, above anything its element's stacking context would put it under.
           "inset-auto m-0 mt-1 min-h-6 w-max max-w-50 min-w-10 overflow-visible rounded-sm border-0 px-2 py-1",
           "bg-(--theme-color-inverse-surface) text-center text-xs leading-4 font-normal tracking-[0.4px] text-(--theme-color-inverse-on-surface)",
@@ -97,11 +97,8 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
     <BaseWrapper
       bgColor="surface-container"
       class={twMerge(
-        // M3 rich tooltip: surface-container at elevation 2, corner medium, 12px padding at the top,
-        // 8px at the bottom and 16px at the sides, at most 320px wide, 4px from its anchor. A
-        // popover, so it sits in the top layer.
+        // M3 rich tooltip: corner medium. A popover, so it sits in the top layer.
         "inset-auto m-0 mt-1 min-h-6 w-max max-w-80 min-w-10 overflow-visible rounded-xl border-0 px-4 pt-3 pb-2 text-left shadow-theme-elevation-2",
-        // subhead and supporting text are both on-surface-variant
         "text-(--theme-color-on-surface-variant)",
         "[position-area:bottom] [position-try-fallbacks:bottom_span-left,bottom_span-right,flip-block]",
         // bridges the 4px gap, so the pointer can move onto the tooltip without it closing
@@ -118,7 +115,6 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
     >
       <div id={descriptionId}>
         {subhead && (
-          // M3 Title Small
           <p class="text-sm leading-5 font-medium tracking-[0.1px]">
             {subhead}
           </p>

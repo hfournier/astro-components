@@ -108,11 +108,9 @@ const closeAttrs = isModal
   {...attrs}
 >
   {
-    /* M3: 24px start and end padding, 12px between the top elements, and bottom actions in a
-       72px row (16px above, 24px below) aligned to the start, under a divider. Only the content
-       scrolls. The headline is M3 Title Large: 22/28px, weight 400, no tracking. A BaseWrapper,
-       so a modal sheet's focus rings and links follow its own surface, not the page it was
-       placed in. */
+    /* Only the content scrolls; the actions stay below it, under a divider. The headline is M3
+       Title Large. A BaseWrapper, so a modal sheet's focus rings and links follow its own
+       surface, not the page it was placed in. */
   }
   <BaseWrapper
     {bgColor}

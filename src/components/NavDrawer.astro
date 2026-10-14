@@ -203,7 +203,6 @@ const widthClasses = {
         });
       };
 
-      // A modal drawer makes the rest of the page inert, except the rail
       const setInert = (isInert: boolean) => {
         if (!isInert) {
           inerted.splice(0).forEach((element) => (element.inert = false));
@@ -269,7 +268,6 @@ const widthClasses = {
         }, closeDelay);
       };
 
-      // The next focusable control in the rail after a rail item, for Tab out of its section
       const nextInRail = (item: HTMLElement) => {
         const focusables = Array.from(
           rail.querySelectorAll<HTMLElement>("a[href], button:not([disabled])")

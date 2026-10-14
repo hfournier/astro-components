@@ -52,12 +52,11 @@ const expandedWidthClasses = {
 }
 <BaseWrapper
   class:list={twMerge(
-    // M3 collapsed rail: a fixed 96px wide. No padding here: the container query measures the
+    // M3 collapsed rail. No padding here: the container query measures the
     // content box, so the padding is on the inner div.
     "peer/nav-rail @container/rail sticky top-0 z-30 h-screen w-24 min-w-0 shrink-0 overflow-y-auto",
     // Below medium: M3's modal expanded rail, every rail (one that isn't expandable gets its
-    // NavDrawer's sections), at its expanded width, fixed to the left edge at elevation 1, corner
-    // large on its end side. It slides in, visible straight away so focus can move into it, and
+    // NavDrawer's sections). It slides in, visible straight away so focus can move into it, and
     // slides back out, still visible until it's gone. It slides by `left`, not `translate`: a
     // transform would make the rail the containing block of its fixed MenuToggle, which would then
     // slide with it. Closed, it's its own (clamped) width off the left edge, plus its shadow.
@@ -82,7 +81,7 @@ const expandedWidthClasses = {
   <div
     class:list={[
       "flex min-h-full flex-col items-center gap-1 px-1 py-5",
-      // M3 expanded rail: 20px side padding, items aligned to the start
+      // M3 expanded rail
       "rail-expanded:items-start rail-expanded:px-5",
     ]}
   >
@@ -108,7 +107,7 @@ const expandedWidthClasses = {
     <slot name="fab" />
 
     {
-      /* M3: 16px between destinations; none when expanded, where each is 56px high */
+      /* No gap between destinations when expanded, where each item is its own indicator */
     }
     <nav
       class="mt-10 flex w-full flex-col gap-4 rail-expanded:gap-0"
@@ -150,7 +149,6 @@ const expandedWidthClasses = {
       const inerted: HTMLElement[] = [];
       const isOpen = () => rail.hasAttribute("data-open");
 
-      // Everything but the rail and its scrim
       const setInert = (isInert: boolean) => {
         if (!isInert) {
           inerted.splice(0).forEach((element) => (element.inert = false));
@@ -199,7 +197,6 @@ const expandedWidthClasses = {
         if (hadFocus) toggle.focus();
       });
 
-      // A click outside the rail: on the scrim
       document.addEventListener("pointerdown", (event) => {
         if (isOpen() && !rail.contains(event.target as Node)) close();
       });

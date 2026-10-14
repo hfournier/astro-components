@@ -44,8 +44,7 @@ const placementClasses =
     <span
       class:list={twMerge(
         "bg-(--theme-color-error) text-(--theme-color-on-error)",
-        // M3 large badge: 16px high, at least 16px wide, 4px either side of its text, 8px corners;
-        // small badge: a 6px dot with 3px corners
+        // M3 large badge with a value; small badge (a dot) without
         value
           ? "h-4 min-w-4 rounded-lg px-1 text-center leading-4"
           : "size-1.5 rounded-[3px]",

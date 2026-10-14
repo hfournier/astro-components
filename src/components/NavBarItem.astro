@@ -38,11 +38,9 @@ const badgeName = hasCount ? `${label}, ${badgeLabel}` : undefined;
 
 <a
   class:list={twMerge(
-    // M3 vertical bar item, below medium: the items share the bar's width equally, and each has
-    // 6px above and below its content
+    // M3 vertical bar item, below medium: the items share the bar's width equally
     "group/item flex min-w-0 flex-1 justify-center py-1.5 outline-none",
-    // M3 horizontal bar item, from medium up: the items are grouped in the middle of the bar,
-    // each with its 40px high indicator centered in the bar's 64px
+    // M3 horizontal bar item, from medium up: the items are grouped in the middle of the bar
     "medium:flex-none medium:items-center medium:py-0",
     "text-(--theme-color-on-surface-variant) aria-[current=page]:text-(--theme-color-secondary) medium:aria-[current=page]:text-(--theme-color-on-secondary-container)",
     classList

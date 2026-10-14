@@ -38,11 +38,10 @@ const badgeName = hasCount ? `${label}, ${badgeLabel}` : undefined;
 
 <a
   class:list={twMerge(
-    // M3 collapsed rail item: icon in a 56x32 active indicator, Label Medium 4px below it
+    // M3 collapsed rail item: Label Medium below the icon's indicator
     "group/item relative isolate flex w-full flex-col items-center gap-1 rounded-2xl text-center text-xs leading-4 font-medium tracking-[0.5px]",
     "text-(--theme-color-on-surface-variant) aria-[current=page]:text-(--theme-color-secondary)",
-    // M3 expanded rail item: icon and Label Large side by side, 8px apart, in a 56px high active
-    // indicator that hugs them with 16px either side. The item itself is the indicator here.
+    // M3 expanded rail item: Label Large beside the icon. The item itself is the indicator here.
     "rail-expanded:h-14 rail-expanded:w-fit rail-expanded:flex-row rail-expanded:gap-2 rail-expanded:rounded-full rail-expanded:px-4 rail-expanded:text-sm rail-expanded:leading-5 rail-expanded:tracking-[0.1px] rail-expanded:whitespace-nowrap",
     "rail-expanded:aria-[current=page]:bg-(--theme-color-secondary-container) rail-expanded:aria-[current=page]:text-(--theme-color-on-secondary-container)",
     // expanded state layer, on the whole indicator (collapsed, it's on the icon's indicator below)

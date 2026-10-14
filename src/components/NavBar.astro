@@ -6,7 +6,6 @@ import BaseWrapper from "./BaseWrapper.astro";
 type BaseWrapperProps = ComponentProps<typeof BaseWrapper>;
 
 type Props = Omit<BaseWrapperProps, "as"> & {
-  // The <nav>'s accessible name
   label?: string;
 };
 const {
@@ -29,7 +28,7 @@ if (itemCount < 3 || itemCount > 5) {
 ---
 
 {
-  /* M3 flexible navigation bar: 64px high, fixed to the bottom of the viewport, above the
+  /* M3 flexible navigation bar, fixed to the bottom of the viewport, above the
      device's bottom safe area. Its destinations follow the window size, not the bar's own width:
      below medium they're vertical items sharing the bar's width equally, and from medium up
      they're horizontal items grouped in the middle (NavBarItem restyles itself with medium:). */

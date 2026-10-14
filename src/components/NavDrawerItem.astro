@@ -5,9 +5,8 @@ import type { SvgIconNameTypes } from "../svgs";
 import Icon from "./Icon.astro";
 import { isCurrentPath } from "../utils";
 
-// An M3 navigation drawer item: a full-width 56px row with an optional icon and a Label Large
-// label, used for NavRailSubItems in a NavDrawer or an expanded NavRail. Unlike NavRailItem,
-// which M3 requires to have an icon, the icon is optional.
+// An M3 navigation drawer item, used for NavRailSubItems in a NavDrawer or an expanded NavRail.
+// Unlike NavRailItem, which M3 requires to have an icon, the icon is optional.
 type Props = HTMLAttributes<"a"> & {
   icon?: SvgIconNameTypes;
   label: string;
@@ -21,13 +20,10 @@ const isCurrent = isCurrentPath(Astro.url.pathname, href);
 
 <a
   class:list={twMerge(
-    // M3 drawer item: the full width (the drawer's 12px padding either side), 56px high, fully
-    // rounded, 16px either side of its content (28px from the drawer's edges), 12px between the
-    // icon and Label Large
+    // M3 drawer item in Label Large. Its content is 28px from the drawer's edges, as M3 sets it:
+    // the drawer's 12px padding plus the item's 16px.
     "relative isolate flex h-14 w-full items-center gap-3 rounded-full px-4 text-sm leading-5 font-medium tracking-[0.1px]",
-    // inactive: on-surface-variant, on-surface while hovered, focused or pressed
     "text-(--theme-color-on-surface-variant) not-aria-[current=page]:hover:text-(--theme-color-on-surface) not-aria-[current=page]:focus-visible:text-(--theme-color-on-surface) not-aria-[current=page]:active:text-(--theme-color-on-surface)",
-    // current page: the active indicator
     "aria-[current=page]:bg-(--theme-color-secondary-container) aria-[current=page]:text-(--theme-color-on-secondary-container)",
     // M3 state layer, in the content color
     "before:absolute before:inset-0 before:-z-10 before:rounded-full before:bg-current before:opacity-0",
