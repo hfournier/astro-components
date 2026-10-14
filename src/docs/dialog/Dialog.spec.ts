@@ -99,6 +99,10 @@ test.describe("Dialog", () => {
     await activate(openDialog(page));
     await expect(dialog).toBeVisible();
     await expect(dialog).toHaveCSS("transition-duration", "0s");
+
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+    await expect(dialog).toHaveCSS("transition-duration", "0s");
   });
 
   test("the headline names the dialog", async ({ page }) => {
