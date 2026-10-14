@@ -1,0 +1,18 @@
+---
+title: Standard SheetBottom
+description: A standard sheet sits at the bottom of the main content, and both can be used at once. Here it's the last child of a scrolling region, so it stays at the region's bottom edge while the content scrolls behind it. Its drag handle collapses it to the handle and headline, and expands it again.
+---
+
+<div class="h-80 overflow-y-auto border border-(--theme-color-outline-variant)">
+  <div class="space-y-4 p-4">
+    <p>The main content, which scrolls behind the sheet.</p>
+    <p>More of the main content.</p>
+    <p>More of the main content.</p>
+    <p>More of the main content.</p>
+    <p>More of the main content.</p>
+    <p>The end of the main content.</p>
+  </div>
+  <SheetBottom headline="Now playing">
+    <p>Details about the item being played.</p>
+  </SheetBottom>
+</div>

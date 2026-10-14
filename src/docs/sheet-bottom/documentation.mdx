@@ -1,0 +1,56 @@
+---
+name: SheetBottom
+description: A Material 3 bottom sheet, holding content that supports the main content, such as extra actions, options or details, anchored to the bottom of the window. A standard sheet is an `<aside>` at the bottom of the content, and both can be used at once; its drag handle collapses and expands it. A modal sheet is a `<dialog>` that slides up over the page under a scrim, and the page can't be used until it closes.
+category: Content sectioning
+role: pattern
+meta:
+  title: SheetBottom | astro-components HenriFournier.dev
+  description: A Material 3 bottom sheet, standard at the bottom of the content or modal over it, with a drag handle.
+extends:
+  kind: element
+  tag: [aside, dialog]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog
+props:
+  - name: bgColor
+    type: BgColorType
+    required: false
+    default: '"surface-container-low"'
+    description: The sheet's background role, M3's by default. Text, links and focus rings follow the chosen background.
+  - name: headline
+    type: string
+    required: false
+    description: The sheet's headline, in M3's Title Large, under the drag handle. It also names the sheet for assistive tech (`aria-labelledby`). Give a modal sheet one, or an `aria-label`.
+  - name: id
+    type: string
+    required: false
+    description: The sheet's id. A modal sheet needs one, so a button can open it with `command="show-modal"` and `commandfor` set to it. One is generated if it's left out.
+  - name: isCollapsed
+    type: boolean
+    required: false
+    default: "false"
+    description: Starts a standard sheet collapsed to its drag handle and headline. Its drag handle expands it. Ignored on a modal sheet, or one without a drag handle.
+  - name: isModal
+    type: boolean
+    required: false
+    default: "false"
+    description: Makes the sheet M3's modal bottom sheet, a `<dialog>` that slides up over a scrim. Opened with `showModal()` (or a button with `command="show-modal"`), it keeps focus inside it and makes the rest of the page inert. It closes with its drag handle, Escape or a click on the scrim.
+  - name: showDragHandle
+    type: boolean
+    required: false
+    default: "true"
+    description: Shows M3's drag handle, centred at the top of the sheet. It's a button, so it works with a click, Enter or Space as well as a drag. A modal sheet's closes it, on a click or a drag down; a standard sheet's collapses it on a click or a drag down, and expands it on a click or a drag up.
+slots:
+  - name: default
+    description: The sheet's content, which scrolls if it's taller than the sheet.
+    kind: any
+---
+
+## Standard and modal
+
+A standard sheet sits at the bottom of the main content, and both can be used at the same time. Put it last in a scrolling container (the page, or a scrolling region of it): it's sticky, so it stays at the container's bottom edge while the content scrolls behind it. Its drag handle collapses it to the handle and headline, and expands it again.
+
+A modal sheet slides up over the page, and the page under its scrim can't be used until it closes. Use one for a set of choices, such as a share sheet or a menu on a small screen, that the user deals with before going back to the page.
+
+## Layout
+
+Following M3, the sheet spans the full width, up to 640px, centred, and in a window wider than 640px it also keeps 56px from the window's start and end edges. Its height follows its content, up to the window's height less a 72px top margin, or 56px in a window wider than 640px; past that, its content scrolls. It has extra-large (28px) top corners and sits at elevation 1. Its drag handle is 32 by 4px, centred, with 22px above and below it.

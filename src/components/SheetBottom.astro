@@ -1,0 +1,232 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import crypto from "node:crypto";
+import { twMerge } from "tailwind-merge";
+import type { BgColorType } from "../types";
+import BaseWrapper from "./BaseWrapper.astro";
+
+// An M3 bottom sheet: supplementary content anchored to the bottom of the window, in two kinds.
+//
+// - Standard (default): an <aside> stuck to the bottom of its scroll container, alongside the
+//   main content, both usable at once. Its drag handle collapses it to its handle (and headline)
+//   and expands it again, by a click or a drag.
+// - Modal (isModal): a <dialog> that slides up over the page under a scrim, opened with
+//   showModal(), so focus stays inside it, Escape closes it and the page is inert until it does.
+//   Open it with a button carrying command="show-modal" and commandfor set to the sheet's id. It
+//   also closes on a click on the scrim, and on a click or a drag down on its drag handle.
+type Props = Omit<HTMLAttributes<"aside" | "dialog">, "id"> & {
+  bgColor?: BgColorType;
+  headline?: string;
+  // Needed to open a modal sheet with commandfor; one is made up if it's left out
+  id?: string;
+  // A standard sheet only: starts collapsed to its drag handle (and headline)
+  isCollapsed?: boolean;
+  isModal?: boolean;
+  showDragHandle?: boolean;
+};
+const {
+  bgColor = "surface-container-low",
+  headline,
+  id = `ac-sheet-bottom-${crypto.randomUUID()}`,
+  isCollapsed = false,
+  isModal = false,
+  showDragHandle = true,
+  class: classList,
+  ...attrs
+} = Astro.props;
+
+const Tag = isModal ? "dialog" : "aside";
+const headlineId = headline ? `${id}-headline` : undefined;
+const contentId = `${id}-content`;
+// Only a standard sheet with a handle to expand it again can be collapsed
+const startsCollapsed = !isModal && showDragHandle && isCollapsed;
+
+// M3: full width, up to 640px, centred. In a window wider than 640px it also keeps 56px from the
+// window's start and end edges.
+const widthClasses =
+  "mx-auto w-full max-w-160 [@media(width>640px)]:max-w-[min(640px,100%-7rem)]";
+
+const placementClasses = isModal
+  ? // overriding the UA dialog's centring margins and size limits
+    "fixed inset-x-0 top-auto bottom-0 mb-0 max-h-none overflow-visible bg-transparent p-0 outline-none"
+  : "sticky bottom-0 z-10";
+
+// A modal sheet slides up from below the window, and back down, still showing until it's gone,
+// over a 32% scrim that fades in and out
+const modalClasses = isModal && [
+  "translate-y-full open:translate-y-0 motion-safe:starting:open:translate-y-full",
+  "motion-safe:transition-[display,overlay,translate] motion-safe:transition-discrete motion-safe:duration-(--theme-duration-base)",
+  "backdrop:bg-(--theme-color-scrim)/32 backdrop:opacity-0 open:backdrop:opacity-100 motion-safe:starting:open:backdrop:opacity-0",
+  "motion-safe:backdrop:transition-[display,opacity,overlay] motion-safe:backdrop:transition-discrete motion-safe:backdrop:duration-(--theme-duration-base)",
+];
+
+// A modal sheet's drag handle closes it; a standard sheet's collapses and expands it
+const handleAttrs = isModal
+  ? { "aria-label": "Close" }
+  : {
+      "aria-label": "Sheet content",
+      "aria-controls": contentId,
+      "aria-expanded": !startsCollapsed,
+    };
+---
+
+<Tag
+  class:list={twMerge(placementClasses, widthClasses, modalClasses, classList)}
+  id={id}
+  aria-labelledby={headlineId}
+  data-ac-sheet-bottom={isModal ? "modal" : "standard"}
+  {...attrs}
+>
+  {
+    /* M3: extra-large (28px) top corners at elevation 1. Its height follows its content, up to
+       the window's height less M3's top margin: 72px, or 56px in a window wider than 640px. Only
+       the content scrolls. The headline is M3 Title Large: 22/28px, weight 400, no tracking. A
+       BaseWrapper, so a modal sheet's focus rings and links follow its own surface, not the page
+       it was placed in. */
+  }
+  <BaseWrapper
+    {bgColor}
+    class="flex max-h-[calc(100dvh-4.5rem)] flex-col overflow-hidden rounded-t-[28px] shadow-theme-elevation-1 [@media(width>640px)]:max-h-[calc(100dvh-3.5rem)]"
+  >
+    {
+      /* M3: a 32 x 4px handle in on-surface-variant at 40%, centred, with 22px above and below
+         it, which makes a 48px-tall target. touch-none, so a drag on it isn't taken as a scroll. */
+      showDragHandle && (
+        <button
+          class="group flex shrink-0 cursor-grab touch-none justify-center self-center px-2 py-5.5 outline-none active:cursor-grabbing"
+          type="button"
+          data-ac-sheet-bottom-handle
+          {...handleAttrs}
+        >
+          <span class="block h-1 w-8 rounded-full bg-(--theme-color-on-bg-variant)/40 group-focus-visible:ring-3 group-focus-visible:ring-(--theme-color-focus-ring-on-bg) group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-(--theme-color-wrapper-bg)" />
+        </button>
+      )
+    }
+    {
+      headline && (
+        <h2
+          class:list={[
+            "shrink-0 px-6 pb-4 text-[1.375rem] leading-7 font-normal tracking-normal",
+            !showDragHandle && "pt-6",
+          ]}
+          id={headlineId}
+        >
+          {headline}
+        </h2>
+      )
+    }
+    <div
+      class:list={[
+        "min-h-0 flex-1 overflow-y-auto px-6 pb-6",
+        "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-inset",
+        !headline && !showDragHandle && "pt-6",
+      ]}
+      id={contentId}
+      hidden={startsCollapsed}
+      data-ac-sheet-bottom-content
+    >
+      <slot />
+    </div>
+  </BaseWrapper>
+</Tag>
+
+<script>
+  // Past this, a drag on the handle collapses or closes the sheet (or expands a collapsed one)
+  const dragThreshold = 32;
+
+  // A modal sheet closes on a click on its scrim: its content fills the dialog, so a click that
+  // lands on the dialog itself is on its ::backdrop
+  document
+    .querySelectorAll<HTMLDialogElement>('[data-ac-sheet-bottom="modal"]')
+    .forEach((sheet) => {
+      sheet.addEventListener("click", (event) => {
+        if (event.target === sheet) sheet.close();
+      });
+    });
+
+  // Content taller than the sheet scrolls, so it's a tab stop then, for keyboard users to scroll
+  // it with the arrow keys; not before, so it isn't an extra stop with nothing to scroll
+  const scrollable = new ResizeObserver((entries) => {
+    entries.forEach(({ target }) => {
+      if (target.scrollHeight > target.clientHeight)
+        target.setAttribute("tabindex", "0");
+      else target.removeAttribute("tabindex");
+    });
+  });
+  document
+    .querySelectorAll("[data-ac-sheet-bottom-content]")
+    .forEach((content) => scrollable.observe(content));
+
+  document
+    .querySelectorAll<HTMLElement>("[data-ac-sheet-bottom]")
+    .forEach((sheet) => {
+      const handle = sheet.querySelector<HTMLButtonElement>(
+        "[data-ac-sheet-bottom-handle]"
+      );
+      if (!handle) return;
+      const isModal = sheet instanceof HTMLDialogElement;
+
+      const setExpanded = (expanded: boolean) => {
+        const content = document.getElementById(
+          handle.getAttribute("aria-controls")!
+        );
+        if (!content) return;
+        content.hidden = !expanded;
+        handle.setAttribute("aria-expanded", String(expanded));
+      };
+      const isExpanded = () => handle.getAttribute("aria-expanded") === "true";
+
+      // A drag ends in a click too, which mustn't undo what the drag just did
+      let startY: number | undefined;
+      let dragged = false;
+
+      handle.addEventListener("pointerdown", (event) => {
+        startY = event.clientY;
+        dragged = false;
+        handle.setPointerCapture(event.pointerId);
+      });
+
+      // A modal sheet follows the pointer down (never up), without its slide transition
+      handle.addEventListener("pointermove", (event) => {
+        if (startY === undefined) return;
+        const dy = event.clientY - startY;
+        if (Math.abs(dy) > 4) dragged = true;
+        if (isModal) {
+          sheet.style.transition = "none";
+          sheet.style.translate = `0 ${Math.max(dy, 0)}px`;
+        }
+      });
+
+      handle.addEventListener("pointerup", (event) => {
+        if (startY === undefined) return;
+        const dy = event.clientY - startY;
+        startY = undefined;
+        if (isModal) {
+          // dropped in the same frame as close(), so it slides away from where it was let go
+          sheet.style.removeProperty("transition");
+          sheet.style.removeProperty("translate");
+          if (dy > dragThreshold) (sheet as HTMLDialogElement).close();
+        } else if (dy > dragThreshold) {
+          setExpanded(false);
+        } else if (dy < -dragThreshold) {
+          setExpanded(true);
+        }
+      });
+      // a cancelled drag puts the sheet back as it was
+      handle.addEventListener("pointercancel", () => {
+        startY = undefined;
+        sheet.style.removeProperty("transition");
+        sheet.style.removeProperty("translate");
+      });
+
+      // A click, Enter or Space closes a modal sheet, or collapses or expands a standard one
+      handle.addEventListener("click", () => {
+        if (dragged) {
+          dragged = false;
+          return;
+        }
+        if (isModal) (sheet as HTMLDialogElement).close();
+        else setExpanded(!isExpanded());
+      });
+    });
+</script>
