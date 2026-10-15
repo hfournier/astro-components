@@ -3,6 +3,7 @@ import type { HTMLAttributes } from "astro/types";
 import crypto from "node:crypto";
 import { twMerge } from "tailwind-merge";
 import BaseWrapper from "./BaseWrapper.astro";
+import { unwrapParagraph } from "../utils";
 
 // M3 tooltips, in two variants that are placed differently:
 //
@@ -46,6 +47,7 @@ const randomId = crypto.randomUUID();
 const anchorName = `--ac-anchorname-tooltip-${randomId}`;
 const descriptionId = `ac-tooltip-description-${randomId}`;
 const hasActions = Astro.slots.has("actions");
+const text = unwrapParagraph(await Astro.slots.render("default"));
 
 // Inside a rich tooltip's 12px top and 8px bottom padding: 4px between the subhead and the
 // supporting text, and 12px between the text and the actions
@@ -90,7 +92,7 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
         data-ac-tooltip
         {...attrs}
       >
-        <slot />
+        <Fragment set:html={text} />
       </span>
     </>
   ) : (
@@ -121,7 +123,7 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
         )}
         {/* M3 Body Medium */}
         <div class:list={[textPadding, "text-sm leading-5 tracking-[0.25px]"]}>
-          <slot />
+          <Fragment set:html={text} />
         </div>
       </div>
       {hasActions && (

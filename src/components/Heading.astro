@@ -3,6 +3,7 @@ import type { HTMLAttributes } from "astro/types";
 import Icon from "./Icon.astro";
 import { twMerge } from "tailwind-merge";
 import type { HeadingLevelType } from "../types";
+import { unwrapParagraph } from "../utils";
 
 type Props = HTMLAttributes<"h1"> & {
   level: HeadingLevelType;
@@ -27,6 +28,7 @@ const headingClasses = {
 }[level];
 
 const Tag = `h${level}` as const;
+const text = unwrapParagraph(await Astro.slots.render("default"));
 ---
 
 {
@@ -38,7 +40,7 @@ const Tag = `h${level}` as const;
   id ? (
     <div class="group/heading flex items-center gap-2">
       <Tag class:list={twMerge(headingClasses, classList)} {id} {...attrs}>
-        <slot />
+        <Fragment set:html={text} />
       </Tag>
 
       <a
@@ -59,7 +61,7 @@ const Tag = `h${level}` as const;
     </div>
   ) : (
     <Tag class:list={twMerge(headingClasses, classList)} {id} {...attrs}>
-      <slot />
+      <Fragment set:html={text} />
     </Tag>
   )
 }

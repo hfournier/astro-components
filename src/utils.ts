@@ -42,3 +42,16 @@ export const isCurrentPath = (
     ? path === "/"
     : path === target || path.startsWith(`${target}/`);
 };
+
+/**
+ * Unwraps rendered slot HTML that is a single paragraph. In MDX, a component's children that
+ * start on their own line (`<Button>\n  Label\n</Button>`) are parsed as a Markdown paragraph,
+ * so a component that only holds inline text would otherwise render a `<p>` inside it.
+ *
+ * @param html - Rendered slot HTML, e.g. from `await Astro.slots.render("default")`.
+ * @returns The paragraph's content when `html` is exactly one `<p>`, otherwise `html` unchanged.
+ */
+export const unwrapParagraph = (html: string) => {
+  const content = html.match(/^\s*<p\b[^>]*>([\s\S]*)<\/p>\s*$/)?.[1];
+  return content !== undefined && !/<\/?p\b/.test(content) ? content : html;
+};

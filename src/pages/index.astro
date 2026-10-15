@@ -54,12 +54,12 @@ import DialogConfirm from "../components/DialogConfirm.astro";
 const components = [
   { name: "Aside", id: "aside", needs: ["BaseWrapper"], shared: ["types"] },
   { name: "Badge", id: "badge", needs: [], shared: [] },
-  { name: "Button", id: "button", needs: [], shared: [] },
+  { name: "Button", id: "button", needs: [], shared: ["utils"] },
   {
     name: "ButtonIcon",
     id: "button-icon",
     needs: ["Icon", "Tooltip", "BaseWrapper"],
-    shared: ["types", "icons"],
+    shared: ["types", "icons", "utils"],
   },
   {
     name: "Details",
@@ -85,7 +85,7 @@ const components = [
       "Header",
       "Icon",
     ],
-    shared: ["types", "icons"],
+    shared: ["types", "icons", "utils"],
   },
   {
     name: "DialogConfirm",
@@ -99,7 +99,7 @@ const components = [
       "Header",
       "Icon",
     ],
-    shared: ["types", "icons"],
+    shared: ["types", "icons", "utils"],
   },
   { name: "Divider", id: "divider", needs: [], shared: [] },
   { name: "Fab", id: "fab", needs: ["Icon"], shared: ["icons"] },
@@ -109,15 +109,16 @@ const components = [
     name: "Heading",
     id: "heading",
     needs: ["Icon"],
-    shared: ["types", "icons"],
+    shared: ["types", "icons", "utils"],
   },
   { name: "Icon", id: "icon", needs: [], shared: ["icons"] },
-  { name: "Link", id: "link", needs: [], shared: [] },
+  { name: "Link", id: "link", needs: [], shared: ["utils"] },
+  { name: "Main", id: "main", needs: ["BaseWrapper"], shared: ["types"] },
   {
     name: "MenuToggle",
     id: "menu-toggle",
     needs: ["ButtonIcon", "Icon", "Tooltip", "BaseWrapper"],
-    shared: ["types", "icons"],
+    shared: ["types", "icons", "utils"],
   },
   {
     name: "NavBar",
@@ -129,31 +130,31 @@ const components = [
     name: "NavBarItem",
     id: "nav-bar-item",
     needs: ["Badge", "Icon"],
-    shared: ["icons"],
+    shared: ["icons", "utils"],
   },
   {
     name: "NavDrawer",
     id: "nav-drawer",
     needs: ["BaseWrapper"],
-    shared: ["types"],
+    shared: ["types", "utils"],
   },
   {
     name: "NavRail",
     id: "nav-rail",
     needs: ["MenuToggle", "ButtonIcon", "Icon", "Tooltip", "BaseWrapper"],
-    shared: ["types", "icons"],
+    shared: ["types", "icons", "utils"],
   },
   {
     name: "NavRailItem",
     id: "nav-rail-item",
     needs: ["Badge", "Icon"],
-    shared: ["icons"],
+    shared: ["icons", "utils"],
   },
   {
     name: "NavRailSubItems",
     id: "nav-rail-sub-items",
     needs: ["NavDrawerItem", "Divider", "Icon"],
-    shared: ["icons"],
+    shared: ["icons", "utils"],
   },
   {
     name: "Popover",
@@ -163,10 +164,22 @@ const components = [
   },
   { name: "Section", id: "section", needs: ["BaseWrapper"], shared: ["types"] },
   {
+    name: "SheetBottom",
+    id: "sheet-bottom",
+    needs: ["BaseWrapper"],
+    shared: ["types"],
+  },
+  {
+    name: "SheetSide",
+    id: "sheet-side",
+    needs: ["BaseWrapper", "ButtonIcon", "Icon", "Tooltip"],
+    shared: ["types", "icons", "utils"],
+  },
+  {
     name: "SkipToContent",
     id: "skip-to-content",
     needs: ["Button"],
-    shared: [],
+    shared: ["utils"],
   },
   {
     name: "Tabs / Tab",
@@ -174,13 +187,19 @@ const components = [
     needs: ["Tab", "TabList", "TabPanels", "Badge", "BaseWrapper", "Icon"],
     shared: ["types", "icons", "ultrahtml"],
   },
-  { name: "Tooltip", id: "tooltip", needs: ["BaseWrapper"], shared: ["types"] },
+  {
+    name: "Tooltip",
+    id: "tooltip",
+    needs: ["BaseWrapper"],
+    shared: ["types", "utils"],
+  },
 ];
 
 const sharedLabels: Record<string, string> = {
   types: "src/types.ts",
   icons: "icons",
   ultrahtml: "ultrahtml",
+  utils: "src/utils.ts",
 };
 ---
 
@@ -325,6 +344,12 @@ const sharedLabels: Record<string, string> = {
           holds types for this documentation site that import from
           <code>astro:content</code> (<code>PropWithHeadingType</code>,
           <code>SlotWithHeadingType</code>); delete those two and that import.
+        </Li>
+        <Li>
+          <strong><code>src/utils.ts</code></strong>: shared helpers, such as
+          matching the current page for navigation items, and unwrapping the
+          paragraph MDX adds around text written on its own line inside a
+          component.
         </Li>
         <Li>
           <strong>icons</strong>: <code>src/svgs/</code> (the icon names and loader)
