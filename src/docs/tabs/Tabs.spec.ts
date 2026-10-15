@@ -1,5 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "../../test/a11y-fixture";
+import { collectTabs } from "../../tabs";
 import {
   box,
   expectFocusRing,
@@ -255,5 +256,58 @@ test.describe("Tabs", () => {
     // the dot sits inside the icon's top-end corner
     expect(icon.x + icon.width - dot.x).toBeCloseTo(6, 0);
     expect(dot.y + dot.height - icon.y).toBeCloseTo(6, 0);
+  });
+});
+
+// Tabs builds its tablist from the Tabs it finds as direct children of its slot. No browser
+// work: these drive that parsing step on rendered slot HTML, as Tab renders it.
+test.describe("Tabs slot", () => {
+  const tab = (label: string, extra = "") =>
+    `<div role="tabpanel" data-ac-tabpanel data-ac-tab-label="${label}"${extra}><p>${label} content</p></div>`;
+
+  test("collects each Tab's label, icon and badge, and links it to its tab", async () => {
+    const { tabs, tabContents } = await collectTabs(
+      `\n  ${tab("One", ' data-ac-tab-icon="home" data-ac-tab-badge="3"')}\n  <!-- note -->\n  ${tab("Two")}\n`,
+      "id"
+    );
+
+    expect(tabs).toEqual([
+      { label: "One", icon: "home", badgeLabel: "3" },
+      { label: "Two", icon: undefined, badgeLabel: undefined },
+    ]);
+    expect(tabContents).toHaveLength(2);
+    expect(tabContents[0]).toContain('id="tabpanel-id-1"');
+    expect(tabContents[0]).toContain('aria-labelledby="tab-id-1"');
+    expect(tabContents[0]).not.toContain("hidden");
+    expect(tabContents[1]).toContain('id="tabpanel-id-2"');
+    expect(tabContents[1]).toContain("hidden");
+    expect(tabContents.join("")).not.toContain("data-ac-tab-");
+  });
+
+  test("throws when there are no Tabs", async () => {
+    await expect(collectTabs("", "id")).rejects.toThrow(
+      /Tabs: .*at least one Tab/
+    );
+    await expect(collectTabs("\n  <!-- none -->\n", "id")).rejects.toThrow(
+      /Tabs: .*at least one Tab/
+    );
+  });
+
+  test("throws when a Tab is wrapped in another element", async () => {
+    await expect(
+      collectTabs(`${tab("One")}<div class="wrap">${tab("Two")}</div>`, "id")
+    ).rejects.toThrow(/Tabs: .*<div>.*direct child/);
+  });
+
+  test("throws on other top-level elements, naming them", async () => {
+    await expect(
+      collectTabs(`<h2>Heading</h2>${tab("One")}`, "id")
+    ).rejects.toThrow(/Tabs: .*<h2>/);
+  });
+
+  test("throws on top-level text, quoting it", async () => {
+    await expect(
+      collectTabs(`${tab("One")}\n  stray words here\n`, "id")
+    ).rejects.toThrow(/Tabs: .*"stray words here"/);
   });
 });
