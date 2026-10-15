@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test";
-import { test, expect } from "../../test/a11y-fixture";
+import { test, expect } from "../../tests/support/a11y-fixture";
 
 // BaseLayout renders exactly one SkipToContent, as the first element in <body>,
 // on every page - the homepage has no other instance competing for the name.

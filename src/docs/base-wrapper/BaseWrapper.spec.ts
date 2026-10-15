@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
-import { test, expect } from "../../test/a11y-fixture";
-import { colorInside, resolvedColor } from "../../test/helpers";
+import { test, expect } from "../../tests/support/a11y-fixture";
+import { colorInside, resolvedColor } from "../../tests/support/helpers";
 
 // One background role from each of BaseWrapper's pairing rules, with the "on" role its text
 // takes and the role links and focus rings switch to there: surfaces keep primary links and

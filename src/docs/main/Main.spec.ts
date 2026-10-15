@@ -1,4 +1,4 @@
-import { test, expect } from "../../test/a11y-fixture";
+import { test, expect } from "../../tests/support/a11y-fixture";
 
 // Main is BaseWrapper with `as` fixed to <main>; BaseWrapper.spec.ts covers every background role.
 // A page has only one <main>, so Main has no live preview: this file checks the one every page

@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test";
-import { test, expect } from "../../test/a11y-fixture";
+import { test, expect } from "../../tests/support/a11y-fixture";
 
 // The "Badges" example's NavBar: Inbox (3, current), Updates (a dot), Chat (1500) and Archive (0).
 // An item with a count renders it twice, on the icon (below medium) and after the label (from

@@ -1,6 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
-import { test, expect } from "../../test/a11y-fixture";
-import { expectFocusRing, resolvedColor } from "../../test/helpers";
+import { test, expect } from "../../tests/support/a11y-fixture";
+import { expectFocusRing, resolvedColor } from "../../tests/support/helpers";
 
 // Keyboard activation (focus + Enter) rather than a real pointer click, matching Dialog.spec.ts:
 // a real click leaves the cursor hovering the element (its state layer showing) and can leave

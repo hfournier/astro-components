@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
-import { test, expect } from "../../test/a11y-fixture";
-import { box, resolvedColor } from "../../test/helpers";
+import { test, expect } from "../../tests/support/a11y-fixture";
+import { box, resolvedColor } from "../../tests/support/helpers";
 
 // Each live Badge sits in its own CodePreview (data-testid="code-preview") beside the Icon it's
 // anchored to, and is the only aria-hidden <span> there. Previews are told apart by the

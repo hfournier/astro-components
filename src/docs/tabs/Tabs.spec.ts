@@ -1,11 +1,11 @@
 import type { Locator, Page } from "@playwright/test";
-import { test, expect } from "../../test/a11y-fixture";
+import { test, expect } from "../../tests/support/a11y-fixture";
 import {
   box,
   expectFocusRing,
   resolvedColor,
   textBox,
-} from "../../test/helpers";
+} from "../../tests/support/helpers";
 
 async function indicatorRect(
   page: Page
