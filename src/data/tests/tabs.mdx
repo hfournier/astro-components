@@ -168,3 +168,16 @@ description: Tests for the Tabs component
       </Tab>
   </Tabs>
 </Section>
+<Section class="p-4 space-y-4">
+  <Heading level={2}>MDX spacing and comments</Heading>
+  <Tabs>
+<Tab label="Flush">Written flush with the margin.</Tab>
+
+    {/* an MDX comment between Tabs */}
+
+    <Tab label="Own line">
+      Text on its own line, which MDX wraps in a paragraph inside the Tab.
+    </Tab>
+    <Tab label="Indented">Indented like the Tabs around it.</Tab>
+  </Tabs>
+</Section>

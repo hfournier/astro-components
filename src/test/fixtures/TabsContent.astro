@@ -1,0 +1,49 @@
+---
+// Tabs with each kind of slot content it accepts or rejects, rendered one at a time by
+// src/pages/tests/tabs-content.astro so the throwing cases can't break the page around them.
+import Tabs from "../../components/Tabs.astro";
+import Tab from "../../components/Tab.astro";
+
+type Props = {
+  content: "comments" | "element" | "empty" | "text" | "wrapped";
+};
+const { content } = Astro.props;
+---
+
+{
+  content === "comments" && (
+    <Tabs>
+      <Fragment set:html="<!-- before -->" />
+      <Tab label="One">One</Tab>
+      <Fragment set:html="<!-- between -->" />
+      <Tab label="Two">Two</Tab>
+    </Tabs>
+  )
+}
+{
+  content === "element" && (
+    <Tabs>
+      <h2>Heading</h2>
+      <Tab label="One">One</Tab>
+    </Tabs>
+  )
+}
+{content === "empty" && <Tabs />}
+{
+  content === "text" && (
+    <Tabs>
+      <Tab label="One">One</Tab>
+      Some stray words
+    </Tabs>
+  )
+}
+{
+  content === "wrapped" && (
+    <Tabs>
+      <Tab label="One">One</Tab>
+      <div>
+        <Tab label="Two">Two</Tab>
+      </div>
+    </Tabs>
+  )
+}

@@ -257,3 +257,52 @@ test.describe("Tabs", () => {
     expect(dot.y + dot.height - icon.y).toBeCloseTo(6, 0);
   });
 });
+
+// Tabs finds its Tabs among its slot's top-level nodes. Anything else there throws, so it can't be
+// silently dropped from the page; /tests/tabs-content renders each kind of content and lists what
+// it rendered or the error it threw.
+test.describe("Tabs content", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/tests/tabs-content");
+  });
+
+  const outcome = (page: Page, content: string) =>
+    page.getByTestId(`tabs-content-${content}`);
+
+  test("ignores comments between its Tabs", async ({ page }) => {
+    await expect(outcome(page, "comments")).toHaveText("rendered 2 tabs");
+  });
+
+  test("throws when it has no Tabs", async ({ page }) => {
+    await expect(outcome(page, "empty")).toHaveText(
+      "Tabs: expected at least one Tab as a direct child, but found none."
+    );
+  });
+
+  test("throws on a Tab wrapped in another element", async ({ page }) => {
+    await expect(outcome(page, "wrapped")).toHaveText(
+      /^Tabs: found a Tab wrapped in <div>, .*direct child/
+    );
+  });
+
+  test("throws on another element, naming it", async ({ page }) => {
+    await expect(outcome(page, "element")).toHaveText(
+      /^Tabs: found <h2>, but only Tab components can go in Tabs/
+    );
+  });
+
+  test("throws on text, quoting it", async ({ page }) => {
+    await expect(outcome(page, "text")).toHaveText(
+      /^Tabs: found "Some stray words", /
+    );
+  });
+
+  // MDX turns text on its own line into a paragraph, and the paragraph is what Tabs sees
+  test("in MDX, its Tabs can be spaced out and commented", async ({ page }) => {
+    await page.goto("/tests/tabs");
+    const section = page
+      .getByRole("heading", { name: "MDX spacing and comments" })
+      .locator("xpath=following-sibling::*[1]");
+    await expect(section.getByRole("tab")).toHaveCount(3);
+  });
+});
