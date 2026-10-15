@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test";
-import { test, expect } from "../../test/a11y-fixture";
+import { test, expect } from "../../tests/support/a11y-fixture";
 
 // A NavRail can't be previewed live without taking over the site's own, so this checks the one
 // in BaseLayout, on a component page: a rail that isn't expandable (its sub-items are in a

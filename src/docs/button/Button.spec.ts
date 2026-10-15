@@ -1,6 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
-import { test, expect } from "../../test/a11y-fixture";
-import { box, expectFocusRing, resolvedColor } from "../../test/helpers";
+import { test, expect } from "../../tests/support/a11y-fixture";
+import { box, expectFocusRing, resolvedColor } from "../../tests/support/helpers";
 
 const VARIANTS = ["Elevated", "Filled", "Tonal", "Outlined", "Text"] as const;
 

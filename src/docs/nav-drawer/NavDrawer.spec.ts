@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test";
-import { test, expect } from "../../test/a11y-fixture";
+import { test, expect } from "../../tests/support/a11y-fixture";
 
 // A NavDrawer can't be previewed live without taking over the site's own, so this checks the one
 // in BaseLayout, on a component page. It holds a section for each NavRail destination: "/" (no

@@ -1,5 +1,5 @@
 import type { Locator, Page } from "@playwright/test";
-import { test, expect } from "../../test/a11y-fixture";
+import { test, expect } from "../../tests/support/a11y-fixture";
 
 // The usage example's MenuToggle is the only one inside a CodePreview; the site's own rail has
 // another, outside it.

@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
-import { test, expect } from "../../test/a11y-fixture";
-import { resolvedColor } from "../../test/helpers";
+import { test, expect } from "../../tests/support/a11y-fixture";
+import { resolvedColor } from "../../tests/support/helpers";
 
 // Header is BaseWrapper with `as` fixed to <header>; BaseWrapper.spec.ts covers every background role.
 // This file keeps only what's Header's own: the element it renders and passing props through.

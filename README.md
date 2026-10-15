@@ -89,13 +89,13 @@ component color roles that background roles re-point) is hand-written in
 ├── src/
 │   ├── assets/svgs/       # Material Symbols icon files used by Icon
 │   ├── components/        # the components, flat, as they're copied into a project
-│   ├── data/tests/        # visual test pages, rendered at /tests/<id>
 │   ├── docs/              # one folder per component: documentation, usage, examples, specs
 │   ├── internal/          # docs-site rendering helpers (table of contents, code preview, MDX renderers, ...)
 │   ├── layouts/           # BaseLayout.astro - header, nav rail and drawer, footer
 │   ├── pages/             # routes: home, /components/[id], /colors (theme generator), /tests/[id]
 │   ├── styles/            # global.css (entry point), colors.css (generated M3 colors), theme.css (hand-written tokens)
 │   ├── svgs/              # icon name list (SvgIconNameTypes) and the SVG loader Icon uses
+│   ├── tests/             # test pages (rendered at /tests/<id>), their fixtures, and the shared Playwright harness (support/)
 │   ├── wip/               # components in progress, not yet documented
 │   ├── component-list.ts  # every component, exposed to MDX examples
 │   ├── content.config.ts  # Zod schemas for the components/usage/examples/tests content collections

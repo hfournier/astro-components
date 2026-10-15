@@ -87,7 +87,7 @@ const examples = defineCollection({
 });
 
 const tests = defineCollection({
-  loader: glob({ pattern: "**/*.mdx", base: "./src/data/tests" }),
+  loader: glob({ pattern: "**/*.mdx", base: "./src/tests" }),
   schema: z.object({
     title: z.string(),
     description: z.string(),

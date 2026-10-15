@@ -1,11 +1,11 @@
 ---
-// Renders Tabs with each kind of slot content (src/test/fixtures/TabsContent.astro) and lists the
+// Renders Tabs with each kind of slot content (src/tests/TabsContent.astro) and lists the
 // outcome: how many tabs it rendered, or the error it threw. A Tabs that throws would fail the
 // whole page and the build, so each case renders in its own container and its error is caught.
 import { experimental_AstroContainer } from "astro/container";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Main from "../../components/Main.astro";
-import TabsContent from "../../test/fixtures/TabsContent.astro";
+import TabsContent from "../../tests/TabsContent.astro";
 
 const container = await experimental_AstroContainer.create();
 const contents = ["comments", "element", "empty", "text", "wrapped"] as const;

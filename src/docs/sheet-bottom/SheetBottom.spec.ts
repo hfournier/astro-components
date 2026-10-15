@@ -1,6 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
-import { test, expect } from "../../test/a11y-fixture";
-import { box, resolvedColor } from "../../test/helpers";
+import { test, expect } from "../../tests/support/a11y-fixture";
+import { box, resolvedColor } from "../../tests/support/helpers";
 
 const opener = (page: Page, name: string) =>
   page.getByTestId("code-preview").getByRole("button", { name, exact: true });

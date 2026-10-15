@@ -1,12 +1,12 @@
 import type { Locator, Page } from "@playwright/test";
-import { test, expect } from "../../test/a11y-fixture";
+import { test, expect } from "../../tests/support/a11y-fixture";
 import {
   box,
   expectFocusRing,
   resolvedColor,
   settled,
   textBox,
-} from "../../test/helpers";
+} from "../../tests/support/helpers";
 
 // Activates a button via the keyboard rather than a real pointer click: a mouse click leaves the
 // cursor hovering the element (its state layer showing) and can leave :focus-visible unset on

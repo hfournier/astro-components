@@ -1,6 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
-import { test, expect } from "../../test/a11y-fixture";
-import { box, resolvedColor } from "../../test/helpers";
+import { test, expect } from "../../tests/support/a11y-fixture";
+import { box, resolvedColor } from "../../tests/support/helpers";
 
 // Every live Fab on /components/fab sits inside a CodePreview (data-testid="code-preview"); the
 // source block beside each preview is highlighted text, not real controls. A Fab's accessible
