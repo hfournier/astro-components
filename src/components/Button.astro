@@ -1,6 +1,7 @@
 ---
 import type { HTMLTag, Polymorphic } from "astro/types";
 import { twMerge } from "tailwind-merge";
+import { unwrapParagraph } from "../utils";
 
 // Astro's own polymorphic-component helper. Verified with a cleared `.astro` cache
 // (`rm -rf .astro && astro sync`), repeatedly, both internally and for every external consumer
@@ -43,6 +44,8 @@ const {
 // `type="button"` only makes sense - and only defaults - on a real <button>; an <a>'s `type`
 // attribute (rarely used) is a MIME-type hint, not a click-behavior enum, so it's left alone.
 const resolvedType = Tag === "button" ? (type ?? "button") : type;
+
+const label = unwrapParagraph(await Astro.slots.render("default"));
 
 // Size sets the height, padding and label type. M3 picks the label style by height
 // (ButtonDefaults.textStyleFor): Label Large below 56px, Title Medium at 56px (M3's Medium).
@@ -95,5 +98,5 @@ const shapeClasses = {
   type={resolvedType}
   {...attrs}
 >
-  <slot />
+  <Fragment set:html={label} />
 </Tag>

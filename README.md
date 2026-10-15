@@ -99,7 +99,8 @@ component color roles that background roles re-point) is hand-written in
 │   ├── wip/               # components in progress, not yet documented
 │   ├── component-list.ts  # every component, exposed to MDX examples
 │   ├── content.config.ts  # Zod schemas for the components/usage/examples/tests content collections
-│   └── types.ts           # shared prop types (background roles, variants, ...)
+│   ├── types.ts           # shared prop types (background roles, variants, ...)
+│   └── utils.ts           # shared helpers (current-path matching, MDX paragraph unwrapping, ...)
 ├── docs/
 │   ├── adr/               # architecture decision records
 │   └── agents/            # conventions for AI coding agents working in this repo

@@ -1,9 +1,11 @@
 ---
 import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
+import { unwrapParagraph } from "../utils";
 
 type Props = HTMLAttributes<"a">;
 const { class: classList, ...attrs } = Astro.props;
+const text = unwrapParagraph(await Astro.slots.render("default"));
 ---
 
 <a
@@ -14,5 +16,5 @@ const { class: classList, ...attrs } = Astro.props;
   )}
   {...attrs}
 >
-  <slot />
+  <Fragment set:html={text} />
 </a>
