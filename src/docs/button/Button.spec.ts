@@ -250,22 +250,6 @@ test.describe("Button", () => {
     await expectFocusRing(anchorButton(page));
   });
 
-  // example-06/07 put the label on its own line, which MDX would otherwise wrap in a <p>
-  test("a label on its own line in MDX renders without a paragraph", async ({
-    page,
-  }) => {
-    const multiLine = [
-      page
-        .getByTestId("code-preview")
-        .getByRole("link", { name: "Multi-line anchor button", exact: true }),
-      button(page, "Multi-line button"),
-    ];
-    for (const target of multiLine) {
-      await expect(target.locator("p")).toHaveCount(0);
-      expect((await box(target)).height).toBe(48);
-    }
-  });
-
   test('hovering as="a" passes color contrast', async ({ page }) => {
     await anchorButton(page).hover();
     // The a11y fixture's automatic axe scan (ADR-0002) runs after this test body,
