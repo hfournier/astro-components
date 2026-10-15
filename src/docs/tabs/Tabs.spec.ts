@@ -300,9 +300,8 @@ test.describe("Tabs content", () => {
   // MDX turns text on its own line into a paragraph, and the paragraph is what Tabs sees
   test("in MDX, its Tabs can be spaced out and commented", async ({ page }) => {
     await page.goto("/tests/tabs");
-    const section = page
-      .getByRole("heading", { name: "MDX spacing and comments" })
-      .locator("xpath=following-sibling::*[1]");
-    await expect(section.getByRole("tab")).toHaveCount(3);
+    await expect(
+      page.getByTestId("tabs-mdx-spacing-and-comments").getByRole("tab")
+    ).toHaveCount(3);
   });
 });

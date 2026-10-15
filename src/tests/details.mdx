@@ -5,7 +5,7 @@ description: Tests for the Details component
 
 <Heading level={1}>Details Tests</Heading>
 
-<Section class="p-4 space-y-4">
+<Section data-testid="details-default" class="p-4 space-y-4">
   <Heading level={2}>Default</Heading>
   <Details label="Details Heading">
     Lorem ipsum, dolor sit amet consectetur adipisicing elit. Itaque quis quibusdam, tempore consequuntur doloribus 
@@ -13,7 +13,7 @@ description: Tests for the Details component
   </Details>
 </Section>
 
-<Section class="p-4 space-y-4">
+<Section data-testid="details-initially-open" class="p-4 space-y-4">
   <Heading level={2}>Initially open</Heading>
   <Details label="Details Heading" open>
     Lorem ipsum, dolor sit amet consectetur adipisicing elit. Itaque quis quibusdam, tempore consequuntur doloribus 
@@ -21,7 +21,7 @@ description: Tests for the Details component
   </Details>
 </Section>
 
-<Section class="p-4 space-y-4">
+<Section data-testid="details-plain-variant" class="p-4 space-y-4">
   <Heading level={2}>Plain variant</Heading>
   <Details label="Details Heading" variant="plain">
     Lorem ipsum, dolor sit amet consectetur adipisicing elit. Itaque quis quibusdam, tempore consequuntur doloribus 
@@ -29,7 +29,7 @@ description: Tests for the Details component
   </Details>
 </Section>
 
-<Section class="p-4 space-y-4">
+<Section data-testid="details-multiple-open" class="p-4 space-y-4">
   <Heading level={2}>Multiple open</Heading>
   <Details label="Details Heading 1">
     Lorem ipsum, dolor sit amet consectetur adipisicing elit. Itaque quis quibusdam, tempore consequuntur doloribus 
@@ -45,7 +45,7 @@ description: Tests for the Details component
   </Details>
 </Section>
 
-<Section class="p-4 space-y-4">
+<Section data-testid="details-only-one-open" class="p-4 space-y-4">
   <Heading level={2}>Only one open</Heading>
   <Details label="Details Heading 1" name="only-one-example">
     Lorem ipsum, dolor sit amet consectetur adipisicing elit. Itaque quis quibusdam, tempore consequuntur doloribus 

@@ -5,7 +5,7 @@ description: Tests for the Tabs component
 
 <Heading level={1}>Tabs Tests</Heading>
 
-<Section class="p-4 space-y-4">
+<Section data-testid="tabs-default" class="p-4 space-y-4">
   <Heading level={2}>Default</Heading>
   <Tabs>
     <Tab label="Tab 1">
@@ -28,7 +28,7 @@ description: Tests for the Tabs component
   </Tabs>
 </Section>
 
-<Section class="p-4 space-y-4">
+<Section data-testid="tabs-icons" class="p-4 space-y-4">
   <Heading level={2}>Icons</Heading>
   <Tabs>
     <Tab label="Flights" icon="flight">
@@ -50,7 +50,7 @@ description: Tests for the Tabs component
   </Tabs>
 </Section>
 
-<Section class="p-4 space-y-4">
+<Section data-testid="tabs-icons-and-badges" class="p-4 space-y-4">
   <Heading level={2}>Icons and badges</Heading>
   <Tabs>
       <Tab label="Inbox" icon="inbox" badgeLabel="3">
@@ -65,7 +65,7 @@ description: Tests for the Tabs component
   </Tabs>
 </Section>
 
-<Section class="p-4 space-y-4">
+<Section data-testid="tabs-secondary-variant" class="p-4 space-y-4">
   <Heading level={2}>Secondary variant</Heading>
   <Tabs variant="secondary">
     <Tab label="Tab 1">
@@ -88,7 +88,7 @@ description: Tests for the Tabs component
   </Tabs>
 </Section>
 
-<Section class="p-4 space-y-4">
+<Section data-testid="tabs-secondary-variant-with-icons" class="p-4 space-y-4">
   <Heading level={2}>Secondary variant with icons</Heading>
   <Tabs variant="secondary">
       <Tab label="Flights" icon="flight">
@@ -110,7 +110,7 @@ description: Tests for the Tabs component
   </Tabs>
 </Section>
 
-<Section class="p-4 space-y-4">
+<Section data-testid="tabs-secondary-variant-with-icons-and-badges" class="p-4 space-y-4">
   <Heading level={2}>Secondary variant with icons and badges</Heading>
   <Tabs variant="secondary">
       <Tab label="Mentions" badgeLabel="1500">
@@ -125,7 +125,7 @@ description: Tests for the Tabs component
   </Tabs>
 </Section>
 
-<Section class="p-4 space-y-4">
+<Section data-testid="tabs-transition-slide-left" class="p-4 space-y-4">
   <Heading level={2}>Transition - slide-left</Heading>
   <Tabs>
       <Tab label="Tab 1" transition="slide-left">
@@ -147,7 +147,7 @@ description: Tests for the Tabs component
   </Tabs>
 </Section>
 
-<Section class="p-4 space-y-4">
+<Section data-testid="tabs-transition-fade-up" class="p-4 space-y-4">
   <Heading level={2}>Transition - fade-up</Heading>
   <Tabs>
       <Tab label="Tab 1" transition="fade-up">
@@ -168,7 +168,7 @@ description: Tests for the Tabs component
       </Tab>
   </Tabs>
 </Section>
-<Section class="p-4 space-y-4">
+<Section data-testid="tabs-mdx-spacing-and-comments" class="p-4 space-y-4">
   <Heading level={2}>MDX spacing and comments</Heading>
   <Tabs>
 <Tab label="Flush">Written flush with the margin.</Tab>
