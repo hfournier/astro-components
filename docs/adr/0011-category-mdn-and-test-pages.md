@@ -1,6 +1,8 @@
 # Component category, MDN link, and visual test pages
 
 > **Extends ADR-0009 §4 and ADR-0010 §2**: the `components` collection's frontmatter gains a required `category` and an optional `mdn`, and `src/content.config.ts` gains a fourth collection, `tests`. Nothing in either ADR is withdrawn.
+>
+> **Point 3 extended by ADR-0015**: the `tests` collection moved to `src/tests/*.mdx`, and test pages are now also the fixtures component specs run against, so "They aren't automated tests either" no longer holds. Points 1-2 and the rest of point 3 still stand.
 
 With the component count growing past a dozen, a flat alphabetical sidebar stopped being a useful way to find anything, and component pages had no pointer to the platform documentation for the native element they build on. Separately, checking a component across every background role by eye needed a page that isn't one of its documented examples. We decided:
 

@@ -25,7 +25,7 @@ src/docs/button/
 └── example-01-variants.mdx         # one file per named variant/scenario
 src/tests/
 ├── button.mdx                      # test page at /tests/button: the cases the spec runs against
-└── Button.spec.ts                  # Playwright + axe-core tests
+└── Button.spec.ts                  # Playwright + axe-core tests (most specs are still moving here from src/docs/, #78)
 ```
 
 `documentation.mdx` holds structured, machine-checkable frontmatter (props,
