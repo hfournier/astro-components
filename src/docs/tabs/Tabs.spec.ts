@@ -1,6 +1,5 @@
 import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "../../test/a11y-fixture";
-import { collectTabs } from "../../tabs";
 import {
   box,
   expectFocusRing,
@@ -259,55 +258,51 @@ test.describe("Tabs", () => {
   });
 });
 
-// Tabs builds its tablist from the Tabs it finds as direct children of its slot. No browser
-// work: these drive that parsing step on rendered slot HTML, as Tab renders it.
-test.describe("Tabs slot", () => {
-  const tab = (label: string, extra = "") =>
-    `<div role="tabpanel" data-ac-tabpanel data-ac-tab-label="${label}"${extra}><p>${label} content</p></div>`;
-
-  test("collects each Tab's label, icon and badge, and links it to its tab", async () => {
-    const { tabs, tabContents } = await collectTabs(
-      `\n  ${tab("One", ' data-ac-tab-icon="home" data-ac-tab-badge="3"')}\n  <!-- note -->\n  ${tab("Two")}\n`,
-      "id"
-    );
-
-    expect(tabs).toEqual([
-      { label: "One", icon: "home", badgeLabel: "3" },
-      { label: "Two", icon: undefined, badgeLabel: undefined },
-    ]);
-    expect(tabContents).toHaveLength(2);
-    expect(tabContents[0]).toContain('id="tabpanel-id-1"');
-    expect(tabContents[0]).toContain('aria-labelledby="tab-id-1"');
-    expect(tabContents[0]).not.toContain("hidden");
-    expect(tabContents[1]).toContain('id="tabpanel-id-2"');
-    expect(tabContents[1]).toContain("hidden");
-    expect(tabContents.join("")).not.toContain("data-ac-tab-");
+// Tabs finds its Tabs among its slot's top-level nodes. Anything else there throws, so it can't be
+// silently dropped from the page; /tests/tabs-content renders each kind of content and lists what
+// it rendered or the error it threw.
+test.describe("Tabs content", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/tests/tabs-content");
   });
 
-  test("throws when there are no Tabs", async () => {
-    await expect(collectTabs("", "id")).rejects.toThrow(
-      /Tabs: .*at least one Tab/
-    );
-    await expect(collectTabs("\n  <!-- none -->\n", "id")).rejects.toThrow(
-      /Tabs: .*at least one Tab/
+  const outcome = (page: Page, content: string) =>
+    page.getByTestId(`tabs-content-${content}`);
+
+  test("ignores comments between its Tabs", async ({ page }) => {
+    await expect(outcome(page, "comments")).toHaveText("rendered 2 tabs");
+  });
+
+  test("throws when it has no Tabs", async ({ page }) => {
+    await expect(outcome(page, "empty")).toHaveText(
+      "Tabs: expected at least one Tab as a direct child, but found none."
     );
   });
 
-  test("throws when a Tab is wrapped in another element", async () => {
-    await expect(
-      collectTabs(`${tab("One")}<div class="wrap">${tab("Two")}</div>`, "id")
-    ).rejects.toThrow(/Tabs: .*<div>.*direct child/);
+  test("throws on a Tab wrapped in another element", async ({ page }) => {
+    await expect(outcome(page, "wrapped")).toHaveText(
+      /^Tabs: found a Tab wrapped in <div>, .*direct child/
+    );
   });
 
-  test("throws on other top-level elements, naming them", async () => {
-    await expect(
-      collectTabs(`<h2>Heading</h2>${tab("One")}`, "id")
-    ).rejects.toThrow(/Tabs: .*<h2>/);
+  test("throws on another element, naming it", async ({ page }) => {
+    await expect(outcome(page, "element")).toHaveText(
+      /^Tabs: found <h2>, but only Tab components can go in Tabs/
+    );
   });
 
-  test("throws on top-level text, quoting it", async () => {
-    await expect(
-      collectTabs(`${tab("One")}\n  stray words here\n`, "id")
-    ).rejects.toThrow(/Tabs: .*"stray words here"/);
+  test("throws on text, quoting it", async ({ page }) => {
+    await expect(outcome(page, "text")).toHaveText(
+      /^Tabs: found "Some stray words", /
+    );
+  });
+
+  // MDX turns text on its own line into a paragraph, and the paragraph is what Tabs sees
+  test("in MDX, its Tabs can be spaced out and commented", async ({ page }) => {
+    await page.goto("/tests/tabs");
+    const section = page
+      .getByRole("heading", { name: "MDX spacing and comments" })
+      .locator("xpath=following-sibling::*[1]");
+    await expect(section.getByRole("tab")).toHaveCount(3);
   });
 });

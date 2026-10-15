@@ -1,12 +1,21 @@
 ---
 import type { ComponentProps } from "astro/types";
+import {
+  COMMENT_NODE,
+  ELEMENT_NODE,
+  TEXT_NODE,
+  parse,
+  render,
+  walkSync,
+  type Node,
+} from "ultrahtml";
 import crypto from "node:crypto";
 import { twMerge } from "tailwind-merge";
 import TabList from "./TabList.astro";
 import TabPanels from "./TabPanels.astro";
 import BaseWrapper from "./BaseWrapper.astro";
-import { collectTabs } from "../tabs";
-import type { TabVariantType } from "../types";
+import type { TabType, TabVariantType } from "../types";
+import type { SvgIconNameTypes } from "../svgs";
 
 type BaseWrapperProps = ComponentProps<typeof BaseWrapper>;
 
@@ -16,11 +25,60 @@ type Props = Omit<BaseWrapperProps, "as"> & {
 
 const { variant = "primary", class: classList, ...attrs } = Astro.props;
 
+const slot = Astro.slots.has("default")
+  ? await Astro.slots.render("default")
+  : "";
+
 const randomId = crypto.randomUUID();
-const { tabs, tabContents } = await collectTabs(
-  await Astro.slots.render("default"),
-  randomId
-);
+const tabs: TabType[] = [];
+const tabContents: string[] = [];
+const isTabPanel = (node: Node) =>
+  node.type === ELEMENT_NODE &&
+  node.attributes["data-ac-tabpanel"] !== undefined;
+
+// Each Tab must be a direct child: Tabs finds them among the slot's top-level nodes, so anything
+// else there (other than whitespace and comments) throws rather than being dropped from the page
+for (const node of parse(slot).children as Node[]) {
+  if (node.type === COMMENT_NODE) continue;
+  if (node.type === TEXT_NODE && node.value.trim() === "") continue;
+  if (!isTabPanel(node)) {
+    let hasTab = false;
+    walkSync(node, (child) => {
+      hasTab ||= isTabPanel(child);
+    });
+    const found =
+      node.type === ELEMENT_NODE
+        ? `${hasTab ? "a Tab wrapped in " : ""}<${node.name}>`
+        : `"${node.value.trim().replace(/\s+/g, " ").slice(0, 40)}"`;
+    throw new Error(
+      `Tabs: found ${found}, but only Tab components can go in Tabs, each as a direct child (not wrapped in another element or component).`
+    );
+  }
+
+  // connect the tabpanel to its tab button, numbered from 1
+  const tabIndex = tabs.length + 1;
+  node.attributes["id"] = `tabpanel-${randomId}-${tabIndex}`;
+  if (tabIndex !== 1) {
+    node.attributes["hidden"] = "true";
+  }
+  node.attributes["aria-labelledby"] = `tab-${randomId}-${tabIndex}`;
+  // build an array of tab labels, then strip the build-time marker attributes
+  tabs.push({
+    label: node.attributes["data-ac-tab-label"] || "",
+    badgeLabel: node.attributes["data-ac-tab-badge"],
+    icon: node.attributes["data-ac-tab-icon"] as SvgIconNameTypes,
+  });
+  delete node.attributes["data-ac-tab-label"];
+  delete node.attributes["data-ac-tab-badge"];
+  delete node.attributes["data-ac-tab-icon"];
+  tabContents.push(await render(node));
+}
+
+if (tabs.length === 0) {
+  throw new Error(
+    "Tabs: expected at least one Tab as a direct child, but found none."
+  );
+}
 ---
 
 <BaseWrapper
