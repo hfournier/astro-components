@@ -79,7 +79,11 @@ const { icon, headline, label, id, class: classList, ...attrs } = Astro.props;
 
   {
     Astro.slots.has("actions") && (
-      <Footer bgColor="transparent" class="pt-6" role="none">
+      <Footer
+        bgColor="transparent"
+        class="flex items-center justify-end gap-2 pt-6"
+        role="none"
+      >
         <slot name="actions" />
       </Footer>
     )

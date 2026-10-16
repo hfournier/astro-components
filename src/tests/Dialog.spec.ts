@@ -154,6 +154,19 @@ test.describe("Dialog", () => {
     expect(action.y - (content.y + content.height)).toBe(24);
   });
 
+  test("lays out a bare Button in its actions slot end-aligned, in a <footer>", async ({
+    page,
+  }) => {
+    await activate(openDialog(page));
+    await settled(page);
+
+    const dialog = basicDialog(page);
+    const panel = await box(dialog.locator("> div"));
+    const close = dialog.locator("footer").getByRole("button", { name: "Close" });
+    const action = await box(close);
+    expect(panel.x + panel.width - (action.x + action.width)).toBe(24);
+  });
+
   test("headline and supporting text use M3's color roles, and only the supporting text scrolls", async ({
     page,
   }) => {
@@ -210,6 +223,20 @@ test.describe("DialogConfirm", () => {
     const buttons = dialogIn(page, "confirm").getByRole("button");
     await expect(buttons).toHaveText(["Cancel", "Discard"]);
     await expect(buttons.first()).toBeFocused();
+  });
+
+  test("puts its actions in one row, 8px apart, not in a list", async ({
+    page,
+  }) => {
+    await activate(trigger(page, "confirm", "Open Confirm Dialog"));
+    await settled(page);
+
+    const dialog = dialogIn(page, "confirm");
+    const dismiss = await box(dialog.getByRole("button", { name: "Cancel" }));
+    const confirm = await box(dialog.getByRole("button", { name: "Discard" }));
+    expect(confirm.y).toBe(dismiss.y);
+    expect(confirm.x - (dismiss.x + dismiss.width)).toBe(8);
+    await expect(dialog.getByRole("list")).toHaveCount(0);
   });
 
   test("a reflexive Enter dismisses like Escape: fires cancel and returns focus", async ({

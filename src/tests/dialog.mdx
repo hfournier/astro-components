@@ -12,11 +12,7 @@ description: Tests for the Dialog, DialogConfirm and DialogAcknowledge component
   <Dialog id="basic-dialog" headline="Dialog headline">
     Dialog supporting text.
 
-    <menu class="flex items-center justify-end gap-2" slot="actions">
-      <li>
-        <Button command="close" commandfor="basic-dialog" size="sm" variant="text">Close</Button>
-      </li>
-    </menu>
+    <Button slot="actions" command="close" commandfor="basic-dialog" size="sm" variant="text">Close</Button>
 
   </Dialog>
 </Section>

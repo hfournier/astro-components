@@ -20,19 +20,16 @@ const { id, buttonAcknowledge, ...attrs } = Astro.props;
 <Dialog {id} role="alertdialog" aria-describedby={`${id}-content`} {...attrs}>
   <slot />
 
-  <menu class="flex items-center justify-end gap-2" slot="actions">
-    <li>
-      <Button
-        command="close"
-        commandfor={id}
-        id={buttonAcknowledge.id}
-        value={buttonAcknowledge.value}
-        autofocus
-        size="sm"
-        variant="text"
-      >
-        {buttonAcknowledge.text}
-      </Button>
-    </li>
-  </menu>
+  <Button
+    slot="actions"
+    command="close"
+    commandfor={id}
+    id={buttonAcknowledge.id}
+    value={buttonAcknowledge.value}
+    autofocus
+    size="sm"
+    variant="text"
+  >
+    {buttonAcknowledge.text}
+  </Button>
 </Dialog>
