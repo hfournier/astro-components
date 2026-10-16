@@ -1,0 +1,49 @@
+---
+title: ButtonIcon
+description: Tests for the ButtonIcon component
+---
+
+<Heading level={1}>ButtonIcon Tests</Heading>
+
+<Section data-testid="button-icon-no-props" class="p-4 space-y-4">
+  <Heading level={2}>No props</Heading>
+  <ButtonIcon icon="settings" label="Settings" />
+</Section>
+
+<Section data-testid="button-icon-sizes" class="p-4 space-y-4">
+  <Heading level={2}>Sizes</Heading>
+  <div class="flex flex-wrap items-center gap-2">
+    <ButtonIcon icon="favorite" label="Favorite xs" size="xs" variant="tonal" />
+    <ButtonIcon icon="favorite" label="Favorite sm" size="sm" variant="tonal" />
+    <ButtonIcon icon="favorite" label="Favorite md" size="md" variant="tonal" />
+    <ButtonIcon icon="favorite" label="Favorite lg" size="lg" variant="tonal" />
+    <ButtonIcon icon="favorite" label="Favorite xl" size="xl" variant="tonal" />
+  </div>
+</Section>
+
+<Section data-testid="button-icon-shapes" class="p-4 space-y-4">
+  <Heading level={2}>Shapes</Heading>
+  <div class="flex flex-wrap items-center gap-2">
+    <ButtonIcon icon="share" label="Share round" shape="round" size="md" variant="filled" />
+    <ButtonIcon icon="share" label="Share square" shape="square" size="md" variant="filled" />
+  </div>
+</Section>
+
+<Section data-testid="button-icon-widths" class="p-4 space-y-4">
+  <Heading level={2}>Widths</Heading>
+  <div class="flex flex-wrap items-center gap-2">
+    <ButtonIcon icon="share" label="Share narrow" size="md" variant="filled" width="narrow" />
+    <ButtonIcon icon="share" label="Share default" size="md" variant="filled" width="default" />
+    <ButtonIcon icon="share" label="Share wide" size="md" variant="filled" width="wide" />
+  </div>
+</Section>
+
+<Section data-testid="button-icon-toggle" class="p-4 space-y-4">
+  <Heading level={2}>Toggle</Heading>
+  <ButtonIcon icon="bookmark" label="Bookmark" selectedIcon="bookmark-fill" isToggle variant="filled" />
+</Section>
+
+<Section data-testid="button-icon-toggle-selected" class="p-4 space-y-4">
+  <Heading level={2}>Toggle selected</Heading>
+  <ButtonIcon icon="bookmark" label="Bookmark" selectedIcon="bookmark-fill" isToggle isSelected variant="filled" />
+</Section>
