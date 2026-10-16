@@ -1,0 +1,41 @@
+---
+title: Fab
+description: Tests for the Fab component
+---
+
+<Heading level={1}>Fab Tests</Heading>
+
+<Section data-testid="fab-no-props" class="p-4 space-y-4">
+  <Heading level={2}>No props</Heading>
+  <Fab icon="edit" label="Compose" />
+</Section>
+
+<Section data-testid="fab-colors" class="p-4 space-y-4">
+  <Heading level={2}>Colors</Heading>
+  <div class="flex flex-wrap items-center gap-4">
+    <Fab icon="add" label="Create primary-container" color="primary-container" />
+    <Fab icon="add" label="Create secondary-container" color="secondary-container" />
+    <Fab icon="add" label="Create tertiary-container" color="tertiary-container" />
+    <Fab icon="add" label="Create primary" color="primary" />
+    <Fab icon="add" label="Create secondary" color="secondary" />
+    <Fab icon="add" label="Create tertiary" color="tertiary" />
+  </div>
+</Section>
+
+<Section data-testid="fab-sizes" class="p-4 space-y-4">
+  <Heading level={2}>Sizes</Heading>
+  <div class="flex flex-wrap items-center gap-4">
+    <Fab icon="add" label="Create default" size="default" />
+    <Fab icon="add" label="Create md" size="md" />
+    <Fab icon="add" label="Create lg" size="lg" />
+  </div>
+</Section>
+
+<Section data-testid="fab-extended" class="p-4 space-y-4">
+  <Heading level={2}>Extended</Heading>
+  <div class="flex flex-wrap items-center gap-4">
+    <Fab icon="edit" label="Compose" isExtended />
+    <Fab icon="edit" label="Compose md" isExtended size="md" />
+    <Fab icon="edit" label="Compose lg" isExtended size="lg" />
+  </div>
+</Section>
