@@ -15,15 +15,17 @@ repo itself.
 
 Components live flat in `src/components/`, laid out exactly as they'd sit in
 your own project, so you can copy them as-is. Each component's documentation
-and tests live in a folder of their own under `src/docs/`:
+lives in a folder of its own under `src/docs/`, and its tests in `src/tests/`:
 
 ```
 src/components/Button.astro         # the component itself
 src/docs/button/
-├── Button.spec.ts                  # Playwright + axe-core tests
 ├── documentation.mdx               # name, description, role, category, prop manifest, slots
 ├── usage.mdx                       # baseline usage: prose + a live preview/source pair
 └── example-01-variants.mdx         # one file per named variant/scenario
+src/tests/
+├── button.mdx                      # test page at /tests/button: the cases the spec runs against
+└── Button.spec.ts                  # Playwright + axe-core tests (most specs are still moving here from src/docs/, #78)
 ```
 
 `documentation.mdx` holds structured, machine-checkable frontmatter (props,
@@ -89,13 +91,13 @@ component color roles that background roles re-point) is hand-written in
 ├── src/
 │   ├── assets/svgs/       # Material Symbols icon files used by Icon
 │   ├── components/        # the components, flat, as they're copied into a project
-│   ├── docs/              # one folder per component: documentation, usage, examples, specs
+│   ├── docs/              # one folder per component: documentation, usage, examples (specs are moving to tests/, see ADR-0015)
 │   ├── internal/          # docs-site rendering helpers (table of contents, code preview, MDX renderers, ...)
 │   ├── layouts/           # BaseLayout.astro - header, nav rail and drawer, footer
 │   ├── pages/             # routes: home, /components/[id], /colors (theme generator), /tests/[id]
 │   ├── styles/            # global.css (entry point), colors.css (generated M3 colors), theme.css (hand-written tokens)
 │   ├── svgs/              # icon name list (SvgIconNameTypes) and the SVG loader Icon uses
-│   ├── tests/             # test pages (rendered at /tests/<id>), their fixtures, and the shared Playwright harness (support/)
+│   ├── tests/             # test pages (rendered at /tests/<id>), the specs that drive them, fixtures, and the shared Playwright harness (support/)
 │   ├── wip/               # components in progress, not yet documented
 │   ├── component-list.ts  # every component, exposed to MDX examples
 │   ├── content.config.ts  # Zod schemas for the components/usage/examples/tests content collections
@@ -128,8 +130,12 @@ Tests run with Playwright across Chromium, Firefox, and WebKit, with
 `@axe-core/playwright` scanning every test's page for WCAG 2.2 AA violations
 (see [`docs/adr/0002-test-framework-and-a11y-tooling.md`](./docs/adr/0002-test-framework-and-a11y-tooling.md)
 and [`docs/accessibility-checklist.md`](./docs/accessibility-checklist.md)).
-Each component's `*.spec.ts` sits in its docs folder under `src/docs/`. The suite
-runs in light mode only.
+Each component's `*.spec.ts` sits in `src/tests/` beside its test page, which
+holds the cases it runs against; specs never target the docs examples, and one
+smoke spec (`src/internal/DocsPages.spec.ts`) checks every docs page with axe
+(see [`docs/adr/0015-specs-drive-test-pages.md`](./docs/adr/0015-specs-drive-test-pages.md)).
+Specs not yet migrated still sit in their docs folder under `src/docs/` (#78).
+The suite runs in light mode only.
 
 ## Stack
 

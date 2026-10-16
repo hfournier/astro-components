@@ -1,6 +1,8 @@
 # Components sit flat in src/components; their docs and specs move to src/docs
 
 > **Supersedes the folder layout assumed by ADR-0009 and ADR-0010**: a component's `.astro` file no longer shares a folder with its `documentation.mdx`, `usage.mdx`, `example-*.mdx` and `.spec.ts`. The file split and frontmatter those ADRs define are unchanged.
+>
+> **Point 2 updated by ADR-0015**: specs move out of `src/docs/<id>/` to `src/tests/<Name>.spec.ts`, beside the test pages they drive, so `src/docs/<id>/` holds documentation only. Point 1 still stands.
 
 Each component used to live in its own folder (`src/components/button/Button.astro`) next to the files that document and test it. That suited this site, but it isn't how anyone uses the components. A project that copies them in puts the `.astro` files straight into its own `src/components/`. Because components import each other by relative path (`../icon/Icon.astro`, `../../types`), a flat copy broke every import, and the getting-started guide had to tell users to recreate this repo's folders.
 
