@@ -10,10 +10,10 @@ type TooltipCaseId = "plain" | "rich";
 const tooltipCase = (page: Page, caseId: TooltipCaseId) =>
   page.getByTestId(`tooltip-${caseId}`);
 
-const plainParent = (page: Page) =>
+const plainTrigger = (page: Page) =>
   tooltipCase(page, "plain").getByRole("link", { name: "GitHub repository" });
 const plainTooltip = (page: Page) =>
-  plainParent(page).locator("[data-ac-tooltip]");
+  plainTrigger(page).locator("[data-ac-tooltip]");
 
 const richTrigger = (page: Page) =>
   tooltipCase(page, "rich").getByRole("button", { name: "About autosave" });
@@ -30,7 +30,7 @@ test.describe("Tooltip", () => {
 
   test.describe("plain", () => {
     test("is M3's 24px high plain tooltip", async ({ page }) => {
-      await plainParent(page).focus();
+      await plainTrigger(page).focus();
       await expect(plainTooltip(page)).toBeVisible();
 
       expect((await box(plainTooltip(page))).height).toBe(24);
@@ -45,7 +45,7 @@ test.describe("Tooltip", () => {
     });
 
     test("shows on hover after M3's delay", async ({ page }) => {
-      await plainParent(page).hover();
+      await plainTrigger(page).hover();
 
       await expect(plainTooltip(page)).toHaveCSS("transition-delay", /0\.5s/);
       await expect(plainTooltip(page)).toBeVisible();
@@ -54,13 +54,13 @@ test.describe("Tooltip", () => {
     test("shows straight away on keyboard focus, and Escape hides it in place", async ({
       page,
     }) => {
-      await plainParent(page).focus();
+      await plainTrigger(page).focus();
       await expect(plainTooltip(page)).toHaveCSS("transition-delay", /^0s/);
       await expect(plainTooltip(page)).toBeVisible();
 
       await page.keyboard.press("Escape");
       await expect(plainTooltip(page)).toBeHidden();
-      await expect(plainParent(page)).toBeFocused();
+      await expect(plainTrigger(page)).toBeFocused();
     });
 
     test("with reduced motion, keeps the hover delay but doesn't fade", async ({
@@ -73,7 +73,7 @@ test.describe("Tooltip", () => {
 
       expect(property).toContain("visibility");
       expect(property).not.toContain("opacity");
-      await plainParent(page).hover();
+      await plainTrigger(page).hover();
       await expect(plainTooltip(page)).toBeVisible();
     });
   });
