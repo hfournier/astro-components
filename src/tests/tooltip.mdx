@@ -1,0 +1,17 @@
+---
+title: Tooltip
+description: Tests for the Tooltip component
+---
+
+<Heading level={1}>Tooltip Tests</Heading>
+
+<Section data-testid="tooltip-plain" class="p-4 space-y-4">
+  <Heading level={2}>Plain</Heading>
+  <Link class="relative inline-flex" href="https://github.com/hfournier/astro-components" aria-label="GitHub repository"><Icon name="github" /><Tooltip>GitHub repository</Tooltip></Link>
+</Section>
+
+<Section data-testid="tooltip-rich" class="p-4 space-y-4">
+  <Heading level={2}>Rich</Heading>
+  <ButtonIcon id="rich-tooltip-trigger" icon="info" label="About autosave" showTooltip={false} variant="tonal" />
+  <Tooltip variant="rich" for="rich-tooltip-trigger" subhead="Autosave is on">Changes are saved as you type, so there's no need to save before you leave.<Button slot="actions" size="sm" variant="text">Learn more</Button></Tooltip>
+</Section>

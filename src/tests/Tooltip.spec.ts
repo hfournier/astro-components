@@ -1,26 +1,31 @@
 import type { Locator, Page } from "@playwright/test";
-import { test, expect } from "../../tests/support/a11y-fixture";
+import { test, expect } from "./support/a11y-fixture";
+import { box } from "./support/helpers";
 
-const preview = (page: Page) => page.getByTestId("code-preview");
+// Each case on /tests/tooltip is a Section with data-testid="tooltip-<caseId>": plain holds a plain
+// tooltip inside an icon-only link, rich a rich tooltip with a subhead and an action, after the
+// ButtonIcon it describes.
+type TooltipCaseId = "plain" | "rich";
 
-// The usage example: a plain tooltip inside an icon-only link
+const tooltipCase = (page: Page, caseId: TooltipCaseId) =>
+  page.getByTestId(`tooltip-${caseId}`);
+
 const plainParent = (page: Page) =>
-  preview(page).getByRole("link", { name: "GitHub repository" });
+  tooltipCase(page, "plain").getByRole("link", { name: "GitHub repository" });
 const plainTooltip = (page: Page) =>
   plainParent(page).locator("[data-ac-tooltip]");
 
-// example-01: a rich tooltip with a subhead and an action, after the ButtonIcon it describes
 const richTrigger = (page: Page) =>
-  preview(page).getByRole("button", { name: "About autosave" });
+  tooltipCase(page, "rich").getByRole("button", { name: "About autosave" });
 const richTooltip = (page: Page) =>
-  page.locator('[data-ac-tooltip-rich="tooltip-rich-trigger"]');
+  tooltipCase(page, "rich").locator("[data-ac-tooltip-rich]");
 
 const isOpen = (tooltip: Locator) =>
   tooltip.evaluate((el) => el.matches(":popover-open"));
 
 test.describe("Tooltip", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/components/tooltip");
+    await page.goto("/tests/tooltip");
   });
 
   test.describe("plain", () => {
@@ -28,7 +33,7 @@ test.describe("Tooltip", () => {
       await plainParent(page).focus();
       await expect(plainTooltip(page)).toBeVisible();
 
-      expect((await plainTooltip(page).boundingBox())!.height).toBe(24);
+      expect((await box(plainTooltip(page))).height).toBe(24);
     });
 
     test("repeats its element's name, hidden from assistive tech, and is hidden at rest", async ({
