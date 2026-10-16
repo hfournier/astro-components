@@ -1,0 +1,30 @@
+---
+title: Badge
+description: Tests for the Badge component
+---
+
+<Heading level={1}>Badge Tests</Heading>
+
+<Section data-testid="badge-count" class="p-4 space-y-4">
+  <Heading level={2}>Count</Heading>
+  <Button variant="text">
+    <Icon class="[anchor-name:--badge-test-count]" name="inbox" label="Inbox, 3 unread" />
+  </Button>
+  <Badge class="[--ac-anchorname-badge:--badge-test-count]" label={3} />
+</Section>
+
+<Section data-testid="badge-no-label" class="p-4 space-y-4">
+  <Heading level={2}>No label</Heading>
+  <Button variant="text">
+    <Icon class="[anchor-name:--badge-test-dot]" name="notifications" label="Notifications, new activity" />
+  </Button>
+  <Badge class="[--ac-anchorname-badge:--badge-test-dot]" />
+</Section>
+
+<Section data-testid="badge-over-999" class="p-4 space-y-4">
+  <Heading level={2}>Over 999</Heading>
+  <Button variant="text">
+    <Icon class="[anchor-name:--badge-test-max]" name="mail" label="Messages, 1500 unread" />
+  </Button>
+  <Badge class="[--ac-anchorname-badge:--badge-test-max]" label={1500} />
+</Section>
