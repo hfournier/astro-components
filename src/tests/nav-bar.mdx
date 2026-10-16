@@ -1,0 +1,15 @@
+---
+title: NavBar
+description: Tests for the NavBar component
+---
+
+<Heading level={1}>NavBar Tests</Heading>
+
+<Section data-testid="nav-bar-three-destinations" class="p-4 space-y-4">
+  <Heading level={2}>Three destinations</Heading>
+  <NavBar class="static" label="Three destinations">
+    <NavBarItem href="#" icon="home-fill" label="Home" aria-current="page" />
+    <NavBarItem href="#" icon="search" label="Search" />
+    <NavBarItem href="#" icon="settings" label="Settings" />
+  </NavBar>
+</Section>

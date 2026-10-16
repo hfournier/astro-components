@@ -1,13 +1,17 @@
 import type { Page } from "@playwright/test";
-import { test, expect } from "../../tests/support/a11y-fixture";
-import { box, resolvedColor } from "../../tests/support/helpers";
+import { test, expect } from "./support/a11y-fixture";
+import { box, resolvedColor } from "./support/helpers";
 
-// Each live NavBar is `static` in its preview and has its own label: the usage's "Example" has
-// Home (current), Search and Settings. Its <nav> is inside the bar ([data-ac-nav-bar]).
-const nav = (page: Page) =>
-  page.getByRole("navigation", { name: "Example", exact: true });
+// The nav-bar-three-destinations case on /tests/nav-bar holds one `static` NavBar, with Home
+// (current), Search and Settings. Its <nav> is inside the bar ([data-ac-nav-bar]), found by its
+// label so the spec still checks the label reaches it.
 const bar = (page: Page) =>
-  page.locator("[data-ac-nav-bar]").filter({ has: nav(page) });
+  page.getByTestId("nav-bar-three-destinations").locator("[data-ac-nav-bar]");
+const nav = (page: Page) =>
+  bar(page).getByRole("navigation", {
+    name: "Three destinations",
+    exact: true,
+  });
 const item = (page: Page, name: string) =>
   nav(page).getByRole("link", { name, exact: true });
 // The current item's active indicator: the icon's 56x32 pill below medium, the content span
@@ -21,7 +25,7 @@ const label = (page: Page, name: string) =>
 
 test.describe("NavBar", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/components/nav-bar");
+    await page.goto("/tests/nav-bar");
   });
 
   test.describe("compact", () => {
