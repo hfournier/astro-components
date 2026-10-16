@@ -1,0 +1,77 @@
+---
+title: Dialog
+description: Tests for the Dialog, DialogConfirm and DialogAcknowledge components
+---
+
+<Heading level={1}>Dialog Tests</Heading>
+
+<Section data-testid="dialog-basic" class="p-4 space-y-4">
+  <Heading level={2}>Basic</Heading>
+  <Button command="show-modal" commandfor="basic-dialog">Open Dialog</Button>
+
+  <Dialog id="basic-dialog" headline="Dialog headline">
+    Dialog supporting text.
+
+    <menu class="flex items-center justify-end gap-2" slot="footer">
+      <li>
+        <Button command="close" commandfor="basic-dialog" size="sm" variant="text">Close</Button>
+      </li>
+    </menu>
+
+  </Dialog>
+</Section>
+
+<Section data-testid="dialog-confirm" class="p-4 space-y-4">
+  <Heading level={2}>DialogConfirm</Heading>
+  <Button command="show-modal" commandfor="confirm-dialog">Open Confirm Dialog</Button>
+
+  <DialogConfirm
+    id="confirm-dialog"
+    headline="Discard draft?"
+    buttonDismiss={{ text: "Cancel", value: "cancel" }}
+    buttonConfirm={{ text: "Discard", value: "discard" }}
+  >
+    Your unsaved changes will be lost.
+  </DialogConfirm>
+</Section>
+
+<Section data-testid="dialog-confirm-yes-no" class="p-4 space-y-4">
+  <Heading level={2}>DialogConfirm with Yes/No</Heading>
+  <Button command="show-modal" commandfor="yes-no-dialog">Open Confirm Dialog</Button>
+
+  <DialogConfirm
+    id="yes-no-dialog"
+    headline="Confirm Action"
+    buttonDismiss={{ text: "No", value: "no" }}
+    buttonConfirm={{ text: "Yes", value: "yes" }}
+  >
+    Are you sure?
+  </DialogConfirm>
+</Section>
+
+<Section data-testid="dialog-acknowledge" class="p-4 space-y-4">
+  <Heading level={2}>DialogAcknowledge</Heading>
+  <Button command="show-modal" commandfor="acknowledge-dialog">Open Acknowledge Dialog</Button>
+
+  <DialogAcknowledge
+    id="acknowledge-dialog"
+    headline="Draft saved"
+    buttonAcknowledge={{ text: "OK", value: "ok" }}
+  >
+    Your draft has been saved and can be finished later.
+  </DialogAcknowledge>
+</Section>
+
+<Section data-testid="dialog-acknowledge-icon" class="p-4 space-y-4">
+  <Heading level={2}>DialogAcknowledge with an icon</Heading>
+  <Button command="show-modal" commandfor="acknowledge-icon-dialog">Open Notification Dialog</Button>
+
+  <DialogAcknowledge
+    id="acknowledge-icon-dialog"
+    icon="mail"
+    headline="Message sent"
+    buttonAcknowledge={{ text: "Got it", value: "ok" }}
+  >
+    Your message has been sent. We'll reply within two business days.
+  </DialogAcknowledge>
+</Section>

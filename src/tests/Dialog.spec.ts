@@ -1,12 +1,12 @@
 import type { Locator, Page } from "@playwright/test";
-import { test, expect } from "../../tests/support/a11y-fixture";
+import { test, expect } from "./support/a11y-fixture";
 import {
   box,
   expectFocusRing,
   resolvedColor,
   settled,
   textBox,
-} from "../../tests/support/helpers";
+} from "./support/helpers";
 
 // Activates a button via the keyboard rather than a real pointer click: a mouse click leaves the
 // cursor hovering the element (its state layer showing) and can leave :focus-visible unset on
@@ -31,23 +31,28 @@ const recordedEvents = (dialog: Locator) =>
     (el) => (el as HTMLDialogElement & { events: string[] }).events
   );
 
-// Every live trigger sits inside a CodePreview (data-testid="code-preview"); the source block
-// beside it is highlighted <pre> text. A trigger's label can repeat between the Usage block and
-// an example, so it's scoped through the preview that holds its dialog.
-const trigger = (page: Page, dialogId: string, name: string) =>
-  page
-    .getByTestId("code-preview")
-    .filter({ has: page.locator(`#${dialogId}`) })
-    .getByRole("button", { name, exact: true });
+// Each case on /tests/dialog is a Section with data-testid="dialog-<caseId>" holding one trigger
+// button and the dialog it opens. Trigger labels repeat between cases ("Open Confirm Dialog"),
+// so both are found within their case.
+type DialogCaseId =
+  "basic" | "confirm" | "confirm-yes-no" | "acknowledge" | "acknowledge-icon";
+
+const dialogCase = (page: Page, caseId: DialogCaseId) =>
+  page.getByTestId(`dialog-${caseId}`);
+const trigger = (page: Page, caseId: DialogCaseId, name: string) =>
+  dialogCase(page, caseId).getByRole("button", { name, exact: true });
+const dialogIn = (page: Page, caseId: DialogCaseId) =>
+  dialogCase(page, caseId).locator("dialog");
 
 test.describe("Dialog", () => {
-  // /components/dialog has only the Usage block: #dialog-usage, headline "Dialog headline",
-  // supporting text, and a "Close" text button in the footer slot.
-  const openDialog = (page: Page) =>
-    trigger(page, "dialog-usage", "Open Dialog");
+  // The basic case: headline "Dialog headline", supporting text (#basic-dialog-content), and a
+  // "Close" text button in the footer slot.
+  const openDialog = (page: Page) => trigger(page, "basic", "Open Dialog");
+  const supportingText = (page: Page) =>
+    dialogIn(page, "basic").locator("#basic-dialog-content");
 
   test.beforeEach(async ({ page }) => {
-    await page.goto("/components/dialog");
+    await page.goto("/tests/dialog");
   });
 
   test("opens via its trigger and moves focus inside the dialog", async ({
@@ -55,7 +60,7 @@ test.describe("Dialog", () => {
   }) => {
     await activate(openDialog(page));
 
-    const dialog = page.locator("#dialog-usage");
+    const dialog = dialogIn(page, "basic");
     await expect(dialog).toBeVisible();
     await expect(dialog.getByRole("button", { name: "Close" })).toBeFocused();
   });
@@ -66,7 +71,7 @@ test.describe("Dialog", () => {
     const opener = openDialog(page);
     await activate(opener);
 
-    const dialog = page.locator("#dialog-usage");
+    const dialog = dialogIn(page, "basic");
     await activate(dialog.getByRole("button", { name: "Close" }));
 
     await expect(dialog).toBeHidden();
@@ -79,7 +84,7 @@ test.describe("Dialog", () => {
     const opener = openDialog(page);
     await activate(opener);
 
-    const dialog = page.locator("#dialog-usage");
+    const dialog = dialogIn(page, "basic");
     await expect(dialog).toBeVisible();
 
     await page.keyboard.press("Escape");
@@ -93,7 +98,7 @@ test.describe("Dialog", () => {
   }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
 
-    const dialog = page.locator("#dialog-usage");
+    const dialog = dialogIn(page, "basic");
     await expect(dialog).toHaveCSS("transition-duration", "0s");
 
     await activate(openDialog(page));
@@ -108,7 +113,7 @@ test.describe("Dialog", () => {
   test("the headline names the dialog", async ({ page }) => {
     await activate(openDialog(page));
 
-    const dialog = page.locator("#dialog-usage");
+    const dialog = dialogIn(page, "basic");
     await expect(dialog).toHaveAccessibleName("Dialog headline");
     await expect(
       dialog.getByRole("heading", { level: 2, name: "Dialog headline" })
@@ -122,13 +127,13 @@ test.describe("Dialog", () => {
     // it fades down into place, so measure it at rest
     await settled(page);
 
-    const panel = page.locator("#dialog-usage > div");
+    const panel = dialogIn(page, "basic").locator("> div");
     await expect(panel).toHaveCSS(
       "background-color",
       await resolvedColor(page, "var(--theme-color-surface-container-high)")
     );
     const panelBox = await box(panel);
-    const headline = await box(page.locator("#dialog-usage h2"));
+    const headline = await box(dialogIn(page, "basic").locator("h2"));
     expect(headline.x - panelBox.x).toBe(24);
     expect(headline.y - panelBox.y).toBe(24);
   });
@@ -139,9 +144,9 @@ test.describe("Dialog", () => {
     await activate(openDialog(page));
     await settled(page);
 
-    const dialog = page.locator("#dialog-usage");
+    const dialog = dialogIn(page, "basic");
     const headline = await box(dialog.locator("h2"));
-    const content = await box(page.locator("#dialog-usage-content"));
+    const content = await box(supportingText(page));
     const action = await box(dialog.getByRole("button", { name: "Close" }));
     expect(content.y - (headline.y + headline.height)).toBe(16);
     expect(action.y - (content.y + content.height)).toBe(24);
@@ -152,11 +157,11 @@ test.describe("Dialog", () => {
   }) => {
     await activate(openDialog(page));
 
-    await expect(page.locator("#dialog-usage h2")).toHaveCSS(
+    await expect(dialogIn(page, "basic").locator("h2")).toHaveCSS(
       "color",
       await resolvedColor(page, "var(--theme-color-on-surface)")
     );
-    const content = page.locator("#dialog-usage-content");
+    const content = supportingText(page);
     await expect(content).toHaveCSS(
       "color",
       await resolvedColor(page, "var(--theme-color-on-surface-variant)")
@@ -169,7 +174,7 @@ test.describe("Dialog", () => {
 
     // Browsers make the content focusable only once it overflows; tabindex stands in for that.
     // Focused right after a keypress, so :focus-visible applies as it would when tabbing in.
-    const content = page.locator("#dialog-usage-content");
+    const content = supportingText(page);
     await content.evaluate((el: HTMLElement) => {
       el.tabIndex = -1;
       el.focus();
@@ -180,20 +185,18 @@ test.describe("Dialog", () => {
 });
 
 test.describe("DialogConfirm", () => {
-  // Usage: #dialog-confirm-usage ("Cancel" dismisses, "Discard" confirms).
-  // example-01: #dialog-yes-no ("No" dismisses, "Yes" confirms).
+  // The confirm case: "Cancel" dismisses, "Discard" confirms.
+  // The confirm-yes-no case: "No" dismisses, "Yes" confirms.
   test.beforeEach(async ({ page }) => {
-    await page.goto("/components/dialog-confirm");
+    await page.goto("/tests/dialog");
   });
 
   test("is an alertdialog named by its headline and described by its content", async ({
     page,
   }) => {
-    await activate(
-      trigger(page, "dialog-confirm-usage", "Open Confirm Dialog")
-    );
+    await activate(trigger(page, "confirm", "Open Confirm Dialog"));
 
-    const dialog = page.locator("#dialog-confirm-usage");
+    const dialog = dialogIn(page, "confirm");
     await expect(dialog).toHaveAttribute("role", "alertdialog");
     await expect(dialog).toHaveAccessibleName("Discard draft?");
     await expect(dialog).toHaveAccessibleDescription(
@@ -204,11 +207,9 @@ test.describe("DialogConfirm", () => {
   test("focuses the dismissing action first, placed before the confirming one", async ({
     page,
   }) => {
-    await activate(
-      trigger(page, "dialog-confirm-usage", "Open Confirm Dialog")
-    );
+    await activate(trigger(page, "confirm", "Open Confirm Dialog"));
 
-    const buttons = page.locator("#dialog-confirm-usage").getByRole("button");
+    const buttons = dialogIn(page, "confirm").getByRole("button");
     await expect(buttons).toHaveText(["Cancel", "Discard"]);
     await expect(buttons.first()).toBeFocused();
   });
@@ -216,10 +217,10 @@ test.describe("DialogConfirm", () => {
   test("a reflexive Enter dismisses like Escape: fires cancel and returns focus", async ({
     page,
   }) => {
-    const opener = trigger(page, "dialog-confirm-usage", "Open Confirm Dialog");
+    const opener = trigger(page, "confirm", "Open Confirm Dialog");
     await activate(opener);
 
-    const dialog = page.locator("#dialog-confirm-usage");
+    const dialog = dialogIn(page, "confirm");
     await recordEvents(dialog);
     await page.keyboard.press("Enter");
 
@@ -231,10 +232,10 @@ test.describe("DialogConfirm", () => {
   test("the confirming action closes with its value, without firing cancel", async ({
     page,
   }) => {
-    const opener = trigger(page, "dialog-yes-no", "Open Confirm Dialog");
+    const opener = trigger(page, "confirm-yes-no", "Open Confirm Dialog");
     await activate(opener);
 
-    const dialog = page.locator("#dialog-yes-no");
+    const dialog = dialogIn(page, "confirm-yes-no");
     await expect(dialog).toBeVisible();
     await recordEvents(dialog);
 
@@ -247,23 +248,19 @@ test.describe("DialogConfirm", () => {
 });
 
 test.describe("DialogAcknowledge", () => {
-  // Usage: #dialog-acknowledge-usage ("OK"). example-01: #dialog-acknowledge-icon, with the
-  // "mail" icon above its headline and a "Got it" action.
+  // The acknowledge case has an "OK" action. The acknowledge-icon case has the "mail" icon above
+  // its headline and a "Got it" action.
   test.beforeEach(async ({ page }) => {
-    await page.goto("/components/dialog-acknowledge");
+    await page.goto("/tests/dialog");
   });
 
   test("is an alertdialog whose single action is focused and closes it with its value", async ({
     page,
   }) => {
-    const opener = trigger(
-      page,
-      "dialog-acknowledge-usage",
-      "Open Acknowledge Dialog"
-    );
+    const opener = trigger(page, "acknowledge", "Open Acknowledge Dialog");
     await activate(opener);
 
-    const dialog = page.locator("#dialog-acknowledge-usage");
+    const dialog = dialogIn(page, "acknowledge");
     await expect(dialog).toHaveAttribute("role", "alertdialog");
     await expect(dialog).toHaveAccessibleName("Draft saved");
 
@@ -283,12 +280,12 @@ test.describe("DialogAcknowledge", () => {
     page,
   }) => {
     await activate(
-      trigger(page, "dialog-acknowledge-icon", "Open Notification Dialog")
+      trigger(page, "acknowledge-icon", "Open Notification Dialog")
     );
     // it fades down into place, so measure it at rest
     await settled(page);
 
-    const dialog = page.locator("#dialog-acknowledge-icon");
+    const dialog = dialogIn(page, "acknowledge-icon");
     const center = ({ x, width }: { x: number; width: number }) =>
       x + width / 2;
     const panel = await box(dialog.locator("> div"));
