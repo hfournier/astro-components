@@ -1,22 +1,24 @@
 import type { Page } from "@playwright/test";
-import { test, expect } from "../../tests/support/a11y-fixture";
-import { box, resolvedColor } from "../../tests/support/helpers";
+import { test, expect } from "./support/a11y-fixture";
+import { box, resolvedColor } from "./support/helpers";
+
+// Each case on /tests/divider is a Section with data-testid="divider-<caseId>". Dividers have no
+// accessible name, so within a case they're told apart by order: the insets case holds inset
+// none, start and middle, top to bottom, and the vertical case no inset, then inset middle.
+type DividerCaseId = "default" | "insets" | "vertical";
+
+const dividers = (page: Page, caseId: DividerCaseId) =>
+  page.getByTestId(`divider-${caseId}`).locator("hr");
 
 test.describe("Divider", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/components/divider");
+    await page.goto("/tests/divider");
   });
-
-  // DOM order inside the CodePreviews: the usage example's divider, example-01's three
-  // horizontal insets (none, start, middle), then example-02's two vertical dividers (none,
-  // middle). The source block beside each preview is highlighted text, not elements.
-  const dividers = (page: Page) =>
-    page.getByTestId("code-preview").locator("hr");
 
   test("renders M3's 1px outline-variant line on a native <hr>", async ({
     page,
   }) => {
-    const divider = dividers(page).first();
+    const divider = dividers(page, "default");
 
     await expect(divider).toHaveRole("separator");
     await expect(divider).toHaveCSS(
@@ -29,7 +31,9 @@ test.describe("Divider", () => {
   test("inset start leaves 16px before the line, middle 16px at both ends", async ({
     page,
   }) => {
-    const [none, start, middle] = [1, 2, 3].map((i) => dividers(page).nth(i));
+    const [none, start, middle] = [0, 1, 2].map((i) =>
+      dividers(page, "insets").nth(i)
+    );
     const full = await box(none);
 
     const startBox = await box(start);
@@ -44,8 +48,9 @@ test.describe("Divider", () => {
   test("a vertical divider is a 1px line stretched to its row, and inset middle shortens both ends", async ({
     page,
   }) => {
-    const vertical = dividers(page).nth(4);
-    const insetMiddle = dividers(page).nth(5);
+    const [vertical, insetMiddle] = [0, 1].map((i) =>
+      dividers(page, "vertical").nth(i)
+    );
     const rowHeight = await vertical.evaluate(
       (el) => el.parentElement!.clientHeight
     );
