@@ -1,0 +1,16 @@
+---
+title: NavBarItem
+description: Tests for the NavBarItem component
+---
+
+<Heading level={1}>NavBarItem Tests</Heading>
+
+<Section data-testid="nav-bar-item-badges" class="p-4 space-y-4">
+  <Heading level={2}>Badges</Heading>
+  <NavBar class="static" label="Badges">
+    <NavBarItem href="#" icon="inbox" label="Inbox" badgeLabel={3} aria-current="page" />
+    <NavBarItem href="#" icon="notifications" label="Updates" badgeLabel="" />
+    <NavBarItem href="#" icon="chat" label="Chat" badgeLabel={1500} />
+    <NavBarItem href="#" icon="archive" label="Archive" badgeLabel={0} />
+  </NavBar>
+</Section>

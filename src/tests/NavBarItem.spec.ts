@@ -1,11 +1,15 @@
 import type { Page } from "@playwright/test";
-import { test, expect } from "../../tests/support/a11y-fixture";
+import { test, expect } from "./support/a11y-fixture";
+import { box } from "./support/helpers";
 
-// The "Badges" example's NavBar: Inbox (3, current), Updates (a dot), Chat (1500) and Archive (0).
+// The nav-bar-item-badges case on /tests/nav-bar-item holds one NavBar, labelled "Badges": Inbox
+// (3, current), Updates (a dot), Chat (1500) and Archive (0).
 // An item with a count renders it twice, on the icon (below medium) and after the label (from
 // medium up), so this finds the shown one: the item's visible aria-hidden <span>.
 const nav = (page: Page) =>
-  page.getByRole("navigation", { name: "Badges", exact: true });
+  page
+    .getByTestId("nav-bar-item-badges")
+    .getByRole("navigation", { name: "Badges", exact: true });
 const link = (page: Page, name: string) =>
   nav(page).getByRole("link", { name, exact: true });
 const badge = (page: Page, name: string) =>
@@ -16,7 +20,7 @@ const icon = (page: Page, name: string) => link(page, name).locator("svg");
 
 test.describe("NavBarItem", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/components/nav-bar-item");
+    await page.goto("/tests/nav-bar-item");
   });
 
   test("adds a count to the item's accessible name", async ({ page }) => {
@@ -30,7 +34,7 @@ test.describe("NavBarItem", () => {
 
     test("shows a count, a dot, 999+ or no badge", async ({ page }) => {
       await expect(badge(page, "Inbox, 3")).toHaveText("3");
-      expect((await badge(page, "Updates").boundingBox())!.width).toBe(6);
+      expect((await box(badge(page, "Updates"))).width).toBe(6);
       await expect(badge(page, "Chat, 1500")).toHaveText("999+");
       await expect(badge(page, "Archive")).toHaveCount(0);
     });
@@ -38,13 +42,13 @@ test.describe("NavBarItem", () => {
     test("anchors its badges to the top-end corner of the icon", async ({
       page,
     }) => {
-      const dotIcon = (await icon(page, "Updates").boundingBox())!;
-      const dot = (await badge(page, "Updates").boundingBox())!;
+      const dotIcon = await box(icon(page, "Updates"));
+      const dot = await box(badge(page, "Updates"));
       expect(dot.y).toBeCloseTo(dotIcon.y, 0);
       expect(dot.x + dot.width).toBeCloseTo(dotIcon.x + dotIcon.width, 0);
 
-      const countIcon = (await icon(page, "Inbox, 3").boundingBox())!;
-      const count = (await badge(page, "Inbox, 3").boundingBox())!;
+      const countIcon = await box(icon(page, "Inbox, 3"));
+      const count = await box(badge(page, "Inbox, 3"));
       expect(count.x).toBeLessThan(countIcon.x + countIcon.width);
       expect(count.y).toBeLessThan(countIcon.y);
     });
@@ -56,18 +60,18 @@ test.describe("NavBarItem", () => {
     test("keeps a dot on the icon, and moves a count after the label", async ({
       page,
     }) => {
-      const dotIcon = (await icon(page, "Updates").boundingBox())!;
-      const dot = (await badge(page, "Updates").boundingBox())!;
+      const dotIcon = await box(icon(page, "Updates"));
+      const dot = await box(badge(page, "Updates"));
       expect(dot.x + dot.width).toBeCloseTo(dotIcon.x + dotIcon.width, 0);
 
       // The label span holds the label's text, then the inline badge
       const label = link(page, "Chat, 1500").locator(
         "> span:first-child > span:last-child"
       );
-      const labelBox = (await label.boundingBox())!;
-      const countIcon = (await icon(page, "Chat, 1500").boundingBox())!;
+      const labelBox = await box(label);
+      const countIcon = await box(icon(page, "Chat, 1500"));
       await expect(badge(page, "Chat, 1500")).toHaveText("999+");
-      const count = (await badge(page, "Chat, 1500").boundingBox())!;
+      const count = await box(badge(page, "Chat, 1500"));
       // clear of the icon and the label's text, and inside the label's line
       expect(count.x).toBeGreaterThan(countIcon.x + countIcon.width + 4);
       expect(count.x + count.width).toBeCloseTo(labelBox.x + labelBox.width, 0);
@@ -78,7 +82,7 @@ test.describe("NavBarItem", () => {
       page,
     }) => {
       const count = badge(page, "Chat, 1500");
-      expect((await count.boundingBox())!.height).toBe(16);
+      expect((await box(count)).height).toBe(16);
       // The count hangs below the label's line, so no element in the item that clips its
       // overflow may end above the count's bottom
       const clipped = await count.evaluate((element) => {
