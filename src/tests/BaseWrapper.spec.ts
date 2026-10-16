@@ -1,12 +1,12 @@
 import type { Page } from "@playwright/test";
-import { test, expect } from "../../tests/support/a11y-fixture";
-import { colorInside, resolvedColor } from "../../tests/support/helpers";
+import { test, expect } from "./support/a11y-fixture";
+import { colorInside, resolvedColor } from "./support/helpers";
 
 // One background role from each of BaseWrapper's pairing rules, with the "on" role its text
 // takes and the role links and focus rings switch to there: surfaces keep primary links and
 // secondary rings, the inverse surface takes the inverse roles, a container uses its own "on"
 // role for all three, and a fixed role uses its "on" role for text and its variant for the rest.
-// The a11y fixture's axe scan checks text and link contrast on every role in the example.
+// The a11y fixture's axe scan checks text and link contrast on every role on the test page.
 const ROLES = [
   {
     bg: "surface-container",
@@ -34,18 +34,17 @@ const ROLES = [
   },
 ] as const;
 
-// BaseWrapper is a primitive with no live example of its own; Section's example-01 renders one
-// Section (a BaseWrapper as="section") per background role, each labelled by a <code> with the
-// role's name, inside the CodePreview's surface-container-lowest preview wrapper.
-const wrapper = (page: Page, bg: string) =>
-  page
-    .getByTestId("code-preview")
-    .locator("section")
-    .filter({ has: page.locator("code", { hasText: new RegExp(`^${bg}$`) }) });
+// Each case on /tests/base-wrapper, base-wrapper-<bg>, holds one BaseWrapper as="section" on that
+// background role. The transparent case's own Section is on surface-container-lowest, the
+// surrounding wrapper whose colors it keeps.
+type WrapperCaseId = (typeof ROLES)[number]["bg"] | "transparent";
+
+const wrapper = (page: Page, bg: WrapperCaseId) =>
+  page.getByTestId(`base-wrapper-${bg}`).locator("section");
 
 test.describe("BaseWrapper", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/components/section");
+    await page.goto("/tests/base-wrapper");
   });
 
   for (const { bg, text, link, ring } of ROLES) {

@@ -1,0 +1,46 @@
+---
+title: BaseWrapper
+description: Tests for the BaseWrapper component
+---
+
+<Heading level={1}>BaseWrapper Tests</Heading>
+
+<Section data-testid="base-wrapper-surface-container" class="p-4 space-y-4">
+  <Heading level={2}>surface-container</Heading>
+  <BaseWrapper as="section" bgColor="surface-container" class="space-y-1 rounded-xl p-4">
+    <code class="block">surface-container</code>
+    <Link href="#">A link</Link>
+  </BaseWrapper>
+</Section>
+
+<Section data-testid="base-wrapper-inverse-surface" class="p-4 space-y-4">
+  <Heading level={2}>inverse-surface</Heading>
+  <BaseWrapper as="section" bgColor="inverse-surface" class="space-y-1 rounded-xl p-4">
+    <code class="block">inverse-surface</code>
+    <Link href="#">A link</Link>
+  </BaseWrapper>
+</Section>
+
+<Section data-testid="base-wrapper-primary-container" class="p-4 space-y-4">
+  <Heading level={2}>primary-container</Heading>
+  <BaseWrapper as="section" bgColor="primary-container" class="space-y-1 rounded-xl p-4">
+    <code class="block">primary-container</code>
+    <Link href="#">A link</Link>
+  </BaseWrapper>
+</Section>
+
+<Section data-testid="base-wrapper-secondary-fixed" class="p-4 space-y-4">
+  <Heading level={2}>secondary-fixed</Heading>
+  <BaseWrapper as="section" bgColor="secondary-fixed" class="space-y-1 rounded-xl p-4">
+    <code class="block">secondary-fixed</code>
+    <Link href="#">A link</Link>
+  </BaseWrapper>
+</Section>
+
+<Section data-testid="base-wrapper-transparent" bgColor="surface-container-lowest" class="p-4 space-y-4">
+  <Heading level={2}>transparent</Heading>
+  <BaseWrapper as="section" bgColor="transparent" class="space-y-1 rounded-xl p-4">
+    <code class="block">transparent</code>
+    <Link href="#">A link</Link>
+  </BaseWrapper>
+</Section>
