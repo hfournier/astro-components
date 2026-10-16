@@ -73,9 +73,9 @@ const { icon, headline, label, id, class: classList, ...attrs } = Astro.props;
   </div>
 
   {
-    Astro.slots.has("footer") && (
+    Astro.slots.has("actions") && (
       <Footer bgColor="transparent" class="pt-6">
-        <slot name="footer" />
+        <slot name="actions" />
       </Footer>
     )
   }

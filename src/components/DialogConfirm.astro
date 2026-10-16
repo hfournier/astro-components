@@ -23,7 +23,7 @@ const { id, buttonDismiss, buttonConfirm, ...attrs } = Astro.props;
 <Dialog {id} role="alertdialog" aria-describedby={`${id}-content`} {...attrs}>
   <slot />
 
-  <menu class="flex items-center justify-end gap-2" slot="footer">
+  <menu class="flex items-center justify-end gap-2" slot="actions">
     <li>
       <Button
         command="request-close"

@@ -51,7 +51,7 @@ test.beforeEach(async ({ page }) => {
 
 test.describe("Dialog", () => {
   // The basic case: headline "Dialog headline", supporting text (#basic-dialog-content), and a
-  // "Close" text button in the footer slot.
+  // "Close" text button in the actions slot.
   const openDialog = (page: Page) => trigger(page, "basic", "Open Dialog");
   const basicDialog = (page: Page) => dialogIn(page, "basic");
   const supportingText = (page: Page) =>
