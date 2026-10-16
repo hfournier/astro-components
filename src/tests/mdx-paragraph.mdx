@@ -1,0 +1,23 @@
+---
+title: MDX paragraph
+description: Tests for the docs site's Markdown paragraphs
+---
+
+<Heading level={1}>MDX paragraph Tests</Heading>
+
+<Section data-testid="mdx-paragraph-first-in-container" class="p-4 space-y-4">
+  <Heading level={2}>First in its container</Heading>
+  <BaseWrapper as="div" bgColor="surface-container" class="rounded-xl p-4">
+    A paragraph that starts its container, with no top margin.
+  </BaseWrapper>
+</Section>
+
+<Section data-testid="mdx-paragraph-after-element" class="p-4 space-y-4">
+  <Heading level={2}>After another element</Heading>
+  <BaseWrapper as="div" bgColor="surface-container" class="rounded-xl p-4">
+    <Heading level={3}>A heading</Heading>
+
+    A paragraph after a heading, with a top margin.
+
+  </BaseWrapper>
+</Section>
