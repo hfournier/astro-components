@@ -1,18 +1,18 @@
 import type { Page } from "@playwright/test";
-import { test, expect } from "../../tests/support/a11y-fixture";
-import { resolvedColor } from "../../tests/support/helpers";
+import { test, expect } from "./support/a11y-fixture";
+import { resolvedColor } from "./support/helpers";
 
 // Aside is BaseWrapper with `as` fixed to <aside>; BaseWrapper.spec.ts covers every background role.
 // This file keeps only what's Aside's own: the element it renders and passing props through.
-// example-01 renders the only <aside> inside a CodePreview, on surface-container, named "Related reading".
+// The aside-background-and-label case renders an <aside> on surface-container, named "Related reading".
 test.describe("Aside", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/components/aside");
+    await page.goto("/tests/aside");
   });
 
   const aside = (page: Page) =>
     page
-      .getByTestId("code-preview")
+      .getByTestId("aside-background-and-label")
       .getByRole("complementary", { name: "Related reading" });
 
   test("renders a native <aside> and passes bgColor through to BaseWrapper", async ({
