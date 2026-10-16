@@ -1,11 +1,12 @@
 import type { Locator, Page } from "@playwright/test";
-import { test, expect } from "../../tests/support/a11y-fixture";
+import { test, expect } from "./support/a11y-fixture";
+import { box } from "./support/helpers";
 
-// The usage example's MenuToggle is the only one inside a CodePreview; the site's own rail has
-// another, outside it.
+// The menu-toggle-no-props case on /tests/menu-toggle holds one MenuToggle. Keep the case scope:
+// the site's own rail has another, outside it.
 const toggle = (page: Page) =>
   page
-    .getByTestId("code-preview")
+    .getByTestId("menu-toggle-no-props")
     .getByRole("button", { name: "Menu", exact: true });
 
 // MenuToggle renders both icons, and CSS shows the one for its state
@@ -13,14 +14,14 @@ const visibleIcon = (target: Locator) => target.locator("svg:visible");
 
 test.describe("MenuToggle", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/components/menu-toggle");
+    await page.goto("/tests/menu-toggle");
   });
 
   test("is a 56px disclosure button, collapsed to start with", async ({
     page,
   }) => {
     const button = toggle(page);
-    const { width, height } = (await button.boundingBox())!;
+    const { width, height } = await box(button);
 
     expect({ width, height }).toEqual({ width: 56, height: 56 });
     await expect(button).toHaveAttribute("aria-expanded", "false");
