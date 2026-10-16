@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import { twMerge } from "tailwind-merge";
 import type { BgColorType } from "../types";
 import BaseWrapper from "./BaseWrapper.astro";
+import Header from "./Header.astro";
 
 // An M3 bottom sheet: supplementary content anchored to the bottom of the window, in two kinds.
 //
@@ -38,6 +39,7 @@ const {
 const Tag = isModal ? "dialog" : "aside";
 const headlineId = headline ? `${id}-headline` : undefined;
 const contentId = `${id}-content`;
+const hasHeader = showDragHandle || !!headline;
 // Only a standard sheet with a handle to expand it again can be collapsed
 const startsCollapsed = !isModal && showDragHandle && isCollapsed;
 
@@ -88,37 +90,41 @@ const handleAttrs = isModal
     class="flex max-h-[calc(100dvh-4.5rem)] flex-col overflow-hidden rounded-t-[28px] shadow-theme-elevation-1 [@media(width>640px)]:max-h-[calc(100dvh-3.5rem)]"
   >
     {
-      /* 22px above and below the 4px handle make a 48px-tall target. touch-none, so a drag on
-         it isn't taken as a scroll. */
-      showDragHandle && (
-        <button
-          class="group flex shrink-0 cursor-grab touch-none justify-center self-center px-2 py-5.5 outline-none active:cursor-grabbing"
-          type="button"
-          data-ac-sheet-bottom-handle
-          {...handleAttrs}
-        >
-          <span class="block h-1 w-8 rounded-full bg-(--theme-color-on-bg-variant)/40 group-focus-visible:ring-3 group-focus-visible:ring-(--theme-color-focus-ring-on-bg) group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-(--theme-color-wrapper-bg)" />
-        </button>
-      )
-    }
-    {
-      headline && (
-        <h2
-          class:list={[
-            "shrink-0 px-6 pb-4 text-[1.375rem] leading-7 font-normal tracking-normal",
-            !showDragHandle && "pt-6",
-          ]}
-          id={headlineId}
-        >
-          {headline}
-        </h2>
+      hasHeader && (
+        <Header bgColor="transparent" class="flex shrink-0 flex-col">
+          {
+            /* 22px above and below the 4px handle make a 48px-tall target. touch-none, so a
+               drag on it isn't taken as a scroll. */
+            showDragHandle && (
+              <button
+                class="group flex cursor-grab touch-none justify-center self-center px-2 py-5.5 outline-none active:cursor-grabbing"
+                type="button"
+                data-ac-sheet-bottom-handle
+                {...handleAttrs}
+              >
+                <span class="block h-1 w-8 rounded-full bg-(--theme-color-on-bg-variant)/40 group-focus-visible:ring-3 group-focus-visible:ring-(--theme-color-focus-ring-on-bg) group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-(--theme-color-wrapper-bg)" />
+              </button>
+            )
+          }
+          {headline && (
+            <h2
+              class:list={[
+                "px-6 pb-4 text-[1.375rem] leading-7 font-normal tracking-normal",
+                !showDragHandle && "pt-6",
+              ]}
+              id={headlineId}
+            >
+              {headline}
+            </h2>
+          )}
+        </Header>
       )
     }
     <div
       class:list={[
         "min-h-0 flex-1 overflow-y-auto px-6 pb-6",
         "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-inset",
-        !headline && !showDragHandle && "pt-6",
+        !hasHeader && "pt-6",
       ]}
       id={contentId}
       hidden={startsCollapsed}

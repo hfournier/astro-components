@@ -58,6 +58,19 @@ test.describe("SheetBottom", () => {
       ).toBeVisible();
     });
 
+    test("puts its drag handle and headline in a <header>", async ({
+      page,
+    }) => {
+      // read closed, so includeHidden
+      const header = sheet(page).locator("header");
+      await expect(
+        header.getByRole("button", { name: "Close", includeHidden: true })
+      ).toHaveCount(1);
+      await expect(
+        header.getByRole("heading", { name: "Share", includeHidden: true })
+      ).toHaveCount(1);
+    });
+
     test("uses M3's surface and a centred 32x4px drag handle with 22px above and below it", async ({
       page,
     }) => {
@@ -166,6 +179,18 @@ test.describe("SheetBottom", () => {
         regionBox.y + regionBox.height - 1,
         0
       );
+    });
+
+    test("puts its drag handle and headline in a <header>", async ({
+      page,
+    }) => {
+      const header = sheet(page).locator("header");
+      await expect(
+        header.getByRole("button", { name: "Sheet content" })
+      ).toBeVisible();
+      await expect(
+        header.getByRole("heading", { name: "Now playing" })
+      ).toBeVisible();
     });
 
     test("its drag handle collapses and expands it", async ({ page }) => {
