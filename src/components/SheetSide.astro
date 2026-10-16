@@ -113,7 +113,9 @@ const closeAttrs = isModal
   {
     /* Only the content scrolls; the actions stay below it, under a divider. The headline is M3
        Title Large. A BaseWrapper, so a modal sheet's focus rings and links follow its own
-       surface, not the page it was placed in. */
+       surface, not the page it was placed in. role="none" on the header and footer: in a modal
+       sheet outside <main> and any sectioning element, they'd otherwise be the page's banner and
+       contentinfo landmarks while it's open. */
   }
   <BaseWrapper
     {bgColor}
@@ -123,6 +125,7 @@ const closeAttrs = isModal
       hasHeader && (
         <Header
           bgColor="transparent"
+          role="none"
           class="flex shrink-0 items-center gap-3 px-6 pt-6 pb-4"
         >
           {headline && (
@@ -157,6 +160,7 @@ const closeAttrs = isModal
       hasActions && (
         <Footer
           bgColor="transparent"
+          role="none"
           class="flex min-h-18 shrink-0 items-center justify-start gap-2 border-t border-(--theme-color-outline-variant) px-6 pt-4 pb-6"
         >
           <slot name="actions" />

@@ -1,0 +1,52 @@
+---
+// A modal Dialog, SheetSide and SheetBottom placed outside <main> and any sectioning element, as
+// a page's own overlays usually are. There, a <header> or <footer> is a banner or contentinfo
+// landmark unless something stops it; the /tests/<component> cases sit in a <section>, which
+// hides that. See src/tests/OverlayLandmarks.spec.ts.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Button from "../../components/Button.astro";
+import Dialog from "../../components/Dialog.astro";
+import Main from "../../components/Main.astro";
+import SheetBottom from "../../components/SheetBottom.astro";
+import SheetSide from "../../components/SheetSide.astro";
+---
+
+<BaseLayout
+  title="Overlay landmarks"
+  description="Modal overlays outside <main>, for their headers' and footers' roles"
+>
+  <Main class="mx-auto max-w-[75ch] space-y-4 px-4">
+    <h1>Overlay landmarks</h1>
+    <Button command="show-modal" commandfor="landmarks-dialog"
+      >Open dialog</Button
+    >
+    <Button command="show-modal" commandfor="landmarks-sheet-side"
+      >Open side sheet</Button
+    >
+    <Button command="show-modal" commandfor="landmarks-sheet-bottom"
+      >Open bottom sheet</Button
+    >
+  </Main>
+
+  <Dialog id="landmarks-dialog" headline="Dialog headline">
+    <p>The dialog's content.</p>
+    <Button slot="actions" command="close" commandfor="landmarks-dialog"
+      >Done</Button
+    >
+  </Dialog>
+
+  <SheetSide id="landmarks-sheet-side" headline="Side sheet headline" isModal>
+    <p>The sheet's content.</p>
+    <Button slot="actions" command="close" commandfor="landmarks-sheet-side"
+      >Save</Button
+    >
+  </SheetSide>
+
+  <SheetBottom
+    id="landmarks-sheet-bottom"
+    headline="Bottom sheet headline"
+    isModal
+  >
+    <p>The sheet's content.</p>
+  </SheetBottom>
+</BaseLayout>

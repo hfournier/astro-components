@@ -32,9 +32,14 @@ const { icon, headline, label, id, class: classList, ...attrs } = Astro.props;
   {...attrs}
 >
   {
+    /* role="none" on the header and footer: outside <main> and any sectioning element, they'd
+       otherwise be the page's banner and contentinfo landmarks while the dialog is open. */
+  }
+  {
     (headline || icon) && (
       <Header
         bgColor="transparent"
+        role="none"
         class:list={["pb-4", icon && "flex flex-col items-center gap-4"]}
       >
         {icon && <Icon class="fill-(--theme-color-secondary)" name={icon} />}
@@ -74,7 +79,7 @@ const { icon, headline, label, id, class: classList, ...attrs } = Astro.props;
 
   {
     Astro.slots.has("actions") && (
-      <Footer bgColor="transparent" class="pt-6">
+      <Footer bgColor="transparent" class="pt-6" role="none">
         <slot name="actions" />
       </Footer>
     )
