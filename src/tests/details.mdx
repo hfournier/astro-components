@@ -8,8 +8,7 @@ description: Tests for the Details component
 <Section data-testid="details-default" class="p-4 space-y-4">
   <Heading level={2}>Default</Heading>
   <Details label="Details Heading">
-    Lorem ipsum, dolor sit amet consectetur adipisicing elit. Itaque quis quibusdam, tempore consequuntur doloribus 
-    in debitis quasi ratione id vero aspernatur cum incidunt, eveniet asperiores! Ut amet alias aspernatur neque!
+    Details content
   </Details>
 </Section>
 
@@ -25,6 +24,22 @@ description: Tests for the Details component
   <Heading level={2}>Plain variant</Heading>
   <Details label="Details Heading" variant="plain">
     Lorem ipsum, dolor sit amet consectetur adipisicing elit. Itaque quis quibusdam, tempore consequuntur doloribus 
+    in debitis quasi ratione id vero aspernatur cum incidunt, eveniet asperiores! Ut amet alias aspernatur neque!
+  </Details>
+</Section>
+
+<Section data-testid="details-with-icon" class="p-4 space-y-4">
+  <Heading level={2}>With icon</Heading>
+  <Details label="Details Heading with Icon" icon="check">
+    Lorem ipsum, dolor sit amet consectetur adipisicing elit. Itaque quis quibusdam, tempore consequuntur doloribus
+    in debitis quasi ratione id vero aspernatur cum incidunt, eveniet asperiores! Ut amet alias aspernatur neque!
+  </Details>
+</Section>
+
+<Section data-testid="details-dense" class="p-4 space-y-4">
+  <Heading level={2}>Dense</Heading>
+  <Details label="Dense Details Heading" size="md">
+    Lorem ipsum, dolor sit amet consectetur adipisicing elit. Itaque quis quibusdam, tempore consequuntur doloribus
     in debitis quasi ratione id vero aspernatur cum incidunt, eveniet asperiores! Ut amet alias aspernatur neque!
   </Details>
 </Section>

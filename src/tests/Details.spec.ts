@@ -1,49 +1,47 @@
-import type { Page } from "@playwright/test";
-import { test, expect } from "../../tests/support/a11y-fixture";
-import { box, expectFocusRing, resolvedColor } from "../../tests/support/helpers";
+import type { Locator, Page } from "@playwright/test";
+import { test, expect } from "./support/a11y-fixture";
+import { box, expectFocusRing, resolvedColor } from "./support/helpers";
+
+// Each case the spec uses on /tests/details is a Section with data-testid="details-<caseId>"
+// holding one Details: default (closed, outlined, "Details content"), initially-open,
+// with-icon, plain-variant and dense.
+type DetailsCaseId =
+  "default" | "initially-open" | "with-icon" | "plain-variant" | "dense";
+
+const details = (page: Page, caseId: DetailsCaseId) =>
+  page.getByTestId(`details-${caseId}`).locator("details");
+const chevron = (target: Locator) =>
+  target.locator("summary svg[data-ac-details-chevron]");
 
 test.describe("Details", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/components/details");
+    await page.goto("/tests/details");
   });
-
-  // The usage example plus the four named examples render as the only <details>
-  // on the page (each source block beside a preview is highlighted <pre> text,
-  // not elements). DOM order: usage, example-01 (open by default), example-02
-  // (with icon), example-03 (plain), example-04 (dense). Scoped through the
-  // CodePreview (data-testid="code-preview") wrappers.
-  const allDetails = (page: Page) =>
-    page.getByTestId("code-preview").locator("details");
-  const withIcon = (page: Page) =>
-    allDetails(page).filter({ hasText: "Details Heading with Icon" });
-  const withoutBorders = (page: Page) => allDetails(page).nth(3);
-  const dense = (page: Page) =>
-    allDetails(page).filter({ hasText: "Dense Details Heading" });
 
   test("summary toggles its content open and closed from the keyboard", async ({
     page,
   }) => {
-    const details = allDetails(page).first();
-    const summary = details.locator("summary");
-    const content = details.getByText("Details content", { exact: true });
+    const target = details(page, "default");
+    const summary = target.locator("summary");
+    const content = target.getByText("Details content", { exact: true });
 
-    await expect(details).toHaveJSProperty("open", false);
+    await expect(target).toHaveJSProperty("open", false);
     await expect(content).toBeHidden();
 
     await summary.focus();
     await page.keyboard.press("Enter");
-    await expect(details).toHaveJSProperty("open", true);
+    await expect(target).toHaveJSProperty("open", true);
     await expect(content).toBeVisible();
 
     await page.keyboard.press("Enter");
-    await expect(details).toHaveJSProperty("open", false);
+    await expect(target).toHaveJSProperty("open", false);
     await expect(content).toBeHidden();
   });
 
   test("summary exposes the label as its accessible name, with no heading element", async ({
     page,
   }) => {
-    const summary = allDetails(page).first().locator("summary");
+    const summary = details(page, "default").locator("summary");
 
     await expect(summary).toHaveAccessibleName("Details Heading");
     await expect(summary.getByRole("heading")).toHaveCount(0);
@@ -52,7 +50,7 @@ test.describe("Details", () => {
   test("renders expanded on load when the open prop is set", async ({
     page,
   }) => {
-    const opened = page.getByTestId("code-preview").locator("details[open]");
+    const opened = details(page, "initially-open").and(page.locator("[open]"));
 
     await expect(opened).toHaveCount(1);
     await expect(
@@ -63,7 +61,7 @@ test.describe("Details", () => {
   test("leading icon renders in the summary and stays hidden from assistive tech", async ({
     page,
   }) => {
-    const summary = withIcon(page).locator("summary");
+    const summary = details(page, "with-icon").locator("summary");
 
     // leading icon + chevron - both size-6, distinguished by data attribute
     // rather than their (shared) size class
@@ -78,13 +76,11 @@ test.describe("Details", () => {
   });
 
   test("chevron rotates when open", async ({ page }) => {
-    const chevron = (details: ReturnType<typeof allDetails>) =>
-      details.locator("summary svg[data-ac-details-chevron]");
-
-    await expect(chevron(allDetails(page).first())).toHaveCSS("rotate", "none");
-    await expect(
-      chevron(page.getByTestId("code-preview").locator("details[open]"))
-    ).toHaveCSS("rotate", "180deg");
+    await expect(chevron(details(page, "default"))).toHaveCSS("rotate", "none");
+    await expect(chevron(details(page, "initially-open"))).toHaveCSS(
+      "rotate",
+      "180deg"
+    );
   });
 
   test("respects prefers-reduced-motion: transitions off, disclosure still opens", async ({
@@ -92,25 +88,23 @@ test.describe("Details", () => {
   }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
 
-    const details = allDetails(page).first();
-    const chevron = details.locator("summary svg[data-ac-details-chevron]");
+    const target = details(page, "default");
+    await expect(chevron(target)).toHaveCSS("transition-duration", "0s");
 
-    await expect(chevron).toHaveCSS("transition-duration", "0s");
-
-    await details.locator("summary").focus();
+    await target.locator("summary").focus();
     await page.keyboard.press("Enter");
 
-    await expect(details).toHaveJSProperty("open", true);
+    await expect(target).toHaveJSProperty("open", true);
     await expect(
-      details.getByText("Details content", { exact: true })
+      target.getByText("Details content", { exact: true })
     ).toBeVisible();
   });
 
   test("the outlined variant is an M3 outlined card, and the plain variant the same size without a visible border", async ({
     page,
   }) => {
-    const outlined = allDetails(page).first();
-    const plain = withoutBorders(page);
+    const outlined = details(page, "default");
+    const plain = details(page, "plain-variant");
 
     await expect(outlined).toHaveCSS(
       "border-top-color",
@@ -123,30 +117,31 @@ test.describe("Details", () => {
   test("a closed details is just its summary and border, with no gap below the summary", async ({
     page,
   }) => {
-    const details = allDetails(page).first();
-    await expect(details).toHaveJSProperty("open", false);
+    const target = details(page, "default");
+    await expect(target).toHaveJSProperty("open", false);
 
-    const detailsHeight = (await box(details)).height;
-    const summaryHeight = (await box(details.locator("summary"))).height;
+    const detailsHeight = (await box(target)).height;
+    const summaryHeight = (await box(target.locator("summary"))).height;
     expect(detailsHeight).toBe(summaryHeight + 2);
   });
 
   test("summary is M3's 56px one-line list item, with a 24px chevron", async ({
     page,
   }) => {
-    const summary = allDetails(page).first().locator("summary");
-    const chevron = summary.locator("svg[data-ac-details-chevron]");
+    const target = details(page, "default");
 
-    expect((await box(summary)).height).toBe(56);
-    expect((await box(chevron)).width).toBe(24);
+    expect((await box(target.locator("summary"))).height).toBe(56);
+    expect((await box(chevron(target))).width).toBe(24);
   });
 
   test("dense size is a 48px summary", async ({ page }) => {
-    expect((await box(dense(page).locator("summary"))).height).toBe(48);
+    expect((await box(details(page, "dense").locator("summary"))).height).toBe(
+      48
+    );
   });
 
   test("hovering the summary shows the M3 state layer", async ({ page }) => {
-    const summary = allDetails(page).first().locator("summary");
+    const summary = details(page, "default").locator("summary");
     // With smooth scrolling, the summary is still moving when hover() scrolls it into view and
     // puts the pointer on it, and WebKit doesn't apply :hover until the pointer moves again.
     // Reduced motion makes the scroll instant.
@@ -161,7 +156,7 @@ test.describe("Details", () => {
   });
 
   test("focusing the summary shows the focus ring", async ({ page }) => {
-    const summary = allDetails(page).first().locator("summary");
+    const summary = details(page, "default").locator("summary");
     await summary.focus();
 
     await expectFocusRing(summary, { inset: true });
