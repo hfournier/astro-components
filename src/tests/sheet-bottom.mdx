@@ -1,0 +1,69 @@
+---
+title: SheetBottom
+description: Tests for the SheetBottom component
+---
+
+<Heading level={1}>SheetBottom Tests</Heading>
+
+<Section data-testid="sheet-bottom-modal" class="p-4 space-y-4">
+  <Heading level={2}>Modal</Heading>
+  <Button command="show-modal" commandfor="modal-sheet-bottom">Open bottom sheet</Button>
+
+  <SheetBottom id="modal-sheet-bottom" headline="Share" isModal>
+    <p>Options for the page, such as ways to share it.</p>
+  </SheetBottom>
+</Section>
+
+<Section data-testid="sheet-bottom-modal-scrolling" class="p-4 space-y-4">
+  <Heading level={2}>Modal with scrolling content</Heading>
+  <Button command="show-modal" commandfor="scrolling-sheet-bottom">Open tall bottom sheet</Button>
+
+  <SheetBottom id="scrolling-sheet-bottom" headline="Terms" isModal>
+    <p class="mb-4">Paragraph 1 of the terms.</p>
+    <p class="mb-4">Paragraph 2 of the terms.</p>
+    <p class="mb-4">Paragraph 3 of the terms.</p>
+    <p class="mb-4">Paragraph 4 of the terms.</p>
+    <p class="mb-4">Paragraph 5 of the terms.</p>
+    <p class="mb-4">Paragraph 6 of the terms.</p>
+    <p class="mb-4">Paragraph 7 of the terms.</p>
+    <p class="mb-4">Paragraph 8 of the terms.</p>
+    <p class="mb-4">Paragraph 9 of the terms.</p>
+    <p class="mb-4">Paragraph 10 of the terms.</p>
+    <p class="mb-4">Paragraph 11 of the terms.</p>
+    <p class="mb-4">Paragraph 12 of the terms.</p>
+    <p class="mb-4">Paragraph 13 of the terms.</p>
+    <p class="mb-4">Paragraph 14 of the terms.</p>
+    <p class="mb-4">Paragraph 15 of the terms.</p>
+    <p class="mb-4">Paragraph 16 of the terms.</p>
+    <p class="mb-4">Paragraph 17 of the terms.</p>
+    <p class="mb-4">Paragraph 18 of the terms.</p>
+    <p class="mb-4">Paragraph 19 of the terms.</p>
+    <p class="mb-4">Paragraph 20 of the terms.</p>
+  </SheetBottom>
+</Section>
+
+<Section data-testid="sheet-bottom-standard" class="p-4 space-y-4">
+  <Heading level={2}>Standard</Heading>
+  <div class="h-80 overflow-y-auto border border-(--theme-color-outline-variant)">
+    <div class="space-y-4 p-4">
+      <p>The main content, which scrolls behind the sheet.</p>
+      <p>More of the main content.</p>
+      <p>More of the main content.</p>
+      <p>More of the main content.</p>
+      <p>More of the main content.</p>
+      <p>The end of the main content.</p>
+    </div>
+    <SheetBottom headline="Now playing">
+      <p>Details about the item being played.</p>
+    </SheetBottom>
+  </div>
+</Section>
+
+<Section data-testid="sheet-bottom-collapsed" class="p-4 space-y-4">
+  <Heading level={2}>Collapsed</Heading>
+  <div class="flex h-80 flex-col justify-end overflow-y-auto border border-(--theme-color-outline-variant)">
+    <SheetBottom headline="Map layers" isCollapsed>
+      <p>Controls for the layers of the map.</p>
+    </SheetBottom>
+  </div>
+</Section>
