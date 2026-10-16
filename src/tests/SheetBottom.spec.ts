@@ -168,6 +168,18 @@ test.describe("SheetBottom", () => {
       );
     });
 
+    test("puts its drag handle and headline in a <header>", async ({
+      page,
+    }) => {
+      const header = sheet(page).locator("header");
+      await expect(
+        header.getByRole("button", { name: "Sheet content" })
+      ).toBeVisible();
+      await expect(
+        header.getByRole("heading", { name: "Now playing" })
+      ).toBeVisible();
+    });
+
     test("its drag handle collapses and expands it", async ({ page }) => {
       const content = sheet(page).getByText("Details about the item");
       await expect(handle(page)).toHaveAttribute("aria-expanded", "true");

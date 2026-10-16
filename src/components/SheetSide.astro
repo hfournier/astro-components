@@ -5,6 +5,8 @@ import { twMerge } from "tailwind-merge";
 import type { BgColorType } from "../types";
 import BaseWrapper from "./BaseWrapper.astro";
 import ButtonIcon from "./ButtonIcon.astro";
+import Footer from "./Footer.astro";
+import Header from "./Header.astro";
 
 // An M3 side sheet: supplementary content on the start or end edge of the window, in two kinds.
 //
@@ -118,7 +120,10 @@ const closeAttrs = isModal
   >
     {
       (headline || showCloseX) && (
-        <div class="flex shrink-0 items-center gap-3 px-6 pt-6 pb-4">
+        <Header
+          bgColor="transparent"
+          class="flex shrink-0 items-center gap-3 px-6 pt-6 pb-4"
+        >
           {headline && (
             <h2
               class="min-w-0 flex-1 text-[1.375rem] leading-7 font-normal tracking-normal"
@@ -136,7 +141,7 @@ const closeAttrs = isModal
               {...closeAttrs}
             />
           )}
-        </div>
+        </Header>
       )
     }
     <div
@@ -149,9 +154,12 @@ const closeAttrs = isModal
     </div>
     {
       hasActions && (
-        <div class="flex min-h-18 shrink-0 items-center justify-start gap-2 border-t border-(--theme-color-outline-variant) px-6 pt-4 pb-6">
+        <Footer
+          bgColor="transparent"
+          class="flex min-h-18 shrink-0 items-center justify-start gap-2 border-t border-(--theme-color-outline-variant) px-6 pt-4 pb-6"
+        >
           <slot name="actions" />
-        </div>
+        </Footer>
       )
     }
   </BaseWrapper>

@@ -121,6 +121,15 @@ test.describe("SheetSide", () => {
         .locator("..");
       expect((await box(actions)).height).toBeGreaterThanOrEqual(72);
     });
+
+    test("puts its actions in a <footer>", async ({ page }) => {
+      // read closed, so includeHidden
+      await expect(
+        modalSheet(page, "modal-detached")
+          .locator("footer")
+          .getByRole("button", { includeHidden: true })
+      ).toHaveText(["Save", "Cancel"]);
+    });
   });
 
   test.describe("standard", () => {
@@ -144,6 +153,16 @@ test.describe("SheetSide", () => {
         "background-color",
         await resolvedColor(page, "var(--theme-color-surface)")
       );
+    });
+
+    test("puts its headline and close button in a <header>", async ({
+      page,
+    }) => {
+      const header = sheet(page).locator("header");
+      await expect(
+        header.getByRole("heading", { name: "Filters" })
+      ).toBeVisible();
+      await expect(header.getByRole("button", { name: "Close" })).toBeVisible();
     });
 
     test("its close button hides it", async ({ page }) => {
