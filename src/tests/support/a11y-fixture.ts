@@ -6,11 +6,29 @@ import type { Result } from "axe-core";
  * Shared fixture (ADR-0002): every test built on this `test` gets an axe-core
  * scan of the page after the test body runs, opt-out rather than opt-in.
  * Call `test.use({ skipA11yCheck: true })` in a describe block to opt out.
+ *
+ * It also turns off the site's smooth scrolling (global.css). Firefox and
+ * WebKit honour it when an action scrolls its target into view, so the target
+ * is still moving when the pointer goes down: a click's mouseup can land on
+ * another element, so the click goes to their common ancestor and misses its
+ * target (#124), and a hover can miss :hover. Reduced motion would also make
+ * the scroll instant, but it turns off the components' transitions too.
  */
 export const test = base.extend<{ skipA11yCheck: boolean }>({
   skipA11yCheck: [false, { option: true }],
 
   page: async ({ page, skipA11yCheck }, use) => {
+    await page.addInitScript(() => {
+      const instantScroll = () =>
+        document.documentElement.style.setProperty(
+          "scroll-behavior",
+          "auto",
+          "important"
+        );
+      if (document.documentElement) instantScroll();
+      else document.addEventListener("DOMContentLoaded", instantScroll);
+    });
+
     await use(page);
 
     if (skipA11yCheck) return;
