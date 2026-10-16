@@ -12,7 +12,10 @@ const sheetCase = (page: Page, caseId: SheetSideCaseId) =>
   page.getByTestId(`sheet-side-${caseId}`);
 
 // The modal cases' opener labels
-type ModalCaseId = Exclude<SheetSideCaseId, "standard">;
+type ModalCaseId = Extract<
+  SheetSideCaseId,
+  "modal" | "modal-start" | "modal-detached"
+>;
 const OPENER_LABELS: Record<ModalCaseId, string> = {
   modal: "Open side sheet",
   "modal-start": "Open start side sheet",
