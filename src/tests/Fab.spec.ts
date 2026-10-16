@@ -3,7 +3,8 @@ import { test, expect } from "./support/a11y-fixture";
 import { box, resolvedColor } from "./support/helpers";
 
 // Each case on /tests/fab is a Section with data-testid="fab-<caseId>". A Fab's accessible name
-// is its `label`, visible or not, and each label names the color or size it shows.
+// is its `label`, visible or not. Each label names the color or size it shows, except the
+// defaults' "Compose".
 type FabCaseId = "no-props" | "colors" | "sizes" | "extended";
 
 const fab = (page: Page, caseId: FabCaseId, name: string) =>
@@ -22,20 +23,20 @@ test.describe("Fab", () => {
   test("defaults to a 56px primary-container FAB, its label only an accessible name", async ({
     page,
   }) => {
-    const usage = fab(page, "no-props", "Compose");
+    const noProps = fab(page, "no-props", "Compose");
 
-    await expect(usage).toHaveAttribute("type", "button");
-    expect(await size(usage)).toEqual({ width: 56, height: 56 });
-    await expect(usage).toHaveCSS(
+    await expect(noProps).toHaveAttribute("type", "button");
+    expect(await size(noProps)).toEqual({ width: 56, height: 56 });
+    await expect(noProps).toHaveCSS(
       "background-color",
       await resolvedColor(page, "var(--theme-color-primary-container)")
     );
-    await expect(usage).toHaveCSS(
+    await expect(noProps).toHaveCSS(
       "color",
       await resolvedColor(page, "var(--theme-color-on-primary-container)")
     );
     // visually hidden: clipped to at most a pixel
-    expect((await box(usage.getByText("Compose"))).width).toBeLessThanOrEqual(
+    expect((await box(noProps.getByText("Compose"))).width).toBeLessThanOrEqual(
       1
     );
   });
@@ -88,10 +89,10 @@ test.describe("Fab", () => {
     }
 
     // M3's default extended FAB: 16px from each edge to its icon and label
-    const extended = fab(page, "extended", "Compose");
-    const fabBox = await box(extended);
-    const icon = await box(extended.locator("svg"));
-    const label = await box(extended.getByText("Compose"));
+    const defaultExtended = fab(page, "extended", "Compose");
+    const fabBox = await box(defaultExtended);
+    const icon = await box(defaultExtended.locator("svg"));
+    const label = await box(defaultExtended.getByText("Compose"));
     expect(icon.x - fabBox.x).toBe(16);
     expect(fabBox.x + fabBox.width - (label.x + label.width)).toBeCloseTo(
       16,
@@ -100,12 +101,13 @@ test.describe("Fab", () => {
   });
 
   test("sits at elevation 3, rising to 4 on hover", async ({ page }) => {
-    const usage = fab(page, "no-props", "Compose");
-    const shadow = () => usage.evaluate((el) => getComputedStyle(el).boxShadow);
+    const noProps = fab(page, "no-props", "Compose");
+    const shadow = () =>
+      noProps.evaluate((el) => getComputedStyle(el).boxShadow);
     const atRest = await shadow();
 
     expect(atRest).not.toBe("none");
-    await usage.hover();
+    await noProps.hover();
     await expect.poll(shadow).not.toBe(atRest);
   });
 });
