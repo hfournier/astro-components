@@ -10,11 +10,13 @@ type SheetBottomCaseId = "modal" | "modal-scrolling" | "standard" | "collapsed";
 
 const sheetCase = (page: Page, caseId: SheetBottomCaseId) =>
   page.getByTestId(`sheet-bottom-${caseId}`);
-const OPENER_LABELS = {
+
+// The modal cases' opener labels
+type ModalCaseId = Extract<SheetBottomCaseId, "modal" | "modal-scrolling">;
+const OPENER_LABELS: Record<ModalCaseId, string> = {
   modal: "Open bottom sheet",
   "modal-scrolling": "Open tall bottom sheet",
 };
-type ModalCaseId = keyof typeof OPENER_LABELS;
 
 const modalSheet = (page: Page, caseId: ModalCaseId) =>
   sheetCase(page, caseId).locator('[data-ac-sheet-bottom="modal"]');
