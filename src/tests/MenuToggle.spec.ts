@@ -1,5 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "./support/a11y-fixture";
+import { box } from "./support/helpers";
 
 // The menu-toggle-no-props case on /tests/menu-toggle holds one MenuToggle. Keep the case scope:
 // the site's own rail has another, outside it.
@@ -20,7 +21,7 @@ test.describe("MenuToggle", () => {
     page,
   }) => {
     const button = toggle(page);
-    const { width, height } = (await button.boundingBox())!;
+    const { width, height } = await box(button);
 
     expect({ width, height }).toEqual({ width: 56, height: 56 });
     await expect(button).toHaveAttribute("aria-expanded", "false");
