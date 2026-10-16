@@ -1,17 +1,18 @@
 import type { Page } from "@playwright/test";
-import { test, expect } from "../../tests/support/a11y-fixture";
-import { resolvedColor } from "../../tests/support/helpers";
+import { test, expect } from "./support/a11y-fixture";
+import { resolvedColor } from "./support/helpers";
 
 // Header is BaseWrapper with `as` fixed to <header>; BaseWrapper.spec.ts covers every background role.
 // This file keeps only what's Header's own: the element it renders and passing props through.
-// example-01 renders the only <header> inside a CodePreview, on primary-container.
+// The header-background case renders a <header> on primary-container. Keep the case scope: the
+// site layout has its own <header>, on the same role.
 test.describe("Header", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/components/header");
+    await page.goto("/tests/header");
   });
 
   const header = (page: Page) =>
-    page.getByTestId("code-preview").locator("header");
+    page.getByTestId("header-background").locator("header");
 
   test("renders a native <header> and passes bgColor through to BaseWrapper", async ({
     page,
