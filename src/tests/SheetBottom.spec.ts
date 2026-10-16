@@ -58,6 +58,19 @@ test.describe("SheetBottom", () => {
       ).toBeVisible();
     });
 
+    test("puts its drag handle and headline in a <header>", async ({
+      page,
+    }) => {
+      // read closed, so includeHidden
+      const header = sheet(page).locator("header");
+      await expect(
+        header.getByRole("button", { name: "Close", includeHidden: true })
+      ).toHaveCount(1);
+      await expect(
+        header.getByRole("heading", { name: "Share", includeHidden: true })
+      ).toHaveCount(1);
+    });
+
     test("uses M3's surface and a centred 32x4px drag handle with 22px above and below it", async ({
       page,
     }) => {

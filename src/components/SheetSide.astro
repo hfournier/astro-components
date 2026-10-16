@@ -45,6 +45,7 @@ const {
 const Tag = isModal ? "dialog" : "aside";
 const headlineId = headline ? `${id}-headline` : undefined;
 const hasActions = Astro.slots.has("actions");
+const hasHeader = !!headline || showCloseX;
 
 // M3: 256px wide, at most 400px. Set as a custom property, so a consumer overrides it with one
 // class, such as `[--ac-sheet-side-width:320px]`. Never wider than the window, less its margins.
@@ -119,7 +120,7 @@ const closeAttrs = isModal
     class:list={["flex h-full flex-col overflow-hidden", shapeClasses]}
   >
     {
-      (headline || showCloseX) && (
+      hasHeader && (
         <Header
           bgColor="transparent"
           class="flex shrink-0 items-center gap-3 px-6 pt-6 pb-4"
@@ -147,7 +148,7 @@ const closeAttrs = isModal
     <div
       class:list={[
         "min-h-0 flex-1 overflow-y-auto px-6 pb-6",
-        !headline && !showCloseX && "pt-6",
+        !hasHeader && "pt-6",
       ]}
     >
       <slot />
