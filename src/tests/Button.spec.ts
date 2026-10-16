@@ -1,29 +1,44 @@
 import type { Locator, Page } from "@playwright/test";
-import { test, expect } from "../../tests/support/a11y-fixture";
-import { box, expectFocusRing, resolvedColor } from "../../tests/support/helpers";
+import { test, expect } from "./support/a11y-fixture";
+import { box, expectFocusRing, resolvedColor } from "./support/helpers";
 
 const VARIANTS = ["Elevated", "Filled", "Tonal", "Outlined", "Text"] as const;
 
+// M3's medium button height, the default size
+const MEDIUM_HEIGHT = 48;
+
+// The small, medium and large cases each hold every variant at that size; the Filled one is measured
 const SIZES = [
-  { name: "Small button", height: 40 },
-  { name: "Medium button", height: 48 },
-  { name: "Large button", height: 56 },
+  { caseId: "small", height: 40 },
+  { caseId: "medium", height: MEDIUM_HEIGHT },
+  { caseId: "large", height: 56 },
 ] as const;
 
-// Every live button on /components/button sits inside a CodePreview
-// (data-testid="code-preview"); the source block beside each preview is highlighted <pre>
-// text, not real controls, so locators are scoped through it. example-01 renders each variant
-// twice - enabled, then disabled - so the two rows are told apart by `disabled`.
-const button = (page: Page, name: string, disabled = false) =>
-  page
-    .getByTestId("code-preview")
-    .getByRole("button", { name, exact: true, disabled });
+// Each case on /tests/button is a Section with data-testid="button-<caseId>". The default case
+// holds every variant with no size, the disabled case every variant disabled.
+type ButtonCaseId =
+  | "default"
+  | "small"
+  | "medium"
+  | "large"
+  | "disabled"
+  | "fullwidth"
+  | "no-props"
+  | "shape"
+  | "as-anchor"
+  | "label-on-own-line";
 
-// example-05 renders Button as="a": a real anchor, so its role is "link"
-const anchorButton = (page: Page) =>
-  page
-    .getByTestId("code-preview")
-    .getByRole("link", { name: "Anchor button", exact: true });
+const buttonCase = (page: Page, caseId: ButtonCaseId) =>
+  page.getByTestId(`button-${caseId}`);
+const button = (page: Page, caseId: ButtonCaseId, name: string) =>
+  buttonCase(page, caseId).getByRole("button", { name, exact: true });
+
+// Button as="a" renders a real anchor, so its role is "link"
+const anchorButton = (
+  page: Page,
+  caseId: ButtonCaseId = "as-anchor",
+  name = "Anchor button"
+) => buttonCase(page, caseId).getByRole("link", { name, exact: true });
 
 // The alpha of a computed color: M3's disabled colors are on-surface at 38% / 10%, which
 // Tailwind's `/38` and `/10` modifiers mix in oklab, so the channels are compared by alpha only.
@@ -38,14 +53,14 @@ const stateLayerOpacity = (target: Locator) =>
 
 test.describe("Button", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/components/button");
+    await page.goto("/tests/button");
   });
 
   test("defaults to the filled variant, round shape and medium size", async ({
     page,
   }) => {
-    const usage = button(page, "Primary Button");
-    const filled = button(page, "Filled");
+    const usage = button(page, "no-props", "Primary Button");
+    const filled = button(page, "default", "Filled");
 
     for (const property of [
       "background-color",
@@ -67,11 +82,11 @@ test.describe("Button", () => {
       resolvedColor(page, `var(--theme-color-${name})`);
     const transparent = "rgba(0, 0, 0, 0)";
 
-    const filled = button(page, "Filled");
+    const filled = button(page, "default", "Filled");
     await expect(filled).toHaveCSS("background-color", await role("primary"));
     await expect(filled).toHaveCSS("color", await role("on-primary"));
 
-    const tonal = button(page, "Tonal");
+    const tonal = button(page, "default", "Tonal");
     await expect(tonal).toHaveCSS(
       "background-color",
       await role("secondary-container")
@@ -81,7 +96,7 @@ test.describe("Button", () => {
       await role("on-secondary-container")
     );
 
-    const elevated = button(page, "Elevated");
+    const elevated = button(page, "default", "Elevated");
     await expect(elevated).toHaveCSS(
       "background-color",
       await role("surface-container-low")
@@ -91,7 +106,7 @@ test.describe("Button", () => {
       await elevated.evaluate((el) => getComputedStyle(el).boxShadow)
     ).toMatch(/0px 1px 2px 0px/);
 
-    const outlined = button(page, "Outlined");
+    const outlined = button(page, "default", "Outlined");
     await expect(outlined).toHaveCSS("background-color", transparent);
     await expect(outlined).toHaveCSS(
       "border-top-color",
@@ -99,7 +114,7 @@ test.describe("Button", () => {
     );
     await expect(outlined).toHaveCSS("color", await role("on-surface-variant"));
 
-    const text = button(page, "Text");
+    const text = button(page, "default", "Text");
     await expect(text).toHaveCSS("background-color", transparent);
     await expect(text).toHaveCSS("border-top-color", transparent);
     await expect(text).toHaveCSS("color", await role("primary"));
@@ -109,7 +124,7 @@ test.describe("Button", () => {
     page,
   }) => {
     for (const name of VARIANTS) {
-      const target = button(page, name, true);
+      const target = button(page, "disabled", name);
       await expect(target).toHaveCSS("cursor", "default");
 
       const style = await target.evaluate((el) => {
@@ -136,18 +151,18 @@ test.describe("Button", () => {
     page,
   }) => {
     for (const name of VARIANTS) {
-      const target = button(page, name);
+      const target = button(page, "default", name);
       await target.hover();
       await expect.poll(() => stateLayerOpacity(target)).toBe("0.08");
     }
 
-    const disabled = button(page, "Filled", true);
+    const disabled = button(page, "disabled", "Filled");
     await disabled.hover({ force: true });
     await expect.poll(() => stateLayerOpacity(disabled)).toBe("0");
   });
 
   test("the elevated button's shadow rises on hover", async ({ page }) => {
-    const elevated = button(page, "Elevated");
+    const elevated = button(page, "default", "Elevated");
     const resting = await elevated.evaluate(
       (el) => getComputedStyle(el).boxShadow
     );
@@ -160,7 +175,7 @@ test.describe("Button", () => {
 
   for (const name of VARIANTS) {
     test(`hovering "${name}" passes color contrast`, async ({ page }) => {
-      await button(page, name).hover();
+      await button(page, "default", name).hover();
       // The a11y fixture's automatic axe scan (ADR-0002) runs after this test body,
       // while this button is still hovered, and catches any hover-state contrast violation.
     });
@@ -168,7 +183,7 @@ test.describe("Button", () => {
 
   test("focus shows the state layer and the focus ring", async ({ page }) => {
     for (const name of VARIANTS) {
-      const target = button(page, name);
+      const target = button(page, "default", name);
       await target.focus();
       await expectFocusRing(target);
       // the state layer transitions in, so poll
@@ -179,27 +194,27 @@ test.describe("Button", () => {
   test("shape: round is fully rounded, square uses the size's corner radius", async ({
     page,
   }) => {
-    const round = button(page, "Round button");
+    const round = button(page, "shape", "Round button");
     const radius = await round.evaluate((el) =>
       parseFloat(getComputedStyle(el).borderTopLeftRadius)
     );
     const { height } = await box(round);
     expect(radius).toBeGreaterThanOrEqual(height / 2);
 
-    await expect(button(page, "Square button")).toHaveCSS(
+    await expect(button(page, "shape", "Square button")).toHaveCSS(
       "border-top-left-radius",
       "14px"
     );
   });
 
   test("each size is M3's button height", async ({ page }) => {
-    for (const { name, height } of SIZES) {
-      expect((await box(button(page, name))).height).toBe(height);
+    for (const { caseId, height } of SIZES) {
+      expect((await box(button(page, caseId, "Filled"))).height).toBe(height);
     }
   });
 
   test("the small size keeps a 48px touch target", async ({ page }) => {
-    const small = button(page, "Small button");
+    const small = button(page, "small", "Filled");
     const targetHeight = await small.evaluate((el) =>
       parseFloat(getComputedStyle(el, "::after").height)
     );
@@ -209,7 +224,7 @@ test.describe("Button", () => {
   test("showFullwidth stretches to the width of its container", async ({
     page,
   }) => {
-    const target = button(page, "Full width button");
+    const target = button(page, "fullwidth", "Filled");
     const [width, containerWidth] = await target.evaluate((el) => {
       const parent = getComputedStyle(el.parentElement!);
       return [
@@ -235,7 +250,7 @@ test.describe("Button", () => {
     // `type` is only defaulted on a real <button>
     await expect(anchor).not.toHaveAttribute("type", /.*/);
 
-    const filled = button(page, "Filled");
+    const filled = button(page, "default", "Filled");
     for (const property of ["background-color", "color", "min-height"]) {
       const expected = await filled.evaluate(
         (el, p) => getComputedStyle(el).getPropertyValue(p),
@@ -248,6 +263,19 @@ test.describe("Button", () => {
   test('as="a" shows the same focus ring', async ({ page }) => {
     await anchorButton(page).focus();
     await expectFocusRing(anchorButton(page));
+  });
+
+  test("a label on its own line in MDX renders without a paragraph", async ({
+    page,
+  }) => {
+    const multiLine = [
+      anchorButton(page, "label-on-own-line", "Multi-line anchor button"),
+      button(page, "label-on-own-line", "Multi-line button"),
+    ];
+    for (const target of multiLine) {
+      await expect(target.locator("p")).toHaveCount(0);
+      expect((await box(target)).height).toBe(MEDIUM_HEIGHT);
+    }
   });
 
   test('hovering as="a" passes color contrast', async ({ page }) => {
