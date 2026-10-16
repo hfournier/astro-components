@@ -4,18 +4,22 @@ import { box, expectFocusRing, resolvedColor } from "./support/helpers";
 
 const VARIANTS = ["Elevated", "Filled", "Tonal", "Outlined", "Text"] as const;
 
-// The small, default and large cases each hold a filled button at that size
+// M3's medium button height, the default size
+const MEDIUM_HEIGHT = 48;
+
+// The small, medium and large cases each hold every variant at that size; the Filled one is measured
 const SIZES = [
   { caseId: "small", height: 40 },
-  { caseId: "default", height: 48 },
+  { caseId: "medium", height: MEDIUM_HEIGHT },
   { caseId: "large", height: 56 },
 ] as const;
 
-// Each case on /tests/button is a Section with data-testid="button-<caseId>". The disabled
-// case renders every variant disabled, so its buttons are found with `disabled`.
+// Each case on /tests/button is a Section with data-testid="button-<caseId>". The default case
+// holds every variant with no size, the disabled case every variant disabled.
 type ButtonCaseId =
   | "default"
   | "small"
+  | "medium"
   | "large"
   | "disabled"
   | "fullwidth"
@@ -26,20 +30,15 @@ type ButtonCaseId =
 
 const buttonCase = (page: Page, caseId: ButtonCaseId) =>
   page.getByTestId(`button-${caseId}`);
-const button = (
-  page: Page,
-  caseId: ButtonCaseId,
-  name: string,
-  disabled = false
-) =>
-  buttonCase(page, caseId).getByRole("button", { name, exact: true, disabled });
+const button = (page: Page, caseId: ButtonCaseId, name: string) =>
+  buttonCase(page, caseId).getByRole("button", { name, exact: true });
 
-// The as-anchor case renders Button as="a": a real anchor, so its role is "link"
-const anchorButton = (page: Page) =>
-  buttonCase(page, "as-anchor").getByRole("link", {
-    name: "Anchor button",
-    exact: true,
-  });
+// Button as="a" renders a real anchor, so its role is "link"
+const anchorButton = (
+  page: Page,
+  caseId: ButtonCaseId = "as-anchor",
+  name = "Anchor button"
+) => buttonCase(page, caseId).getByRole("link", { name, exact: true });
 
 // The alpha of a computed color: M3's disabled colors are on-surface at 38% / 10%, which
 // Tailwind's `/38` and `/10` modifiers mix in oklab, so the channels are compared by alpha only.
@@ -125,7 +124,7 @@ test.describe("Button", () => {
     page,
   }) => {
     for (const name of VARIANTS) {
-      const target = button(page, "disabled", name, true);
+      const target = button(page, "disabled", name);
       await expect(target).toHaveCSS("cursor", "default");
 
       const style = await target.evaluate((el) => {
@@ -157,7 +156,7 @@ test.describe("Button", () => {
       await expect.poll(() => stateLayerOpacity(target)).toBe("0.08");
     }
 
-    const disabled = button(page, "disabled", "Filled", true);
+    const disabled = button(page, "disabled", "Filled");
     await disabled.hover({ force: true });
     await expect.poll(() => stateLayerOpacity(disabled)).toBe("0");
   });
@@ -270,15 +269,12 @@ test.describe("Button", () => {
     page,
   }) => {
     const multiLine = [
-      buttonCase(page, "label-on-own-line").getByRole("link", {
-        name: "Multi-line anchor button",
-        exact: true,
-      }),
+      anchorButton(page, "label-on-own-line", "Multi-line anchor button"),
       button(page, "label-on-own-line", "Multi-line button"),
     ];
     for (const target of multiLine) {
       await expect(target.locator("p")).toHaveCount(0);
-      expect((await box(target)).height).toBe(48);
+      expect((await box(target)).height).toBe(MEDIUM_HEIGHT);
     }
   });
 
