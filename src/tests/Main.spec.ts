@@ -1,11 +1,11 @@
-import { test, expect } from "../../tests/support/a11y-fixture";
+import { test, expect } from "./support/a11y-fixture";
 
 // Main is BaseWrapper with `as` fixed to <main>; BaseWrapper.spec.ts covers every background role.
-// A page has only one <main>, so Main has no live preview: this file checks the one every page
-// gets from its layout, on Main's own docs page.
+// A page has only one <main>, so /tests/main holds no Main of its own: this file checks the one
+// the test page route wraps every test page's content in, with the main-page-content case inside it.
 test.describe("Main", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/components/main");
+    await page.goto("/tests/main");
   });
 
   test("renders the page's only <main>, with the id SkipToContent targets", async ({
@@ -17,6 +17,7 @@ test.describe("Main", () => {
     await expect(main).toHaveJSProperty("tagName", "MAIN");
     await expect(main).toHaveAttribute("id", "main-content");
     await expect(main).not.toHaveAttribute("as");
+    await expect(main.getByTestId("main-page-content")).toBeVisible();
     await expect(
       page.getByRole("link", { name: "Skip to content" })
     ).toHaveAttribute("href", "#main-content");
