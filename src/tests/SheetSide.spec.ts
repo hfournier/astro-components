@@ -1,9 +1,31 @@
 import type { Locator, Page } from "@playwright/test";
-import { test, expect } from "../../tests/support/a11y-fixture";
-import { box, resolvedColor } from "../../tests/support/helpers";
+import { test, expect } from "./support/a11y-fixture";
+import { box, resolvedColor } from "./support/helpers";
 
-const opener = (page: Page, name: string) =>
-  page.getByTestId("code-preview").getByRole("button", { name, exact: true });
+// Each case on /tests/sheet-side is a Section with data-testid="sheet-side-<caseId>" holding one
+// SheetSide: modal (the "Details" sheet on the end edge), modal-start (on the start edge),
+// modal-detached (detached, with Save and Cancel actions), each with its own opener, and standard
+// ("Filters", the last column of a flex row, with a close button).
+type SheetSideCaseId = "modal" | "modal-start" | "modal-detached" | "standard";
+
+const sheetCase = (page: Page, caseId: SheetSideCaseId) =>
+  page.getByTestId(`sheet-side-${caseId}`);
+
+// The modal cases' opener labels
+type ModalCaseId = Exclude<SheetSideCaseId, "standard">;
+const OPENER_LABELS: Record<ModalCaseId, string> = {
+  modal: "Open side sheet",
+  "modal-start": "Open start side sheet",
+  "modal-detached": "Open detached side sheet",
+};
+
+const modalSheet = (page: Page, caseId: ModalCaseId) =>
+  sheetCase(page, caseId).locator('[data-ac-sheet-side="modal"]');
+const opener = (page: Page, caseId: ModalCaseId) =>
+  sheetCase(page, caseId).getByRole("button", {
+    name: OPENER_LABELS[caseId],
+    exact: true,
+  });
 const viewportWidth = (page: Page) =>
   page.evaluate(() => document.documentElement.clientWidth);
 const isOpen = (sheet: Locator) =>
@@ -11,18 +33,17 @@ const isOpen = (sheet: Locator) =>
 
 test.describe("SheetSide", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/components/sheet-side");
+    await page.goto("/tests/sheet-side");
   });
 
   test.describe("modal", () => {
-    // the usage example: docked on the end edge, headline "Details"
-    const sheet = (page: Page) => page.locator("#sheet-side-usage");
+    const sheet = (page: Page) => modalSheet(page, "modal");
 
     test("opens from its button as a dialog named by its headline, 256px wide on the end edge", async ({
       page,
     }) => {
       await expect(sheet(page)).toBeHidden();
-      await opener(page, "Open side sheet").click();
+      await opener(page, "modal").click();
 
       await expect(
         page.getByRole("dialog", { name: "Details", exact: true })
@@ -40,7 +61,7 @@ test.describe("SheetSide", () => {
     });
 
     test("uses M3's surface", async ({ page }) => {
-      await opener(page, "Open side sheet").click();
+      await opener(page, "modal").click();
 
       await expect(sheet(page).locator("> *")).toHaveCSS(
         "background-color",
@@ -52,7 +73,7 @@ test.describe("SheetSide", () => {
       page,
     }) => {
       const open = async () => {
-        await opener(page, "Open side sheet").click();
+        await opener(page, "modal").click();
         await expect.poll(() => isOpen(sheet(page))).toBe(true);
       };
 
@@ -70,17 +91,17 @@ test.describe("SheetSide", () => {
     });
 
     test("a start sheet sits on the start edge", async ({ page }) => {
-      const start = page.locator("#sheet-side-start");
+      const start = modalSheet(page, "modal-start");
 
-      await opener(page, "Open start side sheet").click();
+      await opener(page, "modal-start").click();
       await expect.poll(async () => (await box(start)).x).toBe(0);
     });
 
     test("a detached sheet is 16px from the window's edges, with its actions in M3's 72px row", async ({
       page,
     }) => {
-      const detached = page.locator("#sheet-side-detached");
-      await opener(page, "Open detached side sheet").click();
+      const detached = modalSheet(page, "modal-detached");
+      await opener(page, "modal-detached").click();
 
       await expect
         .poll(async () => {
@@ -100,11 +121,10 @@ test.describe("SheetSide", () => {
   });
 
   test.describe("standard", () => {
-    // example-01: in a flex row, beside the main content
     const sheet = (page: Page) =>
-      page
-        .getByTestId("code-preview")
-        .getByRole("complementary", { name: "Filters" });
+      sheetCase(page, "standard").getByRole("complementary", {
+        name: "Filters",
+      });
 
     test("is an aside beside the content, 256px wide on M3's surface with a divider on its inner edge", async ({
       page,

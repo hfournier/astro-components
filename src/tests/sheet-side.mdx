@@ -1,0 +1,45 @@
+---
+title: SheetSide
+description: Tests for the SheetSide component
+---
+
+<Heading level={1}>SheetSide Tests</Heading>
+
+<Section data-testid="sheet-side-modal" class="p-4 space-y-4">
+  <Heading level={2}>Modal</Heading>
+  <Button command="show-modal" commandfor="modal-sheet-side">Open side sheet</Button>
+
+  <SheetSide id="modal-sheet-side" headline="Details" isModal>
+    <p>Content that supports the page, such as details about a selected item.</p>
+  </SheetSide>
+</Section>
+
+<Section data-testid="sheet-side-modal-start" class="p-4 space-y-4">
+  <Heading level={2}>Modal on the start edge</Heading>
+  <Button command="show-modal" commandfor="modal-start-sheet-side">Open start side sheet</Button>
+
+  <SheetSide id="modal-start-sheet-side" headline="Details" edge="start" isModal>
+    <p>The sheet's content.</p>
+  </SheetSide>
+</Section>
+
+<Section data-testid="sheet-side-modal-detached" class="p-4 space-y-4">
+  <Heading level={2}>Modal, detached, with actions</Heading>
+  <Button command="show-modal" commandfor="modal-detached-sheet-side">Open detached side sheet</Button>
+
+  <SheetSide id="modal-detached-sheet-side" headline="Edit details" isDetached isModal>
+    <p>The sheet's content.</p>
+    <Button slot="actions" command="close" commandfor="modal-detached-sheet-side">Save</Button>
+    <Button slot="actions" command="close" commandfor="modal-detached-sheet-side" variant="outlined">Cancel</Button>
+  </SheetSide>
+</Section>
+
+<Section data-testid="sheet-side-standard" class="p-4 space-y-4">
+  <Heading level={2}>Standard</Heading>
+  <div class="flex h-80 overflow-hidden border border-(--theme-color-outline-variant)">
+    <div class="flex-1 p-4">The main content.</div>
+    <SheetSide class="h-full" headline="Filters" showCloseX>
+      <p>Controls that filter the main content.</p>
+    </SheetSide>
+  </div>
+</Section>
