@@ -3,16 +3,21 @@ import { test, expect } from "./support/a11y-fixture";
 import { box, resolvedColor } from "./support/helpers";
 
 // Each case on /tests/badge holds one Badge beside the Icon it's anchored to, and the Badge is
-// the only aria-hidden <span> there: badge-count "Inbox, 3 unread" (label 3), badge-no-label
-// "Notifications, new activity" (no label, a dot), badge-over-999 "Messages, 1500 unread" (label 1500).
-type BadgeCase = "count" | "no-label" | "over-999";
+// the only aria-hidden <span> there. Cases are keyed by id to their anchor Icon's accessible name:
+// count has label 3, no-label is a dot, over-999 has label 1500.
+const anchorNames = {
+  count: "Inbox, 3 unread",
+  "no-label": "Notifications, new activity",
+  "over-999": "Messages, 1500 unread",
+} as const;
+type BadgeCaseId = keyof typeof anchorNames;
 
-const testCase = (page: Page, name: BadgeCase) =>
-  page.getByTestId(`badge-${name}`);
-const anchor = (page: Page, name: BadgeCase) =>
-  testCase(page, name).locator("svg[aria-label]");
-const badge = (page: Page, name: BadgeCase) =>
-  testCase(page, name).locator('span[aria-hidden="true"]').first();
+const badgeCase = (page: Page, caseId: BadgeCaseId) =>
+  page.getByTestId(`badge-${caseId}`);
+const anchor = (page: Page, caseId: BadgeCaseId) =>
+  badgeCase(page, caseId).locator(`svg[aria-label="${anchorNames[caseId]}"]`);
+const badge = (page: Page, caseId: BadgeCaseId) =>
+  badgeCase(page, caseId).locator('span[aria-hidden="true"]').first();
 
 test.describe("Badge", () => {
   test.beforeEach(async ({ page }) => {
@@ -40,8 +45,8 @@ test.describe("Badge", () => {
     page,
   }) => {
     await expect(
-      testCase(page, "count").getByRole("button")
-    ).toHaveAccessibleName("Inbox, 3 unread");
+      badgeCase(page, "count").getByRole("button")
+    ).toHaveAccessibleName(anchorNames.count);
   });
 
   test("a one-digit count is M3's 16px square large badge", async ({
