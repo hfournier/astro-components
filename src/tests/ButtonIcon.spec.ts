@@ -43,9 +43,9 @@ test.describe("ButtonIcon", () => {
     const heights = { xs: 32, sm: 40, md: 56, lg: 96, xl: 136 };
 
     for (const [name, height] of Object.entries(heights)) {
-      const target = button(page, "sizes", `Favorite ${name}`);
-      expect(await size(target)).toEqual({ width: height, height });
-      const touchTarget = await target.evaluate((el) => {
+      const favorite = button(page, "sizes", `Favorite ${name}`);
+      expect(await size(favorite)).toEqual({ width: height, height });
+      const touchTarget = await favorite.evaluate((el) => {
         const style = getComputedStyle(el, "::after");
         return [parseFloat(style.width), parseFloat(style.height)];
       });
@@ -59,19 +59,20 @@ test.describe("ButtonIcon", () => {
     page,
   }) => {
     // all at size md
-    await expect(button(page, "shapes", "Share round")).toHaveCSS(
-      "border-top-left-radius",
-      "28px"
-    );
-    await expect(button(page, "shapes", "Share square")).toHaveCSS(
-      "border-top-left-radius",
-      "16px"
-    );
-    expect((await size(button(page, "widths", "Share narrow"))).width).toBe(48);
-    expect((await size(button(page, "widths", "Share default"))).width).toBe(
-      56
-    );
-    expect((await size(button(page, "widths", "Share wide"))).width).toBe(72);
+    const radii = { round: "28px", square: "16px" };
+    const widths = { narrow: 48, default: 56, wide: 72 };
+
+    for (const [shape, radius] of Object.entries(radii)) {
+      await expect(button(page, "shapes", `Share ${shape}`)).toHaveCSS(
+        "border-top-left-radius",
+        radius
+      );
+    }
+    for (const [name, width] of Object.entries(widths)) {
+      expect((await size(button(page, "widths", `Share ${name}`))).width).toBe(
+        width
+      );
+    }
   });
 
   test("a toggle flips aria-pressed on click and from the keyboard, swapping its icon", async ({
