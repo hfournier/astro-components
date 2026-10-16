@@ -25,13 +25,14 @@ const tabsCase = (page: Page, caseId: TabsCaseId) =>
   page.getByTestId(`tabs-${caseId}`);
 const tablist = (page: Page, caseId: TabsCaseId) =>
   tabsCase(page, caseId).getByRole("tablist");
+const indicator = (page: Page, caseId: TabsCaseId) =>
+  tablist(page, caseId).locator("[data-ac-tab-indicator]");
 
 async function indicatorRect(
-  page: Page
+  page: Page,
+  caseId: TabsCaseId
 ): Promise<{ left: number; right: number }> {
-  const rect = await box(
-    tablist(page, "default").locator("[data-ac-tab-indicator]")
-  );
+  const rect = await box(indicator(page, caseId));
   return { left: rect.x, right: rect.x + rect.width };
 }
 
@@ -40,13 +41,14 @@ async function indicatorRect(
 // until it settles onto the target's box rather than reading mid-transition.
 async function waitForIndicatorToTrack(
   page: Page,
+  caseId: TabsCaseId,
   target: Locator
 ): Promise<void> {
   await expect
     .poll(async () => {
       const [targetBox, rect] = await Promise.all([
         target.boundingBox(),
-        indicatorRect(page),
+        indicatorRect(page, caseId),
       ]);
       if (!targetBox) return null;
       return (
@@ -146,13 +148,13 @@ test.describe("Tabs", () => {
     const tabs = tablist(page, "default").getByRole("tab");
     const content = (i: number) => tabs.nth(i).locator(":scope > span");
 
-    await waitForIndicatorToTrack(page, content(0));
+    await waitForIndicatorToTrack(page, "default", content(0));
 
     await tabs.nth(0).focus();
     await page.keyboard.press("ArrowRight");
     await page.keyboard.press("Enter");
 
-    await waitForIndicatorToTrack(page, content(1));
+    await waitForIndicatorToTrack(page, "default", content(1));
   });
 
   test("hovering a tab shows the M3 state layer", async ({ page }) => {
@@ -200,9 +202,7 @@ test.describe("Tabs", () => {
 
     // an inactive tab has no indicator to avoid, so its ring fills the whole tab
     await page.keyboard.press("ArrowRight");
-    const inactiveInset = await page
-      .getByRole("tablist")
-      .first()
+    const inactiveInset = await tablist(page, "default")
       .getByRole("tab")
       .nth(1)
       .evaluate((el) => getComputedStyle(el, "::after").bottom);
@@ -242,11 +242,8 @@ test.describe("Tabs", () => {
   test("the primary indicator is 3px high, the secondary 2px", async ({
     page,
   }) => {
-    const indicator = (caseId: TabsCaseId) =>
-      tablist(page, caseId).locator("[data-ac-tab-indicator]");
-
-    expect(await height(indicator("default"))).toBe(3);
-    expect(await height(indicator("secondary-variant"))).toBe(2);
+    expect(await height(indicator(page, "default"))).toBe(3);
+    expect(await height(indicator(page, "secondary-variant"))).toBe(2);
   });
 
   test("an inline icon is 8px from its label, and an inline badge 4px", async ({
