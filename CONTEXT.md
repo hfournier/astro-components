@@ -77,7 +77,7 @@ An `example-NN-<slug>.mdx` file in a component's docs folder: one per named vari
 _Avoid_: usage (ambiguous with [[Usage file]]), demo
 
 **Test page**:
-A `src/tests/<id>.mdx` page, rendered at `/tests/<id>`, showing a component across many cases at once — every variant, every background role — both for checking by eye and as the fixtures its spec runs against. Each case is a `Section` with `data-testid="<id>-<case>"`, which the spec scopes to. Cases that must throw at render time go on a dedicated `.astro` page under `src/pages/tests/` instead (ADR-0015).
+A `src/tests/<id>.mdx` page, rendered at `/tests/<id>`, showing a component across many cases at once — every variant, every background role — both for checking by eye and as the fixtures its spec runs against. Each case is a `Section` with `data-testid="<id>-<case>"`, which the spec scopes to. Cases that must throw at render time, or must not sit in a `Section`, go on a dedicated `.astro` page under `src/pages/tests/` instead (ADR-0015).
 _Avoid_: example, demo, fixture page
 
 **Prop manifest**:

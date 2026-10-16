@@ -3,22 +3,23 @@ import { test, expect } from "./support/a11y-fixture";
 // A modal Dialog, SheetSide and SheetBottom render their headline row in a <header> (and
 // Dialog and SheetSide their actions in a <footer>). Outside <main> and any sectioning element, a
 // bare <header> or <footer> is a banner or contentinfo landmark, which an overlay's title row and
-// buttons aren't. /tests/overlay-landmarks places one of each outside <main>.
+// buttons aren't. /tests/overlay-landmarks places one of each outside <main>. footerAction is
+// the button in the overlay's footer, for those that have one.
 const overlays = [
   {
-    name: "Dialog",
+    component: "Dialog",
     trigger: "Open dialog",
     headline: "Dialog headline",
-    action: "Done",
+    footerAction: "Done",
   },
   {
-    name: "SheetSide",
+    component: "SheetSide",
     trigger: "Open side sheet",
     headline: "Side sheet headline",
-    action: "Save",
+    footerAction: "Save",
   },
   {
-    name: "SheetBottom",
+    component: "SheetBottom",
     trigger: "Open bottom sheet",
     headline: "Bottom sheet headline",
   },
@@ -28,8 +29,8 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/tests/overlay-landmarks");
 });
 
-for (const { name, trigger, headline, action } of overlays) {
-  test(`an open modal ${name} outside <main> adds no banner or contentinfo landmark`, async ({
+for (const { component, trigger, headline, footerAction } of overlays) {
+  test(`an open modal ${component} outside <main> adds no banner or contentinfo landmark`, async ({
     page,
   }) => {
     await page.getByRole("button", { name: trigger }).click();
@@ -45,10 +46,11 @@ for (const { name, trigger, headline, action } of overlays) {
     await expect(
       overlay.getByRole("heading", { level: 2, name: headline })
     ).toBeVisible();
-    if (action) {
-      await expect(overlay.locator("footer")).toHaveCount(1);
+    if (footerAction) {
+      const footer = overlay.locator("footer");
+      await expect(footer).toHaveCount(1);
       await expect(
-        overlay.locator("footer").getByRole("button", { name: action })
+        footer.getByRole("button", { name: footerAction })
       ).toBeVisible();
     }
   });
