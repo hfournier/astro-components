@@ -1,0 +1,36 @@
+---
+title: Divider
+description: Tests for the Divider component
+---
+
+<Heading level={1}>Divider Tests</Heading>
+
+<Section data-testid="divider-default" class="p-4 space-y-4">
+  <Heading level={2}>Default</Heading>
+  <div class="space-y-4">
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae sapiente debitis quidem quasi cupiditate laborum tenetur.</p>
+    <Divider />
+    <p>Dolore officia nesciunt laudantium ex corrupti earum vitae, eaque, ad reiciendis debitis quod similique enim sunt facere.</p>
+  </div>
+</Section>
+
+<Section data-testid="divider-insets" class="p-4 space-y-4">
+  <Heading level={2}>Insets: none, start, middle</Heading>
+  <div class="space-y-4 border border-(--theme-color-outline-variant) py-4">
+    <Divider />
+    <Divider inset="start" />
+    <Divider inset="middle" />
+  </div>
+</Section>
+
+<Section data-testid="divider-vertical" class="p-4 space-y-4">
+  <Heading level={2}>Vertical: no inset, then inset middle</Heading>
+  <div class="flex h-16 items-center gap-4 px-2 border border-(--theme-color-outline-variant)">
+    <ButtonIcon icon="edit" label="Edit" />
+    <ButtonIcon icon="content_copy" label="Copy" />
+    <Divider orientation="vertical" />
+    <ButtonIcon icon="share" label="Share" />
+    <Divider orientation="vertical" inset="middle" />
+    <ButtonIcon icon="delete" label="Delete" />
+  </div>
+</Section>
