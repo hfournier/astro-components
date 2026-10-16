@@ -7,16 +7,16 @@ description: Tests for the Popover component
 
 <Section data-testid="popover-basic" class="p-4 space-y-4">
   <Heading level={2}>Basic</Heading>
-  <Button command="show-popover" commandfor="popover-basic">Open basic Popover</Button>
+  <Button command="show-popover" commandfor="basic-popover">Open basic Popover</Button>
 
-  <Popover id="popover-basic">Popover content</Popover>
+  <Popover id="basic-popover">Popover content</Popover>
 </Section>
 
 <Section data-testid="popover-close-button" class="p-4 space-y-4">
   <Heading level={2}>Close button</Heading>
-  <Button command="show-popover" commandfor="popover-close-button">Open Popover with close button</Button>
+  <Button command="show-popover" commandfor="close-button-popover">Open Popover with close button</Button>
 
-  <Popover id="popover-close-button" transition="fade-scale" showCloseX={true}>
+  <Popover id="close-button-popover" transition="fade-scale" showCloseX={true}>
     lorem ipsum dolor sit amet, consectetur adipisicing elit. Quisquam,
     voluptatum!
   </Popover>

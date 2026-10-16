@@ -11,8 +11,8 @@ async function activate(locator: Locator): Promise<void> {
 }
 
 // Each case on /tests/popover is a Section with data-testid="popover-<caseId>" holding one trigger
-// and the Popover it opens, whose id is also "popover-<caseId>". The basic case's Popover has only
-// its id; the close-button case's sets showCloseX. Each trigger's label names its case.
+// and the Popover it opens. The basic case's Popover has only its id; the close-button case's sets
+// showCloseX and the fade-scale transition. Each trigger's label names its case.
 type PopoverCaseId = "basic" | "close-button";
 
 const TRIGGER_LABELS: Record<PopoverCaseId, string> = {
@@ -20,12 +20,15 @@ const TRIGGER_LABELS: Record<PopoverCaseId, string> = {
   "close-button": "Open Popover with close button",
 };
 
+const popoverCase = (page: Page, caseId: PopoverCaseId) =>
+  page.getByTestId(`popover-${caseId}`);
 const popoverFor = (page: Page, caseId: PopoverCaseId) =>
-  page.getByTestId(`popover-${caseId}`).locator(`#popover-${caseId}`);
+  popoverCase(page, caseId).locator("[popover]");
 const triggerFor = (page: Page, caseId: PopoverCaseId) =>
-  page
-    .getByTestId(`popover-${caseId}`)
-    .getByRole("button", { name: TRIGGER_LABELS[caseId], exact: true });
+  popoverCase(page, caseId).getByRole("button", {
+    name: TRIGGER_LABELS[caseId],
+    exact: true,
+  });
 
 test.describe("Popover", () => {
   test.beforeEach(async ({ page }) => {
