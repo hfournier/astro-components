@@ -1,22 +1,39 @@
 import type { Locator, Page } from "@playwright/test";
-import { test, expect } from "../../tests/support/a11y-fixture";
+import { test, expect } from "./support/a11y-fixture";
 import {
   box,
   expectFocusRing,
   resolvedColor,
   textBox,
-} from "../../tests/support/helpers";
+} from "./support/helpers";
+
+// Each case on /tests/tabs is a Section with data-testid="tabs-<caseId>" holding one Tabs. These
+// are the ones this spec uses: default (primary, labels only), icons (primary with stacked icons),
+// icons-and-badges (primary with icons, Updates with a dot badge), secondary-variant (labels only),
+// secondary-variant-with-icons (inline icons), secondary-variant-with-badges (Mentions with a
+// count, Replies, Drafts with a dot) and mdx-spacing-and-comments.
+type TabsCaseId =
+  | "default"
+  | "icons"
+  | "icons-and-badges"
+  | "secondary-variant"
+  | "secondary-variant-with-icons"
+  | "secondary-variant-with-badges"
+  | "mdx-spacing-and-comments";
+
+const tabsCase = (page: Page, caseId: TabsCaseId) =>
+  page.getByTestId(`tabs-${caseId}`);
+const tablist = (page: Page, caseId: TabsCaseId) =>
+  tabsCase(page, caseId).getByRole("tablist");
+const indicator = (page: Page, caseId: TabsCaseId) =>
+  tablist(page, caseId).locator("[data-ac-tab-indicator]");
 
 async function indicatorRect(
-  page: Page
+  page: Page,
+  caseId: TabsCaseId
 ): Promise<{ left: number; right: number }> {
-  return page.evaluate(() => {
-    const indicator = document
-      .querySelectorAll('[role="tablist"]')[0]!
-      .querySelector("[data-ac-tab-indicator]") as HTMLElement;
-    const rect = indicator.getBoundingClientRect();
-    return { left: rect.left, right: rect.right };
-  });
+  const rect = await box(indicator(page, caseId));
+  return { left: rect.x, right: rect.x + rect.width };
 }
 
 // The indicator is CSS anchor-positioned to the selected tab - to its content span on primary tabs
@@ -24,13 +41,14 @@ async function indicatorRect(
 // until it settles onto the target's box rather than reading mid-transition.
 async function waitForIndicatorToTrack(
   page: Page,
+  caseId: TabsCaseId,
   target: Locator
 ): Promise<void> {
   await expect
     .poll(async () => {
       const [targetBox, rect] = await Promise.all([
         target.boundingBox(),
-        indicatorRect(page),
+        indicatorRect(page, caseId),
       ]);
       if (!targetBox) return null;
       return (
@@ -42,16 +60,12 @@ async function waitForIndicatorToTrack(
 }
 
 test.describe("Tabs", () => {
-  // The demo now lives on the shared doc page at /components/tabs: the Usage block plus
-  // example-01/02. Every test drives the first tablist on the page (the Usage one) via
-  // `.first()`; the source block beside each preview is highlighted <pre> text, which
-  // carries no runtime role="tablist"/data-ac-tablist-container, so it never matches.
   test.beforeEach(async ({ page }) => {
-    await page.goto("/components/tabs");
+    await page.goto("/tests/tabs");
   });
 
   test("arrow keys move focus with roving tabindex", async ({ page }) => {
-    const tabs = page.getByRole("tablist").first().getByRole("tab");
+    const tabs = tablist(page, "default").getByRole("tab");
     const [tab1, tab2, tab3] = [tabs.nth(0), tabs.nth(1), tabs.nth(2)];
 
     await tab1.focus();
@@ -75,7 +89,7 @@ test.describe("Tabs", () => {
   test("Home and End move focus to the first and last tab", async ({
     page,
   }) => {
-    const tabs = page.getByRole("tablist").first().getByRole("tab");
+    const tabs = tablist(page, "default").getByRole("tab");
     const [tab1, , tab3] = [tabs.nth(0), tabs.nth(1), tabs.nth(2)];
 
     await tab1.focus();
@@ -89,7 +103,9 @@ test.describe("Tabs", () => {
   test("selecting a tab shows its panel and hides the others", async ({
     page,
   }) => {
-    const group = page.locator("[data-ac-tablist-container]").first();
+    const group = tabsCase(page, "default").locator(
+      "[data-ac-tablist-container]"
+    );
     const tabs = group.getByRole("tab");
     // getByRole('tabpanel') excludes panels hidden via [hidden] from the accessibility tree, so a
     // plain attribute selector is used here to see all of them regardless of visibility.
@@ -108,9 +124,11 @@ test.describe("Tabs", () => {
   });
 
   test("clicking a tab's label or badge selects that tab", async ({ page }) => {
-    // The Badges example (last on the page): a click on the label text or the inline badge
-    // targets the tab's inner spans, not the button itself
-    const group = page.locator("[data-ac-tablist-container]").last();
+    // A click on the label text or the inline badge targets the tab's inner spans, not the
+    // button itself
+    const group = tabsCase(page, "secondary-variant-with-badges").locator(
+      "[data-ac-tablist-container]"
+    );
     const tabs = group.getByRole("tab");
     const panels = group.locator('[role="tabpanel"]');
 
@@ -127,20 +145,20 @@ test.describe("Tabs", () => {
   test("the sliding indicator follows the selected tab's content", async ({
     page,
   }) => {
-    const tabs = page.getByRole("tablist").first().getByRole("tab");
+    const tabs = tablist(page, "default").getByRole("tab");
     const content = (i: number) => tabs.nth(i).locator(":scope > span");
 
-    await waitForIndicatorToTrack(page, content(0));
+    await waitForIndicatorToTrack(page, "default", content(0));
 
     await tabs.nth(0).focus();
     await page.keyboard.press("ArrowRight");
     await page.keyboard.press("Enter");
 
-    await waitForIndicatorToTrack(page, content(1));
+    await waitForIndicatorToTrack(page, "default", content(1));
   });
 
   test("hovering a tab shows the M3 state layer", async ({ page }) => {
-    const tab3 = page.getByRole("tablist").first().getByRole("tab").nth(2);
+    const tab3 = tablist(page, "default").getByRole("tab").nth(2);
 
     await tab3.hover();
 
@@ -156,7 +174,7 @@ test.describe("Tabs", () => {
   });
 
   test("focusing a tab shows the focus ring", async ({ page }) => {
-    const tabs = page.getByRole("tablist").first().getByRole("tab");
+    const tabs = tablist(page, "default").getByRole("tab");
     await tabs.first().focus();
     await page.keyboard.press("ArrowRight");
 
@@ -167,7 +185,7 @@ test.describe("Tabs", () => {
   test("only the selected tab's focus ring stops 1px above the indicator", async ({
     page,
   }) => {
-    const tab = page.getByRole("tablist").first().getByRole("tab").first();
+    const tab = tablist(page, "default").getByRole("tab").first();
     await tab.focus();
 
     const gap = await tab.evaluate((el) => {
@@ -184,9 +202,7 @@ test.describe("Tabs", () => {
 
     // an inactive tab has no indicator to avoid, so its ring fills the whole tab
     await page.keyboard.press("ArrowRight");
-    const inactiveInset = await page
-      .getByRole("tablist")
-      .first()
+    const inactiveInset = await tablist(page, "default")
       .getByRole("tab")
       .nth(1)
       .evaluate((el) => getComputedStyle(el, "::after").bottom);
@@ -196,48 +212,51 @@ test.describe("Tabs", () => {
   test("the divider under the tabs is M3's 1px outline-variant rule", async ({
     page,
   }) => {
-    const tablist = page.getByRole("tablist").first();
-    await expect(tablist).toHaveCSS("border-bottom-width", "1px");
-    await expect(tablist).toHaveCSS(
+    const defaultTablist = tablist(page, "default");
+    await expect(defaultTablist).toHaveCSS("border-bottom-width", "1px");
+    await expect(defaultTablist).toHaveCSS(
       "border-bottom-color",
       await resolvedColor(page, "var(--theme-color-outline-variant)")
     );
   });
 
-  // Tablists in page order: usage (primary, labels only), example-01 (primary with icons),
-  // example-02 (secondary), example-03 (secondary with icons), example-04, example-05,
-  // example-06 (primary with icons and badges, then secondary with badges)
-  const tablist = (page: Page, i: number) => page.getByRole("tablist").nth(i);
   const height = async (target: Locator) => (await box(target)).height;
 
   test("tabs are 48px high with labels only, 64px with stacked 24px icons", async ({
     page,
   }) => {
-    expect(await height(tablist(page, 0).getByRole("tab").first())).toBe(48);
-    expect(await height(tablist(page, 2).getByRole("tab").first())).toBe(48);
-    expect(await height(tablist(page, 1).getByRole("tab").first())).toBe(64);
-    expect((await box(tablist(page, 1).locator("svg").first())).width).toBe(24);
+    expect(
+      await height(tablist(page, "default").getByRole("tab").first())
+    ).toBe(48);
+    expect(
+      await height(tablist(page, "secondary-variant").getByRole("tab").first())
+    ).toBe(48);
+    expect(await height(tablist(page, "icons").getByRole("tab").first())).toBe(
+      64
+    );
+    expect(
+      (await box(tablist(page, "icons").locator("svg").first())).width
+    ).toBe(24);
   });
 
   test("the primary indicator is 3px high, the secondary 2px", async ({
     page,
   }) => {
-    const indicator = (i: number) =>
-      tablist(page, i).locator("[data-ac-tab-indicator]");
-
-    expect(await height(indicator(0))).toBe(3);
-    expect(await height(indicator(2))).toBe(2);
+    expect(await height(indicator(page, "default"))).toBe(3);
+    expect(await height(indicator(page, "secondary-variant"))).toBe(2);
   });
 
   test("an inline icon is 8px from its label, and an inline badge 4px", async ({
     page,
   }) => {
-    const iconTab = tablist(page, 3).getByRole("tab").first();
+    const iconTab = tablist(page, "secondary-variant-with-icons")
+      .getByRole("tab")
+      .first();
     const icon = await box(iconTab.locator("svg"));
     const iconLabel = await textBox(iconTab.locator(":scope > span"));
     expect(iconLabel.x - (icon.x + icon.width)).toBeCloseTo(8, 0);
 
-    const badge = tablist(page, 7)
+    const badge = tablist(page, "secondary-variant-with-badges")
       .getByRole("tab")
       .first()
       .locator('span[aria-hidden="true"]');
@@ -248,7 +267,9 @@ test.describe("Tabs", () => {
   });
 
   test("a dot badge on a stacked icon overlaps it by 6px", async ({ page }) => {
-    const tab = tablist(page, 6).getByRole("tab", { name: "Updates" });
+    const tab = tablist(page, "icons-and-badges").getByRole("tab", {
+      name: "Updates",
+    });
     const icon = await box(tab.locator("svg"));
     const dot = await box(tab.locator('span[aria-hidden="true"]'));
 
@@ -301,7 +322,7 @@ test.describe("Tabs content", () => {
   test("in MDX, its Tabs can be spaced out and commented", async ({ page }) => {
     await page.goto("/tests/tabs");
     await expect(
-      page.getByTestId("tabs-mdx-spacing-and-comments").getByRole("tab")
+      tablist(page, "mdx-spacing-and-comments").getByRole("tab")
     ).toHaveCount(3);
   });
 });
