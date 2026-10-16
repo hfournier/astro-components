@@ -83,7 +83,8 @@ const handleAttrs = isModal
     /* Its height follows its content, up to the window's height less M3's top margin: 72px, or
        56px in a window wider than 640px. Only the content scrolls. The headline is M3 Title
        Large. A BaseWrapper, so a modal sheet's focus rings and links follow its own surface, not
-       the page it was placed in. */
+       the page it was placed in. role="none" on the header: in a modal sheet outside <main> and
+       any sectioning element, it'd otherwise be the page's banner landmark while it's open. */
   }
   <BaseWrapper
     {bgColor}
@@ -91,7 +92,11 @@ const handleAttrs = isModal
   >
     {
       hasHeader && (
-        <Header bgColor="transparent" class="flex shrink-0 flex-col">
+        <Header
+          bgColor="transparent"
+          class="flex shrink-0 flex-col"
+          role="none"
+        >
           {
             /* 22px above and below the 4px handle make a 48px-tall target. touch-none, so a
                drag on it isn't taken as a scroll. */
