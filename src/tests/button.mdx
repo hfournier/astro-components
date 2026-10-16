@@ -59,3 +59,37 @@ description: Tests for the Button component
     <Button variant="text" showFullwidth>Text</Button>
   </div>
 </Section>
+
+<Section data-testid="button-no-props" class="p-4">
+  <Heading level={2}>No props</Heading>
+  <div class="flex flex-wrap gap-2 py-8">
+    <Button>Primary Button</Button>
+  </div>
+</Section>
+
+<Section data-testid="button-shape" class="p-4">
+  <Heading level={2}>Shape</Heading>
+  <div class="flex flex-wrap gap-2 py-8">
+    <Button shape="round">Round button</Button>
+    <Button shape="square">Square button</Button>
+  </div>
+</Section>
+
+<Section data-testid="button-as-anchor" class="p-4">
+  <Heading level={2}>As an anchor</Heading>
+  <div class="flex flex-wrap gap-2 py-8">
+    <Button as="a" href="#">Anchor button</Button>
+  </div>
+</Section>
+
+<Section data-testid="button-label-on-own-line" class="p-4">
+  <Heading level={2}>Label on its own line</Heading>
+  <div class="flex flex-wrap gap-2 py-8">
+    <Button>
+      Multi-line button
+    </Button>
+    <Button as="a" href="#">
+      Multi-line anchor button
+    </Button>
+  </div>
+</Section>
