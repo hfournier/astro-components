@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "./support/a11y-fixture";
 import { box, expectFocusRing, resolvedColor } from "./support/helpers";
 
@@ -10,6 +10,8 @@ type DetailsCaseId =
 
 const details = (page: Page, caseId: DetailsCaseId) =>
   page.getByTestId(`details-${caseId}`).locator("details");
+const chevron = (target: Locator) =>
+  target.locator("summary svg[data-ac-details-chevron]");
 
 test.describe("Details", () => {
   test.beforeEach(async ({ page }) => {
@@ -48,9 +50,7 @@ test.describe("Details", () => {
   test("renders expanded on load when the open prop is set", async ({
     page,
   }) => {
-    const opened = page
-      .getByTestId("details-initially-open")
-      .locator("details[open]");
+    const opened = details(page, "initially-open").and(page.locator("[open]"));
 
     await expect(opened).toHaveCount(1);
     await expect(
@@ -76,11 +76,11 @@ test.describe("Details", () => {
   });
 
   test("chevron rotates when open", async ({ page }) => {
-    const chevron = (caseId: DetailsCaseId) =>
-      details(page, caseId).locator("summary svg[data-ac-details-chevron]");
-
-    await expect(chevron("default")).toHaveCSS("rotate", "none");
-    await expect(chevron("initially-open")).toHaveCSS("rotate", "180deg");
+    await expect(chevron(details(page, "default"))).toHaveCSS("rotate", "none");
+    await expect(chevron(details(page, "initially-open"))).toHaveCSS(
+      "rotate",
+      "180deg"
+    );
   });
 
   test("respects prefers-reduced-motion: transitions off, disclosure still opens", async ({
@@ -89,9 +89,7 @@ test.describe("Details", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
 
     const target = details(page, "default");
-    const chevron = target.locator("summary svg[data-ac-details-chevron]");
-
-    await expect(chevron).toHaveCSS("transition-duration", "0s");
+    await expect(chevron(target)).toHaveCSS("transition-duration", "0s");
 
     await target.locator("summary").focus();
     await page.keyboard.press("Enter");
@@ -130,11 +128,10 @@ test.describe("Details", () => {
   test("summary is M3's 56px one-line list item, with a 24px chevron", async ({
     page,
   }) => {
-    const summary = details(page, "default").locator("summary");
-    const chevron = summary.locator("svg[data-ac-details-chevron]");
+    const target = details(page, "default");
 
-    expect((await box(summary)).height).toBe(56);
-    expect((await box(chevron)).width).toBe(24);
+    expect((await box(target.locator("summary"))).height).toBe(56);
+    expect((await box(chevron(target))).width).toBe(24);
   });
 
   test("dense size is a 48px summary", async ({ page }) => {
