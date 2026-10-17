@@ -130,6 +130,26 @@ test.describe("SheetSide", () => {
       await closedEmpty();
     });
 
+    test("stays open when a press starts in its content and ends on the scrim", async ({
+      page,
+    }) => {
+      await opener(page, "modal").click();
+      await expect
+        .poll(async () => {
+          const { x, width } = await box(sheet(page));
+          return x + width;
+        })
+        .toBe(await viewportWidth(page));
+
+      const { x, y } = await box(sheet(page).locator("p"));
+      await page.mouse.move(x + 2, y + 2);
+      await page.mouse.down();
+      await page.mouse.move(100, 300, { steps: 5 });
+      await page.mouse.up();
+
+      expect(await isOpen(sheet(page))).toBe(true);
+    });
+
     test("a start sheet sits on the start edge", async ({ page }) => {
       const start = modalSheet(page, "modal-start");
 
