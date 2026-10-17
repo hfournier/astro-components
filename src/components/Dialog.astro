@@ -29,6 +29,7 @@ const { icon, headline, label, id, class: classList, ...attrs } = Astro.props;
   transition="fade-down"
   aria-labelledby={headline ? `${id}-headline` : undefined}
   aria-label={label && !headline ? label : undefined}
+  data-ac-dialog
   {...attrs}
 >
   {
@@ -85,6 +86,19 @@ const { icon, headline, label, id, class: classList, ...attrs } = Astro.props;
     )
   }
 </BaseOverlay>
+
+<script>
+  // Escape closes a dialog without setting its returnValue, and Firefox and WebKit keep the one
+  // from its last opening, so it's cleared: an Escape never reads as the action chosen last time.
+  // A request-close button's value is applied after `cancel`, so it still wins.
+  document
+    .querySelectorAll<HTMLDialogElement>("[data-ac-dialog]")
+    .forEach((dialog) => {
+      dialog.addEventListener("cancel", () => {
+        dialog.returnValue = "";
+      });
+    });
+</script>
 
 <style>
   /* M3 scrolling dialog: a divider shows at whichever edge content is scrolled out of view,

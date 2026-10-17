@@ -29,6 +29,8 @@ const viewportWidth = (page: Page) =>
   page.evaluate(() => document.documentElement.clientWidth);
 const isOpen = (sheet: Locator) =>
   sheet.evaluate((el) => (el as HTMLDialogElement).open);
+const returnValue = (sheet: Locator) =>
+  sheet.evaluate((el) => (el as HTMLDialogElement).returnValue);
 
 test.describe("SheetBottom", () => {
   test.beforeEach(async ({ page }) => {
@@ -132,30 +134,41 @@ test.describe("SheetBottom", () => {
       expect(x + width).toBe((await viewportWidth(page)) - 56);
     });
 
-    test("closes with its drag handle, a drag down on it, Escape or a click on the scrim", async ({
+    test("closes with its drag handle, a drag down on it, Escape or a click on the scrim, each with an empty returnValue", async ({
       page,
     }) => {
       const handle = sheet(page).getByRole("button", { name: "Close" });
+      // None of these is an action, so each must clear what an earlier opening's action left
+      const closed = async () => {
+        await expect.poll(() => isOpen(sheet(page))).toBe(false);
+        expect(await returnValue(sheet(page))).toBe("");
+      };
+      const openWithStaleValue = async () => {
+        await open(page);
+        await sheet(page).evaluate(
+          (el) => ((el as HTMLDialogElement).returnValue = "stale")
+        );
+      };
 
-      await open(page);
+      await openWithStaleValue();
       await handle.click();
-      await expect.poll(() => isOpen(sheet(page))).toBe(false);
+      await closed();
 
-      await open(page);
+      await openWithStaleValue();
       const { x, y, width, height } = await box(handle);
       await page.mouse.move(x + width / 2, y + height / 2);
       await page.mouse.down();
       await page.mouse.move(x + width / 2, y + height / 2 + 100, { steps: 5 });
       await page.mouse.up();
-      await expect.poll(() => isOpen(sheet(page))).toBe(false);
+      await closed();
 
-      await open(page);
+      await openWithStaleValue();
       await page.keyboard.press("Escape");
-      await expect.poll(() => isOpen(sheet(page))).toBe(false);
+      await closed();
 
-      await open(page);
+      await openWithStaleValue();
       await page.mouse.click(10, 10);
-      await expect.poll(() => isOpen(sheet(page))).toBe(false);
+      await closed();
     });
   });
 

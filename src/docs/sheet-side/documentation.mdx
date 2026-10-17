@@ -38,7 +38,7 @@ props:
     type: boolean
     required: false
     default: "false"
-    description: Makes the sheet M3's modal side sheet, a `<dialog>` that slides in from its edge over a scrim. Opened with `showModal()` (or a button with `command="show-modal"`), it keeps focus inside it and makes the rest of the page inert. It closes with its close button, Escape or a click on the scrim.
+    description: Makes the sheet M3's modal side sheet, a `<dialog>` that slides in from its edge over a scrim. Opened with `showModal()` (or a button with `command="show-modal"`), it keeps focus inside it and makes the rest of the page inert. It closes with its close button, Escape or a click on the scrim, each leaving its `returnValue` empty.
   - name: showCloseX
     type: boolean
     required: false
@@ -49,7 +49,7 @@ slots:
     description: The sheet's content, which scrolls if it's taller than the sheet.
     kind: any
   - name: actions
-    description: Buttons for the sheet's actions, in a row at the bottom of the sheet, aligned to the start, under a divider. They stay in place while the content scrolls.
+    description: Buttons for the sheet's actions, in a row at the bottom of the sheet, aligned to the start, under a divider. They stay in place while the content scrolls. In a modal sheet, give each a `value` and `command="close"`, and the sheet closes with its `returnValue` set to the value, so a `close` listener can tell which was chosen (an empty `returnValue` means it was dismissed). A standard sheet isn't a dialog, so its actions need click handlers of their own.
     kind: any
 cssProps:
   - name: --ac-sheet-side-width
