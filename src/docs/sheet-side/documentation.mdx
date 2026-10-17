@@ -38,7 +38,7 @@ props:
     type: boolean
     required: false
     default: "false"
-    description: Makes the sheet M3's modal side sheet, a `<dialog>` that slides in from its edge over a scrim. Opened with `showModal()` (or a button with `command="show-modal"`), it keeps focus inside it and makes the rest of the page inert. It closes with its close button, Escape or a click on the scrim, each leaving its `returnValue` empty.
+    description: Makes the sheet M3's modal side sheet, a `<dialog>` that slides in from its edge over a scrim. Opened with `showModal()` (or a button with `command="show-modal"`), it keeps focus inside it and makes the rest of the page inert. It closes with its close button, Escape or a click on the scrim, each leaving its `returnValue` empty. Escape and a click on the scrim fire a `cancel` event first, which you can prevent to keep it open.
   - name: showCloseX
     type: boolean
     required: false
