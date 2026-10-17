@@ -25,7 +25,7 @@ props:
   - name: buttonAcknowledge
     type: '{ id?: string; text: string; value: string }'
     required: true
-    description: The acknowledgement action (e.g. "OK" or "Got it"). It receives focus when the dialog opens, so pressing Enter closes it, and sets the dialog's `returnValue` to `value`. Closing with Escape leaves `returnValue` empty, even after an earlier opening set it.
+    description: The acknowledgement action (e.g. "OK" or "Got it"). It receives focus when the dialog opens, so pressing Enter closes it, and sets the dialog's `returnValue` to `value`. Closing with Escape or a click on the scrim leaves `returnValue` empty, even after an earlier opening set it.
 slots:
   - name: default
     description: The dialog's supporting text - the message being acknowledged. It's linked to the dialog with `aria-describedby`, so screen readers announce it along with the headline.
