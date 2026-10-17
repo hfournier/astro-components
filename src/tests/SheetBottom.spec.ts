@@ -32,6 +32,19 @@ const isOpen = (sheet: Locator) =>
 const returnValue = (sheet: Locator) =>
   sheet.evaluate((el) => (el as HTMLDialogElement).returnValue);
 
+// Records the sheet's cancel/close events (with its returnValue at close) for later assertion
+const recordEvents = (sheet: Locator) =>
+  sheet.evaluate((el: HTMLDialogElement) => {
+    const events: string[] = [];
+    (el as HTMLDialogElement & { events: string[] }).events = events;
+    el.addEventListener("cancel", () => events.push("cancel"));
+    el.addEventListener("close", () => events.push(`close:${el.returnValue}`));
+  });
+const recordedEvents = (sheet: Locator) =>
+  sheet.evaluate(
+    (el) => (el as HTMLDialogElement & { events: string[] }).events
+  );
+
 test.describe("SheetBottom", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/tests/sheet-bottom");
@@ -169,6 +182,24 @@ test.describe("SheetBottom", () => {
       await openWithStaleValue();
       await page.mouse.click(10, 10);
       await closed();
+    });
+
+    test("a click on the scrim cancels it like Escape, unless the page prevents cancel", async ({
+      page,
+    }) => {
+      await open(page);
+      await sheet(page).evaluate((el) => {
+        el.addEventListener("cancel", (event) => event.preventDefault(), {
+          once: true,
+        });
+      });
+      await page.mouse.click(10, 10);
+      expect(await isOpen(sheet(page))).toBe(true);
+
+      await recordEvents(sheet(page));
+      await page.mouse.click(10, 10);
+      await expect.poll(() => isOpen(sheet(page))).toBe(false);
+      expect(await recordedEvents(sheet(page))).toEqual(["cancel", "close:"]);
     });
 
     test("stays open when a press starts in its content and ends on the scrim", async ({
