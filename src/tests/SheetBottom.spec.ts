@@ -170,6 +170,20 @@ test.describe("SheetBottom", () => {
       await page.mouse.click(10, 10);
       await closed();
     });
+
+    test("stays open when a press starts in its content and ends on the scrim", async ({
+      page,
+    }) => {
+      await open(page);
+
+      const { x, y } = await box(sheet(page).locator("p"));
+      await page.mouse.move(x + 2, y + 2);
+      await page.mouse.down();
+      await page.mouse.move(10, 10, { steps: 5 });
+      await page.mouse.up();
+
+      expect(await isOpen(sheet(page))).toBe(true);
+    });
   });
 
   test.describe("standard", () => {
