@@ -145,12 +145,17 @@ const handleAttrs = isModal
   const dragThreshold = 32;
 
   // A modal sheet closes on a click on its scrim: its content fills the dialog, so a click that
-  // lands on the dialog itself is on its ::backdrop
+  // lands on the dialog itself is on its ::backdrop. Neither that, Escape nor the drag handle is an
+  // action, so all of them clear returnValue, which Firefox and WebKit otherwise keep from the
+  // sheet's last opening.
   document
     .querySelectorAll<HTMLDialogElement>('[data-ac-sheet-bottom="modal"]')
     .forEach((sheet) => {
       sheet.addEventListener("click", (event) => {
-        if (event.target === sheet) sheet.close();
+        if (event.target === sheet) sheet.close("");
+      });
+      sheet.addEventListener("cancel", () => {
+        sheet.returnValue = "";
       });
     });
 
@@ -215,7 +220,7 @@ const handleAttrs = isModal
           // dropped in the same frame as close(), so it slides away from where it was let go
           sheet.style.removeProperty("transition");
           sheet.style.removeProperty("translate");
-          if (dy > dragThreshold) (sheet as HTMLDialogElement).close();
+          if (dy > dragThreshold) (sheet as HTMLDialogElement).close("");
         } else if (dy > dragThreshold) {
           setExpanded(false);
         } else if (dy < -dragThreshold) {
@@ -235,7 +240,7 @@ const handleAttrs = isModal
           dragged = false;
           return;
         }
-        if (isModal) (sheet as HTMLDialogElement).close();
+        if (isModal) (sheet as HTMLDialogElement).close("");
         else setExpanded(!isExpanded());
       });
     });

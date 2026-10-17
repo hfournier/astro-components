@@ -33,6 +33,8 @@ const viewportWidth = (page: Page) =>
   page.evaluate(() => document.documentElement.clientWidth);
 const isOpen = (sheet: Locator) =>
   sheet.evaluate((el) => (el as HTMLDialogElement).open);
+const returnValue = (sheet: Locator) =>
+  sheet.evaluate((el) => (el as HTMLDialogElement).returnValue);
 
 test.describe("SheetSide", () => {
   test.beforeEach(async ({ page }) => {
@@ -91,6 +93,41 @@ test.describe("SheetSide", () => {
       await open();
       await page.mouse.click(100, 300);
       await expect.poll(() => isOpen(sheet(page))).toBe(false);
+    });
+
+    test("closes with an action's value, and with an empty returnValue on its close button, Escape or the scrim after it", async ({
+      page,
+    }) => {
+      const detached = modalSheet(page, "modal-detached");
+      const open = async () => {
+        await opener(page, "modal-detached").click();
+        await expect.poll(() => isOpen(detached)).toBe(true);
+      };
+      const save = async () => {
+        await open();
+        await detached.getByRole("button", { name: "Save" }).click();
+        await expect.poll(() => isOpen(detached)).toBe(false);
+        expect(await returnValue(detached)).toBe("save");
+      };
+      const closedEmpty = async () => {
+        await expect.poll(() => isOpen(detached)).toBe(false);
+        expect(await returnValue(detached)).toBe("");
+      };
+
+      await save();
+      await open();
+      await detached.getByRole("button", { name: "Close" }).click();
+      await closedEmpty();
+
+      await save();
+      await open();
+      await page.keyboard.press("Escape");
+      await closedEmpty();
+
+      await save();
+      await open();
+      await page.mouse.click(5, 300);
+      await closedEmpty();
     });
 
     test("a start sheet sits on the start edge", async ({ page }) => {
