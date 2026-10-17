@@ -33,7 +33,7 @@ props:
     type: boolean
     required: false
     default: "false"
-    description: Makes the sheet M3's modal bottom sheet, a `<dialog>` that slides up over a scrim. Opened with `showModal()` (or a button with `command="show-modal"`), it keeps focus inside it and makes the rest of the page inert. It closes with its drag handle, Escape or a click on the scrim.
+    description: Makes the sheet M3's modal bottom sheet, a `<dialog>` that slides up over a scrim. Opened with `showModal()` (or a button with `command="show-modal"`), it keeps focus inside it and makes the rest of the page inert. It closes with its drag handle, Escape or a click on the scrim. Escape and a click on the scrim fire a `cancel` event first, which you can prevent to keep it open.
   - name: showDragHandle
     type: boolean
     required: false
