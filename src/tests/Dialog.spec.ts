@@ -154,6 +154,55 @@ test.describe("Dialog", () => {
     expect(action.y - (content.y + content.height)).toBe(24);
   });
 
+  // M3 (md-dialog) cancels a dialog on a scrim click, the same as Escape. The dialog is centred,
+  // so the viewport's corner is on the scrim.
+  test("a click on the scrim cancels it, with an empty returnValue, and returns focus", async ({
+    page,
+  }) => {
+    const opener = openDialog(page);
+    await activate(opener);
+    const dialog = basicDialog(page);
+    await settled(page);
+    await recordEvents(dialog);
+
+    await page.mouse.click(5, 5);
+
+    await expect(dialog).toBeHidden();
+    expect(await recordedEvents(dialog)).toEqual(["cancel", "close:"]);
+    await expect(opener).toBeFocused();
+  });
+
+  test("stays open on a scrim click when the page prevents cancel", async ({
+    page,
+  }) => {
+    await activate(openDialog(page));
+    const dialog = basicDialog(page);
+    await settled(page);
+    await dialog.evaluate((el) =>
+      el.addEventListener("cancel", (event) => event.preventDefault())
+    );
+
+    await page.mouse.click(5, 5);
+
+    await expect(dialog).toBeVisible();
+  });
+
+  test("stays open when a press starts in the content and ends on the scrim", async ({
+    page,
+  }) => {
+    await activate(openDialog(page));
+    const dialog = basicDialog(page);
+    await settled(page);
+
+    const { x, y } = await box(supportingText(page));
+    await page.mouse.move(x + 2, y + 2);
+    await page.mouse.down();
+    await page.mouse.move(5, 5, { steps: 5 });
+    await page.mouse.up();
+
+    await expect(dialog).toBeVisible();
+  });
+
   test("headline and supporting text use M3's color roles, and only the supporting text scrolls", async ({
     page,
   }) => {
@@ -259,6 +308,20 @@ test.describe("DialogConfirm", () => {
     await expect(dialog).toBeVisible();
     await recordEvents(dialog);
     await page.keyboard.press("Escape");
+
+    await expect(dialog).toBeHidden();
+    expect(await recordedEvents(dialog)).toEqual(["cancel", "close:"]);
+  });
+
+  test("a click on the scrim cancels it like Escape, not like either action", async ({
+    page,
+  }) => {
+    await activate(trigger(page, "confirm", "Open Confirm Dialog"));
+    const dialog = dialogIn(page, "confirm");
+    await settled(page);
+    await recordEvents(dialog);
+
+    await page.mouse.click(5, 5);
 
     await expect(dialog).toBeHidden();
     expect(await recordedEvents(dialog)).toEqual(["cancel", "close:"]);

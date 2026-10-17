@@ -26,7 +26,7 @@ props:
   - name: buttonDismiss
     type: '{ id?: string; text: string; value: string }'
     required: true
-    description: The dismissing action (e.g. "Cancel"). It's placed first and receives focus when the dialog opens, so pressing Enter by reflex never confirms. It closes the dialog the same way Escape does (firing `cancel`), setting the dialog's `returnValue` to `value`.
+    description: The dismissing action (e.g. "Cancel"). It's placed first and receives focus when the dialog opens, so pressing Enter by reflex never confirms. It closes the dialog the same way Escape or a click on the scrim does (firing `cancel`), but sets the dialog's `returnValue` to `value`, where those leave it empty.
   - name: buttonConfirm
     type: '{ id?: string; text: string; value: string }'
     required: true
