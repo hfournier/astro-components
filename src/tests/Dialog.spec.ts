@@ -243,6 +243,26 @@ test.describe("DialogConfirm", () => {
     expect(await recordedEvents(dialog)).toEqual(["close:yes"]);
     await expect(opener).toBeFocused();
   });
+
+  // Browsers don't all clear returnValue on reopening, so an Escape could report the last
+  // opening's action
+  test("Escape after an earlier confirm closes with an empty returnValue", async ({
+    page,
+  }) => {
+    const opener = trigger(page, "confirm-yes-no", "Open Confirm Dialog");
+    const dialog = dialogIn(page, "confirm-yes-no");
+    await activate(opener);
+    await activate(dialog.getByRole("button", { name: "Yes", exact: true }));
+    await expect(dialog).toBeHidden();
+
+    await activate(opener);
+    await expect(dialog).toBeVisible();
+    await recordEvents(dialog);
+    await page.keyboard.press("Escape");
+
+    await expect(dialog).toBeHidden();
+    expect(await recordedEvents(dialog)).toEqual(["cancel", "close:"]);
+  });
 });
 
 test.describe("DialogAcknowledge", () => {

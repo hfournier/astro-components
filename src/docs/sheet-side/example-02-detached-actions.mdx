@@ -1,12 +1,12 @@
 ---
 title: Detached SheetSide with actions
-description: Set `isDetached` for M3's detached sheet, 16px from the window's edges with all four corners rounded. Put buttons in the `actions` slot for a row of actions at the bottom of the sheet, which stays in place while the content scrolls.
+description: Set `isDetached` for M3's detached sheet, 16px from the window's edges with all four corners rounded. Put buttons in the `actions` slot for a row of actions at the bottom of the sheet, which stays in place while the content scrolls. Each closes the sheet with its `value` as the dialog's `returnValue`.
 ---
 
 <Button command="show-modal" commandfor="sheet-side-detached">Open detached side sheet</Button>
 
 <SheetSide id="sheet-side-detached" headline="Edit details" isDetached isModal>
   <p>The sheet's content.</p>
-  <Button slot="actions" command="close" commandfor="sheet-side-detached">Save</Button>
-  <Button slot="actions" command="close" commandfor="sheet-side-detached" variant="outlined">Cancel</Button>
+  <Button slot="actions" command="close" commandfor="sheet-side-detached" value="save">Save</Button>
+  <Button slot="actions" command="close" commandfor="sheet-side-detached" value="cancel" variant="outlined">Cancel</Button>
 </SheetSide>
