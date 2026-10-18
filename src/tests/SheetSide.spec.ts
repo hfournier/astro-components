@@ -36,6 +36,19 @@ const isOpen = (sheet: Locator) =>
 const returnValue = (sheet: Locator) =>
   sheet.evaluate((el) => (el as HTMLDialogElement).returnValue);
 
+// Records the sheet's cancel/close events (with its returnValue at close) for later assertion
+const recordEvents = (sheet: Locator) =>
+  sheet.evaluate((el: HTMLDialogElement) => {
+    const events: string[] = [];
+    (el as HTMLDialogElement & { events: string[] }).events = events;
+    el.addEventListener("cancel", () => events.push("cancel"));
+    el.addEventListener("close", () => events.push(`close:${el.returnValue}`));
+  });
+const recordedEvents = (sheet: Locator) =>
+  sheet.evaluate(
+    (el) => (el as HTMLDialogElement & { events: string[] }).events
+  );
+
 test.describe("SheetSide", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/tests/sheet-side");
@@ -128,6 +141,49 @@ test.describe("SheetSide", () => {
       await open();
       await page.mouse.click(5, 300);
       await closedEmpty();
+    });
+
+    test("a click on the scrim cancels it like Escape, unless the page prevents cancel", async ({
+      page,
+    }) => {
+      const open = async () => {
+        await opener(page, "modal").click();
+        await expect.poll(() => isOpen(sheet(page))).toBe(true);
+      };
+
+      await open();
+      await sheet(page).evaluate((el) => {
+        el.addEventListener("cancel", (event) => event.preventDefault(), {
+          once: true,
+        });
+      });
+      await page.mouse.click(100, 300);
+      expect(await isOpen(sheet(page))).toBe(true);
+
+      await recordEvents(sheet(page));
+      await page.mouse.click(100, 300);
+      await expect.poll(() => isOpen(sheet(page))).toBe(false);
+      expect(await recordedEvents(sheet(page))).toEqual(["cancel", "close:"]);
+    });
+
+    test("stays open when a press starts in its content and ends on the scrim", async ({
+      page,
+    }) => {
+      await opener(page, "modal").click();
+      await expect
+        .poll(async () => {
+          const { x, width } = await box(sheet(page));
+          return x + width;
+        })
+        .toBe(await viewportWidth(page));
+
+      const { x, y } = await box(sheet(page).locator("p"));
+      await page.mouse.move(x + 2, y + 2);
+      await page.mouse.down();
+      await page.mouse.move(100, 300, { steps: 5 });
+      await page.mouse.up();
+
+      expect(await isOpen(sheet(page))).toBe(true);
     });
 
     test("a start sheet sits on the start edge", async ({ page }) => {
