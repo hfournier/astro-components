@@ -91,11 +91,26 @@ const { icon, headline, label, id, class: classList, ...attrs } = Astro.props;
   // Escape closes a dialog without setting its returnValue, and Firefox and WebKit keep the one
   // from its last opening, so it's cleared: an Escape never reads as the action chosen last time.
   // A request-close button's value is applied after `cancel`, so it still wins.
+  //
+  // M3 cancels a dialog on a click on its scrim too, as Escape does: a cancelable `cancel`, then
+  // close. The panel fills the dialog, so a click on the dialog itself is on its ::backdrop. The
+  // press must start there too, so a text selection dragged out of the content doesn't close it.
   document
     .querySelectorAll<HTMLDialogElement>("[data-ac-dialog]")
     .forEach((dialog) => {
       dialog.addEventListener("cancel", () => {
         dialog.returnValue = "";
+      });
+
+      let pressedOnScrim = false;
+      dialog.addEventListener("pointerdown", (event) => {
+        pressedOnScrim = event.target === dialog;
+      });
+      dialog.addEventListener("click", (event) => {
+        if (event.target !== dialog || !pressedOnScrim) return;
+        pressedOnScrim = false;
+        if (dialog.dispatchEvent(new Event("cancel", { cancelable: true })))
+          dialog.close("");
       });
     });
 </script>
