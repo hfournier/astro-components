@@ -1,0 +1,93 @@
+---
+title: FabMenu
+description: Tests for the FabMenu and FabMenuItem components
+---
+
+<Heading level={1}>FabMenu Tests</Heading>
+
+Each FabMenu sits in a tall Section so its items have room to open above it.
+
+<Section data-testid="fab-menu-no-props" class="p-4 space-y-4">
+  <Heading level={2}>No props</Heading>
+  <div class="flex h-80 items-end justify-end">
+    <FabMenu id="no-props-menu" icon="add" label="Create">
+      <FabMenuItem icon="mail" label="Email" />
+      <FabMenuItem icon="chat" label="Message" />
+      <FabMenuItem icon="folder" label="Folder" />
+    </FabMenu>
+  </div>
+</Section>
+
+<Section data-testid="fab-menu-secondary" class="p-4 space-y-4">
+  <Heading level={2}>Secondary</Heading>
+  <div class="flex h-64 items-end justify-end">
+    <FabMenu id="secondary-menu" icon="add" label="Create" color="secondary">
+      <FabMenuItem icon="mail" label="Email" />
+      <FabMenuItem icon="chat" label="Message" />
+    </FabMenu>
+  </div>
+</Section>
+
+<Section data-testid="fab-menu-tertiary" class="p-4 space-y-4">
+  <Heading level={2}>Tertiary</Heading>
+  <div class="flex h-64 items-end justify-end">
+    <FabMenu id="tertiary-menu" icon="add" label="Create" color="tertiary">
+      <FabMenuItem icon="mail" label="Email" />
+      <FabMenuItem icon="chat" label="Message" />
+    </FabMenu>
+  </div>
+</Section>
+
+<Section data-testid="fab-menu-align-start" class="p-4 space-y-4">
+  <Heading level={2}>Align start</Heading>
+  <div class="flex h-64 items-end">
+    <FabMenu id="align-start-menu" icon="add" label="Create" align="start">
+      <FabMenuItem icon="mail" label="Email" />
+      <FabMenuItem icon="chat" label="A longer message" />
+    </FabMenu>
+  </div>
+</Section>
+
+<Section data-testid="fab-menu-align-end" class="p-4 space-y-4">
+  <Heading level={2}>Align end</Heading>
+  <div class="flex h-64 items-end justify-end">
+    <FabMenu id="align-end-menu" icon="add" label="Create" align="end">
+      <FabMenuItem icon="mail" label="Email" />
+      <FabMenuItem icon="chat" label="A longer message" />
+    </FabMenu>
+  </div>
+</Section>
+
+<Section data-testid="fab-menu-md" class="p-4 space-y-4">
+  <Heading level={2}>Medium FAB</Heading>
+  <div class="flex h-64 items-end justify-end">
+    <FabMenu id="md-menu" icon="add" label="Create" size="md">
+      <FabMenuItem icon="mail" label="Email" />
+      <FabMenuItem icon="chat" label="Message" />
+    </FabMenu>
+  </div>
+</Section>
+
+<Section data-testid="fab-menu-lg" class="p-4 space-y-4">
+  <Heading level={2}>Large FAB</Heading>
+  <div class="flex h-64 items-end justify-end">
+    <FabMenu id="lg-menu" icon="add" label="Create" size="lg">
+      <FabMenuItem icon="mail" label="Email" />
+      <FabMenuItem icon="chat" label="Message" />
+    </FabMenu>
+  </div>
+</Section>
+
+<Section data-testid="fab-menu-six-items" class="p-4 space-y-4">
+  <Heading level={2}>Six items</Heading>
+  <div class="flex h-120 items-end justify-end">
+    <FabMenu id="six-items-menu" icon="add" label="Create">
+      <FabMenuItem icon="mail" label="Email" />
+      <FabMenuItem icon="chat" label="Message" />
+      <FabMenuItem icon="folder" label="Folder" />
+      <FabMenuItem icon="image" label="Image" />
+      <FabMenuItem icon="link" label="Link" />
+      <FabMenuItem icon="calendar_month" label="Event" />
+    </FabMenu>
+  </div>
+</Section>

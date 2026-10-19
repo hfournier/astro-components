@@ -1,0 +1,246 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import {
+  COMMENT_NODE,
+  ELEMENT_NODE,
+  TEXT_NODE,
+  parse,
+  walkSync,
+  type Node,
+} from "ultrahtml";
+import crypto from "node:crypto";
+import { twMerge } from "tailwind-merge";
+import type { SvgIconNameTypes } from "../svgs";
+import Icon from "./Icon.astro";
+
+// An M3 FAB menu: a FAB that opens a stack of 2-6 FabMenuItems above it and becomes their close
+// button while they're open. The items are an auto popover the FAB toggles, which gives the FAB's
+// expanded state, Escape, light dismiss, focus return and the top layer without script; the
+// script closes the menu once an item is chosen, and moves Down from the FAB to the first item.
+type Props = Omit<HTMLAttributes<"div">, "id"> & {
+  // the items' popover id, which the FAB toggles
+  id: string;
+  icon: SvgIconNameTypes;
+  // the FAB's accessible name; never shown, as M3 doesn't open a FAB menu from an extended FAB
+  label: string;
+  size?: "default" | "md" | "lg";
+  color?: "primary" | "secondary" | "tertiary";
+  // which edge of the FAB the items line up with
+  align?: "end" | "start";
+};
+
+const {
+  id,
+  icon,
+  label,
+  size = "default",
+  color = "primary",
+  align = "end",
+  class: classList,
+  ...attrs
+} = Astro.props;
+
+const slot = Astro.slots.has("default")
+  ? await Astro.slots.render("default")
+  : "";
+
+// Each FabMenuItem must be a direct child, as Tabs requires of its Tabs: anything else (other than
+// whitespace and comments) throws rather than ending up in the menu
+const isItem = (node: Node) =>
+  node.type === ELEMENT_NODE &&
+  node.attributes["data-ac-fab-menu-item"] !== undefined;
+let itemCount = 0;
+for (const node of parse(slot).children as Node[]) {
+  if (node.type === COMMENT_NODE) continue;
+  if (node.type === TEXT_NODE && node.value.trim() === "") continue;
+  if (!isItem(node)) {
+    let hasItem = false;
+    walkSync(node, (child) => {
+      hasItem ||= isItem(child);
+    });
+    const found =
+      node.type === ELEMENT_NODE
+        ? `${hasItem ? "a FabMenuItem wrapped in " : ""}<${node.name}>`
+        : `"${node.value.trim().replace(/\s+/g, " ").slice(0, 40)}"`;
+    throw new Error(
+      `FabMenu: found ${found}, but only FabMenuItem components can go in FabMenu, each as a direct child (not wrapped in another element or component).`
+    );
+  }
+  itemCount++;
+}
+if (itemCount < 2 || itemCount > 6) {
+  throw new Error(
+    `FabMenu: expected 2 to 6 FabMenuItems, as M3 specifies, but found ${itemCount}.`
+  );
+}
+
+const anchorName = `--ac-anchorname-fab-menu-${crypto.randomUUID()}`;
+
+// M3's color sets: the closed FAB and the items on the container role, the close button (the open
+// FAB) on the main role. The items read theirs from these custom properties.
+const colorClasses = {
+  primary:
+    "[--ac-fab-menu-container:var(--theme-color-primary-container)] [--ac-fab-menu-on-container:var(--theme-color-on-primary-container)] [--ac-fab-menu-close:var(--theme-color-primary)] [--ac-fab-menu-on-close:var(--theme-color-on-primary)]",
+  secondary:
+    "[--ac-fab-menu-container:var(--theme-color-secondary-container)] [--ac-fab-menu-on-container:var(--theme-color-on-secondary-container)] [--ac-fab-menu-close:var(--theme-color-secondary)] [--ac-fab-menu-on-close:var(--theme-color-on-secondary)]",
+  tertiary:
+    "[--ac-fab-menu-container:var(--theme-color-tertiary-container)] [--ac-fab-menu-on-container:var(--theme-color-on-tertiary-container)] [--ac-fab-menu-close:var(--theme-color-tertiary)] [--ac-fab-menu-on-close:var(--theme-color-on-tertiary)]",
+}[color];
+
+// The menu keeps the closed FAB's size, so it doesn't move what's around it as the FAB shrinks into
+// the close button, which stays in the FAB's bottom corner on the `align` side
+const menuClasses = {
+  default: "size-14",
+  md: "size-20",
+  lg: "size-24",
+}[size];
+
+// Fab's sizes and corners: M3 FAB, medium FAB and large FAB
+const fabClasses = {
+  default: "size-14 rounded-2xl",
+  md: "size-20 rounded-[20px]",
+  lg: "size-24 rounded-[28px]",
+}[size];
+
+const iconSizeClasses = {
+  default: "size-6",
+  md: "size-7",
+  lg: "size-8",
+}[size];
+
+// The items stack upward from 8px above the FAB, lined up with its `align` edge. Each grows in
+// width from that edge as it opens (a clip-path inset, which the items read).
+const alignClasses = {
+  end: {
+    menu: "justify-items-end",
+    items:
+      "right-[anchor(right)] items-end [--ac-fab-menu-item-clip:inset(0_0_0_100%)]",
+  },
+  start: {
+    menu: "justify-items-start",
+    items:
+      "left-[anchor(left)] items-start [--ac-fab-menu-item-clip:inset(0_100%_0_0)]",
+  },
+}[align];
+
+// Both icons share one grid cell, so they cross-fade (and turn) as the FAB becomes the close button
+const iconClasses =
+  "[grid-area:1/1] motion-safe:transition-[opacity,rotate] motion-safe:duration-(--theme-duration-overlay) motion-safe:ease-theme-overlay";
+---
+
+<div
+  class:list={twMerge(
+    "group/fab-menu relative grid items-end",
+    colorClasses,
+    menuClasses,
+    alignClasses.menu,
+    classList
+  )}
+  data-ac-fab-menu
+  {...attrs}
+>
+  <button
+    class:list={[
+      "grid cursor-pointer place-items-center",
+      "bg-(--ac-fab-menu-container) text-(--ac-fab-menu-on-container)",
+      // M3: elevation level 3 at rest, focused and pressed; level 4 on hover
+      "shadow-theme-elevation-3 hover:shadow-theme-elevation-4 active:shadow-theme-elevation-3",
+      // M3 state layer, in the icon's color
+      "relative isolate before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0",
+      "hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10",
+      "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
+      fabClasses,
+      // Open, it's M3's close button: 56px, fully round, on the color set's main role
+      "group-has-open/fab-menu:size-14 group-has-open/fab-menu:rounded-[28px] group-has-open/fab-menu:bg-(--ac-fab-menu-close) group-has-open/fab-menu:text-(--ac-fab-menu-on-close)",
+      "motion-safe:transition-[width,height,border-radius,background-color,color,box-shadow] motion-safe:duration-(--theme-duration-overlay) motion-safe:ease-theme-overlay motion-safe:before:transition-opacity",
+    ]}
+    style={`anchor-name: ${anchorName}`}
+    type="button"
+    aria-controls={id}
+    commandfor={id}
+    command="toggle-popover"
+  >
+    <Icon
+      class:list={[
+        iconClasses,
+        iconSizeClasses,
+        "group-has-open/fab-menu:rotate-90 group-has-open/fab-menu:opacity-0",
+      ]}
+      name={icon}
+    />
+    <Icon
+      class:list={[
+        iconClasses,
+        "size-5 -rotate-90 opacity-0 group-has-open/fab-menu:rotate-0 group-has-open/fab-menu:opacity-100",
+      ]}
+      name="close"
+    />
+    <span class="sr-only">{label}</span>
+  </button>
+
+  {
+    /* No surface of its own (so not BaseOverlay): only the items' containers show. Closed, it
+       stays rendered (transition-discrete) until the last item has finished closing. */
+  }
+  <div
+    class:list={[
+      "group/fab-menu-items inset-auto m-0 flex-col gap-1 overflow-visible border-0 bg-transparent p-0 open:flex",
+      "bottom-[calc(anchor(top)+8px)]",
+      // the delay between one item and the next, as they open and close in turn
+      "[--ac-fab-menu-stagger:calc(var(--theme-duration-feedback)/3)]",
+      "motion-safe:transition-[display,overlay] motion-safe:transition-discrete motion-safe:duration-[calc(var(--theme-duration-overlay)+5*var(--ac-fab-menu-stagger))]",
+      alignClasses.items,
+    ]}
+    style={`position-anchor: ${anchorName}`}
+    {id}
+    popover="auto"
+  >
+    <Fragment set:html={slot} />
+  </div>
+</div>
+
+<script>
+  document
+    .querySelectorAll<HTMLElement>("[data-ac-fab-menu]")
+    .forEach((menu) => {
+      const toggle = menu.querySelector<HTMLButtonElement>(
+        ":scope > [commandfor]"
+      )!;
+      const popover = menu.querySelector<HTMLElement>(":scope > [popover]")!;
+      const items = Array.from(
+        popover.querySelectorAll<HTMLButtonElement>("[data-ac-fab-menu-item]")
+      );
+
+      // Closing with focus in the menu returns it to the FAB. The popover does this itself, but
+      // only to the element that had focus when it opened, and in Safari a click doesn't focus
+      // a button, so it would go to the page instead. Moving it before the popover hides leaves
+      // the popover nothing to restore.
+      popover.addEventListener("beforetoggle", (event) => {
+        if (
+          event.newState === "closed" &&
+          popover.contains(document.activeElement)
+        )
+          toggle.focus();
+      });
+
+      // Down from the open FAB moves to the top item, as Tab does (Compose's focus order)
+      toggle.addEventListener("keydown", (event) => {
+        if (event.key !== "ArrowDown" || !popover.matches(":popover-open"))
+          return;
+        event.preventDefault();
+        items[0]!.focus();
+      });
+
+      // Choosing an item closes the menu, once the click has run every handler and the item's
+      // own command (not `command="hide-popover"` on the items, which may need `command` for the
+      // action). Focus is still in the menu, so closing returns it to the FAB, unless the action
+      // has moved it elsewhere, such as into a dialog it opened.
+      popover.addEventListener("click", (event) => {
+        if (!(event.target as Element).closest("[data-ac-fab-menu-item]"))
+          return;
+        setTimeout(() => {
+          if (popover.matches(":popover-open")) popover.hidePopover();
+        });
+      });
+    });
+</script>

@@ -1,0 +1,41 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import type { SvgIconNameTypes } from "../svgs";
+import Button from "./Button.astro";
+import Icon from "./Icon.astro";
+
+// One action in a FabMenu. M3's item metrics are Button's large, round size (56px high, 24px side
+// padding, an 8px icon-label gap, Title Medium); the item adds its icon, the menu's color set
+// (custom properties FabMenu sets), elevation 3, and the marker FabMenu counts its items by and
+// closes on.
+type Props = Omit<HTMLAttributes<"button">, "slot"> & {
+  icon: SvgIconNameTypes;
+  label: string;
+};
+
+const { icon, label, class: classList, ...attrs } = Astro.props;
+---
+
+<Button
+  size="lg"
+  shape="round"
+  class={twMerge(
+    // no border: a filled Button draws one in its container color, which would add 1px to the padding
+    "border-0 bg-(--ac-fab-menu-container) text-(--ac-fab-menu-on-container)",
+    "shadow-theme-elevation-3",
+    // Opening, each fades in and grows in width from the menu's aligned edge (FabMenu's clip
+    // inset), nearest the FAB (the last item) first; closing reverses it. The open clip reaches
+    // past the item so it doesn't cut off the shadow.
+    "opacity-0 [clip-path:var(--ac-fab-menu-item-clip)] group-open/fab-menu-items:opacity-100 group-open/fab-menu-items:[clip-path:inset(-1.5rem)]",
+    "motion-safe:starting:group-open/fab-menu-items:opacity-0 motion-safe:starting:group-open/fab-menu-items:[clip-path:var(--ac-fab-menu-item-clip)]",
+    "motion-safe:transition-[opacity,clip-path] motion-safe:duration-(--theme-duration-overlay) motion-safe:ease-theme-overlay",
+    "motion-safe:[transition-delay:calc((sibling-index()_-_1)_*_var(--ac-fab-menu-stagger))] motion-safe:group-open/fab-menu-items:[transition-delay:calc((sibling-count()_-_sibling-index())_*_var(--ac-fab-menu-stagger))]",
+    classList
+  )}
+  data-ac-fab-menu-item
+  {...attrs}
+>
+  <Icon name={icon} />
+  {label}
+</Button>

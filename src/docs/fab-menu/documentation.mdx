@@ -1,0 +1,63 @@
+---
+name: FabMenu
+description: A Material 3 FAB menu, extending HTML's `<div>` element. A FAB opens a stack of 2 to 6 related actions (FabMenuItems) floating above it, and turns into a close button while they're open. It replaces speed dials and stacks of small FABs.
+category: Forms
+role: pattern
+meta:
+  title: FabMenu | astro-components HenriFournier.dev
+  description: A Material 3 FAB menu, a FAB that opens 2 to 6 related actions above it and becomes their close button.
+extends:
+  kind: element
+  tag: [div]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/popover
+props:
+  - name: id
+    type: string
+    required: true
+    description: The id of the items' popover, which the FAB toggles and controls (`commandfor` and `aria-controls`). Unique on the page.
+  - name: icon
+    type: SvgIconNameTypes
+    required: true
+    description: The FAB's icon while the menu is closed, by its file name in `src/assets/svgs`. While it's open, the FAB shows a 20px close icon instead.
+  - name: label
+    type: string
+    required: true
+    description: The FAB's accessible name, such as `"Create"`, open or closed. It's never shown, since M3 doesn't open a FAB menu from an extended FAB.
+  - name: size
+    type: '"default" | "md" | "lg"'
+    required: false
+    default: '"default"'
+    description: The FAB's size, as Fab's - M3's FAB (56px), medium FAB (80px) or large FAB (96px). The items and the close button are the same for every FAB size, so the close button is always 56px, in the FAB's bottom corner on the `align` side.
+  - name: color
+    type: '"primary" | "secondary" | "tertiary"'
+    required: false
+    default: '"primary"'
+    description: M3's color set for the whole menu. The closed FAB and the items use the container role (e.g. `primary-container`), and the close button the main role (e.g. `primary`).
+  - name: align
+    type: '"end" | "start"'
+    required: false
+    default: '"end"'
+    description: Which edge of the FAB the items line up with. Use `"end"` for a FAB at the end of the screen (usually the right), `"start"` for one at the start.
+slots:
+  - name: default
+    description: The menu's actions, two to six of them, as M3 specifies, each a direct child. Any other number, or any other content, throws an error when the page renders.
+    kind: component
+    component: FabMenuItem
+    multiple: true
+---
+
+## Placement
+
+A FabMenu isn't positioned on its own, as with Fab: put it where the FAB belongs, such as fixed to a corner of the page (e.g. `class="fixed right-4 bottom-4"`). The items open upward, 8px above the FAB, so leave room above it. It keeps the closed FAB's size while open, so nothing around it moves as the FAB turns into the close button.
+
+The items are a popover, so they're drawn in the top layer: no ancestor's `overflow` or stacking order can clip or cover them. There's no scrim behind them, as in M3.
+
+## Keyboard and screen readers
+
+The FAB is a disclosure button: it's announced as expanded or collapsed, and its name stays `label` while it's open. The items follow it in the DOM, so Tab (or Down) from the open FAB moves to the top item. Closed, the items are hidden from everyone.
+
+The menu closes, returning focus to the FAB, on Escape, a click outside it, the FAB again, or choosing an item (after the item's own handlers have run).
+
+## Not in a NavRail
+
+Don't put a FabMenu in a NavRail's `fab` slot. An expanded rail extends its FAB, and M3 doesn't open a FAB menu from an extended FAB (or from any other component).

@@ -11,6 +11,8 @@ export { default as DialogAcknowledge } from "./components/DialogAcknowledge.ast
 export { default as DialogConfirm } from "./components/DialogConfirm.astro";
 export { default as Divider } from "./components/Divider.astro";
 export { default as Fab } from "./components/Fab.astro";
+export { default as FabMenu } from "./components/FabMenu.astro";
+export { default as FabMenuItem } from "./components/FabMenuItem.astro";
 export { default as Footer } from "./components/Footer.astro";
 export { default as Header } from "./components/Header.astro";
 export { default as Heading } from "./components/Heading.astro";
