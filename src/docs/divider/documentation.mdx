@@ -27,6 +27,24 @@ props:
 
 As in M3, a divider is a 1px line in the `outline-variant` color. Use it sparingly, where spacing alone doesn't separate two groups of content clearly enough.
 
+- **Full width** (`inset="none"`): to separate larger sections of unrelated content, directly on a surface or inside a card or list. It also separates the interactive part of a container from the rest, such as a card's content from its actions.
+- **Inset** (`inset="start"` or `"middle"`): to separate related items within a section, such as messages in a list. Use a start inset beside anchoring elements like icons or avatars, so the line starts where the text does. A middle inset can also split the parts of one layout, such as body text from a set of chips.
+- **Vertical** (`orientation="vertical"`): to arrange content side by side in larger windows, for example paragraph text beside a video or image.
+
+## Both kinds on one page
+
+If a page uses both, they should show its hierarchy: full-width dividers between different kinds of content, and inset dividers between the items nested within them.
+
+## When not to use it
+
+Dividers group things. Don't add one by default:
+
+- **Too many clutter a page:** use one only where spacing alone can't group the items.
+- **Repeated layouts rarely need one:** in a list whose items share the same layout, the space between them is often enough.
+- **Not between every item:** a divider separates groups, not each individual item.
+
+## Accessibility
+
 A Divider is an `<hr>`, so screen readers announce it as a separator. That's right between sections of content, but not everywhere:
 
 - **Between list items:** an `<hr>` can't go directly inside `<ul>` or `<ol>`. Give the items a border instead, e.g. `divide-y divide-(--theme-color-outline-variant)` on the list.
