@@ -30,53 +30,12 @@
   /* easing: Tailwind's native namespace, role layer on top (ADR-0006) */
   --ease-theme-overlay: var(--ease-out);
 
-  /* M3 Expressive's motion springs (Compose's ExpressiveMotionTokens), as linear() curves sampled
-     over the matching --theme-duration-spring-* below (ADR-0016). Spatial springs move things
-     (size, position, shape) and may overshoot; effects springs change color and opacity and
-     never do. Fast spatial: damping 0.6, stiffness 800, peaking about 9% past its target. */
-  --ease-spring-fast-spatial: linear(
-    0,
-    0.072,
-    0.238,
-    0.44,
-    0.638,
-    0.806,
-    0.934,
-    1.021,
-    1.071,
-    1.092,
-    1.093,
-    1.081,
-    1.063,
-    1.044,
-    1.026,
-    1.012,
-    1.002,
-    0.995,
-    0.992,
-    0.991,
-    0.992,
-    0.993,
-    0.995,
-    0.997,
-    1
-  );
-  /* fast effects: damping 1, stiffness 3800 */
-  --ease-spring-fast-effects: linear(
-    0,
-    0.162,
-    0.421,
-    0.635,
-    0.782,
-    0.874,
-    0.929,
-    0.961,
-    0.979,
-    0.988,
-    0.994,
-    0.997,
-    1
-  );
+  /* M3 Expressive's motion springs, as the curves M3 publishes for the web ("Web: Convert springs
+     to curves", m3.material.io/styles/motion/overview/specs), each paired with its duration
+     below (ADR-0016). Spatial springs move things (size, position, shape) and overshoot; effects
+     springs change color and opacity and don't. */
+  --ease-spring-fast-spatial: cubic-bezier(0.42, 1.67, 0.21, 0.9);
+  --ease-spring-fast-effects: cubic-bezier(0.31, 0.94, 0.34, 1);
 
   /* box-shadow: M3 elevation levels, tinted with the generated shadow role */
   --shadow-theme-elevation-1:
@@ -104,10 +63,9 @@
   --theme-duration-overlay: var(--theme-duration-base);
   --theme-duration-content-swap: var(--theme-duration-slow);
 
-  /* how long each M3 spring takes to settle (within 0.2% of its target), the length its
-     --ease-spring-* curve is sampled over (ADR-0016) */
+  /* the duration M3 pairs with each --ease-spring-* curve (ADR-0016) */
   --theme-duration-spring-fast-spatial: 350ms;
-  --theme-duration-spring-fast-effects: 140ms;
+  --theme-duration-spring-fast-effects: 150ms;
 
   /* Component color roles on M3 color roles, for content outside any BaseWrapper. BaseWrapper
      (and BaseOverlay's panel, which is one) overrides each per background. */
