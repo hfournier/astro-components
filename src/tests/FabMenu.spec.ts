@@ -5,6 +5,7 @@ import {
   expectFocusRing,
   resolvedColor,
   settled,
+  textBox,
 } from "./support/helpers";
 
 // Each case on /tests/fab-menu is a Section with data-testid="fab-menu-<caseId>" holding one
@@ -34,6 +35,20 @@ const color = (target: Locator, property: "background-color" | "color") =>
     (el, p) => getComputedStyle(el).getPropertyValue(p),
     property
   );
+
+const shadow = (target: Locator) =>
+  target.evaluate((el) => getComputedStyle(el).boxShadow);
+
+/** M3's elevation level 3, as the theme's token resolves on the page. */
+const elevation3 = (page: Page) =>
+  page.evaluate(() => {
+    const probe = document.createElement("div");
+    probe.style.boxShadow = "var(--shadow-theme-elevation-3)";
+    document.body.appendChild(probe);
+    const resolved = getComputedStyle(probe).boxShadow;
+    probe.remove();
+    return resolved;
+  });
 
 /** Opens a case's menu and waits for its items and close button to come to rest. */
 const open = async (page: Page, caseId: FabMenuCaseId) => {
@@ -125,13 +140,15 @@ test.describe("FabMenu", () => {
     await expect(fab(page, "no-props")).toBeFocused();
   });
 
-  test("a click outside closes it", async ({ page }) => {
+  test("a click outside closes it, returning focus to the FAB from an item", async ({
+    page,
+  }) => {
     await fab(page, "no-props").click();
-    await page
-      .getByRole("heading", { name: "FabMenu Tests" })
-      .click({ force: true });
+    await item(page, "no-props", "Message").focus();
+    await page.getByRole("heading", { name: "FabMenu Tests" }).click();
 
     await expect(items(page, "no-props")).toBeHidden();
+    await expect(fab(page, "no-props")).toBeFocused();
   });
 
   test("choosing an item closes it after the item's own handler, returning focus to the FAB", async ({
@@ -164,27 +181,16 @@ test.describe("FabMenu", () => {
     page,
   }) => {
     await open(page, "no-props");
-    const boxes = await Promise.all(
-      ["Email", "Message", "Folder"].map((name) =>
-        box(item(page, "no-props", name))
-      )
-    );
+    const boxes = [];
 
     for (const name of ["Email", "Message", "Folder"]) {
       const itemBox = await box(item(page, "no-props", name));
+      boxes.push(itemBox);
       const icon = await box(item(page, "no-props", name).locator("svg"));
       expect(itemBox.height).toBe(56);
       expect(icon.width).toBe(24);
       expect(icon.x - itemBox.x).toBe(24);
-      const label = await item(page, "no-props", name).evaluate((el) => {
-        const text = [...el.childNodes].find((n) =>
-          n.textContent?.trim()
-        ) as Text;
-        const range = document.createRange();
-        range.selectNodeContents(text);
-        const { x, width } = range.getBoundingClientRect();
-        return { x, width };
-      });
+      const label = await textBox(item(page, "no-props", name));
       expect(label.x - (icon.x + icon.width)).toBeCloseTo(8, 0);
       expect(itemBox.x + itemBox.width - (label.x + label.width)).toBeCloseTo(
         24,
@@ -199,12 +205,17 @@ test.describe("FabMenu", () => {
     expect(fabBox.y - (last.y + last.height)).toBe(8);
   });
 
-  test("items sit at elevation 3", async ({ page }) => {
+  test("the items and the close button sit at elevation 3", async ({
+    page,
+  }) => {
     await open(page, "no-props");
-    const shadow = await item(page, "no-props", "Email").evaluate(
-      (el) => getComputedStyle(el).boxShadow
-    );
-    expect(shadow).not.toBe("none");
+    // off the close button, which rises to level 4 on hover
+    await page.mouse.move(0, 0);
+    const level3 = await elevation3(page);
+
+    // Tailwind composes its (transparent) ring layers into the same box-shadow
+    expect(await shadow(item(page, "no-props", "Email"))).toContain(level3);
+    await expect.poll(() => shadow(fab(page, "no-props"))).toContain(level3);
   });
 
   test("open, the FAB is a 56px round close button with a 20px close icon", async ({

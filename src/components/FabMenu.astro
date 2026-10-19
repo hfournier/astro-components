@@ -74,7 +74,7 @@ if (itemCount < 2 || itemCount > 6) {
   );
 }
 
-const anchorName = `--ac-anchorname-fab-menu-${crypto.randomUUID()}`;
+const anchorName = `--anchorname-${crypto.randomUUID()}-fab-menu`;
 
 // M3's color sets: the closed FAB and the items on the container role, the close button (the open
 // FAB) on the main role. The items read theirs from these custom properties.
@@ -156,7 +156,6 @@ const iconClasses =
     ]}
     style={`anchor-name: ${anchorName}`}
     type="button"
-    aria-controls={id}
     commandfor={id}
     command="toggle-popover"
   >
@@ -214,13 +213,25 @@ const iconClasses =
       // Closing with focus in the menu returns it to the FAB. The popover does this itself, but
       // only to the element that had focus when it opened, and in Safari a click doesn't focus
       // a button, so it would go to the page instead. Moving it before the popover hides leaves
-      // the popover nothing to restore.
+      // the popover nothing to restore. A click outside, on something that can't take focus,
+      // has already dropped focus to the page by the time the popover closes, so whether focus
+      // was in the menu is noted as the press starts; a click on something that takes focus
+      // keeps it there.
+      let isPressFromInside = false;
+      document.addEventListener(
+        "pointerdown",
+        () => (isPressFromInside = popover.contains(document.activeElement)),
+        { capture: true }
+      );
       popover.addEventListener("beforetoggle", (event) => {
+        if (event.newState !== "closed") return;
+        const active = document.activeElement;
         if (
-          event.newState === "closed" &&
-          popover.contains(document.activeElement)
+          popover.contains(active) ||
+          (isPressFromInside && (!active || active === document.body))
         )
           toggle.focus();
+        isPressFromInside = false;
       });
 
       // Down from the open FAB moves to the top item, as Tab does (Compose's focus order)
