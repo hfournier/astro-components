@@ -29,8 +29,11 @@ const { icon, label, class: classList, ...attrs } = Astro.props;
     // past the item so it doesn't cut off the shadow.
     "opacity-0 [clip-path:var(--ac-fab-menu-item-clip)] group-open/fab-menu-items:opacity-100 group-open/fab-menu-items:[clip-path:inset(-1.5rem)]",
     "motion-safe:starting:group-open/fab-menu-items:opacity-0 motion-safe:starting:group-open/fab-menu-items:[clip-path:var(--ac-fab-menu-item-clip)]",
-    "motion-safe:transition-[opacity,clip-path] motion-safe:duration-(--theme-duration-overlay) motion-safe:ease-theme-overlay",
-    "motion-safe:[transition-delay:calc((sibling-index()_-_1)_*_var(--ac-fab-menu-stagger))] motion-safe:group-open/fab-menu-items:[transition-delay:calc((sibling-count()_-_sibling-index())_*_var(--ac-fab-menu-stagger))]",
+    // As Compose's items: the fade on M3's fast effects spring, the width on its fast spatial one
+    "motion-safe:transition-[opacity,clip-path] motion-safe:duration-[var(--theme-duration-spring-fast-effects),var(--theme-duration-spring-fast-spatial)] motion-safe:ease-[var(--ease-spring-fast-effects),var(--ease-spring-fast-spatial)]",
+    // Each starts at its place in FabMenu's stagger span, counted from the FAB when opening (the
+    // last item first) and from the top when closing: halfway through its share of the span
+    "motion-safe:delay-[calc((sibling-index()_-_0.5)_/_sibling-count()_*_var(--ac-fab-menu-stagger-span))] motion-safe:group-open/fab-menu-items:delay-[calc((sibling-count()_-_sibling-index()_+_0.5)_/_sibling-count()_*_var(--ac-fab-menu-stagger-span))]",
     classList
   )}
   data-ac-fab-menu-item

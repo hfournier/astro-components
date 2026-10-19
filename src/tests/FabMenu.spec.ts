@@ -332,6 +332,26 @@ test.describe("FabMenu", () => {
     }
   });
 
+  test("items open one by one nearest the FAB first, and close from the top", async ({
+    page,
+  }) => {
+    const delays = () =>
+      items(page, "six-items")
+        .locator("[data-ac-fab-menu-item]")
+        .evaluateAll((els) =>
+          els.map((el) => parseFloat(getComputedStyle(el).transitionDelay))
+        );
+    const closing = await delays();
+    await fab(page, "six-items").click();
+    const opening = await delays();
+
+    // in DOM order, top to bottom: the bottom item, nearest the FAB, opens first
+    expect(opening).toEqual([...opening].sort((a, b) => b - a));
+    expect(closing).toEqual([...closing].sort((a, b) => a - b));
+    expect(new Set(opening).size).toBe(6);
+    expect(new Set(closing).size).toBe(6);
+  });
+
   test("the FAB and the items show the focus ring", async ({ page }) => {
     await fab(page, "no-props").focus();
     await page.keyboard.press("Enter");
