@@ -5,10 +5,10 @@ import type { SvgIconNameTypes } from "../svgs";
 import Button from "./Button.astro";
 import Icon from "./Icon.astro";
 
-// One action in a FabMenu. M3's item metrics are Button's large, round size (56px high, 24px side
-// padding, an 8px icon-label gap, Title Medium); the item adds its icon, the menu's color set
-// (custom properties FabMenu sets), elevation 3, and the marker FabMenu counts its items by and
-// closes on.
+// One action in a FabMenu. M3's item metrics are its medium button's, which is Button's lg, round
+// size (56px high, 24px side padding, an 8px icon-label gap, Title Medium); the item adds its
+// icon, the menu's color set (custom properties FabMenu sets), elevation 3, and the marker FabMenu
+// counts its items by and closes on.
 type Props = Omit<HTMLAttributes<"button">, "slot"> & {
   icon: SvgIconNameTypes;
   label: string;

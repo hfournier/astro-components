@@ -19,7 +19,8 @@ type FabMenuCaseId =
   | "align-end"
   | "md"
   | "lg"
-  | "six-items";
+  | "six-items"
+  | "rtl";
 
 const menuCase = (page: Page, caseId: FabMenuCaseId) =>
   page.getByTestId(`fab-menu-${caseId}`);
@@ -240,7 +241,8 @@ test.describe("FabMenu", () => {
     await expect(toggle).toHaveAccessibleName("Create");
   });
 
-  test("a medium or large FAB shrinks into the 56px close button in its bottom corner", async ({
+  // M3: the FAB and the close button share the FAB's top trailing corner, where the menu opens from
+  test("a medium or large FAB shrinks into the 56px close button in its top end corner", async ({
     page,
   }) => {
     const sides = { md: 80, lg: 96 } as const;
@@ -259,7 +261,10 @@ test.describe("FabMenu", () => {
       expect(opened.width).toBe(56);
       expect(opened.height).toBe(56);
       expect(opened.x + opened.width).toBe(closed.x + closed.width);
-      expect(opened.y + opened.height).toBe(closed.y + closed.height);
+      expect(opened.y).toBe(closed.y);
+      // the items still open 8px above it
+      const bottomItem = await box(item(page, caseId, "Message"));
+      expect(opened.y - (bottomItem.y + bottomItem.height)).toBe(8);
       await page.keyboard.press("Escape");
     }
   });
@@ -320,6 +325,59 @@ test.describe("FabMenu", () => {
     for (const name of ["Email", "A longer message"]) {
       expect((await box(item(page, "align-start", name))).x).toBe(start.x);
     }
+  });
+
+  test("right to left, it mirrors: items line up with the FAB's left edge, icons after labels", async ({
+    page,
+  }) => {
+    await open(page, "rtl");
+    const toggle = await box(fab(page, "rtl"));
+
+    for (const name of ["Email", "A longer message"]) {
+      const rtlItem = item(page, "rtl", name);
+      const itemBox = await box(rtlItem);
+      expect(itemBox.x).toBe(toggle.x);
+      const icon = await box(rtlItem.locator("svg"));
+      expect(icon.x).toBeGreaterThan((await textBox(rtlItem)).x);
+      expect(itemBox.x + itemBox.width - (icon.x + icon.width)).toBeCloseTo(
+        24,
+        1
+      );
+    }
+  });
+
+  // M3: in a short window the items scroll, behind (never over) the close button
+  test("in a short window, the items scroll and leave the close button clear", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 800, height: 300 });
+    await open(page, "six-items");
+    const toggle = await box(fab(page, "six-items"));
+    // the items' list, which scrolls
+    const list = item(page, "six-items", "Email").locator("..");
+    const scrollTop = () => list.evaluate((el) => el.scrollTop);
+
+    expect(await list.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(
+      true
+    );
+    // the visible part of the list stays above the close button
+    const listBox = await box(list);
+    expect(listBox.y + listBox.height).toBeLessThanOrEqual(toggle.y);
+    // the wheel scrolls it
+    const email = await box(item(page, "six-items", "Email"));
+    await page.mouse.move(email.x + 20, email.y + 20);
+    await page.mouse.wheel(0, 200);
+    await expect.poll(scrollTop).toBeGreaterThan(0);
+    // every item can be reached, and comes into view
+    for (const name of ["Email", "Event"]) {
+      await item(page, "six-items", name).focus();
+      await expect(item(page, "six-items", name)).toBeInViewport({
+        ratio: 1,
+      });
+    }
+    // the close button is still there to press
+    await fab(page, "six-items").click();
+    await expect(items(page, "six-items")).toBeHidden();
   });
 
   test("takes up to six items", async ({ page }) => {

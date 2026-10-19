@@ -30,4 +30,6 @@ Choosing an item closes the menu once the item's own handlers have run, and retu
 
 ## Appearance
 
-An item has Button's large, round size (56px high, 24px padding at each end, 8px between its icon and its Title Medium label), at elevation 3, on the menu's container color. It has no `color` of its own: FabMenu's `color` sets every item's.
+An item has Button's `lg` round size, which is M3's medium button, as M3 specifies (56px high, 24px padding at each end, 8px between its icon and its Title Medium label), at elevation 3, on the menu's container color. It has no `color` of its own: FabMenu's `color` sets every item's.
+
+As M3 specifies, an item always has both its label and its icon, which tells the items apart at a glance, and hugs its content: don't give it a fixed width, truncate its label, or change its shape. Right to left, its icon follows its label.

@@ -88,7 +88,8 @@ const colorClasses = {
 }[color];
 
 // The menu keeps the closed FAB's size, so it doesn't move what's around it as the FAB shrinks into
-// the close button, which stays in the FAB's bottom corner on the `align` side
+// the close button. As M3 specifies, the two share the FAB's top corner on the `align` side, and
+// the items open from there, so a larger FAB's menu sits higher.
 const menuClasses = {
   default: "size-14",
   md: "size-20",
@@ -108,18 +109,25 @@ const iconSizeClasses = {
   lg: "size-8",
 }[size];
 
-// The items stack upward from 8px above the FAB, lined up with its `align` edge. Each grows in
-// width from that edge as it opens (a clip-path inset, which the items read).
+// The items stack upward from 8px above the FAB, lined up with its `align` edge, which is the
+// other physical side right to left (M3 mirrors the menu). The list reaches 16px past that edge,
+// so its padding (it scrolls, so it clips) has room for the items' shadows and focus rings. Each
+// item grows in width from that edge as it opens (a clip-path inset, which the items read).
+// Anchor insets rather than position-area, which Firefox places wrongly right to left.
 const alignClasses = {
   end: {
     menu: "justify-items-end",
-    items:
-      "right-[anchor(right)] items-end [--ac-fab-menu-item-clip:inset(0_0_0_100%)]",
+    popover: [
+      "right-[calc(anchor(right)-1rem)] items-end rtl:right-auto rtl:left-[calc(anchor(left)-1rem)]",
+      "[--ac-fab-menu-item-clip:inset(0_0_0_100%)] rtl:[--ac-fab-menu-item-clip:inset(0_100%_0_0)]",
+    ],
   },
   start: {
     menu: "justify-items-start",
-    items:
-      "left-[anchor(left)] items-start [--ac-fab-menu-item-clip:inset(0_100%_0_0)]",
+    popover: [
+      "left-[calc(anchor(left)-1rem)] items-start rtl:left-auto rtl:right-[calc(anchor(right)-1rem)]",
+      "[--ac-fab-menu-item-clip:inset(0_100%_0_0)] rtl:[--ac-fab-menu-item-clip:inset(0_0_0_100%)]",
+    ],
   },
 }[align];
 
@@ -131,7 +139,7 @@ const iconClasses =
 
 <div
   class:list={twMerge(
-    "group/fab-menu relative grid items-end",
+    "group/fab-menu relative grid items-start",
     colorClasses,
     menuClasses,
     alignClasses.menu,
@@ -184,19 +192,28 @@ const iconClasses =
 
   {
     /* No surface of its own (so not BaseOverlay): only the items' containers show. Closed, it
-       stays rendered (transition-discrete) until the last item has finished closing. */
+       stays rendered (transition-discrete) until the last item has finished closing.
+
+       It's as tall as its items, up to the space above the FAB, which the script keeps in
+       --ac-fab-menu-room (CSS can't: anchor() only sets insets, and Firefox shifts a box with
+       its anchor's scrolling, so a `top` inset doesn't hold). Its top padding keeps M3's 16px
+       margin from the top of the window. In a window too short for its items, the list scrolls,
+       as M3 specifies, and never covers the close button. No scrollbar, as in Compose: the
+       cut-off item shows it scrolls, and focus scrolls each item into view. It keeps room for
+       one item, so a FAB scrolled to the top of the window still shows its menu, running off
+       the top. */
   }
   <div
     class:list={[
-      "group/fab-menu-items inset-auto m-0 flex-col gap-1 overflow-visible border-0 bg-transparent p-0 open:flex",
-      "bottom-[calc(anchor(top)+8px)]",
+      "group/fab-menu-items inset-auto m-0 flex-col gap-1 border-0 bg-transparent px-4 pt-4 pb-2 open:flex",
+      "bottom-[anchor(top)] max-h-[max(5rem,var(--ac-fab-menu-room))] scrollbar-none overflow-y-auto",
       // How long the items take to start, one after another. Compose shows them by animating the
       // number shown on M3's slow effects spring, so each starts as the count passes it; spread
       // evenly over this span, each starts within 20ms of Compose's, for any number of items.
       "[--ac-fab-menu-stagger-span:140ms]",
       // stays rendered until the last item to start has finished closing
       "motion-safe:transition-[display,overlay] motion-safe:transition-discrete motion-safe:duration-[calc(var(--ac-fab-menu-stagger-span)+var(--theme-duration-spring-fast-spatial))]",
-      alignClasses.items,
+      alignClasses.popover,
     ]}
     style={`position-anchor: ${anchorName}`}
     {id}
@@ -248,6 +265,32 @@ const iconClasses =
           return;
         event.preventDefault();
         items[0]!.focus();
+      });
+
+      // The list's padding, around the items, is outside the menu as far as a click goes
+      popover.addEventListener("click", (event) => {
+        if (event.target === popover) popover.hidePopover();
+      });
+
+      // While it's open, the list may be as tall as the space above the FAB, which changes as the
+      // page scrolls (unless the FAB is fixed) or the window resizes
+      const fitList = () =>
+        popover.style.setProperty(
+          "--ac-fab-menu-room",
+          `${toggle.getBoundingClientRect().top}px`
+        );
+      popover.addEventListener("beforetoggle", (event) => {
+        if (event.newState === "open") {
+          fitList();
+          window.addEventListener("scroll", fitList, {
+            capture: true,
+            passive: true,
+          });
+          window.addEventListener("resize", fitList, { passive: true });
+        } else {
+          window.removeEventListener("scroll", fitList, { capture: true });
+          window.removeEventListener("resize", fitList);
+        }
       });
 
       // Choosing an item closes the menu, once the click has run every handler and the item's
