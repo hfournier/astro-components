@@ -1,0 +1,76 @@
+---
+// FabMenu with each kind of slot content it accepts or rejects, rendered one at a time by
+// src/pages/tests/fab-menu-content.astro so the throwing cases can't break the page around them.
+import FabMenu from "../components/FabMenu.astro";
+import FabMenuItem from "../components/FabMenuItem.astro";
+
+type Props = {
+  content:
+    "comments" | "element" | "one" | "seven" | "six" | "text" | "wrapped";
+};
+const { content } = Astro.props;
+const labels = ["One", "Two", "Three", "Four", "Five", "Six", "Seven"];
+---
+
+{
+  content === "comments" && (
+    <FabMenu id="comments" icon="add" label="Create">
+      <Fragment set:html="<!-- before -->" />
+      <FabMenuItem icon="mail" label="One" />
+      <Fragment set:html="<!-- between -->" />
+      <FabMenuItem icon="chat" label="Two" />
+    </FabMenu>
+  )
+}
+{
+  content === "element" && (
+    <FabMenu id="element" icon="add" label="Create">
+      <FabMenuItem icon="mail" label="One" />
+      <button type="button">Two</button>
+    </FabMenu>
+  )
+}
+{
+  content === "one" && (
+    <FabMenu id="one" icon="add" label="Create">
+      <FabMenuItem icon="mail" label="One" />
+    </FabMenu>
+  )
+}
+{
+  content === "six" && (
+    <FabMenu id="six" icon="add" label="Create">
+      {labels.slice(0, 6).map((label) => (
+        <FabMenuItem icon="mail" {label} />
+      ))}
+    </FabMenu>
+  )
+}
+{
+  content === "seven" && (
+    <FabMenu id="seven" icon="add" label="Create">
+      {labels.map((label) => (
+        <FabMenuItem icon="mail" {label} />
+      ))}
+    </FabMenu>
+  )
+}
+{
+  content === "text" && (
+    <FabMenu id="text" icon="add" label="Create">
+      <FabMenuItem icon="mail" label="One" />
+      <FabMenuItem icon="chat" label="Two" />
+      Some stray words
+    </FabMenu>
+  )
+}
+{
+  content === "wrapped" && (
+    <FabMenu id="wrapped" icon="add" label="Create">
+      <FabMenuItem icon="mail" label="One" />
+      <div>
+        <FabMenuItem icon="chat" label="Two" />
+      </div>
+    </FabMenu>
+  )
+}

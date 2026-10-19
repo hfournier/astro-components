@@ -1,0 +1,35 @@
+---
+name: FabMenuItem
+description: One action in a FabMenu, a Material 3 FAB menu item built on Button and extending HTML's `<button>` element. It shows an icon and a label in the menu's color set, and choosing it closes the menu.
+category: Forms
+role: pattern
+meta:
+  title: FabMenuItem | astro-components HenriFournier.dev
+  description: One action in a Material 3 FAB menu, an icon and label button in the menu's color set.
+extends:
+  kind: element
+  tag: [button]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button
+parents: [FabMenu]
+props:
+  - name: icon
+    type: SvgIconNameTypes
+    required: true
+    description: The item's 24px icon, by its file name in `src/assets/svgs`, shown before its label.
+  - name: label
+    type: string
+    required: true
+    description: The item's visible label and accessible name, such as `"Email"`.
+---
+
+## Actions
+
+An item is always a `<button>`, never a link: a FAB menu holds actions. Give it its action as you would any button, with a `click` handler in a script, or with `command` and `commandfor` (to open a Dialog, say). Other button attributes, such as `id`, `value` and `disabled`, are passed through.
+
+Choosing an item closes the menu once the item's own handlers have run, and returns focus to the FAB, unless the action has moved focus elsewhere, such as into a dialog it opened.
+
+## Appearance
+
+An item has Button's `lg` round size, which is M3's medium button, as M3 specifies (56px high, 24px padding at each end, 8px between its icon and its Title Medium label), at elevation 3, on the menu's container color. It has no `color` of its own: FabMenu's `color` sets every item's.
+
+As M3 specifies, an item always has both its label and its icon, which tells the items apart at a glance, and hugs its content: don't give it a fixed width, truncate its label, or change its shape. Right to left, its icon follows its label.

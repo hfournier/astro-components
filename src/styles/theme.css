@@ -30,6 +30,13 @@
   /* easing: Tailwind's native namespace, role layer on top (ADR-0006) */
   --ease-theme-overlay: var(--ease-out);
 
+  /* M3 Expressive's motion springs, as the curves M3 publishes for the web ("Web: Convert springs
+     to curves", m3.material.io/styles/motion/overview/specs), each paired with its duration
+     below (ADR-0016). Spatial springs move things (size, position, shape) and overshoot; effects
+     springs change color and opacity and don't. */
+  --ease-spring-fast-spatial: cubic-bezier(0.42, 1.67, 0.21, 0.9);
+  --ease-spring-fast-effects: cubic-bezier(0.31, 0.94, 0.34, 1);
+
   /* box-shadow: M3 elevation levels, tinted with the generated shadow role */
   --shadow-theme-elevation-1:
     0 1px 2px 0 color-mix(in srgb, var(--theme-color-shadow) 30%, transparent),
@@ -55,6 +62,10 @@
   --theme-duration-feedback: var(--theme-duration-fast);
   --theme-duration-overlay: var(--theme-duration-base);
   --theme-duration-content-swap: var(--theme-duration-slow);
+
+  /* the duration M3 pairs with each --ease-spring-* curve (ADR-0016) */
+  --theme-duration-spring-fast-spatial: 350ms;
+  --theme-duration-spring-fast-effects: 150ms;
 
   /* Component color roles on M3 color roles, for content outside any BaseWrapper. BaseWrapper
      (and BaseOverlay's panel, which is one) overrides each per background. */

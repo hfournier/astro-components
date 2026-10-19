@@ -1,0 +1,54 @@
+---
+// Renders FabMenu with each kind of slot content (src/tests/FabMenuContent.astro) and lists the
+// outcome: how many items it rendered, or the error it threw. A FabMenu that throws would fail the
+// whole page and the build, so each case renders in its own container and its error is caught.
+import { experimental_AstroContainer } from "astro/container";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Main from "../../components/Main.astro";
+import FabMenuContent from "../../tests/FabMenuContent.astro";
+
+const container = await experimental_AstroContainer.create();
+const contents = [
+  "comments",
+  "element",
+  "one",
+  "seven",
+  "six",
+  "text",
+  "wrapped",
+] as const;
+const outcomes = await Promise.all(
+  contents.map(async (content) => {
+    try {
+      const html = await container.renderToString(FabMenuContent, {
+        props: { content },
+      });
+      const itemCount = html.match(/data-ac-fab-menu-item/g)?.length ?? 0;
+      return `rendered ${itemCount} items`;
+    } catch (error) {
+      return (error as Error).message;
+    }
+  })
+);
+---
+
+<BaseLayout
+  title="FabMenu content"
+  description="What FabMenu renders, or throws, for each kind of slot content"
+>
+  <Main class="mx-auto max-w-[75ch] px-4">
+    <h1>FabMenu content</h1>
+    <dl>
+      {
+        contents.map((content, index) => (
+          <>
+            <dt>{content}</dt>
+            <dd data-testid={`fab-menu-content-${content}`}>
+              {outcomes[index]}
+            </dd>
+          </>
+        ))
+      }
+    </dl>
+  </Main>
+</BaseLayout>
