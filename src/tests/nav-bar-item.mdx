@@ -14,3 +14,21 @@ description: Tests for the NavBarItem component
     <NavBarItem href="#" icon="archive" label="Archive" badgeLabel={0} />
   </NavBar>
 </Section>
+
+<Section data-testid="nav-bar-item-badge-description" class="p-4 space-y-4">
+  <Heading level={2}>Badge description</Heading>
+  <NavBar class="static" label="Badge description">
+    <NavBarItem href="#" icon="notifications" label="Updates" badgeLabel="" badgeDescription="Nouvelle notification" />
+    <NavBarItem href="#" icon="inbox" label="Inbox" />
+    <NavBarItem href="#" icon="archive" label="Archive" />
+  </NavBar>
+</Section>
+
+<Section data-testid="nav-bar-item-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <NavBar class="static" label="Right to left">
+    <NavBarItem href="#" icon="inbox" label="Inbox" badgeLabel={3} />
+    <NavBarItem href="#" icon="notifications" label="Updates" badgeLabel="" />
+    <NavBarItem href="#" icon="archive" label="Archive" />
+  </NavBar>
+</Section>

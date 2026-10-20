@@ -5,6 +5,7 @@ import type { TabTransitionType } from "../types";
 import type { SvgIconNameTypes } from "../svgs";
 
 type Props = HTMLAttributes<"div"> & {
+  badgeDescription?: string;
   badgeLabel?: string;
   icon?: SvgIconNameTypes;
   label: string;
@@ -12,6 +13,7 @@ type Props = HTMLAttributes<"div"> & {
 };
 
 const {
+  badgeDescription,
   badgeLabel,
   icon,
   label,
@@ -40,6 +42,7 @@ const transitionClasses = {
   role="tabpanel"
   data-ac-tabpanel
   data-ac-tab-badge={badgeLabel}
+  data-ac-tab-badge-description={badgeDescription}
   data-ac-tab-icon={icon}
   data-ac-tab-label={label}
   {...attrs}

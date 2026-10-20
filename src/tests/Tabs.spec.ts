@@ -11,7 +11,7 @@ import {
 // are the ones this spec uses: default (primary, labels only), icons (primary with stacked icons),
 // icons-and-badges (primary with icons, Updates with a dot badge), secondary-variant (labels only),
 // secondary-variant-with-icons (inline icons), secondary-variant-with-badges (Mentions with a
-// count, Replies, Drafts with a dot) and mdx-spacing-and-comments.
+// count, Replies with 0, Drafts with a dot described as "New draft") and mdx-spacing-and-comments.
 type TabsCaseId =
   | "default"
   | "icons"
@@ -121,6 +121,30 @@ test.describe("Tabs", () => {
     await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
     await expect(panels.nth(0)).toBeHidden();
     await expect(panels.nth(1)).toBeVisible();
+  });
+
+  test("adds a count, or M3's 'New notification' for a dot, to the tab's accessible name", async ({
+    page,
+  }) => {
+    const expectNames = async (caseId: TabsCaseId, names: string[]) => {
+      const tabs = tablist(page, caseId).getByRole("tab");
+      await expect(tabs).toHaveCount(names.length);
+      for (const [index, name] of names.entries()) {
+        await expect(tabs.nth(index)).toHaveAccessibleName(name);
+      }
+    };
+
+    await expectNames("icons-and-badges", [
+      "Inbox, 3",
+      "Archive",
+      "Updates, New notification",
+    ]);
+    // badgeDescription replaces "New notification"; a hidden badge of 0 adds nothing
+    await expectNames("secondary-variant-with-badges", [
+      "Mentions, 1500",
+      "Replies",
+      "Drafts, New draft",
+    ]);
   });
 
   test("clicking a tab's label or badge selects that tab", async ({ page }) => {

@@ -18,7 +18,8 @@ const value =
   typeof label === "string" && /^\d+$/.test(label) ? Number(label) : label;
 
 // "anchored" overlaps the top-end corner of an anchor (typically an icon), per M3's BadgedBox
-// offsets; "inline" sits in the text flow, e.g. after a tab label that has no icon to anchor to.
+// offsets, mirrored right to left (rtl: resets the other side; position-area would be simpler,
+// but Firefox misplaces it right to left); "inline" sits in the text flow, e.g. after a tab label that has no icon to anchor to.
 // Inline, M3 sits the dot on the text's baseline and aligns a badge with content to the top of the
 // text's capital letters (not its line box). overflow-hidden makes an inline-block's baseline its
 // bottom margin edge, so align-baseline puts the bottom on the text's baseline; for a badge with
@@ -34,8 +35,8 @@ const placementClasses =
     : [
         "fixed [position-anchor:var(--ac-anchorname-badge)]",
         value
-          ? "top-[calc(anchor(top)-2px)] left-[calc(anchor(right)-12px)]"
-          : "top-[anchor(top)] right-[anchor(right)]",
+          ? "top-[calc(anchor(top)-2px)] left-[calc(anchor(right)-12px)] rtl:right-[calc(anchor(left)-12px)] rtl:left-auto"
+          : "top-[anchor(top)] right-[anchor(right)] rtl:right-auto rtl:left-[anchor(left)]",
       ];
 ---
 

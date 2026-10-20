@@ -13,9 +13,9 @@ props:
     required: true
     description: Id fragment shared with the tab panels it controls, used to derive each tab button's id and aria-controls linkage. Generated and passed in by the parent Tabs component.
   - name: tabs
-    type: "{ label: string; icon?: SvgIconNameTypes; badgeLabel?: string }[]"
+    type: "{ label: string; icon?: SvgIconNameTypes; badgeLabel?: string; badgeDescription?: string }[]"
     required: true
-    description: One entry per tab button to render - its label, optional icon and optional badge - extracted by the parent Tabs component from its Tab children's props.
+    description: One entry per tab button to render - its label, optional icon and optional badge with its description - extracted by the parent Tabs component from its Tab children's props.
   - name: variant
     type: '"primary" | "secondary"'
     required: true

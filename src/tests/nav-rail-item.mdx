@@ -1,0 +1,33 @@
+---
+title: NavRailItem
+description: Tests for the NavRailItem component
+---
+
+<Heading level={1}>NavRailItem Tests</Heading>
+
+{/* A NavRail is fixed to the page's start edge, so each case holds its items in a nav that's a
+    collapsed rail's 96px-wide rail container instead */}
+
+<Section data-testid="nav-rail-item-badges" class="p-4 space-y-4">
+  <Heading level={2}>Badges</Heading>
+  <nav class="@container/rail flex w-24 flex-col items-center gap-4" aria-label="Badges">
+    <NavRailItem href="#" icon="inbox" label="Inbox" badgeLabel={3} />
+    <NavRailItem href="#" icon="notifications" label="Updates" badgeLabel="" />
+    <NavRailItem href="#" icon="archive" label="Archive" />
+  </nav>
+</Section>
+
+<Section data-testid="nav-rail-item-badge-description" class="p-4 space-y-4">
+  <Heading level={2}>Badge description</Heading>
+  <nav class="@container/rail flex w-24 flex-col items-center gap-4" aria-label="Badge description">
+    <NavRailItem href="#" icon="notifications" label="Updates" badgeLabel="" badgeDescription="Nouvelle notification" />
+  </nav>
+</Section>
+
+<Section data-testid="nav-rail-item-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <nav class="@container/rail flex w-24 flex-col items-center gap-4" aria-label="Right to left">
+    <NavRailItem href="#" icon="inbox" label="Inbox" badgeLabel={3} />
+    <NavRailItem href="#" icon="notifications" label="Updates" badgeLabel="" />
+  </nav>
+</Section>
