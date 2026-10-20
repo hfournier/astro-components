@@ -25,7 +25,6 @@ const { icon, headline, label, id, class: classList, ...attrs } = Astro.props;
     classList
   )}
   {id}
-  showBlur={true}
   transition="fade-down"
   aria-labelledby={headline ? `${id}-headline` : undefined}
   aria-label={label && !headline ? label : undefined}
@@ -68,7 +67,7 @@ const { icon, headline, label, id, class: classList, ...attrs } = Astro.props;
   <div
     class:list={[
       "scroll-content -mx-6 min-h-0 flex-1 overflow-y-auto px-6",
-      "text-sm text-(--theme-color-on-surface-variant)",
+      "text-sm leading-5 tracking-[0.25px] text-(--theme-color-on-surface-variant)",
       "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-inset",
     ]}
     id={`${id}-content`}
@@ -79,10 +78,15 @@ const { icon, headline, label, id, class: classList, ...attrs } = Astro.props;
   </div>
 
   {
+    /* M3 stacks actions too long for one row, confirm above dismiss. Dismiss comes first in the
+       DOM, so wrapping in reverse puts confirm on the top line, both at the end, and keeps the
+       Tab order dismiss, then confirm. */
+  }
+  {
     Astro.slots.has("actions") && (
       <Footer
         bgColor="transparent"
-        class="flex items-center justify-end gap-2 pt-6"
+        class="flex flex-wrap-reverse items-center justify-end gap-2 pt-6"
         role="none"
       >
         <slot name="actions" />
@@ -133,7 +137,7 @@ const { icon, headline, label, id, class: classList, ...attrs } = Astro.props;
     z-index: 1;
     height: 1px;
     margin-inline: calc(var(--spacing) * -6);
-    background-color: var(--theme-color-outline-variant);
+    background-color: var(--theme-color-outline);
     opacity: 0;
 
     @media (prefers-reduced-motion: no-preference) {

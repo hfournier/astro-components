@@ -7,7 +7,7 @@ Manual, non-blocking PR-review companion to the automated axe-core checks (see [
 - [ ] Every interactive element is reachable and operable using only the keyboard (Tab, Shift+Tab, Enter/Space, arrow keys where the pattern calls for them).
 - [ ] The component's interaction pattern matches its [WAI-ARIA APG](https://www.w3.org/WAI/ARIA/apg/patterns/) reference (tabs, dialog, menu, etc.), or a deviation is explicitly noted in the component's docs with why.
 - [ ] No keyboard trap: focus can always move away from the component (Escape, Tab out, or an explicit close action).
-- [ ] Tab order follows visual/reading order.
+- [ ] Tab order follows visual/reading order. Exception: Dialog's stacked actions, where M3 puts confirm above dismiss but Tab keeps the DOM order, dismiss then confirm. The order still makes sense (WCAG 2.4.3), and DialogConfirm focuses dismiss first so a reflexive Enter never confirms.
 
 ## Focus visibility
 

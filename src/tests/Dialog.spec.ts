@@ -35,7 +35,13 @@ const recordedEvents = (dialog: Locator) =>
 // button and the dialog it opens. Trigger labels repeat between cases ("Open Confirm Dialog"),
 // so both are found within their case.
 type DialogCaseId =
-  "basic" | "confirm" | "confirm-yes-no" | "acknowledge" | "acknowledge-icon";
+  | "basic"
+  | "confirm"
+  | "confirm-yes-no"
+  | "acknowledge"
+  | "acknowledge-icon"
+  | "scrolling"
+  | "stacked";
 
 const dialogCase = (page: Page, caseId: DialogCaseId) =>
   page.getByTestId(`dialog-${caseId}`);
@@ -154,6 +160,24 @@ test.describe("Dialog", () => {
     expect(action.y - (content.y + content.height)).toBe(24);
   });
 
+  test("M3's scrim: the scrim color at 32%, not blurred", async ({ page }) => {
+    await activate(openDialog(page));
+    await settled(page);
+
+    const backdrop = (property: string) =>
+      basicDialog(page).evaluate(
+        (el, p) => getComputedStyle(el, "::backdrop").getPropertyValue(p),
+        property
+      );
+    expect(await backdrop("backdrop-filter")).toBe("none");
+    expect(await backdrop("background-color")).toBe(
+      await resolvedColor(
+        page,
+        "color-mix(in oklab, var(--theme-color-scrim) 32%, transparent)"
+      )
+    );
+  });
+
   // M3 (md-dialog) cancels a dialog on a scrim click, the same as Escape. The dialog is centred,
   // so the viewport's corner is on the scrim.
   test("a click on the scrim cancels it, with an empty returnValue, and returns focus", async ({
@@ -211,7 +235,9 @@ test.describe("Dialog", () => {
 
     const dialog = basicDialog(page);
     const panel = await box(dialog.locator("> div"));
-    const close = dialog.locator("footer").getByRole("button", { name: "Close" });
+    const close = dialog
+      .locator("footer")
+      .getByRole("button", { name: "Close" });
     const action = await box(close);
     expect(panel.x + panel.width - (action.x + action.width)).toBe(24);
   });
@@ -233,6 +259,36 @@ test.describe("Dialog", () => {
     await expect(content).toHaveCSS("overflow-y", "auto");
   });
 
+  test("M3 supporting text: Body Medium, 14/20 with 0.25px tracking", async ({
+    page,
+  }) => {
+    await activate(openDialog(page));
+
+    const content = supportingText(page);
+    await expect(content).toHaveCSS("font-size", "14px");
+    await expect(content).toHaveCSS("line-height", "20px");
+    await expect(content).toHaveCSS("letter-spacing", "0.25px");
+  });
+
+  test("content scrolled out of view below shows an outline-colored divider", async ({
+    page,
+    browserName,
+  }) => {
+    // scroll-state container queries, which show the divider, are Chromium only for now
+    test.skip(browserName !== "chromium", "no scroll-state queries");
+    await activate(trigger(page, "scrolling", "Open Dialog"));
+    await settled(page);
+
+    const bottomDivider = dialogIn(page, "scrolling").locator(
+      "#scrolling-dialog-content > [aria-hidden]:last-child"
+    );
+    await expect(bottomDivider).toHaveCSS("opacity", "1");
+    await expect(bottomDivider).toHaveCSS(
+      "background-color",
+      await resolvedColor(page, "var(--theme-color-outline)")
+    );
+  });
+
   test("the scrolling content shows the focus ring", async ({ page }) => {
     await activate(openDialog(page));
 
@@ -251,6 +307,41 @@ test.describe("Dialog", () => {
 test.describe("DialogConfirm", () => {
   // The confirm case: "Cancel" dismisses, "Discard" confirms.
   // The confirm-yes-no case: "No" dismisses, "Yes" confirms.
+  // The stacked case: 280px wide, "Keep editing the draft" dismisses, "Discard all changes"
+  // confirms.
+
+  test("actions too long for one row stack, confirm above dismiss, both at the end", async ({
+    page,
+  }) => {
+    await activate(trigger(page, "stacked", "Open Confirm Dialog"));
+    await settled(page);
+
+    const dialog = dialogIn(page, "stacked");
+    const panel = await box(dialog.locator("> div"));
+    const dismiss = dialog.getByRole("button", {
+      name: "Keep editing the draft",
+    });
+    const confirm = dialog.getByRole("button", { name: "Discard all changes" });
+    const dismissBox = await box(dismiss);
+    const confirmBox = await box(confirm);
+
+    // the case sets M3's narrowest dialog, so the labels can't fit side by side
+    expect(panel.width).toBe(280);
+    expect(confirmBox.y + confirmBox.height).toBeLessThanOrEqual(dismissBox.y);
+    // both end at the panel's 24px padding, and nothing overflows it
+    for (const action of [dismissBox, confirmBox]) {
+      expect(panel.x + panel.width - (action.x + action.width)).toBeCloseTo(
+        24,
+        0
+      );
+      expect(action.x).toBeGreaterThanOrEqual(panel.x + 24);
+    }
+    // the Tab order still follows the DOM: dismiss, then confirm
+    await expect(dismiss).toBeFocused();
+    await page.keyboard.press("Tab");
+    await expect(confirm).toBeFocused();
+  });
+
   test("is an alertdialog named by its headline and described by its content", async ({
     page,
   }) => {
