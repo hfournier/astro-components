@@ -45,13 +45,15 @@ const slot = Astro.slots.has("default")
   : "";
 
 // Each FabMenuItem must be a direct child, as Tabs requires of its Tabs: anything else (other than
-// whitespace and comments) throws rather than ending up in the menu
+// whitespace, comments and scripts) throws rather than ending up in the menu. A script is
+// Button's own, which Astro renders beside the first Button on the page.
 const isItem = (node: Node) =>
   node.type === ELEMENT_NODE &&
   node.attributes["data-ac-fab-menu-item"] !== undefined;
 let itemCount = 0;
 for (const node of parse(slot).children as Node[]) {
   if (node.type === COMMENT_NODE) continue;
+  if (node.type === ELEMENT_NODE && node.name === "script") continue;
   if (node.type === TEXT_NODE && node.value.trim() === "") continue;
   if (!isItem(node)) {
     let hasItem = false;

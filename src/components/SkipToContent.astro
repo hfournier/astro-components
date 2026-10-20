@@ -5,7 +5,11 @@ import Button from "./Button.astro";
 // Composes Button (as="a") for its styling, including the color-contrast fix Button already
 // owns (#44/#45), rather than duplicating its class list and twMerge workaround (#46). Only the
 // off-screen-until-focused positioning below is SkipToContent's own concern.
-type Props = ComponentProps<typeof Button<"a">>;
+// An anchor can't be a toggle, so Button's toggle props are left out
+type Props = Omit<
+  ComponentProps<typeof Button<"a">>,
+  "isToggle" | "isSelected" | "selectedIcon"
+>;
 const { href, size = "sm", class: classList, ...attrs }: Props = Astro.props;
 ---
 

@@ -16,36 +16,44 @@ description: Tests for the Button component
   </div>
 </Section>
 
-<Section data-testid="button-small" class="p-4">
-  <Heading level={2}>Small</Heading>
-  <div class="flex flex-wrap gap-2 py-8">
-    <Button variant="elevated" size="sm">Elevated</Button>
-    <Button variant="filled" size="sm">Filled</Button>
-    <Button variant="tonal" size="sm">Tonal</Button>
-    <Button variant="outlined" size="sm">Outlined</Button>
-    <Button variant="text" size="sm">Text</Button>
+<Section data-testid="button-sizes" class="p-4">
+  <Heading level={2}>Sizes</Heading>
+  <div class="flex flex-wrap items-center gap-2 py-2">
+    <Button size="xs">Extra small</Button>
+    <Button size="xs" shape="square">Extra small square</Button>
+    <Button size="xs" variant="outlined">Extra small outlined</Button>
+    <Button size="xs" icon="add">Extra small icon</Button>
+  </div>
+  <div class="flex flex-wrap items-center gap-2 py-2">
+    <Button size="sm">Small</Button>
+    <Button size="sm" shape="square">Small square</Button>
+    <Button size="sm" variant="outlined">Small outlined</Button>
+    <Button size="sm" icon="add">Small icon</Button>
+  </div>
+  <div class="flex flex-wrap items-center gap-2 py-2">
+    <Button size="md">Medium</Button>
+    <Button size="md" shape="square">Medium square</Button>
+    <Button size="md" variant="outlined">Medium outlined</Button>
+    <Button size="md" icon="add">Medium icon</Button>
+  </div>
+  <div class="flex flex-wrap items-center gap-2 py-2">
+    <Button size="lg">Large</Button>
+    <Button size="lg" shape="square">Large square</Button>
+    <Button size="lg" variant="outlined">Large outlined</Button>
+    <Button size="lg" icon="add">Large icon</Button>
+  </div>
+  <div class="flex flex-wrap items-center gap-2 py-2">
+    <Button size="xl">Extra large</Button>
+    <Button size="xl" shape="square">Extra large square</Button>
+    <Button size="xl" variant="outlined">Extra large outlined</Button>
+    <Button size="xl" icon="add">Extra large icon</Button>
   </div>
 </Section>
 
-<Section data-testid="button-medium" class="p-4">
-  <Heading level={2}>Medium</Heading>
+<Section data-testid="button-icon-rtl" class="p-4" dir="rtl">
+  <Heading level={2}>Icon, right to left</Heading>
   <div class="flex flex-wrap gap-2 py-8">
-    <Button variant="elevated" size="md">Elevated</Button>
-    <Button variant="filled" size="md">Filled</Button>
-    <Button variant="tonal" size="md">Tonal</Button>
-    <Button variant="outlined" size="md">Outlined</Button>
-    <Button variant="text" size="md">Text</Button>
-  </div>
-</Section>
-
-<Section data-testid="button-large" class="p-4">
-  <Heading level={2}>Large</Heading>
-  <div class="flex flex-wrap gap-2 py-8">
-    <Button variant="elevated" size="lg">Elevated</Button>
-    <Button variant="filled" size="lg">Filled</Button>
-    <Button variant="tonal" size="lg">Tonal</Button>
-    <Button variant="outlined" size="lg">Outlined</Button>
-    <Button variant="text" size="lg">Text</Button>
+    <Button icon="add">Add</Button>
   </div>
 </Section>
 
@@ -102,5 +110,44 @@ description: Tests for the Button component
     <Button as="a" href="#">
       Multi-line anchor button
     </Button>
+  </div>
+</Section>
+
+<Section data-testid="button-toggle" class="p-4">
+  <Heading level={2}>Toggle</Heading>
+  <div class="flex flex-wrap gap-2 py-8">
+    <Button variant="elevated" isToggle>Elevated</Button>
+    <Button variant="filled" isToggle>Filled</Button>
+    <Button variant="tonal" isToggle>Tonal</Button>
+    <Button variant="outlined" isToggle>Outlined</Button>
+    <Button isToggle icon="favorite" selectedIcon="favorite-fill">Favorite</Button>
+    <Button isToggle shape="square">Square</Button>
+  </div>
+</Section>
+
+<Section data-testid="button-toggle-selected" class="p-4">
+  <Heading level={2}>Toggle, selected</Heading>
+  <div class="flex flex-wrap gap-2 py-8">
+    <Button variant="elevated" isToggle isSelected>Elevated</Button>
+    <Button variant="filled" isToggle isSelected>Filled</Button>
+    <Button variant="tonal" isToggle isSelected>Tonal</Button>
+    <Button variant="outlined" isToggle isSelected>Outlined</Button>
+  </div>
+</Section>
+
+<Section data-testid="button-toggle-disabled" class="p-4">
+  <Heading level={2}>Toggle, selected and disabled</Heading>
+  <div class="flex flex-wrap gap-2 py-8">
+    <Button variant="elevated" isToggle isSelected disabled>Elevated</Button>
+    <Button variant="filled" isToggle isSelected disabled>Filled</Button>
+    <Button variant="tonal" isToggle isSelected disabled>Tonal</Button>
+    <Button variant="outlined" isToggle isSelected disabled>Outlined</Button>
+  </div>
+</Section>
+
+<Section data-testid="button-long-label" class="p-4">
+  <Heading level={2}>Long label</Heading>
+  <div class="w-24 py-8">
+    <Button>Download the full report</Button>
   </div>
 </Section>

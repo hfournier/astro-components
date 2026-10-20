@@ -217,6 +217,10 @@ test.describe("FabMenu", () => {
     // Tailwind composes its (transparent) ring layers into the same box-shadow
     expect(await shadow(item(page, "no-props", "Email"))).toContain(level3);
     await expect.poll(() => shadow(fab(page, "no-props"))).toContain(level3);
+
+    // an item stays there on hover
+    await item(page, "no-props", "Email").hover();
+    expect(await shadow(item(page, "no-props", "Email"))).toContain(level3);
   });
 
   test("open, the FAB is a 56px round close button with a 20px close icon", async ({

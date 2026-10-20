@@ -1,21 +1,49 @@
 ---
 import type { HTMLTag, Polymorphic } from "astro/types";
 import { twMerge } from "tailwind-merge";
+import type { SvgIconNameTypes } from "../svgs";
 import { unwrapParagraph } from "../utils";
+import Icon from "./Icon.astro";
 
 // Astro's own polymorphic-component helper. Verified with a cleared `.astro` cache
 // (`rm -rf .astro && astro sync`), repeatedly, both internally and for every external consumer
 // (DialogConfirm's `command`/`commandfor`, SkipToContent's `as="a"` + `href`) - it correctly
 // rejects `href` on the default button branch, `command`/`commandfor` on `as="a"`, and invalid
-// prop values, while accepting everything valid on both branches.
+// prop values, while accepting everything valid on both branches. The toggle props (below) sit
+// outside it, as its Omit would flatten their union, and Astro reads the generics off the first
+// type in the frontmatter, so Props comes first.
 type Props<Tag extends Extract<HTMLTag, "a" | "button"> = "button"> =
   Polymorphic<{
     as: Tag;
-    variant?: "elevated" | "filled" | "outlined" | "text" | "tonal";
+    // A leading icon, before the label, sized to match it
+    icon?: SvgIconNameTypes;
     showFullwidth?: boolean;
     shape?: "round" | "square";
-    size?: "sm" | "md" | "lg";
-  }>;
+    size?: "xs" | "sm" | "md" | "lg" | "xl";
+  }> &
+    ToggleProps;
+
+type Variant = "elevated" | "filled" | "outlined" | "text" | "tonal";
+
+// A toggle switches between selected and unselected on each click (aria-pressed). M3 has no toggle
+// text button, and an <a> can't be pressed, so only a <button> of the other styles can be one.
+type NotToggle = {
+  isToggle?: false;
+  isSelected?: never;
+  selectedIcon?: never;
+  variant?: Variant;
+};
+type ToggleProps =
+  | NotToggle
+  | {
+      as?: "button";
+      isToggle: true;
+      // A toggle's initial state
+      isSelected?: boolean;
+      // Shown in place of `icon` while the toggle is selected, e.g. "favorite-fill" for "favorite"
+      selectedIcon?: SvgIconNameTypes;
+      variant?: Exclude<Variant, "text">;
+    };
 
 // Two-read `Astro.props`, per Astro's own documented pattern for polymorphic components: the
 // first read grabs `as` untyped so it keeps behaving as the real `"button" | "a"` union for
@@ -32,10 +60,14 @@ const {
   // `as="a"`), so it would otherwise render as a literal `as="a"` attribute on the real element.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   as: _as,
+  icon,
+  isToggle = false,
+  isSelected = false,
+  selectedIcon,
   variant = "filled",
   showFullwidth = false,
   shape = "round",
-  size = "md",
+  size = "sm",
   class: classList,
   type,
   ...attrs
@@ -47,56 +79,159 @@ const resolvedType = Tag === "button" ? (type ?? "button") : type;
 
 const label = unwrapParagraph(await Astro.slots.render("default"));
 
-// Size sets the height, padding and label type. M3 picks the label style by height
-// (ButtonDefaults.textStyleFor): Label Large below 56px, Title Medium at 56px (M3's Medium).
-// Both are weight 500, set below.
-const labelLarge = "text-sm leading-5 tracking-[0.1px]";
-const titleMedium = "text-base leading-6 tracking-[0.15px]";
+// Size sets the height, padding, label type, icon size and the gap between icon and label, as in
+// M3 Expressive's five sizes. M3 picks the label style by size: Label Large for extra small and
+// small, Title Medium for medium, Headline Small for large and Headline Large for extra large.
+const labelLarge = "text-sm leading-5 font-medium tracking-[0.1px]";
+const titleMedium = "text-base leading-6 font-medium tracking-[0.15px]";
+const headlineSmall = "text-2xl leading-8 font-normal tracking-normal";
+const headlineLarge = "text-[2rem] leading-10 font-normal tracking-normal";
 const sizeClasses = {
-  sm: `${labelLarge} min-h-10 px-4 after:inset-x-0 after:-inset-y-1.25 after:absolute`,
-  md: `${labelLarge} min-h-12 px-5`,
-  lg: `${titleMedium} min-h-14 px-6`,
+  xs: `${labelLarge} min-h-8 px-3 gap-1`,
+  sm: `${labelLarge} min-h-10 px-4 gap-2`,
+  md: `${titleMedium} min-h-14 px-6 gap-2`,
+  lg: `${headlineSmall} min-h-24 px-12 gap-3`,
+  xl: `${headlineLarge} min-h-34 px-16 gap-4`,
 }[size];
 
-// M3 disabled: label on-surface at 38%, any container (and outline) on-surface at 10%.
+const iconSizeClasses = {
+  xs: "size-5",
+  sm: "size-5",
+  md: "size-6",
+  lg: "size-8",
+  xl: "size-10",
+}[size];
+
+// M3 outline width grows with size. The state layer extends over the border, so it insets by the
+// same amount.
+const borderClasses = {
+  xs: "border before:-inset-px",
+  sm: "border before:-inset-px",
+  md: "border before:-inset-px",
+  lg: "border-2 before:-inset-0.5",
+  xl: "border-3 before:-inset-[3px]",
+}[size];
+
+// "round" is half the height in px rather than rounded-full, so the corners can animate to and
+// from the pressed and selected radii (M3's shape morph) instead of jumping.
+const roundCorners = {
+  xs: "rounded-[16px]",
+  sm: "rounded-[20px]",
+  md: "rounded-[28px]",
+  lg: "rounded-[48px]",
+  xl: "rounded-[68px]",
+}[size];
+const squareCorners = {
+  xs: "rounded-xl",
+  sm: "rounded-xl",
+  md: "rounded-2xl",
+  lg: "rounded-[28px]",
+  xl: "rounded-[28px]",
+}[size];
+const shapeClasses = shape === "round" ? roundCorners : squareCorners;
+
+// M3: a selected toggle swaps shapes, round becoming square and square becoming round
+const selectedShapeClasses = (shape === "round" ? squareCorners : roundCorners)
+  .split(" ")
+  .map((corner) => `aria-pressed:${corner}`)
+  .join(" ");
+
+// M3: pressed, round and square buttons both morph to the same, squarer corners
+const pressedShapeClasses = {
+  xs: "not-disabled:active:rounded-lg",
+  sm: "not-disabled:active:rounded-lg",
+  md: "not-disabled:active:rounded-xl",
+  lg: "not-disabled:active:rounded-2xl",
+  xl: "not-disabled:active:rounded-2xl",
+}[size];
+
+// M3 disabled: label on-surface at 38%, any container on-surface at 10%. An outline stays
+// outline-variant.
 const disabledContainer =
   "disabled:bg-(--theme-color-on-surface)/10 disabled:border-transparent";
 
+// M3: elevated rests at level 1 and rises to 2 on hover; filled and tonal rest at 0 and rise to 1
+const elevated = `shadow-theme-elevation-1 not-disabled:hover:shadow-theme-elevation-2 disabled:shadow-none`;
+const raisedOnHover = "not-disabled:hover:shadow-theme-elevation-1";
+
+// A toggle's selected colors only apply while enabled, so a disabled toggle looks disabled
 const variantClasses = {
-  elevated: `bg-(--theme-color-surface-container-low) border-(--theme-color-surface-container-low) text-(--theme-color-primary) shadow-theme-elevation-1 not-disabled:hover:shadow-theme-elevation-2 disabled:shadow-none ${disabledContainer}`,
-  filled: `bg-(--theme-color-primary) border-(--theme-color-primary) text-(--theme-color-on-primary) ${disabledContainer}`,
-  outlined:
-    "bg-transparent border-(--theme-color-outline-variant) text-(--theme-color-on-surface-variant) disabled:border-(--theme-color-on-surface)/10",
+  elevated: isToggle
+    ? `bg-(--theme-color-surface-container-low) border-(--theme-color-surface-container-low) text-(--theme-color-primary) not-disabled:aria-pressed:bg-(--theme-color-primary) not-disabled:aria-pressed:border-(--theme-color-primary) not-disabled:aria-pressed:text-(--theme-color-on-primary) ${elevated} ${disabledContainer}`
+    : `bg-(--theme-color-surface-container-low) border-(--theme-color-surface-container-low) text-(--theme-color-primary) ${elevated} ${disabledContainer}`,
+  filled: isToggle
+    ? `bg-(--theme-color-surface-container) border-(--theme-color-surface-container) text-(--theme-color-on-surface-variant) not-disabled:aria-pressed:bg-(--theme-color-primary) not-disabled:aria-pressed:border-(--theme-color-primary) not-disabled:aria-pressed:text-(--theme-color-on-primary) ${raisedOnHover} ${disabledContainer}`
+    : `bg-(--theme-color-primary) border-(--theme-color-primary) text-(--theme-color-on-primary) ${raisedOnHover} ${disabledContainer}`,
+  outlined: isToggle
+    ? "bg-transparent border-(--theme-color-outline-variant) text-(--theme-color-on-surface-variant) not-disabled:aria-pressed:bg-(--theme-color-inverse-surface) not-disabled:aria-pressed:border-(--theme-color-inverse-surface) not-disabled:aria-pressed:text-(--theme-color-inverse-on-surface) disabled:aria-pressed:bg-(--theme-color-on-surface)/10 disabled:aria-pressed:border-transparent"
+    : "bg-transparent border-(--theme-color-outline-variant) text-(--theme-color-on-surface-variant)",
   text: "bg-transparent border-transparent text-(--theme-color-primary)",
-  tonal: `bg-(--theme-color-secondary-container) border-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container) ${disabledContainer}`,
+  tonal: isToggle
+    ? `bg-(--theme-color-secondary-container) border-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container) not-disabled:aria-pressed:bg-(--theme-color-secondary) not-disabled:aria-pressed:border-(--theme-color-secondary) not-disabled:aria-pressed:text-(--theme-color-on-secondary) ${raisedOnHover} ${disabledContainer}`
+    : `bg-(--theme-color-secondary-container) border-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container) ${raisedOnHover} ${disabledContainer}`,
 }[variant];
 
-const shapeClasses = {
-  round: "rounded-full",
-  square: {
-    sm: "rounded-xl",
-    md: "rounded-[14px]",
-    lg: "rounded-2xl",
-  }[size],
-}[shape];
+const isPressable = isToggle && Tag === "button";
 ---
 
 <Tag
   class:list={twMerge(
-    "flex cursor-pointer items-center justify-center gap-2 border font-medium",
-    "relative isolate before:absolute before:-inset-px before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0 motion-safe:before:transition-opacity",
+    "group/button flex cursor-pointer items-center justify-center whitespace-nowrap",
+    "relative isolate before:absolute before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0 motion-safe:before:transition-opacity",
     "not-disabled:hover:before:opacity-8 not-disabled:focus-visible:before:opacity-10 not-disabled:active:before:opacity-10",
+    // M3 touch target: at least 48px high, centered on the button, for every size
+    "after:absolute after:inset-x-0 after:top-1/2 after:h-12 after:min-h-full after:-translate-y-1/2",
     "disabled:cursor-default disabled:text-(--theme-color-on-surface)/38",
-    "motion-safe:transition",
+    "motion-safe:transition-[color,background-color,border-color,border-radius,box-shadow] motion-safe:duration-(--theme-duration-feedback)",
     "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
     showFullwidth ? "min-w-full" : "max-w-fit",
+    borderClasses,
     variantClasses,
     shapeClasses,
+    isPressable && selectedShapeClasses,
+    pressedShapeClasses,
     sizeClasses,
     classList
   )}
   type={resolvedType}
+  aria-pressed={isPressable ? String(isSelected) : undefined}
+  data-ac-button-toggle={isPressable ? "" : undefined}
   {...attrs}
 >
+  {
+    icon &&
+      (isPressable && selectedIcon ? (
+        <>
+          {/* swapped by CSS, so the icon follows aria-pressed however it changes */}
+          <Icon
+            class:list={[iconSizeClasses, "group-aria-pressed/button:hidden"]}
+            name={icon}
+          />
+          <Icon
+            class:list={[
+              iconSizeClasses,
+              "hidden group-aria-pressed/button:block",
+            ]}
+            name={selectedIcon}
+          />
+        </>
+      ) : (
+        <Icon class:list={[iconSizeClasses, "shrink-0"]} name={icon} />
+      ))
+  }
   <Fragment set:html={label} />
 </Tag>
+
+<script>
+  // Each click flips a toggle's aria-pressed (keyboard activation fires click too). ButtonIcon has
+  // its own copy, under its own attribute, so each component works on its own and a page with
+  // both doesn't flip a toggle twice.
+  document.addEventListener("click", (event) => {
+    const button = (event.target as Element).closest<HTMLButtonElement>(
+      "[data-ac-button-toggle]"
+    );
+    if (!button || button.disabled) return;
+    const isPressed = button.getAttribute("aria-pressed") === "true";
+    button.setAttribute("aria-pressed", String(!isPressed));
+  });
+</script>
