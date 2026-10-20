@@ -36,7 +36,7 @@ const hasCount =
   badgeLabel !== undefined && badgeLabel !== "" && Number(badgeLabel) !== 0;
 const badgeAnchorName = `--anchorname-${crypto.randomUUID()}-badge`;
 // The badge is aria-hidden, so its count or description joins the item's name
-const badgeName = badgedName(label, badgeLabel, badgeDescription);
+const accessibleName = badgedName(label, badgeLabel, badgeDescription);
 ---
 
 <a
@@ -57,7 +57,7 @@ const badgeName = badgedName(label, badgeLabel, badgeDescription);
   )}
   href={href}
   aria-current={isCurrent ? "page" : undefined}
-  aria-label={badgeName}
+  aria-label={accessibleName}
   data-ac-nav-rail-item
   {...attrs}
 >

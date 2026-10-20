@@ -31,3 +31,11 @@ description: Tests for the NavRailItem component
     <NavRailItem href="#" icon="notifications" label="Updates" badgeLabel="" />
   </nav>
 </Section>
+
+<Section data-testid="nav-rail-item-rtl-expanded" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left, expanded</Heading>
+  <nav class="@container/rail flex w-60 flex-col items-start" aria-label="Right to left, expanded">
+    <NavRailItem href="#" icon="inbox" label="Inbox" badgeLabel={3} />
+    <NavRailItem href="#" icon="notifications" label="Updates" badgeLabel="" />
+  </nav>
+</Section>

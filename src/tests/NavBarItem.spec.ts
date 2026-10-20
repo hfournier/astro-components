@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { test, expect } from "./support/a11y-fixture";
-import { box } from "./support/helpers";
+import { box, textBox } from "./support/helpers";
 
 // Each case on /tests/nav-bar-item holds one NavBar, labelled with its heading. badges: Inbox
 // (3, current), Updates (a dot), Chat (1500) and Archive (0). badge-description: Updates (a dot,
@@ -117,6 +117,20 @@ test.describe("NavBarItem", () => {
       expect(count.x).toBeGreaterThan(countIcon.x + countIcon.width + 4);
       expect(count.x + count.width).toBeCloseTo(labelBox.x + labelBox.width, 0);
       expect(count.y).toBeGreaterThanOrEqual(labelBox.y - 1);
+    });
+
+    test("right to left, a count follows the label, to its left", async ({
+      page,
+    }) => {
+      const label = await textBox(
+        link(page, "Inbox, 3", "rtl").locator(
+          "> span:first-child > span:last-child"
+        )
+      );
+      const count = await box(badge(page, "Inbox, 3", "rtl"));
+
+      expect(count.x + count.width).toBeLessThan(label.x);
+      expect(count.x + count.width).toBeGreaterThan(label.x - 12);
     });
 
     test("doesn't clip the bottom of a count after the label", async ({

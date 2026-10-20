@@ -1,16 +1,18 @@
 import type { Page } from "@playwright/test";
 import { test, expect } from "./support/a11y-fixture";
-import { box } from "./support/helpers";
+import { box, textBox } from "./support/helpers";
 
 // Each case on /tests/nav-rail-item holds a collapsed rail's items in a nav labelled with its
 // heading. badges: Inbox (3), Updates (a dot) and Archive (none). badge-description: Updates (a
-// dot, described in French). rtl: Inbox (3) and Updates (a dot), right to left.
-// Collapsed, an item's count is on its icon; the copy after the label is hidden, so this finds the
-// shown one: the item's visible aria-hidden <span>.
+// dot, described in French). rtl: Inbox (3) and Updates (a dot), right to left, and rtl-expanded
+// the same in a 240px expanded rail.
+// Collapsed, an item's count is on its icon, and expanded it follows the label; the other copy is
+// hidden, so this finds the shown one: the item's visible aria-hidden <span>.
 const navNames = {
   badges: "Badges",
   "badge-description": "Badge description",
   rtl: "Right to left",
+  "rtl-expanded": "Right to left, expanded",
 } as const;
 type NavRailItemCaseId = keyof typeof navNames;
 
@@ -60,5 +62,16 @@ test.describe("NavRailItem", () => {
     const count = await box(badge(page, "rtl", "Inbox, 3"));
     expect(count.x + count.width).toBeCloseTo(countIcon.x + 12, 0);
     expect(count.y).toBeCloseTo(countIcon.y - 2, 0);
+  });
+
+  test("right to left in an expanded rail, a count follows the label, to its left", async ({
+    page,
+  }) => {
+    const item = link(page, "rtl-expanded", "Inbox, 3");
+    const label = await textBox(item.locator("> span:nth-child(2)"));
+    const count = await box(badge(page, "rtl-expanded", "Inbox, 3"));
+
+    expect(count.x + count.width).toBeLessThan(label.x);
+    expect(count.x + count.width).toBeGreaterThan(label.x - 12);
   });
 });
