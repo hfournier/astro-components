@@ -71,23 +71,23 @@ Pick the style by how important the action is, from most to least emphasis:
 
 When the button needs to stand out from its background, use filled, tonal or outlined rather than standard.
 
-## Size and width
+## Size
 
 - Make the main action the most prominent, by color or size, as in play/pause or start/stop.
 - Give buttons of similar importance the same size.
 - Use only a few icon buttons at once. In dense layouts, group them in a toolbar or button group.
 
-Don't shrink icon buttons to make a layout denser. Every size keeps a touch target of at least 48×48px (an invisible `::after` around the button), so don't override its size.
+Don't shrink icon buttons to make a layout denser. Every size keeps a touch target of at least 48×48px (an invisible `::after` around the button), so don't override the `::after`'s size.
 
 ## Icons
 
-A plain icon button uses a filled icon, such as `"star-fill"` rather than `"star"`.
-
-A toggle uses the outlined icon while it's unselected and the filled one while it's selected, with `icon` and `selectedIcon` (`"bookmark"` and `"bookmark-fill"`). This isn't just style: M3 requires the selected state to show through at least two properties, not color alone. Without a filled version, M3 makes the icon bolder (semibold or bold). These icons are SVGs, so use a toggle only with an icon that has a filled version, or supply a bolder one as `selectedIcon`.
+M3's plain icon button uses a filled icon, so where an icon has a `-fill` version, prefer it, such as `"star-fill"` rather than `"star"`.
 
 ## Toggles
 
 Use a toggle for a binary action that the button turns on and off, such as favorite, bookmark or mute. Don't use one for an action with no selected state, such as opening an overflow menu.
+
+A toggle uses the outlined icon while it's unselected and the filled one while it's selected, with `icon` and `selectedIcon` (`"bookmark"` and `"bookmark-fill"`). This isn't just style: M3 requires the selected state to show through at least two properties, not color alone. Without a filled version, M3 makes the icon bolder (semibold or bold). These icons are SVGs, so use a toggle only with an icon that has a filled version, or supply a bolder one as `selectedIcon`.
 
 A button that shows and hides other content, such as a menu or a panel, isn't a toggle: leave out `isToggle` and give it `aria-expanded` instead, as MenuToggle does. Never use both on one button.
 
