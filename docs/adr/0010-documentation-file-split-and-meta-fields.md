@@ -4,11 +4,13 @@
 
 > **Folder layout superseded by ADR-0013**: components now sit flat in `src/components/`, and the documentation files and specs this ADR places beside them live in `src/docs/<id>/`.
 
+> **Point 1 amended**: `documentation.mdx`'s body no longer has to be empty. It holds the component's guidance prose (when to use it, choosing a style, accessibility notes), which the component page renders after Usage and before Properties, adding its h2/h3 headings to the page's table of contents. Examples and baseline usage still live in their own files, for the reasons below.
+
 Implementing ADR-0009 surfaced a need it didn't anticipate: an example's source code has to work as two different things — a live rendered `<Content>` preview and a displayed code block showing the source that produced it (`src/internal/Example.astro`/`Usage.astro` render both from the same MDX entry, via Astro's `render()` for the preview and the entry's raw `.body` string for the `<Code>` block). That dual rendering needs each example to be its own content-collection document with its own `.body` — a single `documentation.mdx` body holding several examples end-to-end, plus the props table content above it, can't be sliced back into one clean string per example.
 
 We decided:
 
-1. **`documentation.mdx`'s body is now empty; prose and examples move to two sibling files.** `documentation.mdx` holds only frontmatter — the structured, machine-checkable facts ADR-0009 §4 already defined (`name`, `description`, `role`, `props`, `slots`, `cssProps`, `extends`, `parents`). A component folder also gets:
+1. **Examples move out of `documentation.mdx` into two sibling files.** _(Originally "its body is now empty"; see the amendment above: the body now holds guidance prose, but never examples.)_ `documentation.mdx`'s frontmatter holds the structured, machine-checkable facts ADR-0009 §4 already defined (`name`, `description`, `role`, `props`, `slots`, `cssProps`, `extends`, `parents`). A component folder also gets:
    - **One `usage.mdx`**: frontmatter `title`, `description`, and `show: "both" | "code-only" | "preview-only" | "none"`; an MDX body showing the component's baseline usage. `show` picks how `src/internal/Usage.astro` renders the body: as a Preview/Code tab pair (`both`), the rendered `<Content>` alone (`preview-only`), the raw source alone via `<Code>` (`code-only`), or neither (`none`).
    - **One or more `example-NN-<slug>.mdx`**: same `title`/`description` frontmatter, one file per named variant or scenario (e.g. Button's `example-01-variant-solid.mdx`). `src/internal/Example.astro` always renders these as a Preview/Code tab pair — there's no `show` field, since an example's whole purpose is showing both.
 

@@ -65,7 +65,7 @@ A component distributed as source a consumer copies directly into their own proj
 _Avoid_: package component, library component
 
 **Component documentation file**:
-The `documentation.mdx` file in a component's docs folder (`src/docs/<id>/`) (superseding the working name `examples.mdx`). Its frontmatter holds structured, machine-checkable facts — `name`, `description`, `role`, `meta`, the [[Prop manifest]], and `slots`/`cssProps`/`extends`/`parents` — consumed equally by a rendered props table for humans and by a coding agent. Its MDX body is empty; prose and live rendered examples live in the component's sibling [[Usage file]] and [[Example file]]s instead.
+The `documentation.mdx` file in a component's docs folder (`src/docs/<id>/`) (superseding the working name `examples.mdx`). Its frontmatter holds structured, machine-checkable facts — `name`, `description`, `role`, `meta`, the [[Prop manifest]], and `slots`/`cssProps`/`extends`/`parents` — consumed equally by a rendered props table for humans and by a coding agent. Its MDX body holds the component's guidance prose (when to use it, choosing a style, accessibility notes), rendered after Usage and before Properties; baseline usage and live rendered examples live in the component's sibling [[Usage file]] and [[Example file]]s instead.
 _Avoid_: examples.mdx (superseded name), examples file
 
 **Usage file**:
