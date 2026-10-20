@@ -1,0 +1,13 @@
+---
+title: Divider with a label
+description: A label below the line, such as a section heading, isn't a Divider property but a layout around it. M3 puts 4px between the line and the label (`mt-1` on the label) and 8px at the end and bottom (`pe-2 pb-2` on the block). M3 doesn't name a type style for the label; here it's Title Small in `on-surface-variant`. Pick the heading level that fits the page's outline.
+---
+
+<div class="border border-(--theme-color-outline-variant) py-4">
+  <p class="px-4 pb-4">Inbox, Sent and Drafts</p>
+  <div class="pe-2 pb-2">
+    <Divider />
+    <h4 class="mt-1 ps-4 text-sm leading-5 font-medium tracking-[0.1px] text-(--theme-color-on-surface-variant)">Labels</h4>
+  </div>
+  <p class="px-4">Family, Work and Travel</p>
+</div>
