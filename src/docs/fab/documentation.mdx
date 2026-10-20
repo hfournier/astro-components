@@ -1,6 +1,6 @@
 ---
 name: Fab
-description: A Material 3 floating action button (FAB), extending HTML's `<button>` element, for the most important action on a screen. It's raised above the content with a shadow that lifts on hover, and shows an icon, or, as an extended FAB, an icon and a label.
+description: A Material 3 floating action button (FAB), extending HTML's `<button>` element, for the most important action on a screen. It's raised above the content with a shadow that lifts on hover, and shows an icon, or, as an extended FAB, an icon and a label. As M3 recommends on the web, a FAB that shows only its icon shows a Tooltip with its label on hover and keyboard focus.
 category: Forms
 role: pattern
 meta:
@@ -14,7 +14,7 @@ props:
   - name: icon
     type: SvgIconNameTypes
     required: true
-    description: The icon to show, by its file name in `src/assets/svgs`. It's 24px, 28px or 32px, depending on `size`.
+    description: The icon to show, by its file name in `src/assets/svgs`. It's 24px, 28px or 36px, depending on `size`. Use a clear, filled icon, such as `"edit-fill"`.
   - name: label
     type: string
     required: true
@@ -33,12 +33,34 @@ props:
     type: '"default" | "md" | "lg"'
     required: false
     default: '"default"'
-    description: M3's FAB (56px), medium FAB (80px) or large FAB (96px). The corner radius and the icon grow with it.
+    description: M3's FAB (56px), medium FAB (80px) or large FAB (96px). The corner radius and the icon grow with it. The default matches Compose's `FloatingActionButton`, though M3 now recommends the medium FAB for most windows (see Sizes).
+  - name: showTooltip
+    type: boolean
+    required: false
+    default: "true"
+    description: Shows a plain Tooltip with the `label` above the FAB on hover (after a short delay), on keyboard focus and on a long press on a touchscreen, while the label is hidden. An extended FAB, or one in an expanded NavRail, shows its label instead, so it shows no tooltip. Turn it off when a rich Tooltip describes the FAB instead.
 ---
+
+## When to use it
+
+Use a FAB for a screen's primary, constructive action, such as create, compose, share or starting a process. Don't use one for minor, overflow or destructive actions, such as archive, delete or dismissing an alert. Give it a clear, filled icon, and a `label` that names the action, such as `"Compose a new message"`.
 
 ## Placement
 
-Use one FAB per screen, for its single most important action. A FAB isn't positioned on its own: it sits wherever you put it, such as in a NavRail's `fab` slot or fixed to a corner of the page (e.g. `class="fixed right-4 bottom-4"`). Use an extended FAB where a label makes the action clearer and there's room for it.
+Use one FAB per screen, for its single most important action. A FAB isn't positioned on its own: it sits wherever you put it, such as in a NavRail's `fab` slot or fixed to a corner of the page (e.g. `class="fixed end-4 bottom-4"`; `end-*` keeps it in the trailing corner right to left). Use an extended FAB where a label makes the action clearer and there's room for it.
+
+- **Compact and medium windows:** the lower trailing corner.
+- **Expanded and larger windows:** the upper leading region, such as a NavRail's `fab` slot. Screen reader and keyboard users also reach it earlier there.
+
+A fixed FAB can partly cover the content it floats over, but it must never completely hide another control's focus indicator (WCAG 2.4.11). Leave room for it, such as with bottom padding on the page's content.
+
+## Sizes
+
+M3 recommends the medium FAB (`size="md"`) for most windows. Use the large FAB (`size="lg"`) where the action needs more prominence, or on expanded and larger windows. The default FAB suits compact windows with other actions on screen.
+
+## Don't disable it
+
+A FAB has no disabled style. If its action isn't available, leave the FAB out rather than disabling it, as M3 asks.
 
 ## In a NavRail
 

@@ -10,6 +10,11 @@ description: Tests for the Fab component
   <Fab icon="edit" label="Compose" />
 </Section>
 
+<Section data-testid="fab-no-tooltip" class="p-4 space-y-4">
+  <Heading level={2}>No tooltip</Heading>
+  <Fab icon="edit" label="Compose" showTooltip={false} />
+</Section>
+
 <Section data-testid="fab-colors" class="p-4 space-y-4">
   <Heading level={2}>Colors</Heading>
   <div class="flex flex-wrap items-center gap-4">
@@ -37,5 +42,24 @@ description: Tests for the Fab component
     <Fab icon="edit" label="Compose" isExtended />
     <Fab icon="edit" label="Compose md" isExtended size="md" />
     <Fab icon="edit" label="Compose lg" isExtended size="lg" />
+  </div>
+</Section>
+
+{/* A NavRail is a size container named "rail"; these stand in for a collapsed (96px) and an
+expanded (240px) one, so Fab can be tested in each without the site's own rail */}
+
+<Section data-testid="fab-rail-collapsed" class="p-4 space-y-4">
+  <Heading level={2}>In a collapsed rail</Heading>
+  <div class="@container/rail w-24 space-y-4">
+    <Fab icon="search" label="Search" />
+    <Fab icon="edit" label="Compose" isExtended />
+  </div>
+</Section>
+
+<Section data-testid="fab-rail-expanded" class="p-4 space-y-4">
+  <Heading level={2}>In an expanded rail</Heading>
+  <div class="@container/rail w-60 space-y-4">
+    <Fab icon="search" label="Search" />
+    <Fab icon="edit" label="Compose" isExtended />
   </div>
 </Section>

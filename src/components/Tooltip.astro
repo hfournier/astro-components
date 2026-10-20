@@ -250,11 +250,14 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
       const show = () => {
         clearTimeout(timer);
         if (isDismissed) return;
-        hideOthers(hideNow);
         // data-shown first: Firefox can leave a popover on its starting style, hidden, when the
         // attribute is set just after showPopover()
         tooltip.setAttribute("data-shown", "");
         if (!tooltip.matches(":popover-open")) tooltip.showPopover();
+        // An element can hide its tooltip with display: none while it doesn't need one (e.g. Fab
+        // while its label shows); it stays closed then, and leaves any other tooltip showing
+        if (!tooltip.checkVisibility()) return hideNow();
+        hideOthers(hideNow);
       };
       // A tooltip that never showed, cut short before its hover delay, hides at once
       const hideLater = () => {
