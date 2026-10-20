@@ -7,27 +7,39 @@ import { unwrapParagraph } from "../utils";
 
 // M3 tooltips, in two variants that are placed differently:
 //
-// - "plain" (default): a short label for the element it's placed in. Put it as a direct child of
-//   that element, which must be positioned (e.g. `relative`). It shows after a short delay while
-//   the element is hovered, and straight away while it has keyboard focus. Its text repeats the
-//   element's accessible name, so it's hidden from assistive tech. To anchor to the element's
-//   border box rather than its padding box, the element sets --ac-tooltip-anchor-inset to minus
-//   its border width (e.g. `[--ac-tooltip-anchor-inset:-1px]`).
+// - "plain" (default): a short label for the element it's placed in, above it (or below, in an
+//   app bar). Put it as a direct child of that element, which must be positioned (e.g.
+//   `relative`). It shows 500ms into a hover, straight away on keyboard focus, and on a long press
+//   on a touchscreen. Its text repeats the element's accessible name, so it's hidden from assistive
+//   tech. To anchor to the element's border box rather than its padding box, the element sets
+//   --ac-tooltip-anchor-inset to minus its border width (e.g. `[--ac-tooltip-anchor-inset:-1px]`).
 // - "rich": an optional subhead, supporting text and optional actions (the `actions` slot, e.g.
-//   text Buttons). It can hold interactive content, so it can't live inside the element it
-//   describes: put it right after that element and pass the element's id as `for`. It opens on
-//   hover and keyboard focus, stays open while the pointer or focus is on either of them, and
-//   becomes the element's accessible description (aria-describedby, minus the actions). Keyboard
-//   users reach the actions with Tab, since the tooltip follows the element in the DOM.
+//   text Buttons), below its element. It can hold interactive content, so it can't live inside
+//   the element it describes: put it right after that element and pass the element's id as
+//   `for`. It opens like a plain tooltip, stays open while the pointer or focus is on either of
+//   them, and becomes the element's accessible description (aria-describedby, minus the actions).
+//   Keyboard users reach the actions with Tab, since the tooltip follows the element in the DOM.
+//   `isPersistent` makes it M3's persistent rich tooltip instead: a click on its element (a
+//   button) toggles it, and it stays open until the person interacts with something else.
+//
+// As in M3, a tooltip stays 1.5s after the pointer leaves (or the finger lifts), and only one
+// shows at a time: showing one hides any other straight away.
 type Props = HTMLAttributes<"div"> & {
   // rich only: the id of the element the tooltip describes
   for?: string;
+  // rich only: opened by a click on its element rather than hover or focus, and kept open until
+  // the person interacts with something else
+  isPersistent?: boolean;
+  // plain only: M3 puts a plain tooltip above its element, or below it in an app bar
+  placement?: "above" | "below";
   // rich only: a Title Small heading above the supporting text
   subhead?: string;
   variant?: "plain" | "rich";
 };
 const {
   for: triggerId,
+  isPersistent = false,
+  placement = "above",
   subhead,
   variant = "plain",
   class: classList,
@@ -64,26 +76,24 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
       />
       <span
         class:list={twMerge(
-          // M3 plain tooltip: Body Small, corner extra small. It flips above or shifts sideways
-          // to stay in the viewport. A popover, so it
-          // sits in the top layer, above anything its element's stacking context would put it under.
-          "inset-auto m-0 mt-1 min-h-6 w-max max-w-50 min-w-10 overflow-visible rounded-sm border-0 px-2 py-1",
+          // M3 plain tooltip: Body Small, corner extra small, 4px from its element. Next to plain
+          // text, M3 leaves 8px: pass `mb-2` (`mt-2` below). It flips to the other side or shifts
+          // sideways to stay in the viewport. A popover, so it sits in the top layer, above
+          // anything its element's stacking context would put it under.
+          "inset-auto m-0 min-h-6 w-max max-w-50 min-w-10 overflow-visible rounded-sm border-0 px-2 py-1",
           "bg-(--theme-color-inverse-surface) text-center text-xs leading-4 font-normal tracking-[0.4px] text-(--theme-color-inverse-on-surface)",
-          "[position-area:bottom] [position-try-fallbacks:bottom_span-left,bottom_span-right,flip-block]",
-          // bridges the 4px gap, so the pointer can move onto the tooltip without it hiding (WCAG 1.4.13)
+          placement === "above"
+            ? "mb-1 [position-area:top] [position-try-fallbacks:top_span-left,top_span-right,flip-block]"
+            : "mt-1 [position-area:bottom] [position-try-fallbacks:bottom_span-left,bottom_span-right,flip-block]",
+          // bridges the 4px gap, so the pointer can move onto the tooltip without it hiding (WCAG
+          // 1.4.13). It covers every side, since a fallback can flip the tooltip to the other one.
           "before:absolute before:-inset-1",
-          // The script opens the popover as soon as its element is hovered or focused; these rules
-          // decide when it shows. The starting style lets it fade in, with the hover delay, from
-          // display: none, and transition-discrete keeps it in place while it fades out once closed.
-          // Only the fade is motion: with reduced motion, visibility still transitions (it's
-          // discrete, so it just flips after the delay), keeping the hover delay but not the fade.
-          "invisible opacity-0 starting:invisible! starting:opacity-0!",
+          // The script opens the popover and sets data-shown once the tooltip should show, after
+          // its delays. The starting style lets it fade in from display: none, and
+          // transition-discrete keeps it in place while it fades out once closed. Only the fade is
+          // motion: with reduced motion, visibility still flips, so the delays are kept.
+          "invisible opacity-0 data-shown:visible data-shown:opacity-100 starting:invisible! starting:opacity-0!",
           "transition-[visibility,display,overlay] transition-discrete duration-(--theme-duration-feedback) motion-safe:transition-[opacity,visibility,display,overlay]",
-          // on its parent's hover (only on devices that can hover) and keyboard focus
-          "[@media(hover:hover)]:[:hover>&]:visible [@media(hover:hover)]:[:hover>&]:opacity-100 [@media(hover:hover)]:[:hover>&]:delay-500",
-          "[:focus-visible>&]:visible [:focus-visible>&]:opacity-100 [:focus-visible>&]:delay-0",
-          // dismissed with Escape (see the script); delay-0, or the hover delay would also delay hiding
-          "[[data-tooltip-dismissed]>&]:invisible! [[data-tooltip-dismissed]>&]:opacity-0! [[data-tooltip-dismissed]>&]:delay-0!",
           classList
         )}
         style={`position-anchor: ${anchorName}`}
@@ -99,7 +109,8 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
     <BaseWrapper
       bgColor="surface-container"
       class={twMerge(
-        // M3 rich tooltip: corner medium. A popover, so it sits in the top layer.
+        // M3 rich tooltip: corner medium, centered below its element, as M3 allows on desktop. A
+        // popover, so it sits in the top layer.
         "inset-auto m-0 mt-1 min-h-6 w-max max-w-80 min-w-10 overflow-visible rounded-xl border-0 px-4 pt-3 pb-2 text-left shadow-theme-elevation-2",
         "text-(--theme-color-on-surface-variant)",
         "[position-area:bottom] [position-try-fallbacks:bottom_span-left,bottom_span-right,flip-block]",
@@ -110,8 +121,10 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
         classList
       )}
       style={`position-anchor: ${anchorName}`}
-      popover="manual"
+      popover={isPersistent ? "auto" : "manual"}
+      role="tooltip"
       data-ac-tooltip-rich={triggerId}
+      data-ac-tooltip-persistent={isPersistent ? "" : undefined}
       data-ac-anchor-name={anchorName}
       {...attrs}
     >
@@ -136,56 +149,149 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
 }
 
 <script>
-  // Plain tooltips: a manual popover, opened while its element is hovered or focused so it's in
-  // the top layer; its CSS handles the delay and fade. Opening it afresh each time also puts it
-  // above any popover or dialog opened since.
-  const plainTooltips =
-    document.querySelectorAll<HTMLElement>("[data-ac-tooltip]");
-  const tooltipParents = Array.from(
-    plainTooltips,
-    (tooltip) => tooltip.parentElement!
-  );
+  const hoverDelay = 500; // M3: a tooltip shows this long into a hover, or a touch
+  const lingerDelay = 1500; // M3: and stays this long after the pointer leaves or the finger lifts
 
-  plainTooltips.forEach((tooltip) => {
-    const parent = tooltip.parentElement!;
-    const open = () => {
-      if (!tooltip.matches(":popover-open")) tooltip.showPopover();
+  // M3 shows one tooltip at a time: showing one hides every other straight away
+  const hideNowFns = new Set<() => void>();
+  const hideOthers = (hideNow: () => void) =>
+    hideNowFns.forEach((other) => other !== hideNow && other());
+
+  // Touch can't hover, so on a touchscreen a long press shows the tooltip, as M3 asks. The click
+  // that ends the press is swallowed, so holding an element to read its label doesn't also
+  // activate it, and so is the browser's context menu or callout during the press.
+  const onLongPress = (
+    element: HTMLElement,
+    press: () => void,
+    release: () => void
+  ) => {
+    let timer: number | undefined;
+    let start = { x: 0, y: 0 };
+    let isTouching = false;
+    let isPressed = false;
+    const end = () => {
+      clearTimeout(timer);
+      isTouching = false;
+      if (isPressed) release();
     };
-    const close = () => {
-      if (
-        tooltip.matches(":popover-open") &&
-        !parent.matches(":hover, :focus-visible")
-      ) {
-        tooltip.hidePopover();
-      }
-    };
-    parent.addEventListener("pointerenter", open);
-    parent.addEventListener("focusin", () => {
-      if (parent.matches(":focus-visible")) open();
+
+    element.style.setProperty("-webkit-touch-callout", "none");
+    element.addEventListener("pointerdown", (event) => {
+      if (event.pointerType !== "touch") return;
+      isTouching = true;
+      isPressed = false;
+      start = { x: event.clientX, y: event.clientY };
+      timer = window.setTimeout(() => {
+        isPressed = true;
+        press();
+      }, hoverDelay);
     });
-    parent.addEventListener("pointerleave", close);
-    parent.addEventListener("focusout", close);
-  });
+    // moving the finger away, e.g. to scroll, cancels the press
+    element.addEventListener("pointermove", (event) => {
+      if (
+        isTouching &&
+        !isPressed &&
+        Math.hypot(event.clientX - start.x, event.clientY - start.y) > 10
+      ) {
+        end();
+      }
+    });
+    element.addEventListener("pointerup", end);
+    element.addEventListener("pointercancel", end);
+    element.addEventListener("contextmenu", (event) => {
+      if (isTouching) event.preventDefault();
+    });
+    element.addEventListener(
+      "click",
+      (event) => {
+        if (!isPressed) return;
+        isPressed = false;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      },
+      { capture: true }
+    );
+  };
 
-  // WCAG 1.4.13: Escape hides a showing tooltip without moving the pointer or focus. It stays
-  // hidden until the pointer leaves its element or focus moves away.
-  document.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape") return;
-    tooltipParents
-      .filter((parent) => parent.matches(":hover, :focus-visible"))
-      .forEach((parent) => parent.setAttribute("data-tooltip-dismissed", ""));
-  });
+  // Plain tooltips: a manual popover, opened when its element is hovered, focused or pressed, so
+  // it's in the top layer; data-shown makes it visible (see its classes). Opening it afresh each
+  // time also puts it above any popover or dialog opened since.
+  document
+    .querySelectorAll<HTMLElement>("[data-ac-tooltip]")
+    .forEach((tooltip) => {
+      const parent = tooltip.parentElement!;
+      let timer: number | undefined;
+      // Tracked here rather than with :hover, which sticks to an element after a tap
+      let isPointerOver = false;
+      let isPressed = false;
+      // set by Escape, so the tooltip stays hidden until the pointer leaves or focus moves away
+      let isDismissed = false;
 
-  tooltipParents.forEach((parent) => {
-    const reset = () => parent.removeAttribute("data-tooltip-dismissed");
-    parent.addEventListener("pointerleave", reset);
-    parent.addEventListener("blur", reset);
-  });
+      const isShown = () => tooltip.hasAttribute("data-shown");
+      const isEngaged = () =>
+        isPointerOver || isPressed || parent.matches(":focus-visible");
+      const hideNow = () => {
+        clearTimeout(timer);
+        tooltip.removeAttribute("data-shown");
+        if (tooltip.matches(":popover-open")) tooltip.hidePopover();
+      };
+      const show = () => {
+        clearTimeout(timer);
+        if (isDismissed) return;
+        hideOthers(hideNow);
+        if (!tooltip.matches(":popover-open")) tooltip.showPopover();
+        tooltip.setAttribute("data-shown", "");
+      };
+      // A tooltip that never showed, cut short before its hover delay, hides at once
+      const hideLater = () => {
+        clearTimeout(timer);
+        if (isEngaged()) return;
+        if (!isShown()) return hideNow();
+        timer = window.setTimeout(() => {
+          if (!isEngaged()) hideNow();
+        }, lingerDelay);
+      };
+      hideNowFns.add(hideNow);
 
-  // Rich tooltips: a manual popover opened and closed from its trigger's hover and focus.
-  const showDelay = 500; // same as a plain tooltip's hover delay
-  const hideDelay = 300; // time to move the pointer between the trigger and the tooltip
-  const canHover = window.matchMedia("(hover: hover)");
+      parent.addEventListener("pointerenter", (event) => {
+        if (event.pointerType === "touch") return;
+        isPointerOver = true;
+        clearTimeout(timer);
+        if (!isShown()) timer = window.setTimeout(show, hoverDelay);
+      });
+      parent.addEventListener("pointerleave", (event) => {
+        if (event.pointerType === "touch") return;
+        isPointerOver = false;
+        isDismissed = false;
+        hideLater();
+      });
+      parent.addEventListener("focusin", () => {
+        if (parent.matches(":focus-visible")) show();
+      });
+      // a keyboard blur hides it straight away
+      parent.addEventListener("focusout", () => {
+        isDismissed = false;
+        if (!isPointerOver && !isPressed) hideNow();
+      });
+      onLongPress(
+        parent,
+        () => {
+          isPressed = true;
+          show();
+        },
+        () => {
+          isPressed = false;
+          hideLater();
+        }
+      );
+
+      // WCAG 1.4.13: Escape hides a showing tooltip without moving the pointer or focus
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape" || !isShown()) return;
+        isDismissed = true;
+        hideNow();
+      });
+    });
 
   document
     .querySelectorAll<HTMLElement>("[data-ac-tooltip-rich]")
@@ -215,14 +321,51 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
         );
       }
 
+      const isOpen = () => tooltip.matches(":popover-open");
+      // Another tooltip showing closes this one, but not while it holds focus, which would be
+      // lost with it
+      const hideNow = () => {
+        if (isOpen() && !tooltip.contains(document.activeElement)) {
+          tooltip.hidePopover();
+        }
+      };
+      hideNowFns.add(hideNow);
+      tooltip.addEventListener("toggle", (event) => {
+        if ((event as ToggleEvent).newState === "open") hideOthers(hideNow);
+      });
+
+      // A persistent rich tooltip is an auto popover its trigger toggles, so the browser closes it
+      // on Escape or a click anywhere else (light dismiss), leaving out a click on the trigger
+      if (tooltip.hasAttribute("data-ac-tooltip-persistent")) {
+        if (!(trigger instanceof HTMLButtonElement)) {
+          throw new Error(
+            "Tooltip: a persistent rich tooltip's `for` must be a <button>, which toggles it."
+          );
+        }
+        trigger.popoverTargetElement = tooltip;
+        trigger.setAttribute("aria-expanded", "false");
+        tooltip.addEventListener("toggle", (event) => {
+          trigger.setAttribute(
+            "aria-expanded",
+            String((event as ToggleEvent).newState === "open")
+          );
+        });
+        return;
+      }
+
+      // A transient rich tooltip: a manual popover opened and closed from its trigger's hover,
+      // focus and long press
       let timer: number | undefined;
       // set by Escape, so returning focus to the trigger doesn't reopen the tooltip; cleared once
       // the pointer leaves the trigger or focus leaves it
       let isDismissed = false;
-      const isOpen = () => tooltip.matches(":popover-open");
+      // Tracked here rather than with :hover, which sticks to an element after a tap
+      let isPointerOver = false;
+      let isPressed = false;
       const isEngaged = () =>
-        trigger.matches(":hover, :focus-visible") ||
-        tooltip.matches(":hover") ||
+        isPointerOver ||
+        isPressed ||
+        trigger.matches(":focus-visible") ||
         tooltip.contains(document.activeElement);
       const open = (delay: number) => {
         if (isDismissed) return;
@@ -238,12 +381,19 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
         }, delay);
       };
 
-      trigger.addEventListener("pointerenter", () => {
-        if (canHover.matches) open(showDelay);
-      });
-      tooltip.addEventListener("pointerenter", () => clearTimeout(timer));
       for (const element of [trigger, tooltip]) {
-        element.addEventListener("pointerleave", () => close(hideDelay));
+        element.addEventListener("pointerenter", (event) => {
+          if (event.pointerType === "touch") return;
+          isPointerOver = true;
+          if (element === trigger && !isOpen()) open(hoverDelay);
+          else clearTimeout(timer);
+        });
+        element.addEventListener("pointerleave", (event) => {
+          if (event.pointerType === "touch") return;
+          isPointerOver = false;
+          // a tooltip that never opened, cut short before its hover delay, needs no linger
+          close(isOpen() ? lingerDelay : 0);
+        });
         element.addEventListener("focusout", () => close(0));
       }
       trigger.addEventListener("focusin", () => {
@@ -251,6 +401,17 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
       });
       trigger.addEventListener("pointerleave", () => (isDismissed = false));
       trigger.addEventListener("blur", () => (isDismissed = false));
+      onLongPress(
+        trigger,
+        () => {
+          isPressed = true;
+          open(0);
+        },
+        () => {
+          isPressed = false;
+          close(lingerDelay);
+        }
+      );
 
       document.addEventListener("keydown", (event) => {
         if (event.key !== "Escape" || !isOpen()) return;

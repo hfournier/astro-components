@@ -1,11 +1,11 @@
 ---
 name: Tooltip
-description: A Material 3 tooltip, a short message that appears while an element is hovered or has keyboard focus. A plain tooltip labels an element, such as an icon button. A rich tooltip gives more context, with an optional subhead and actions. Both use CSS anchor positioning to sit 4px below their element, flipping above it or shifting sideways to stay on screen.
+description: A Material 3 tooltip, a short message about an element that appears on hover, keyboard focus or a long press on a touchscreen. A plain tooltip labels an element, such as an icon button, and sits 4px above it. A rich tooltip gives more context, with an optional subhead and actions, and sits 4px below it. Both use CSS anchor positioning, flipping to the other side or shifting sideways to stay on screen.
 category: Text content
 role: pattern
 meta:
   title: Tooltip | astro-components HenriFournier.dev
-  description: Material 3 plain and rich tooltips, shown on hover and keyboard focus and placed with CSS anchor positioning.
+  description: Material 3 plain and rich tooltips, shown on hover, keyboard focus and long press, and placed with CSS anchor positioning.
 extends:
   kind: element
   tag: [span, div]
@@ -22,30 +22,62 @@ props:
   - name: subhead
     type: string
     required: false
-    description: Rich tooltips only. A short heading above the supporting text.
+    description: Rich tooltips only. A short heading above the supporting text. Keep it to one line that sums up the message.
+  - name: isPersistent
+    type: boolean
+    required: false
+    default: "false"
+    description: Rich tooltips only. Makes it M3's persistent rich tooltip. A click on its element, which must be a `<button>`, toggles it, and it stays open until the person interacts with something else or presses Escape. Hover and focus don't open it. The element gets `aria-expanded`.
+  - name: placement
+    type: '"above" | "below"'
+    required: false
+    default: '"above"'
+    description: Plain tooltips only. M3 puts a plain tooltip directly above its element, or below it when the element is in an app bar.
 slots:
   - name: default
     description: The tooltip's text. Keep a plain tooltip's text to a few words.
     kind: text
   - name: actions
-    description: Rich tooltips only. One or two actions below the text, typically text Buttons, such as "Learn more".
+    description: Rich tooltips only. Up to two actions below the text, typically text Buttons, such as "Learn more".
     kind: any
 cssProps:
   - name: --ac-tooltip-anchor-inset
     description: Plain tooltips only. Set it on the tooltip's element to minus that element's border width (e.g. `[--ac-tooltip-anchor-inset:-1px]`), so the tooltip is placed from the outside of the border rather than the inside. ButtonIcon sets it for you.
 ---
 
+## Plain or rich
+
+- **Plain:** a label for an element that has no visible text, such as an icon button. An element with a text label doesn't need one.
+- **Rich:** a longer explanation or definition, with an optional subhead and actions.
+
+Don't hide critical information in a tooltip, where it's easy to miss. Use a Dialog instead.
+
+## Writing
+
+- **Plain tooltips:** keep the text brief, ideally one line. Describe the action, not the icon: "Share", not "Arrow".
+- **Rich tooltips:** keep the subhead to one line that sums up the message. Use at most two short text Buttons as actions, side by side rather than stacked.
+
 ## Placement
 
-A **plain** tooltip goes inside the element it labels, and the element must be positioned (e.g. `relative`). It shows after a short delay while the element is hovered, and straight away while it has keyboard focus. ButtonIcon already includes one, so you only need a plain Tooltip for other elements.
+A **plain** tooltip goes inside the element it labels, and the element must be positioned (e.g. `relative`). M3 puts it 4px above an element with a visible boundary, such as a button. Next to plain text, leave 8px instead by passing `class="mb-2"`. In an app bar, place it below with `placement="below"` (and `class="mt-2"` next to text). ButtonIcon already includes one, so you only need a plain Tooltip for other elements.
 
-A **rich** tooltip can hold buttons, which can't go inside another button or link, so it goes right after the element it describes, with that element's `id` as `for`. It opens on hover and keyboard focus, and stays open while the pointer or focus is on either the element or the tooltip, so the pointer can move onto its actions. Keyboard users reach the actions with Tab.
+A **rich** tooltip can hold buttons, which can't go inside another button or link, so it goes right after the element it describes, with that element's `id` as `for`. It's centered below its element, which M3 allows on desktop. It stays open while the pointer or focus is on either the element or the tooltip, so the pointer can move onto its actions. Keyboard users reach the actions with Tab.
+
+## Showing and hiding
+
+As in M3:
+
+- **Opening:** a tooltip shows 500ms into a hover, or straight away on keyboard focus. On a touchscreen it shows on a long press. The click that ends a long press is ignored, so holding an icon button to read its label doesn't also press it.
+- **Closing:** a tooltip stays for 1.5 seconds after the pointer leaves or the finger lifts. Moving keyboard focus away hides it straight away.
+- **One at a time:** showing a tooltip hides any other straight away. The exception is a rich tooltip that holds keyboard focus, which stays.
+
+A **persistent** rich tooltip (`isPersistent`) works differently. A click on its element opens it, and it stays open until the person clicks anywhere else, presses Escape or clicks the element again. Don't use one on an icon button, since the icon button's click is its action. To introduce a new feature, a page can open one as soon as it loads with `showPopover()`. Give the Tooltip an `id`, then call `document.getElementById("whats-new").showPopover()`. A tooltip that opens on its own should always have a `subhead`, so it's clear what it's about.
 
 ## Accessibility
 
-A plain tooltip is hidden from assistive tech, so its text should repeat its element's accessible name, such as an icon button's `label`. Don't put information only in a plain tooltip.
+A plain tooltip is hidden from assistive tech, so its text should repeat its element's accessible name, such as an icon button's `label`. It deliberately has no `tooltip` role: screen readers would otherwise read the name twice.
 
-A rich tooltip's subhead and text become its element's accessible description (`aria-describedby`); the actions aren't included. Both variants can be dismissed with Escape, and stay open while the pointer is over them, as WCAG 1.4.13 requires. Tooltips don't open on touchscreens, so don't rely on them for anything a touch user needs.
+A rich tooltip has the `tooltip` role, and its subhead and text become its element's accessible description (`aria-describedby`); the actions aren't included. Both variants can be dismissed with Escape, and stay open while the pointer is over them, as WCAG 1.4.13 requires.
 
 ## In MDX
 
