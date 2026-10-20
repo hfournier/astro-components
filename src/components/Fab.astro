@@ -6,12 +6,8 @@ import Icon from "./Icon.astro";
 import Tooltip from "./Tooltip.astro";
 
 type Props = HTMLAttributes<"button"> & {
-  icon: SvgIconNameTypes;
   // The accessible name; shown beside the icon when the FAB is extended
   label: string;
-  // An M3 extended FAB, showing its label beside the icon. In a NavRail, the rail decides instead:
-  // extended while the rail is expanded, a plain FAB while it's collapsed.
-  isExtended?: boolean;
   // M3: on web, show a tooltip with the label on hover and keyboard focus, while the label is hidden
   showTooltip?: boolean;
   size?: "default" | "md" | "lg";
@@ -22,7 +18,21 @@ type Props = HTMLAttributes<"button"> & {
     | "secondary-container"
     | "tertiary"
     | "tertiary-container";
-};
+} & (
+    | {
+        // An M3 extended FAB, showing its label beside the icon. In a NavRail, the rail decides
+        // instead: extended while the rail is expanded, a plain FAB while it's collapsed. A
+        // data-collapsed attribute turns it into a plain FAB at runtime, such as on scroll.
+        isExtended: true;
+        // M3: optional on an extended FAB. One that can turn into a plain FAB (in a NavRail, or
+        // with data-collapsed) needs it.
+        icon?: SvgIconNameTypes;
+      }
+    | {
+        isExtended?: false;
+        icon: SvgIconNameTypes;
+      }
+  );
 
 const {
   icon,
@@ -48,11 +58,14 @@ const colorClasses = {
     "bg-(--theme-color-tertiary-container) text-(--theme-color-on-tertiary-container)",
 }[color];
 
-// M3 FAB (corner large), medium FAB (corner large increased) and large FAB (corner extra large)
+// M3 FAB (corner large), medium FAB (corner large increased) and large FAB (corner extra large).
+// As in Compose, an extended FAB is at least as wide as it's tall. The label has the type of M3's
+// small, medium or large extended FAB; it's only visible while the FAB is extended.
 const sizeClasses = {
-  default: "size-14 rounded-2xl",
-  md: "size-20 rounded-[20px]",
-  lg: "size-24 rounded-[28px]",
+  default:
+    "h-14 min-w-14 rounded-2xl text-base leading-6 font-medium tracking-[0.15px]",
+  md: "h-20 min-w-20 rounded-[20px] text-[22px] leading-7 font-normal",
+  lg: "h-24 min-w-24 rounded-[28px] text-2xl leading-8 font-normal",
 }[size];
 
 const iconSizeClasses = {
@@ -61,67 +74,70 @@ const iconSizeClasses = {
   lg: "size-9",
 }[size];
 
-// M3 small, medium or large extended FAB: the FAB's height and corners, as wide as its icon and
-// label (the small one at least 80px wide). In a NavRail, the rail's width decides: extended in
-// an expanded rail (rail-expanded, see theme.css), a plain FAB in a collapsed one. Outside a rail
-// there's no `rail` container, so neither query matches and isExtended decides. Each set is
-// written out in full so Tailwind generates it.
-const extendedClasses = isExtended
+// A FAB and its extended FAB are the same layout, so one can animate into the other as Compose's
+// extended FAB does: the label always follows the icon, zero wide while the FAB is plain and its
+// own width while it's extended, and the FAB grows and shrinks with it. A plain FAB's padding
+// centers its icon in a square (16 + 24 + 16, 26 + 28 + 26, 30 + 36 + 30); an extended FAB has
+// the padding and icon-label gap of M3's small, medium or large extended FAB.
+//
+// In a NavRail, the rail's width decides: extended in an expanded rail (rail-expanded, see
+// theme.css), a plain FAB in a collapsed one. Outside a rail there's no `rail` container, so
+// neither query matches and isExtended decides, and data-collapsed turns an extended FAB back into
+// a plain one. Each set is written out in full so Tailwind generates it.
+const stateClasses = isExtended
   ? {
-      default:
-        "w-auto min-w-20 gap-2 px-4 text-base leading-6 font-medium tracking-[0.15px]",
-      md: "w-auto gap-3 px-[26px] text-[22px] leading-7 font-normal",
-      lg: "w-auto gap-4 px-7 text-2xl leading-8 font-normal",
+      default: "gap-2 px-4 rail-collapsed:gap-0 data-collapsed:gap-0",
+      md: "gap-3 px-[26px] rail-collapsed:gap-0 data-collapsed:gap-0",
+      lg: "gap-4 px-7 rail-collapsed:gap-0 rail-collapsed:px-[30px] data-collapsed:gap-0 data-collapsed:px-[30px]",
     }[size]
   : {
-      default:
-        "rail-expanded:w-auto rail-expanded:min-w-20 rail-expanded:gap-2 rail-expanded:px-4 rail-expanded:text-base rail-expanded:leading-6 rail-expanded:font-medium rail-expanded:tracking-[0.15px]",
-      md: "rail-expanded:w-auto rail-expanded:gap-3 rail-expanded:px-[26px] rail-expanded:text-[22px] rail-expanded:leading-7 rail-expanded:font-normal",
-      lg: "rail-expanded:w-auto rail-expanded:gap-4 rail-expanded:px-7 rail-expanded:text-2xl rail-expanded:leading-8 rail-expanded:font-normal",
+      default: "gap-0 px-4 rail-expanded:gap-2",
+      md: "gap-0 px-[26px] rail-expanded:gap-3",
+      lg: "gap-0 px-[30px] rail-expanded:gap-4 rail-expanded:px-7",
     }[size];
 
-// An extended FAB in a collapsed NavRail goes back to a plain FAB
-const collapsedRailClasses = isExtended
-  ? {
-      default:
-        "rail-collapsed:w-14 rail-collapsed:min-w-0 rail-collapsed:gap-0 rail-collapsed:px-0",
-      md: "rail-collapsed:w-20 rail-collapsed:gap-0 rail-collapsed:px-0",
-      lg: "rail-collapsed:w-24 rail-collapsed:gap-0 rail-collapsed:px-0",
-    }[size]
-  : "";
-
-// The label is always the accessible name; it's visually hidden unless the FAB is extended
-const labelClasses = isExtended
-  ? "rail-collapsed:sr-only"
-  : "sr-only rail-expanded:not-sr-only";
+// The label is always the accessible name, whether or not it's visible. As in Compose, it fades on
+// M3's fast effects spring while its width changes on the fast spatial one.
+const labelClasses = twMerge(
+  "overflow-hidden",
+  "motion-safe:transition-[width,opacity] motion-safe:duration-[var(--theme-duration-spring-fast-spatial),var(--theme-duration-spring-fast-effects)] motion-safe:ease-[var(--ease-spring-fast-spatial),var(--ease-spring-fast-effects)]",
+  isExtended
+    ? "w-auto rail-collapsed:w-0 rail-collapsed:opacity-0 group-data-collapsed/fab:w-0 group-data-collapsed/fab:opacity-0"
+    : "w-0 opacity-0 rail-expanded:w-auto rail-expanded:opacity-100"
+);
 
 // The tooltip repeats the label, so it's turned off while the label shows (see Tooltip)
 const tooltipOffClasses = isExtended
-  ? "[--ac-tooltip-off:1] rail-collapsed:[--ac-tooltip-off:0]"
+  ? "[--ac-tooltip-off:1] rail-collapsed:[--ac-tooltip-off:0] data-collapsed:[--ac-tooltip-off:0]"
   : "rail-expanded:[--ac-tooltip-off:1]";
 ---
 
 <button
   class:list={twMerge(
-    "flex shrink-0 cursor-pointer items-center justify-center whitespace-nowrap",
+    "group/fab flex shrink-0 cursor-pointer items-center justify-center whitespace-nowrap",
+    // Lets the label's width animate to and from auto (Chromium only for now; elsewhere the FAB
+    // switches straight away)
+    "[interpolate-size:allow-keywords]",
     // M3: elevation level 3 at rest, focused and pressed; level 4 on hover
     "shadow-theme-elevation-3 hover:shadow-theme-elevation-4 active:shadow-theme-elevation-3",
     // M3 state layer, in the icon's color
     "relative isolate before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0",
     "hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10",
-    "motion-safe:transition-shadow motion-safe:duration-(--theme-duration-feedback) motion-safe:before:transition-opacity",
+    // The padding and gap change with the label's width, on the same spring
+    "motion-safe:transition-[box-shadow,padding,gap] motion-safe:before:transition-opacity",
+    "motion-safe:duration-[var(--theme-duration-feedback),var(--theme-duration-spring-fast-spatial),var(--theme-duration-spring-fast-spatial)]",
+    "motion-safe:ease-[var(--default-transition-timing-function),var(--ease-spring-fast-spatial),var(--ease-spring-fast-spatial)]",
     "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
     colorClasses,
     sizeClasses,
-    extendedClasses,
-    collapsedRailClasses,
+    stateClasses,
     showTooltip && tooltipOffClasses,
     classList
   )}
   type={type ?? "button"}
   {...attrs}
 >
-  <Icon class={iconSizeClasses} name={icon} />
+  {icon && <Icon class={iconSizeClasses} name={icon} />}
   <span class={labelClasses}>{label}</span>
   {showTooltip && <Tooltip>{label}</Tooltip>}
 </button>

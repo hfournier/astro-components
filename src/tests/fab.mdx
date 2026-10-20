@@ -63,3 +63,32 @@ expanded (240px) one, so Fab can be tested in each without the site's own rail *
     <Fab icon="edit" label="Compose" isExtended />
   </div>
 </Section>
+
+<Section data-testid="fab-text-only" class="p-4 space-y-4">
+  <Heading level={2}>Extended, text only</Heading>
+  <div class="flex flex-wrap items-center gap-4">
+    <Fab label="Compose" isExtended />
+    <Fab label="Compose md" isExtended size="md" />
+    <Fab label="Compose lg" isExtended size="lg" />
+  </div>
+</Section>
+
+{/* A one-letter label is narrower than the FAB is tall, so each FAB's minimum width shows */}
+
+<Section data-testid="fab-short-label" class="p-4 space-y-4">
+  <Heading level={2}>Extended, short label</Heading>
+  <div class="flex flex-wrap items-center gap-4">
+    <Fab label="A" isExtended />
+    <Fab label="B" isExtended size="md" />
+    <Fab label="C" isExtended size="lg" />
+  </div>
+</Section>
+
+<Section data-testid="fab-collapsed" class="p-4 space-y-4">
+  <Heading level={2}>Extended, collapsed with data-collapsed</Heading>
+  <div class="flex flex-wrap items-center gap-4">
+    <Fab icon="edit" label="Compose" isExtended data-collapsed />
+    <Fab icon="edit" label="Compose md" isExtended size="md" data-collapsed />
+    <Fab icon="edit" label="Compose lg" isExtended size="lg" data-collapsed />
+  </div>
+</Section>

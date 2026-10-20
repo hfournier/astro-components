@@ -13,7 +13,10 @@ type FabCaseId =
   | "extended"
   | "rail-collapsed"
   | "rail-expanded"
-  | "no-tooltip";
+  | "no-tooltip"
+  | "text-only"
+  | "short-label"
+  | "collapsed";
 
 const fab = (page: Page, caseId: FabCaseId, name: string) =>
   page.getByTestId(`fab-${caseId}`).getByRole("button", { name, exact: true });
@@ -198,6 +201,102 @@ test.describe("Fab", () => {
     expect(
       largeBox.x + largeBox.width - (largeLabel.x + largeLabel.width)
     ).toBeCloseTo(28, 0);
+  });
+
+  test("a text-only extended FAB has no icon, and M3's padding on each side of its label", async ({
+    page,
+  }) => {
+    const padding = { Compose: 16, "Compose md": 26, "Compose lg": 28 };
+
+    for (const [name, side] of Object.entries(padding)) {
+      const textOnly = fab(page, "text-only", name);
+      await expect(textOnly.locator("svg")).toHaveCount(0);
+      const fabBox = await box(textOnly);
+      const label = await box(fabLabel(textOnly));
+      expect(label.x - fabBox.x).toBeCloseTo(side, 0);
+      expect(fabBox.x + fabBox.width - (label.x + label.width)).toBeCloseTo(
+        side,
+        0
+      );
+    }
+  });
+
+  test("an extended FAB is at least as wide as its size's height", async ({
+    page,
+  }) => {
+    const heights = { A: 56, B: 80, C: 96 };
+
+    for (const [name, height] of Object.entries(heights)) {
+      expect(await size(fab(page, "short-label", name))).toEqual({
+        width: height,
+        height,
+      });
+    }
+  });
+
+  test.describe("data-collapsed", () => {
+    test("turns an extended FAB into a plain FAB, its label only an accessible name", async ({
+      page,
+    }) => {
+      const sides = { Compose: 56, "Compose md": 80, "Compose lg": 96 };
+
+      for (const [name, side] of Object.entries(sides)) {
+        const collapsed = fab(page, "collapsed", name);
+        expect(await size(collapsed)).toEqual({ width: side, height: side });
+        expect((await box(fabLabel(collapsed))).width).toBe(0);
+        await expect(fabLabel(collapsed)).toHaveCSS("opacity", "0");
+        // the icon centered in the square
+        const icon = await box(collapsed.locator("svg"));
+        const fabBox = await box(collapsed);
+        expect(icon.x - fabBox.x).toBeCloseTo(
+          fabBox.x + fabBox.width - (icon.x + icon.width),
+          0
+        );
+      }
+    });
+
+    test("shows the tooltip again while collapsed", async ({ page }) => {
+      const collapsed = fab(page, "collapsed", "Compose");
+
+      await collapsed.focus();
+      await expect(collapsed.locator("[data-ac-tooltip]")).toBeVisible();
+    });
+
+    test("removed at runtime, the FAB extends again", async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      const collapsed = fab(page, "collapsed", "Compose");
+
+      await collapsed.evaluate((el) => el.removeAttribute("data-collapsed"));
+      await expect(fabLabel(collapsed)).toBeVisible();
+      await expect(fabLabel(collapsed)).toHaveCSS("opacity", "1");
+      expect((await size(collapsed)).width).toBeGreaterThan(56);
+
+      await collapsed.evaluate((el) => el.setAttribute("data-collapsed", ""));
+      expect(await size(collapsed)).toEqual({ width: 56, height: 56 });
+    });
+  });
+
+  test("the label's width changes on M3's fast spatial spring and it fades on the fast effects one", async ({
+    page,
+  }) => {
+    const label = fabLabel(fab(page, "extended", "Compose"));
+
+    await expect(label).toHaveCSS("transition-property", "width, opacity");
+    await expect(label).toHaveCSS("transition-duration", "0.35s, 0.15s");
+    await expect(label).toHaveCSS(
+      "transition-timing-function",
+      "cubic-bezier(0.42, 1.67, 0.21, 0.9), cubic-bezier(0.31, 0.94, 0.34, 1)"
+    );
+  });
+
+  test("with reduced motion, the label and padding change straight away", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    const extended = fab(page, "extended", "Compose");
+
+    await expect(fabLabel(extended)).toHaveCSS("transition-duration", "0s");
+    await expect(extended).toHaveCSS("transition-duration", "0s");
   });
 
   test("sits at elevation 3, rising to 4 on hover", async ({ page }) => {

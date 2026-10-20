@@ -13,8 +13,8 @@ mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button
 props:
   - name: icon
     type: SvgIconNameTypes
-    required: true
-    description: The icon to show, by its file name in `src/assets/svgs`. It's 24px, 28px or 36px, depending on `size`. Use a clear, filled icon, such as `"edit-fill"`.
+    required: false
+    description: The icon to show, by its file name in `src/assets/svgs`. It's 24px, 28px or 36px, depending on `size`. Use a clear, filled icon, such as `"edit-fill"`. Required, except on an extended FAB (`isExtended`), which can show only its label. A FAB in a NavRail always needs one, since it's a plain FAB while the rail is collapsed, and so does one you collapse with `data-collapsed`.
   - name: label
     type: string
     required: true
@@ -28,7 +28,7 @@ props:
     type: boolean
     required: false
     default: "false"
-    description: Makes the FAB an M3 extended FAB, with its label beside the icon. It keeps the FAB's height and corners, and grows to fit the label (at least 80px wide at the default size), with the padding, spacing and label type of M3's small, medium or large extended FAB (per `size`). In a NavRail, the rail decides instead (see NavRail).
+    description: Makes the FAB an M3 extended FAB, with its label beside the icon. It keeps the FAB's height and corners, and grows to fit the label (at least as wide as it's tall), with the padding, spacing and label type of M3's small, medium or large extended FAB (per `size`). Its `icon` is optional. A `data-collapsed` attribute turns it back into a plain FAB (see Collapse on scroll). In a NavRail, the rail decides instead (see NavRail).
   - name: size
     type: '"default" | "md" | "lg"'
     required: false
@@ -38,19 +38,23 @@ props:
     type: boolean
     required: false
     default: "true"
-    description: Shows a plain Tooltip with the `label` above the FAB on hover (after a short delay), on keyboard focus and on a long press on a touchscreen, while the label is hidden. An extended FAB, or one in an expanded NavRail, shows its label instead, so it shows no tooltip. Turn it off when a rich Tooltip describes the FAB instead.
+    description: Shows a plain Tooltip with the `label` above the FAB on hover (after a short delay), on keyboard focus and on a long press on a touchscreen, while the label is hidden. An extended FAB, or one in an expanded NavRail, shows its label instead, so it shows no tooltip; M3 says it doesn't need one. Turn it off when a rich Tooltip describes the FAB instead.
 ---
 
 ## When to use it
 
 Use a FAB for a screen's primary, constructive action, such as create, compose, favorite, share or starting a process. Don't use one for minor, overflow or destructive actions, such as archive, delete or alerts. Give it a clear, filled icon, and a `label` that names the action, such as `"Compose a new message"`.
 
+Use an extended FAB (`isExtended`) where a label makes the action clearer, or for more emphasis, such as on long scrolling screens like a checkout. Keep its label to one or two words, leaving room for longer translations. Don't use one as one option in a set of actions; use a filled Button there. Unlike a plain FAB, an extended FAB doesn't need an icon.
+
 ## Placement
 
 Use one FAB per screen, for its single most important action. A FAB isn't positioned on its own: it sits wherever you put it, such as in a NavRail's `fab` slot or fixed to a corner of the page (e.g. `class="fixed end-4 bottom-4"`; `end-*` keeps it in the trailing corner right to left). Use an extended FAB where a label makes the action clearer and there's room for it.
 
-- **Compact and medium windows:** the lower trailing corner.
-- **Expanded and larger windows:** the upper leading region, such as a NavRail's `fab` slot. Screen reader and keyboard users also reach it earlier there.
+- **Compact and medium windows:** the lower trailing corner. An extended FAB can also sit at the bottom, centered.
+- **Expanded and larger windows:** the upper leading region, such as a NavRail's `fab` slot. Screen reader and keyboard users also reach it earlier there. An extended FAB goes at the top of an expanded NavRail, or in the lower right corner, in both directions, rather than the trailing corner.
+
+Leave 16px between a FAB and the window's edges. Don't put an extended FAB in the upper half of a phone screen, on top of toolbars, cards or other containers, or on the same screen as a floating toolbar.
 
 A fixed FAB can partly cover the content it floats over, but it must never completely hide another control's focus indicator (WCAG 2.4.11). Leave room for it, such as with bottom padding on the page's content.
 
@@ -58,14 +62,30 @@ A fixed FAB can partly cover the content it floats over, but it must never compl
 
 M3 recommends the medium FAB (`size="md"`) for most windows. Use the large FAB (`size="lg"`) where the action needs more prominence, or on expanded and larger windows. The default FAB suits compact windows with other actions on screen.
 
+The same goes for an extended FAB: on a compact window with one prominent action, a large extended FAB can fit, and on larger windows, use a medium or large one.
+
+## Collapse on scroll
+
+M3 lets a page collapse an extended FAB into a plain FAB as the content scrolls, and extend it again when it scrolls back up or reaches the bottom. Fab doesn't watch the scroll itself, since that depends on the page: set and remove a `data-collapsed` attribute on the extended FAB from your own script. It animates between the two as M3's extended FAB does: the label fades out and the FAB shrinks to a square around its icon, with the tooltip back on while the label is hidden. A collapsed FAB needs an `icon`.
+
+```js
+const fab = document.querySelector("#compose");
+let lastY = scrollY;
+addEventListener("scroll", () => {
+  const atBottom = innerHeight + scrollY >= document.body.scrollHeight - 1;
+  fab.toggleAttribute("data-collapsed", scrollY > lastY && !atBottom);
+  lastY = scrollY;
+}, { passive: true });
+```
+
 ## Don't disable it
 
 A FAB has no disabled style. If its action isn't available, leave the FAB out rather than disabling it, as M3 asks.
 
 ## In a NavRail
 
-In a NavRail's `fab` slot, the rail decides whether the FAB is extended, as M3 specifies: extended while the rail is expanded, and a plain FAB while it's collapsed, whatever `isExtended` says. It follows the rail's width, using a container query on the rail, so it changes as the rail expands and collapses. Its tooltip follows too, showing only while the rail is collapsed and the label is hidden.
+In a NavRail's `fab` slot, the rail decides whether the FAB is extended, as M3 specifies: extended while the rail is expanded, and a plain FAB while it's collapsed, whatever `isExtended` says. It follows the rail's width, using a container query on the rail, so it animates between the two as the rail expands and collapses. Its tooltip follows too, showing only while the rail is collapsed and the label is hidden.
 
 ## Accessibility
 
-The `label` is always the FAB's accessible name, whether or not it's visible. The tooltip repeats it for sighted users while it's hidden, so the tooltip is hidden from assistive tech. It can be dismissed with Escape, and stays open while the pointer is over it, as WCAG 1.4.13 requires.
+The `label` is always the FAB's accessible name, whether or not it's visible. Use the same icon and label for the same action throughout. If you set your own `aria-label`, start it with the visible label's first word, such as `aria-label="Create a new invite"` for a visible "Create", so voice control users can say what they see (WCAG 2.5.3). The tooltip repeats it for sighted users while it's hidden, so the tooltip is hidden from assistive tech. It can be dismissed with Escape, and stays open while the pointer is over it, as WCAG 1.4.13 requires.
