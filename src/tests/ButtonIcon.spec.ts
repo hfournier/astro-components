@@ -5,7 +5,13 @@ import { box } from "./support/helpers";
 // Each case on /tests/button-icon is a Section with data-testid="button-icon-<caseId>". Each
 // button's accessible name is its `label`, which names the size, shape or width it shows.
 type ButtonIconCaseId =
-  "no-props" | "sizes" | "shapes" | "widths" | "toggle" | "toggle-selected";
+  | "no-props"
+  | "sizes"
+  | "shapes"
+  | "widths"
+  | "toggle"
+  | "toggle-selected"
+  | "toggle-default-selected-icon";
 
 const button = (page: Page, caseId: ButtonIconCaseId, name: string) =>
   page
@@ -97,6 +103,65 @@ test.describe("ButtonIcon", () => {
       "aria-pressed",
       "true"
     );
+  });
+
+  test("a toggle without a selectedIcon switches to its -fill icon when one exists", async ({
+    page,
+  }) => {
+    const filledBookmark = await visibleIcons(
+      button(page, "toggle-selected", "Bookmark")
+    ).innerHTML();
+    const toggle = button(page, "toggle-default-selected-icon", "Bookmark");
+
+    const unselectedIcon = await visibleIcons(toggle).innerHTML();
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-pressed", "true");
+    await expect(visibleIcons(toggle)).toHaveCount(1);
+    expect(await visibleIcons(toggle).innerHTML()).toBe(filledBookmark);
+    expect(filledBookmark).not.toBe(unselectedIcon);
+  });
+
+  test("an explicit selectedIcon overrides the -fill default", async ({
+    page,
+  }) => {
+    const filledBookmark = await visibleIcons(
+      button(page, "toggle-selected", "Bookmark")
+    ).innerHTML();
+    const toggle = button(
+      page,
+      "toggle-default-selected-icon",
+      "Bookmark as a star"
+    );
+
+    const unselectedIcon = await visibleIcons(toggle).innerHTML();
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-pressed", "true");
+    const selectedIcon = await visibleIcons(toggle).innerHTML();
+    expect(selectedIcon).not.toBe(filledBookmark);
+    expect(selectedIcon).not.toBe(unselectedIcon);
+  });
+
+  test("a toggle keeps its icon when there's no -fill version", async ({
+    page,
+  }) => {
+    const toggle = button(page, "toggle-default-selected-icon", "Add");
+
+    await expect(toggle.locator("svg")).toHaveCount(1);
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-pressed", "true");
+    await expect(visibleIcons(toggle)).toHaveCount(1);
+  });
+
+  test("only toggles get the -fill default, not expanded buttons", async ({
+    page,
+  }) => {
+    const disclosure = button(
+      page,
+      "toggle-default-selected-icon",
+      "Bookmarks menu"
+    );
+
+    await expect(disclosure.locator("svg")).toHaveCount(1);
   });
 
   test("a selected round toggle turns square", async ({ page }) => {

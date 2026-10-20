@@ -73,7 +73,9 @@ const TOGGLE_VARIANTS = ["Elevated", "Filled", "Tonal", "Outlined"] as const;
 // Each case on /tests/button is a Section with data-testid="button-<caseId>". The default case
 // holds every variant with no size, the disabled case every variant disabled. The toggle cases
 // hold an unselected, a selected, and a selected and disabled toggle of each style but text; the
-// unselected case also holds a "Favorite" toggle with a selectedIcon and a "Square" one.
+// unselected case also holds icon toggles ("Favorite" with a selectedIcon, "Bookmark" without,
+// "Bookmark as a star" overriding it, "Add" with no -fill icon), a "Not a toggle" button with an
+// icon, and a "Square" toggle.
 type ButtonCaseId =
   | "default"
   | "sizes"
@@ -563,6 +565,34 @@ test.describe("Button", () => {
       await target.click();
       await expect(icons.nth(0)).toBeHidden();
       await expect(icons.nth(1)).toBeVisible();
+    });
+
+    test("without a selectedIcon, switches to its icon's -fill version when one exists", async ({
+      page,
+    }) => {
+      const target = toggle(page, "Bookmark");
+      const icons = target.locator("svg");
+      await expect(icons).toHaveCount(2);
+      const unselectedIcon = await icons.nth(0).innerHTML();
+      await target.click();
+      await expect(icons.nth(0)).toBeHidden();
+      await expect(icons.nth(1)).toBeVisible();
+      expect(await icons.nth(1).innerHTML()).not.toBe(unselectedIcon);
+
+      // an explicit selectedIcon overrides the default
+      const override = toggle(page, "Bookmark as a star").locator("svg");
+      expect(await override.nth(1).innerHTML()).not.toBe(
+        await icons.nth(1).innerHTML()
+      );
+    });
+
+    test("keeps its icon when there's no -fill version, and only toggles get one", async ({
+      page,
+    }) => {
+      await expect(toggle(page, "Add").locator("svg")).toHaveCount(1);
+      await expect(
+        button(page, "toggle", "Not a toggle").locator("svg")
+      ).toHaveCount(1);
     });
 
     test("a disabled, selected toggle looks disabled, and doesn't flip", async ({

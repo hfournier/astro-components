@@ -32,7 +32,7 @@ props:
   - name: selectedIcon
     type: SvgIconNameTypes
     required: false
-    description: An icon to show in place of `icon` while the button is selected (`aria-pressed="true"`) or expanded (`aria-expanded="true"`). M3 toggles often switch to a filled icon, such as `"bookmark-fill"` for `"bookmark"`, and a button that opens a menu can show that it's open, such as `"menu_open"` for `"menu"`. The swap is done in CSS, so the icon follows the attribute however it changes.
+    description: An icon to show in place of `icon` while the button is selected (`aria-pressed="true"`) or expanded (`aria-expanded="true"`). A toggle defaults to the filled version of its icon when `src/assets/svgs` has one, such as `"bookmark-fill"` for `"bookmark"`, so set this only to override it. A button that opens a menu can show that it's open, such as `"menu_open"` for `"menu"`. The swap is done in CSS, so the icon follows the attribute however it changes.
   - name: shape
     type: '"round" | "square"'
     required: false
@@ -52,7 +52,7 @@ props:
     type: '"filled" | "outlined" | "standard" | "tonal"'
     required: false
     default: '"standard"'
-    description: The button's Material 3 style, from most to least emphasis. `filled` uses the primary color. `tonal` uses the secondary container color. `outlined` has an outline and no fill. `standard` has neither. As a toggle, `filled` sits on a surface container until it's selected, then turns primary; `tonal` turns secondary, `outlined` turns inverse surface, and `standard` turns its icon primary.
+    description: The button's Material 3 style, from most to least emphasis. `filled` uses the primary color. `tonal` uses the secondary container color. `outlined` has an outline and no fill. `standard` has neither. As a toggle, `filled` sits on a surface container until it's selected, then turns primary; `tonal` turns secondary, `outlined` turns inverse surface, and `standard` turns its icon primary. M3's design kit defaults to `filled`, but ButtonIcon defaults to `standard`, as Compose's base `IconButton` does. M3 says to use filled sparingly, so the highest-emphasis style makes an odd default.
   - name: width
     type: '"narrow" | "default" | "wide"'
     required: false
@@ -60,10 +60,41 @@ props:
     description: The space on either side of the icon. `default` gives a square (or circular) button. `narrow` and `wide` are M3's narrower and wider widths, for tight spaces or for giving an action more weight.
 ---
 
+## Style by emphasis
+
+Pick the style by how important the action is, from most to least emphasis:
+
+- **Filled:** key, high-emphasis actions. Use it sparingly.
+- **Tonal:** secondary actions next to a high-emphasis one.
+- **Outlined:** medium-emphasis actions, such as moving through sets of cards.
+- **Standard:** low-emphasis actions, or a button on a colorful surface.
+
+When the button needs to stand out from its background, use filled, tonal or outlined rather than standard.
+
+## Size
+
+- Make the main action the most prominent, by color or size, as in play/pause or start/stop.
+- Give buttons of similar importance the same size.
+- Use only a few icon buttons at once. In dense layouts, group them in a toolbar or button group.
+
+Don't shrink icon buttons to make a layout denser. Every size keeps a touch target of at least 48×48px (an invisible `::after` around the button), so don't override the `::after`'s size.
+
+## Icons
+
+M3's plain icon button uses a filled icon, such as `"star-fill"` rather than `"star"`.
+
+## Toggles
+
+Use a toggle for a binary action that the button turns on and off, such as favorite, bookmark or mute. Don't use one for an action with no selected state, such as opening an overflow menu.
+
+A toggle uses the outlined icon while it's unselected and the filled one while it's selected. This isn't just style: M3 requires the selected state to show through at least two properties, not color alone. Give `icon` the outlined name, such as `"bookmark"`, and a toggle switches to `"bookmark-fill"` on its own. Almost every Material Symbol has a filled version; if `src/assets/svgs` doesn't have it yet, add it as `<name>-fill.svg` (and to `src/svgs/icon-names.ts`). For an icon whose filled and outlined shapes look the same, M3 makes the selected icon bolder (semibold or bold) instead, so supply a bolder SVG as `selectedIcon`.
+
+A button that shows and hides other content, such as a menu or a panel, isn't a toggle: leave out `isToggle` and give it `aria-expanded` instead, as MenuToggle does. Never use both on one button.
+
 ## Accessibility
 
 An icon button has no visible text, so `label` is required: it's the button's accessible name, such as `"Delete"` or `"Add to favorites"`. Name the action, not the icon. The tooltip repeats the label for sighted users, so it's hidden from assistive tech. It can be dismissed with Escape, and stays open while the pointer is over it, as WCAG 1.4.13 requires.
 
 A toggle keeps the same label whether it's selected or not (`"Bookmark"`, not `"Add bookmark"` / `"Remove bookmark"`), since screen readers announce the pressed state from `aria-pressed`. To react to a change, listen for the button's `click` event and read the new state from `aria-pressed`.
 
-Use a toggle for a setting that the button turns on and off, such as a bookmark or mute. A button that shows and hides other content, such as a menu or a panel, isn't a toggle: leave out `isToggle` and give it `aria-expanded` instead, as MenuToggle does. Never use both on one button.
+The default color roles meet M3's contrast requirement. If you change them, keep a contrast of at least 3:1 between the icon and its container, or the background behind it for a standard button.

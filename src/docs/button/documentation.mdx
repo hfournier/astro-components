@@ -48,7 +48,7 @@ props:
   - name: selectedIcon
     type: SvgIconNameTypes
     required: false
-    description: A toggle's icon while it's selected, in place of `icon`, such as `"favorite-fill"` for `"favorite"`. The swap is done in CSS, so the icon follows `aria-pressed` however it changes.
+    description: A toggle's icon while it's selected, in place of `icon`. It defaults to the filled version of `icon` when `src/assets/svgs` has one, such as `"favorite-fill"` for `"favorite"`, so set it only to override that. The swap is done in CSS, so the icon follows `aria-pressed` however it changes.
   - name: showFullwidth
     type: "boolean"
     required: false
@@ -83,7 +83,7 @@ A button is as wide as its label, never narrower: its label doesn't wrap or trun
 
 ## Toggle buttons
 
-Use a toggle for a binary action that the button turns on and off, such as Save or Favorite. With an icon, use an outlined icon while it's unselected and the filled one while it's selected (`icon` and `selectedIcon`). If the label changes with the state, keep both labels about the same length, so the button doesn't jump in width. To react to a change, listen for the button's `click` event and read the new state from `aria-pressed`.
+Use a toggle for a binary action that the button turns on and off, such as Save or Favorite. With an icon, use an outlined icon while it's unselected and the filled one while it's selected: give `icon` the outlined name, such as `"favorite"`, and the toggle switches to `"favorite-fill"` on its own (see ButtonIcon's docs for icons without a filled version). If the label changes with the state, keep both labels about the same length, so the button doesn't jump in width. To react to a change, listen for the button's `click` event and read the new state from `aria-pressed`.
 
 ## Accessibility
 

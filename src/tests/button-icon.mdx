@@ -47,3 +47,11 @@ description: Tests for the ButtonIcon component
   <Heading level={2}>Toggle selected</Heading>
   <ButtonIcon icon="bookmark" label="Bookmark" selectedIcon="bookmark-fill" isToggle isSelected variant="filled" />
 </Section>
+
+<Section data-testid="button-icon-toggle-default-selected-icon" class="p-4 space-y-4">
+  <Heading level={2}>Toggle with a default selected icon</Heading>
+  <ButtonIcon icon="bookmark" label="Bookmark" isToggle variant="filled" />
+  <ButtonIcon icon="bookmark" label="Bookmark as a star" selectedIcon="star-fill" isToggle variant="filled" />
+  <ButtonIcon icon="add" label="Add" isToggle variant="filled" />
+  <ButtonIcon icon="bookmark" label="Bookmarks menu" aria-expanded="true" variant="filled" />
+</Section>
