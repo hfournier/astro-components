@@ -3,6 +3,7 @@ import { twMerge } from "tailwind-merge";
 import type { TabType, TabVariantType } from "../types";
 import Badge from "./Badge.astro";
 import Icon from "./Icon.astro";
+import { badgedName } from "../utils";
 
 type Props = {
   randomId: string;
@@ -48,10 +49,8 @@ const { randomId, tabs, variant } = Astro.props;
           type="button"
           role="tab"
           aria-label={
-            // the badge is aria-hidden, so its count joins the tab's name (Badge hides "0")
-            tab.badgeLabel && tab.badgeLabel !== "0"
-              ? `${tab.label}, ${tab.badgeLabel}`
-              : undefined
+            // the badge is aria-hidden, so its count or description joins the tab's name
+            badgedName(tab.label, tab.badgeLabel, tab.badgeDescription)
           }
           aria-selected={index === 0}
           aria-controls={`tabpanel-${randomId}-${index + 1}`}

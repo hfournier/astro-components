@@ -4,7 +4,8 @@ import { box, resolvedColor } from "./support/helpers";
 
 // Each case on /tests/badge holds one Badge beside the Icon it's anchored to, and the Badge is
 // the only aria-hidden <span> there. Cases are keyed by id to their anchor Icon's accessible name:
-// count has label 3, no-label is a dot, over-999 has label 1500.
+// count has label 3, no-label is a dot, over-999 has label 1500. The rtl case, right to left, holds
+// a count of 3 and a dot, then an inline count after "Inbox", so it's found by order instead.
 const anchorNames = {
   count: "Inbox, 3 unread",
   "no-label": "Notifications, new activity",
@@ -57,6 +58,29 @@ test.describe("Badge", () => {
     expect({ width, height }).toEqual({ width: 16, height: 16 });
   });
 
+  test("centers its label's digits, from the cap line to the baseline, in the badge", async ({
+    page,
+  }) => {
+    for (const caseId of ["count", "over-999"] as const) {
+      const offset = await badge(page, caseId).evaluate((el) => {
+        const label = el.firstElementChild as HTMLElement;
+        // A zero-size inline-block's bottom sits on its line's baseline
+        const probe = document.createElement("span");
+        probe.style.cssText = "display:inline-block;width:0;height:0";
+        label.append(probe);
+        const baseline = probe.getBoundingClientRect().bottom;
+        probe.remove();
+        const style = getComputedStyle(label);
+        const context = document.createElement("canvas").getContext("2d")!;
+        context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+        const capHeight = context.measureText("H").actualBoundingBoxAscent;
+        const { top, height } = el.getBoundingClientRect();
+        return baseline - capHeight / 2 - (top + height / 2);
+      });
+      expect(Math.abs(offset)).toBeLessThanOrEqual(0.5);
+    }
+  });
+
   test("a badge with a count overlaps its anchor's top-end corner, per M3's offsets", async ({
     page,
   }) => {
@@ -82,6 +106,42 @@ test.describe("Badge", () => {
     });
     expect(dot.x + dot.width).toBeCloseTo(icon.x + icon.width, 0);
     expect(dot.y).toBeCloseTo(icon.y, 0);
+  });
+
+  test.describe("right to left", () => {
+    const rtl = (page: Page) => page.getByTestId("badge-rtl");
+    const rtlIcon = (page: Page, name: string) =>
+      rtl(page).locator(`svg[aria-label="${name}"]`);
+    const rtlBadge = (page: Page, index: number) =>
+      rtl(page).locator('span[aria-hidden="true"]').nth(index);
+
+    test("a badge with a count mirrors M3's offsets onto its anchor's top-left corner", async ({
+      page,
+    }) => {
+      const icon = await box(rtlIcon(page, "Inbox, 3 unread"));
+      const target = await box(rtlBadge(page, 0));
+
+      expect(target.x + target.width).toBeCloseTo(icon.x + 12, 0);
+      expect(target.y).toBeCloseTo(icon.y - 2, 0);
+    });
+
+    test("a dot sits on its anchor's top-left corner", async ({ page }) => {
+      const icon = await box(rtlIcon(page, "Notifications, new activity"));
+      const dot = await box(rtlBadge(page, 1));
+
+      expect(dot.x).toBeCloseTo(icon.x, 0);
+      expect(dot.y).toBeCloseTo(icon.y, 0);
+    });
+
+    test("an inline badge follows the text, to its left", async ({ page }) => {
+      const text = page.getByTestId("badge-rtl-inline");
+      const target = await box(
+        text.locator('span[aria-hidden="true"]').first()
+      );
+      const word = await box(text);
+
+      expect(target.x).toBeCloseTo(word.x, 0);
+    });
   });
 
   test("caps a count over 999 at 999+", async ({ page }) => {

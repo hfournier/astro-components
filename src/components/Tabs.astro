@@ -66,10 +66,12 @@ for (const node of parse(slot).children as Node[]) {
   tabs.push({
     label: node.attributes["data-ac-tab-label"] || "",
     badgeLabel: node.attributes["data-ac-tab-badge"],
+    badgeDescription: node.attributes["data-ac-tab-badge-description"],
     icon: node.attributes["data-ac-tab-icon"] as SvgIconNameTypes,
   });
   delete node.attributes["data-ac-tab-label"];
   delete node.attributes["data-ac-tab-badge"];
+  delete node.attributes["data-ac-tab-badge-description"];
   delete node.attributes["data-ac-tab-icon"];
   tabContents.push(await render(node));
 }

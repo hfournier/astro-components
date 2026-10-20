@@ -23,7 +23,12 @@ props:
   - name: badgeLabel
     type: string | number
     required: false
-    description: Shows a Badge on the icon. Pass a count, or `""` for a dot; `0` (or `"0"`) shows no badge. A count is added to the item's accessible name, e.g. "Inbox, 3", since the badge itself is hidden from assistive tech.
+    description: Shows a Badge on the icon. Pass a count, or `""` for a dot; `0` (or `"0"`) shows no badge. The badge itself is hidden from assistive tech, so, as in M3, a count is added to the item's accessible name (e.g. "Inbox, 3"), and a dot adds `badgeDescription` ("Updates, New notification").
+  - name: badgeDescription
+    type: string
+    required: false
+    default: '"New notification"'
+    description: What a dot badge (`badgeLabel=""`) means, added after the label in the item's accessible name, as M3's "New notification" is. Set it to translate the phrase or to name another status, e.g. "New draft". It has no effect on a count.
 ---
 
 ## Compact and medium
@@ -36,4 +41,4 @@ NavBarItem marks itself as the current destination (`aria-current="page"`) when 
 
 ## Badges
 
-`badgeLabel` adds a Badge on the top-end corner of the icon, as in M3: a count, or a dot for `""`. Each item anchors its badge to its icon with its own anchor name, so there's nothing to set up. From medium up, where the label sits 4px from the icon, a count would cover the label, so it moves into the text flow after the label instead; a dot stays on the icon. Keep `badgeLabel` in step with the count it shows, since it also sets the item's accessible name.
+`badgeLabel` adds a Badge on the top-end corner of the icon, as in M3: a count, or a dot for `""`. Each item anchors its badge to its icon with its own anchor name, so there's nothing to set up. From medium up, where the label sits 4px from the icon, a count would cover the label, so it moves into the text flow after the label instead; a dot stays on the icon. Keep `badgeLabel` in step with the count it shows, since it also sets the item's accessible name: a count after the label ("Inbox, 3"), or `badgeDescription` for a dot ("Updates, New notification"). In a right-to-left page, the badge moves to the icon's top-left corner, its trailing corner there.

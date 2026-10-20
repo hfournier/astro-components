@@ -28,3 +28,16 @@ description: Tests for the Badge component
   </Button>
   <Badge class="[--ac-anchorname-badge:--badge-test-over-999]" label={1500} />
 </Section>
+
+<Section data-testid="badge-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <Button variant="text">
+    <Icon class="[anchor-name:--badge-test-rtl-count]" name="inbox" label="Inbox, 3 unread" />
+  </Button>
+  <Badge class="[--ac-anchorname-badge:--badge-test-rtl-count]" label={3} />
+  <Button variant="text">
+    <Icon class="[anchor-name:--badge-test-rtl-dot]" name="notifications" label="Notifications, new activity" />
+  </Button>
+  <Badge class="[--ac-anchorname-badge:--badge-test-rtl-dot]" />
+  <p><span data-testid="badge-rtl-inline">Inbox<Badge class="ms-1" label={3} placement="inline" /></span></p>
+</Section>

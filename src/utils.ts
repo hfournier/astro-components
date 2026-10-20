@@ -55,3 +55,32 @@ export const unwrapParagraph = (html: string) => {
   const content = html.match(/^\s*<p\b[^>]*>([\s\S]*)<\/p>\s*$/)?.[1];
   return content !== undefined && !/<\/?p\b/.test(content) ? content : html;
 };
+
+/**
+ * Whether a Badge's `label` shows a count (a large badge), rather than a dot or no badge.
+ *
+ * @param badgeLabel - The Badge's `label`: a count, `""` for a dot, or `undefined` for no badge.
+ * @returns `false` for `undefined`, `""` and `0` (or `"0"`), which Badge hides.
+ */
+export const isBadgeCount = (badgeLabel: string | number | undefined) =>
+  badgeLabel !== undefined && badgeLabel !== "" && Number(badgeLabel) !== 0;
+
+/**
+ * The accessible name of an element that carries a Badge. A Badge is hidden from assistive tech,
+ * so, as M3 asks, the element's name says what it shows after its label: a count, or for a dot,
+ * "New notification" or the given description.
+ *
+ * @param label - The element's own name, e.g. `"Inbox"`.
+ * @param badgeLabel - The Badge's `label`: a count, `""` for a dot, or `undefined` for no badge.
+ * @param badgeDescription - What a dot means. Defaults to M3's `"New notification"`.
+ * @returns The name, e.g. `"Inbox, 3"` or `"Updates, New notification"`, or `undefined` when
+ * there's no badge (including a hidden `0`), so the element keeps its own name.
+ */
+export const badgedName = (
+  label: string,
+  badgeLabel: string | number | undefined,
+  badgeDescription = "New notification"
+) => {
+  if (badgeLabel === "") return `${label}, ${badgeDescription}`;
+  return isBadgeCount(badgeLabel) ? `${label}, ${badgeLabel}` : undefined;
+};

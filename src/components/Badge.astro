@@ -19,6 +19,8 @@ const value =
 
 // "anchored" overlaps the top-end corner of an anchor (typically an icon), per M3's BadgedBox
 // offsets; "inline" sits in the text flow, e.g. after a tab label that has no icon to anchor to.
+// Anchored, the offsets mirror right to left: rtl: sets the other side and resets this one, since
+// Firefox misplaces position-area right to left.
 // Inline, M3 sits the dot on the text's baseline and aligns a badge with content to the top of the
 // text's capital letters (not its line box). overflow-hidden makes an inline-block's baseline its
 // bottom margin edge, so align-baseline puts the bottom on the text's baseline; for a badge with
@@ -34,8 +36,8 @@ const placementClasses =
     : [
         "fixed [position-anchor:var(--ac-anchorname-badge)]",
         value
-          ? "top-[calc(anchor(top)-2px)] left-[calc(anchor(right)-12px)]"
-          : "top-[anchor(top)] right-[anchor(right)]",
+          ? "top-[calc(anchor(top)-2px)] left-[calc(anchor(right)-12px)] rtl:right-[calc(anchor(left)-12px)] rtl:left-auto"
+          : "top-[anchor(top)] right-[anchor(right)] rtl:right-auto rtl:left-[anchor(left)]",
       ];
 ---
 
@@ -55,7 +57,10 @@ const placementClasses =
       {...attrs}
     >
       {value && (
-        <span class="inline-block align-top text-[11px] leading-4 font-medium tracking-[0.5px]">
+        // Centered by its ink, not its line box: trimmed to the digits' cap line and baseline,
+        // then pushed down by half the space left. A line box centers the font's ascent and
+        // descent instead, which leaves the digits up to 1px high (Chromium rounds the metrics).
+        <span class="mt-[calc((1rem-1cap)/2)] block text-[11px] leading-4 font-medium tracking-[0.5px] [text-box:trim-both_cap_alphabetic]">
           {typeof value === "string"
             ? value.substring(0, 4)
             : value > 999

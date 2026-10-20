@@ -11,10 +11,15 @@ extends:
   tag: [div]
 parents: [Tabs]
 props:
+  - name: badgeDescription
+    type: string
+    required: false
+    default: '"New notification"'
+    description: What a dot badge (`badgeLabel=""`) means, added after the label in the tab's accessible name, as M3's "New notification" is. Set it to translate the phrase or to name another status, e.g. "New draft". It has no effect on a count.
   - name: badgeLabel
     type: string
     required: false
-    description: Shows a Badge on this tab. Pass a count (a number over 999 shows as `999+`, and `"0"` hides the badge) or `""` for a dot. On a primary tab with an `icon`, the badge overlaps the icon; otherwise it sits after the label. A count is added to the tab's accessible name (e.g. "Inbox, 3"), since the badge itself is hidden from screen readers. A dot adds nothing to the name, so say what it means in the tab's content or label.
+    description: Shows a Badge on this tab. Pass a count (a number over 999 shows as `999+`, and `"0"` hides the badge) or `""` for a dot. On a primary tab with an `icon`, the badge overlaps the icon; otherwise it sits after the label. The badge itself is hidden from screen readers, so, as in M3, a count is added to the tab's accessible name (e.g. "Inbox, 3"), and a dot adds `badgeDescription` ("Updates, New notification").
   - name: icon
     type: SvgIconNameTypes
     required: false

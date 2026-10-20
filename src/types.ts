@@ -92,6 +92,7 @@ export type SlotWithHeadingType = {
 };
 
 export type TabType = {
+  badgeDescription?: string;
   badgeLabel?: string;
   icon?: SvgIconNameTypes;
   label: string;

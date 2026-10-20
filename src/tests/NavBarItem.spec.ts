@@ -1,32 +1,57 @@
 import type { Page } from "@playwright/test";
 import { test, expect } from "./support/a11y-fixture";
-import { box } from "./support/helpers";
+import { box, textBox } from "./support/helpers";
 
-// The nav-bar-item-badges case on /tests/nav-bar-item holds one NavBar, labelled "Badges": Inbox
-// (3, current), Updates (a dot), Chat (1500) and Archive (0).
+// Each case on /tests/nav-bar-item holds one NavBar, labelled with its heading. badges: Inbox
+// (3, current), Updates (a dot), Chat (1500) and Archive (0). badge-description: Updates (a dot,
+// described in French), Inbox and Archive. rtl: Inbox (3), Updates (a dot) and Archive, right to
+// left.
 // An item with a count renders it twice, on the icon (below medium) and after the label (from
 // medium up), so this finds the shown one: the item's visible aria-hidden <span>.
-const nav = (page: Page) =>
+const navNames = {
+  badges: "Badges",
+  "badge-description": "Badge description",
+  rtl: "Right to left",
+} as const;
+type NavBarItemCaseId = keyof typeof navNames;
+
+const nav = (page: Page, caseId: NavBarItemCaseId) =>
   page
-    .getByTestId("nav-bar-item-badges")
-    .getByRole("navigation", { name: "Badges", exact: true });
-const link = (page: Page, name: string) =>
-  nav(page).getByRole("link", { name, exact: true });
-const badge = (page: Page, name: string) =>
-  link(page, name)
+    .getByTestId(`nav-bar-item-${caseId}`)
+    .getByRole("navigation", { name: navNames[caseId], exact: true });
+const link = (page: Page, name: string, caseId: NavBarItemCaseId = "badges") =>
+  nav(page, caseId).getByRole("link", { name, exact: true });
+const badge = (page: Page, name: string, caseId?: NavBarItemCaseId) =>
+  link(page, name, caseId)
     .locator('span[aria-hidden="true"]')
     .filter({ visible: true });
-const icon = (page: Page, name: string) => link(page, name).locator("svg");
+const icon = (page: Page, name: string, caseId?: NavBarItemCaseId) =>
+  link(page, name, caseId).locator("svg");
 
 test.describe("NavBarItem", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/tests/nav-bar-item");
   });
 
-  test("adds a count to the item's accessible name", async ({ page }) => {
-    for (const name of ["Inbox, 3", "Updates", "Chat, 1500", "Archive"]) {
+  test("adds a count, or M3's 'New notification' for a dot, to the item's accessible name", async ({
+    page,
+  }) => {
+    for (const name of [
+      "Inbox, 3",
+      "Updates, New notification",
+      "Chat, 1500",
+      "Archive",
+    ]) {
       await expect(link(page, name)).toBeVisible();
     }
+  });
+
+  test("badgeDescription replaces a dot's 'New notification'", async ({
+    page,
+  }) => {
+    await expect(
+      link(page, "Updates, Nouvelle notification", "badge-description")
+    ).toBeVisible();
   });
 
   test.describe("compact", () => {
@@ -34,7 +59,9 @@ test.describe("NavBarItem", () => {
 
     test("shows a count, a dot, 999+ or no badge", async ({ page }) => {
       await expect(badge(page, "Inbox, 3")).toHaveText("3");
-      expect((await box(badge(page, "Updates"))).width).toBe(6);
+      expect((await box(badge(page, "Updates, New notification"))).width).toBe(
+        6
+      );
       await expect(badge(page, "Chat, 1500")).toHaveText("999+");
       await expect(badge(page, "Archive")).toHaveCount(0);
     });
@@ -42,8 +69,8 @@ test.describe("NavBarItem", () => {
     test("anchors its badges to the top-end corner of the icon", async ({
       page,
     }) => {
-      const dotIcon = await box(icon(page, "Updates"));
-      const dot = await box(badge(page, "Updates"));
+      const dotIcon = await box(icon(page, "Updates, New notification"));
+      const dot = await box(badge(page, "Updates, New notification"));
       expect(dot.y).toBeCloseTo(dotIcon.y, 0);
       expect(dot.x + dot.width).toBeCloseTo(dotIcon.x + dotIcon.width, 0);
 
@@ -51,6 +78,20 @@ test.describe("NavBarItem", () => {
       const count = await box(badge(page, "Inbox, 3"));
       expect(count.x).toBeLessThan(countIcon.x + countIcon.width);
       expect(count.y).toBeLessThan(countIcon.y);
+    });
+
+    test("right to left, anchors its badges to the icon's top-left corner, its trailing corner there", async ({
+      page,
+    }) => {
+      const dotIcon = await box(icon(page, "Updates, New notification", "rtl"));
+      const dot = await box(badge(page, "Updates, New notification", "rtl"));
+      expect(dot.y).toBeCloseTo(dotIcon.y, 0);
+      expect(dot.x).toBeCloseTo(dotIcon.x, 0);
+
+      const countIcon = await box(icon(page, "Inbox, 3", "rtl"));
+      const count = await box(badge(page, "Inbox, 3", "rtl"));
+      expect(count.x + count.width).toBeCloseTo(countIcon.x + 12, 0);
+      expect(count.y).toBeCloseTo(countIcon.y - 2, 0);
     });
   });
 
@@ -60,8 +101,8 @@ test.describe("NavBarItem", () => {
     test("keeps a dot on the icon, and moves a count after the label", async ({
       page,
     }) => {
-      const dotIcon = await box(icon(page, "Updates"));
-      const dot = await box(badge(page, "Updates"));
+      const dotIcon = await box(icon(page, "Updates, New notification"));
+      const dot = await box(badge(page, "Updates, New notification"));
       expect(dot.x + dot.width).toBeCloseTo(dotIcon.x + dotIcon.width, 0);
 
       // The label span holds the label's text, then the inline badge
@@ -76,6 +117,20 @@ test.describe("NavBarItem", () => {
       expect(count.x).toBeGreaterThan(countIcon.x + countIcon.width + 4);
       expect(count.x + count.width).toBeCloseTo(labelBox.x + labelBox.width, 0);
       expect(count.y).toBeGreaterThanOrEqual(labelBox.y - 1);
+    });
+
+    test("right to left, a count follows the label, to its left", async ({
+      page,
+    }) => {
+      const label = await textBox(
+        link(page, "Inbox, 3", "rtl").locator(
+          "> span:first-child > span:last-child"
+        )
+      );
+      const count = await box(badge(page, "Inbox, 3", "rtl"));
+
+      expect(count.x + count.width).toBeLessThan(label.x);
+      expect(count.x + count.width).toBeGreaterThan(label.x - 12);
     });
 
     test("doesn't clip the bottom of a count after the label", async ({
