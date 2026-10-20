@@ -325,6 +325,7 @@ test.describe("DialogConfirm", () => {
     const dismissBox = await box(dismiss);
     const confirmBox = await box(confirm);
 
+    // the case sets M3's narrowest dialog, so the labels can't fit side by side
     expect(panel.width).toBe(280);
     expect(confirmBox.y + confirmBox.height).toBeLessThanOrEqual(dismissBox.y);
     // both end at the panel's 24px padding, and nothing overflows it
@@ -340,6 +341,7 @@ test.describe("DialogConfirm", () => {
     await page.keyboard.press("Tab");
     await expect(confirm).toBeFocused();
   });
+
   test("is an alertdialog named by its headline and described by its content", async ({
     page,
   }) => {

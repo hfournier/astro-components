@@ -47,7 +47,7 @@ Give a dialog at most two actions:
 - A single action must be an acknowledgement. Use DialogAcknowledge.
 - Two actions are a dismissing action and a confirming one, with the confirming action closest to the edge. Use DialogConfirm.
 - Don't add a third action such as "Learn more", which takes people away from the task. Give that information before the dialog opens, or in its content.
-- If the confirming action needs a choice first, such as a selected option, disable it until one is made. Never disable the dismissing action.
+- If the confirming action needs a choice first, such as a selected option, disable it until one is made. Never disable the dismissing action. DialogConfirm's actions can't be disabled, so build such a dialog on Dialog, with your own Buttons in its `actions` slot.
 
 When two labels are too long to fit side by side, the actions stack, with the confirming action above the dismissing one, both at the end.
 
