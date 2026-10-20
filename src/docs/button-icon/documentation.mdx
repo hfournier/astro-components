@@ -81,13 +81,13 @@ Don't shrink icon buttons to make a layout denser. Every size keeps a touch targ
 
 ## Icons
 
-M3's plain icon button uses a filled icon, so where an icon has a `-fill` version, prefer it, such as `"star-fill"` rather than `"star"`.
+M3's plain icon button uses a filled icon, such as `"star-fill"` rather than `"star"`.
 
 ## Toggles
 
 Use a toggle for a binary action that the button turns on and off, such as favorite, bookmark or mute. Don't use one for an action with no selected state, such as opening an overflow menu.
 
-A toggle uses the outlined icon while it's unselected and the filled one while it's selected, with `icon` and `selectedIcon` (`"bookmark"` and `"bookmark-fill"`). This isn't just style: M3 requires the selected state to show through at least two properties, not color alone. Without a filled version, M3 makes the icon bolder (semibold or bold). These icons are SVGs, so use a toggle only with an icon that has a filled version, or supply a bolder one as `selectedIcon`.
+A toggle uses the outlined icon while it's unselected and the filled one while it's selected, with `icon` and `selectedIcon` (`"bookmark"` and `"bookmark-fill"`). This isn't just style: M3 requires the selected state to show through at least two properties, not color alone. Almost every Material Symbol has a filled version; if `src/assets/svgs` doesn't have it yet, add it as `<name>-fill.svg` (and to `src/svgs/icon-names.ts`). For an icon whose filled and outlined shapes look the same, M3 makes the selected icon bolder (semibold or bold) instead, so supply a bolder SVG as `selectedIcon`.
 
 A button that shows and hides other content, such as a menu or a panel, isn't a toggle: leave out `isToggle` and give it `aria-expanded` instead, as MenuToggle does. Never use both on one button.
 
