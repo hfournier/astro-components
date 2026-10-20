@@ -71,3 +71,34 @@ description: Tests for the Dialog, DialogConfirm and DialogAcknowledge component
     Your message has been sent. We'll reply within two business days.
   </DialogAcknowledge>
 </Section>
+
+{/* Content taller than the window, so it scrolls and the bottom divider shows */}
+
+<Section data-testid="dialog-scrolling" class="p-4 space-y-4">
+  <Heading level={2}>Scrolling</Heading>
+  <Button command="show-modal" commandfor="scrolling-dialog">Open Dialog</Button>
+
+  <Dialog id="scrolling-dialog" headline="Terms of service">
+    <div class="h-[200vh]">Long supporting text.</div>
+
+    <Button slot="actions" command="close" commandfor="scrolling-dialog" size="sm" variant="text">Close</Button>
+
+  </Dialog>
+</Section>
+
+{/* Two long labels that don't fit side by side in M3's narrowest (280px) dialog */}
+
+<Section data-testid="dialog-stacked" class="p-4 space-y-4">
+  <Heading level={2}>DialogConfirm with stacked actions</Heading>
+  <Button command="show-modal" commandfor="stacked-dialog">Open Confirm Dialog</Button>
+
+  <DialogConfirm
+    id="stacked-dialog"
+    class="max-w-70"
+    headline="Discard draft?"
+    buttonDismiss={{ text: "Keep editing the draft", value: "keep" }}
+    buttonConfirm={{ text: "Discard all changes", value: "discard" }}
+  >
+    Your unsaved changes will be lost.
+  </DialogConfirm>
+</Section>

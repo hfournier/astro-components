@@ -28,6 +28,41 @@ slots:
     description: The dialog's supporting text or custom content, styled as Material 3 supporting text. It scrolls when taller than the viewport allows, with dividers appearing at whichever edge has content scrolled out of view (in browsers that support scroll-state container queries). Put `autofocus` on an element here to choose what receives focus when the dialog opens.
     kind: any
   - name: actions
-    description: Buttons for the dialog's actions, in a row below the content, aligned to the end. Put the Buttons in the slot directly; the dialog lays them out. Give each a `value` and `command="close"`, and the dialog closes with its `returnValue` set to the value, so a `close` listener can tell which was chosen. Escape or a click on the scrim cancels the dialog, firing a `cancel` event you can prevent to keep it open, and leaves `returnValue` empty. Material 3 recommends at most two text buttons - see DialogConfirm and DialogAcknowledge for ready-made versions.
+    description: Buttons for the dialog's actions, in a row below the content, aligned to the end. Actions too long to fit side by side stack, the last (confirming) one on top, as M3 asks. Put the Buttons in the slot directly; the dialog lays them out. Give each a `value` and `command="close"`, and the dialog closes with its `returnValue` set to the value, so a `close` listener can tell which was chosen. Escape or a click on the scrim cancels the dialog, firing a `cancel` event you can prevent to keep it open, and leaves `returnValue` empty. Material 3 recommends at most two text buttons - see DialogConfirm and DialogAcknowledge for ready-made versions.
     kind: any
 ---
+
+## When to use it
+
+Dialogs interrupt, so use them sparingly: for critical information, or a decision that has to be made before the task can go on. For low- and medium-priority messages, show something in the page's flow instead, or a snackbar.
+
+## Headline
+
+Make the headline a brief, clear statement or question, such as "Discard draft?". It can wrap to a second line. Don't apologize ("Sorry for the interruption"), raise an alarm ("Warning!") or ask a vague question ("Are you sure?").
+
+## Actions
+
+Give a dialog at most two actions:
+
+- A single action must be an acknowledgement. Use DialogAcknowledge.
+- Two actions are a dismissing action and a confirming one, with the confirming action closest to the edge. Use DialogConfirm.
+- Don't add a third action such as "Learn more", which takes people away from the task. Give that information before the dialog opens, or in its content.
+- If the confirming action needs a choice first, such as a selected option, disable it until one is made. Never disable the dismissing action.
+
+When two labels are too long to fit side by side, the actions stack, with the confirming action above the dismissing one, both at the end.
+
+## Roles
+
+On the web, M3 gives alert and confirmation dialogs `role="alertdialog"`, which DialogConfirm and DialogAcknowledge set. A plain Dialog keeps the native `dialog` role, for forms and other content. For an alert built on Dialog, pass `role="alertdialog"` and `aria-describedby="<id>-content"`, so its content is read along with its headline.
+
+## Position
+
+A dialog is centered in the window. On large windows, M3 allows another position, such as next to what opened it. Use `overlayClass` for that, keeping the dialog at least 56px from the window's edges, and never partly off screen.
+
+## Initial focus
+
+When the dialog opens, focus goes to its first interactive element, or to the one with `autofocus`. DialogConfirm deliberately focuses its dismissing action rather than the first one, so a reflexive Enter never confirms.
+
+## Scrolling
+
+Only the content scrolls, with the headline and actions kept in view, and a divider shows at whichever edge has content scrolled out of view. Where you can, keep the content short enough not to scroll.
