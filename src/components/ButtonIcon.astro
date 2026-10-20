@@ -1,7 +1,7 @@
 ---
 import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
-import type { SvgIconNameTypes } from "../svgs";
+import { svgIconNames, type SvgIconNameTypes } from "../svgs";
 import Icon from "./Icon.astro";
 import Tooltip from "./Tooltip.astro";
 
@@ -14,7 +14,8 @@ type Props = HTMLAttributes<"button"> & {
   // A toggle button's initial state
   isSelected?: boolean;
   // Shown in place of `icon` while the button is pressed (a toggle) or expanded (a disclosure,
-  // with aria-expanded), e.g. "bookmark-fill" for "bookmark" or "menu_open" for "menu"
+  // with aria-expanded), e.g. "bookmark-fill" for "bookmark" or "menu_open" for "menu". A toggle
+  // defaults to its icon's -fill version, when there is one
   selectedIcon?: SvgIconNameTypes;
   shape?: "round" | "square";
   // M3: on web, show a tooltip describing the action on hover (and keyboard focus)
@@ -29,7 +30,7 @@ const {
   label,
   isToggle = false,
   isSelected = false,
-  selectedIcon,
+  selectedIcon: selectedIconProp,
   shape = "round",
   showTooltip = true,
   size = "sm",
@@ -39,6 +40,10 @@ const {
   type,
   ...attrs
 }: Props = Astro.props;
+
+// M3: a selected toggle shows the filled icon, so it doesn't rely on color alone
+const filledIcon = svgIconNames.find((name) => name === `${icon}-fill`);
+const selectedIcon = selectedIconProp ?? (isToggle ? filledIcon : undefined);
 
 const iconSizeClasses = {
   xs: "size-5",
