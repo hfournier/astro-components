@@ -5,13 +5,38 @@ description: Tests for the Tooltip component
 
 <Heading level={1}>Tooltip Tests</Heading>
 
-<Section data-testid="tooltip-plain" class="p-4 space-y-4">
+<Section data-testid="tooltip-plain" class="p-4 pt-12 space-y-4">
   <Heading level={2}>Plain</Heading>
   <Link class="relative inline-flex" href="https://github.com/hfournier/astro-components" aria-label="GitHub repository"><Icon name="github" /><Tooltip>GitHub repository</Tooltip></Link>
+</Section>
+
+<Section data-testid="tooltip-plain-below" class="p-4 space-y-4">
+  <Heading level={2}>Plain, below</Heading>
+  <Link class="relative inline-flex" href="https://github.com/hfournier/astro-components" aria-label="Source code"><Icon name="github" /><Tooltip placement="below">Source code</Tooltip></Link>
+</Section>
+
+<Section data-testid="tooltip-plain-row" class="p-4 pt-12 space-y-4">
+  <Heading level={2}>A row of icon buttons</Heading>
+  <div class="flex gap-2">
+    <ButtonIcon icon="edit" label="Edit" />
+    <ButtonIcon icon="content_copy" label="Copy" />
+    <ButtonIcon icon="share" label="Share" />
+  </div>
+</Section>
+
+<Section data-testid="tooltip-plain-touch" class="p-4 pt-12 space-y-4">
+  <Heading level={2}>Touch</Heading>
+  <ButtonIcon icon="delete" label="Delete" onclick="this.dataset.clicks = Number(this.dataset.clicks ?? 0) + 1" />
 </Section>
 
 <Section data-testid="tooltip-rich" class="p-4 space-y-4">
   <Heading level={2}>Rich</Heading>
   <ButtonIcon id="rich-tooltip-trigger" icon="info" label="About autosave" showTooltip={false} variant="tonal" />
   <Tooltip variant="rich" for="rich-tooltip-trigger" subhead="Autosave is on">Changes are saved as you type, so there's no need to save before you leave.<Button slot="actions" size="sm" variant="text">Learn more</Button></Tooltip>
+</Section>
+
+<Section data-testid="tooltip-rich-persistent" class="p-4 space-y-4">
+  <Heading level={2}>Rich, persistent</Heading>
+  <Button id="persistent-tooltip-trigger" variant="outlined">Release notes</Button>
+  <Tooltip variant="rich" for="persistent-tooltip-trigger" isPersistent subhead="Version history">See every saved version of a document, and restore any of them.<Button slot="actions" size="sm" variant="text">Got it</Button></Tooltip>
 </Section>

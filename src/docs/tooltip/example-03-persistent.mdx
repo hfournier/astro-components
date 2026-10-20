@@ -1,0 +1,7 @@
+---
+title: Persistent rich tooltip
+description: Add `isPersistent` for a rich tooltip that a click on its element toggles, rather than hover or focus. It stays open when the pointer leaves, and closes on a click anywhere else, on Escape, or on a second click on its element. Its element must be a `<button>`, and shouldn't be an icon button.
+---
+
+<Button id="tooltip-persistent-trigger" variant="outlined">Version history</Button>
+<Tooltip variant="rich" for="tooltip-persistent-trigger" isPersistent subhead="Restore any version">Every saved version of this document is kept for 30 days. Open one to compare it with the current version, or restore it.<Button slot="actions" size="sm" variant="text">Got it</Button></Tooltip>
