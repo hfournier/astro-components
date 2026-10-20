@@ -151,6 +151,8 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
 <script>
   const hoverDelay = 500; // M3: a tooltip shows this long into a hover, or a touch
   const lingerDelay = 1500; // M3: and stays this long after the pointer leaves or the finger lifts
+  const longPressDelay = 500; // how long a touch must be held to show a tooltip
+  const longPressSlop = 10; // px a held finger can drift, before the press counts as a scroll
 
   // M3 shows one tooltip at a time: showing one hides every other straight away
   const hideNowFns = new Set<() => void>();
@@ -159,7 +161,9 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
 
   // Touch can't hover, so on a touchscreen a long press shows the tooltip, as M3 asks. The click
   // that ends the press is swallowed, so holding an element to read its label doesn't also
-  // activate it, and so is the browser's context menu or callout during the press.
+  // activate it, and so is the browser's context menu or callout during the press. Some browsers
+  // send no click after a long press, so only a click straight after it is swallowed, or a later
+  // click, key press or assistive tech activation would be lost.
   const onLongPress = (
     element: HTMLElement,
     press: () => void,
@@ -169,10 +173,14 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
     let start = { x: 0, y: 0 };
     let isTouching = false;
     let isPressed = false;
+    let swallowClickUntil = 0;
     const end = () => {
       clearTimeout(timer);
       isTouching = false;
-      if (isPressed) release();
+      if (!isPressed) return;
+      isPressed = false;
+      swallowClickUntil = Date.now() + 500;
+      release();
     };
 
     element.style.setProperty("-webkit-touch-callout", "none");
@@ -184,14 +192,15 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
       timer = window.setTimeout(() => {
         isPressed = true;
         press();
-      }, hoverDelay);
+      }, longPressDelay);
     });
     // moving the finger away, e.g. to scroll, cancels the press
     element.addEventListener("pointermove", (event) => {
       if (
         isTouching &&
         !isPressed &&
-        Math.hypot(event.clientX - start.x, event.clientY - start.y) > 10
+        Math.hypot(event.clientX - start.x, event.clientY - start.y) >
+          longPressSlop
       ) {
         end();
       }
@@ -204,8 +213,8 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
     element.addEventListener(
       "click",
       (event) => {
-        if (!isPressed) return;
-        isPressed = false;
+        if (Date.now() > swallowClickUntil) return;
+        swallowClickUntil = 0;
         event.preventDefault();
         event.stopImmediatePropagation();
       },
@@ -239,8 +248,10 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
         clearTimeout(timer);
         if (isDismissed) return;
         hideOthers(hideNow);
-        if (!tooltip.matches(":popover-open")) tooltip.showPopover();
+        // data-shown first: Firefox can leave a popover on its starting style, hidden, when the
+        // attribute is set just after showPopover()
         tooltip.setAttribute("data-shown", "");
+        if (!tooltip.matches(":popover-open")) tooltip.showPopover();
       };
       // A tooltip that never showed, cut short before its hover delay, hides at once
       const hideLater = () => {
@@ -322,20 +333,23 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
       }
 
       const isOpen = () => tooltip.matches(":popover-open");
-      // Another tooltip showing closes this one, but not while it holds focus, which would be
-      // lost with it
+      let timer: number | undefined;
+      // Another tooltip showing closes this one, and cancels its pending open, but not while it
+      // holds focus, which would be lost with it
       const hideNow = () => {
-        if (isOpen() && !tooltip.contains(document.activeElement)) {
-          tooltip.hidePopover();
-        }
+        if (tooltip.contains(document.activeElement)) return;
+        clearTimeout(timer);
+        if (isOpen()) tooltip.hidePopover();
       };
-      hideNowFns.add(hideNow);
       tooltip.addEventListener("toggle", (event) => {
         if ((event as ToggleEvent).newState === "open") hideOthers(hideNow);
       });
 
       // A persistent rich tooltip is an auto popover its trigger toggles, so the browser closes it
-      // on Escape or a click anywhere else (light dismiss), leaving out a click on the trigger
+      // on Escape or a click anywhere else (light dismiss), leaving out a click on the trigger.
+      // M3 keeps it open until the person interacts with something else, so focus moving
+      // elsewhere closes it too, but another tooltip showing doesn't: a hover on its way past
+      // would close one a page opened on load.
       if (tooltip.hasAttribute("data-ac-tooltip-persistent")) {
         if (!(trigger instanceof HTMLButtonElement)) {
           throw new Error(
@@ -350,12 +364,22 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
             String((event as ToggleEvent).newState === "open")
           );
         });
+        document.addEventListener("focusin", (event) => {
+          const target = event.target as Node;
+          if (
+            isOpen() &&
+            !trigger.contains(target) &&
+            !tooltip.contains(target)
+          ) {
+            tooltip.hidePopover();
+          }
+        });
         return;
       }
 
       // A transient rich tooltip: a manual popover opened and closed from its trigger's hover,
       // focus and long press
-      let timer: number | undefined;
+      hideNowFns.add(hideNow);
       // set by Escape, so returning focus to the trigger doesn't reopen the tooltip; cleared once
       // the pointer leaves the trigger or focus leaves it
       let isDismissed = false;

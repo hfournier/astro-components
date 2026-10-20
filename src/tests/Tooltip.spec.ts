@@ -48,7 +48,7 @@ const isOpen = (tooltip: Locator) =>
 const hoverDelay = 500;
 const lingerDelay = 1500;
 const pausedPages = new WeakSet<Page>();
-async function pauseClock(page: Page) {
+async function gotoWithPausedClock(page: Page) {
   await page.clock.install();
   await page.goto("/tests/tooltip");
   await page.clock.pauseAt(Date.now() + 1000);
@@ -106,7 +106,7 @@ test.describe("Tooltip", () => {
     });
 
     test("shows 500ms into a hover", async ({ page }) => {
-      await pauseClock(page);
+      await gotoWithPausedClock(page);
       await plainTrigger(page).hover();
 
       await page.clock.runFor(hoverDelay - 100);
@@ -118,7 +118,7 @@ test.describe("Tooltip", () => {
     test("stays 1.5s after the pointer leaves, then hides", async ({
       page,
     }) => {
-      await pauseClock(page);
+      await gotoWithPausedClock(page);
       await plainTrigger(page).hover();
       await page.clock.runFor(hoverDelay);
       await expect(plainTooltip(page)).toBeVisible();
@@ -134,7 +134,7 @@ test.describe("Tooltip", () => {
     test("shows straight away on keyboard focus, and Escape hides it in place", async ({
       page,
     }) => {
-      await pauseClock(page);
+      await gotoWithPausedClock(page);
       await plainTrigger(page).focus();
       await expect(plainTooltip(page)).toBeVisible();
 
@@ -147,7 +147,7 @@ test.describe("Tooltip", () => {
       page,
     }) => {
       await page.emulateMedia({ reducedMotion: "reduce" });
-      await pauseClock(page);
+      await gotoWithPausedClock(page);
       const property = await plainTooltip(page).evaluate(
         (el) => getComputedStyle(el).transitionProperty
       );
@@ -164,7 +164,7 @@ test.describe("Tooltip", () => {
     test("shows one at a time: a new tooltip closes the last one straight away", async ({
       page,
     }) => {
-      await pauseClock(page);
+      await gotoWithPausedClock(page);
       await rowButton(page, "Edit").hover();
       await page.clock.runFor(hoverDelay);
       await expect(rowTooltip(page, "Edit")).toBeVisible();
@@ -179,7 +179,7 @@ test.describe("Tooltip", () => {
     test("a hovered element's tooltip closes a focused one's", async ({
       page,
     }) => {
-      await pauseClock(page);
+      await gotoWithPausedClock(page);
       await rowButton(page, "Edit").focus();
       await expect(rowTooltip(page, "Edit")).toBeVisible();
 
@@ -207,7 +207,7 @@ test.describe("Tooltip", () => {
     test("a short tap activates the element without showing its tooltip", async ({
       page,
     }) => {
-      await pauseClock(page);
+      await gotoWithPausedClock(page);
       // a tap doesn't scroll to its point, so bring the button into view first
       await touchButton(page).scrollIntoViewIfNeeded();
       const { x, y, width, height } = await box(touchButton(page));
@@ -221,7 +221,7 @@ test.describe("Tooltip", () => {
     test("a long press shows the tooltip without activating the element, and it stays 1.5s after the finger lifts", async ({
       page,
     }) => {
-      await pauseClock(page);
+      await gotoWithPausedClock(page);
       await touch(touchButton(page), "pointerdown");
       await page.clock.runFor(hoverDelay);
       await expect(touchTooltip(page)).toBeVisible();
@@ -240,10 +240,23 @@ test.describe("Tooltip", () => {
       await expect(touchButton(page)).toHaveAttribute("data-clicks", "1");
     });
 
+    test("when no click follows a long press, a later click still activates the element", async ({
+      page,
+    }) => {
+      await gotoWithPausedClock(page);
+      await touch(touchButton(page), "pointerdown");
+      await page.clock.runFor(hoverDelay);
+      await touch(touchButton(page), "pointerup");
+      await page.clock.runFor(1000);
+
+      await touchButton(page).dispatchEvent("click");
+      await expect(touchButton(page)).toHaveAttribute("data-clicks", "1");
+    });
+
     test("lifting the finger before the long press ends shows nothing", async ({
       page,
     }) => {
-      await pauseClock(page);
+      await gotoWithPausedClock(page);
       await touch(touchButton(page), "pointerdown");
       await page.clock.runFor(hoverDelay - 200);
       await touch(touchButton(page), "pointerup");
@@ -293,7 +306,7 @@ test.describe("Tooltip", () => {
     test("opens on hover, and closes 1.5s after the pointer has left", async ({
       page,
     }) => {
-      await pauseClock(page);
+      await gotoWithPausedClock(page);
       await richTrigger(page).hover();
       await page.clock.runFor(hoverDelay);
       await expect(richTooltip(page)).toBeVisible();
@@ -325,7 +338,7 @@ test.describe("Tooltip", () => {
     test("a plain tooltip opening closes it straight away", async ({
       page,
     }) => {
-      await pauseClock(page);
+      await gotoWithPausedClock(page);
       await richTrigger(page).hover();
       await page.clock.runFor(hoverDelay);
       await expect(richTooltip(page)).toBeVisible();
@@ -341,7 +354,7 @@ test.describe("Tooltip", () => {
     test("opens on a click, not on hover or focus, and marks its element expanded", async ({
       page,
     }) => {
-      await pauseClock(page);
+      await gotoWithPausedClock(page);
       await persistentTrigger(page).hover();
       await page.clock.runFor(hoverDelay);
       await persistentTrigger(page).focus();
@@ -363,7 +376,7 @@ test.describe("Tooltip", () => {
     test("stays open when the pointer leaves, and a click elsewhere closes it", async ({
       page,
     }) => {
-      await pauseClock(page);
+      await gotoWithPausedClock(page);
       await persistentTrigger(page).click();
       await expect(persistentTooltip(page)).toBeVisible();
 
@@ -377,6 +390,22 @@ test.describe("Tooltip", () => {
         "aria-expanded",
         "false"
       );
+    });
+
+    test("focus moving elsewhere closes it, but another tooltip showing doesn't", async ({
+      page,
+    }) => {
+      await gotoWithPausedClock(page);
+      await persistentTrigger(page).click();
+      await expect(persistentTooltip(page)).toBeVisible();
+
+      await rowButton(page, "Edit").hover();
+      await page.clock.runFor(hoverDelay);
+      await expect(rowTooltip(page, "Edit")).toBeVisible();
+      expect(await isOpen(persistentTooltip(page))).toBe(true);
+
+      await plainTrigger(page).focus();
+      await expect.poll(() => isOpen(persistentTooltip(page))).toBe(false);
     });
 
     test("Escape closes it, and a second click on its element does too", async ({
@@ -399,9 +428,11 @@ test.describe("Tooltip", () => {
       const describedBy =
         await persistentTrigger(page).getAttribute("aria-describedby");
 
-      await expect(page.locator(`[id="${describedBy}"]`)).toContainText(
-        "Version history"
-      );
+      const description = page.locator(`[id="${describedBy}"]`);
+
+      await expect(description).toContainText("Version history");
+      await expect(description).toContainText("See every saved version");
+      await expect(description).not.toContainText("Got it");
     });
   });
 });
