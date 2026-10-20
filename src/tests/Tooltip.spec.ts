@@ -3,10 +3,11 @@ import { test, expect } from "./support/a11y-fixture";
 import { box } from "./support/helpers";
 
 // Each case on /tests/tooltip is a Section with data-testid="tooltip-<caseId>": plain holds a plain
-// tooltip inside an icon-only link, plain-below the same placed below, plain-row three ButtonIcons
-// (Edit, Copy, Share), plain-touch a ButtonIcon (Delete) that counts its clicks in data-clicks,
-// rich a rich tooltip with a subhead and an action after the ButtonIcon it describes, and
-// rich-persistent a persistent rich tooltip after the Button ("Release notes") that toggles it.
+// tooltip inside an icon-only link, plain-below the same placed below, plain-row four ButtonIcons
+// (Edit, Copy, Share, and Archive, which turns its tooltip off), plain-touch a ButtonIcon (Delete)
+// that counts its clicks in data-clicks, rich a rich tooltip with a subhead and an action after the
+// ButtonIcon it describes, and rich-persistent a persistent rich tooltip after the Button ("Release
+// notes") that toggles it.
 type TooltipCaseId =
   | "plain"
   | "plain-below"
@@ -196,6 +197,22 @@ test.describe("Tooltip", () => {
       await page.clock.runFor(hoverDelay);
       await expect(rowTooltip(page, "Share")).toBeVisible();
       await expect(rowTooltip(page, "Edit")).toBeHidden();
+    });
+
+    test("an element with --ac-tooltip-off: 1 never shows its tooltip, nor hides another", async ({
+      page,
+    }) => {
+      await gotoWithPausedClock(page);
+      await rowButton(page, "Edit").focus();
+      await expect(rowTooltip(page, "Edit")).toBeVisible();
+
+      await rowButton(page, "Archive").hover();
+      await page.clock.runFor(hoverDelay);
+      expect(await isOpen(rowTooltip(page, "Archive"))).toBe(false);
+      await expect(rowTooltip(page, "Edit")).toBeVisible();
+
+      await rowButton(page, "Archive").focus();
+      expect(await isOpen(rowTooltip(page, "Archive"))).toBe(false);
     });
   });
 

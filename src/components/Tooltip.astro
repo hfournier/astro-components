@@ -13,6 +13,9 @@ import { unwrapParagraph } from "../utils";
 //   on a touchscreen. Its text repeats the element's accessible name, so it's hidden from assistive
 //   tech. To anchor to the element's border box rather than its padding box, the element sets
 //   --ac-tooltip-anchor-inset to minus its border width (e.g. `[--ac-tooltip-anchor-inset:-1px]`).
+//   While the element doesn't need its tooltip, such as while its label is visible, it sets
+//   --ac-tooltip-off to 1 (e.g. `rail-expanded:[--ac-tooltip-off:1]`): the tooltip doesn't show,
+//   and doesn't hide any other.
 // - "rich": an optional subhead, supporting text and optional actions (the `actions` slot, e.g.
 //   text Buttons), below its element. It can hold interactive content, so it can't live inside
 //   the element it describes: put it right after that element and pass the element's id as
@@ -240,6 +243,11 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
       let isDismissed = false;
 
       const isShown = () => tooltip.hasAttribute("data-shown");
+      // read when it would show, so it can follow a media or container query
+      const isOff = () =>
+        getComputedStyle(tooltip)
+          .getPropertyValue("--ac-tooltip-off")
+          .trim() === "1";
       const isEngaged = () =>
         isPointerOver || isPressed || parent.matches(":focus-visible");
       const hideNow = () => {
@@ -249,7 +257,7 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
       };
       const show = () => {
         clearTimeout(timer);
-        if (isDismissed) return;
+        if (isDismissed || isOff()) return;
         hideOthers(hideNow);
         // data-shown first: Firefox can leave a popover on its starting style, hidden, when the
         // attribute is set just after showPopover()

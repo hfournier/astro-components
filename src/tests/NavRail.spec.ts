@@ -54,7 +54,8 @@ test.describe("NavRail", () => {
       expect({ width, height }).toEqual({ width: 56, height: 56 });
       // its label is only an accessible name: visually hidden, clipped to at most a pixel
       expect(
-        (await fab.getByText("Search").boundingBox())!.width
+        (await fab.locator(":scope > span:not([aria-hidden])").boundingBox())!
+          .width
       ).toBeLessThanOrEqual(1);
     });
   });

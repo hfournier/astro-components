@@ -3,6 +3,7 @@ import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import type { SvgIconNameTypes } from "../svgs";
 import Icon from "./Icon.astro";
+import Tooltip from "./Tooltip.astro";
 
 type Props = HTMLAttributes<"button"> & {
   icon: SvgIconNameTypes;
@@ -11,6 +12,8 @@ type Props = HTMLAttributes<"button"> & {
   // An M3 extended FAB, showing its label beside the icon. In a NavRail, the rail decides instead:
   // extended while the rail is expanded, a plain FAB while it's collapsed.
   isExtended?: boolean;
+  // M3: on web, show a tooltip with the label on hover and keyboard focus, while the label is hidden
+  showTooltip?: boolean;
   size?: "default" | "md" | "lg";
   color?:
     | "primary"
@@ -25,6 +28,7 @@ const {
   icon,
   label,
   isExtended = false,
+  showTooltip = true,
   size = "default",
   color = "primary-container",
   class: classList,
@@ -54,7 +58,7 @@ const sizeClasses = {
 const iconSizeClasses = {
   default: "size-6",
   md: "size-7",
-  lg: "size-8",
+  lg: "size-9",
 }[size];
 
 // M3 small, medium or large extended FAB: the FAB's height and corners, as wide as its icon and
@@ -90,6 +94,11 @@ const collapsedRailClasses = isExtended
 const labelClasses = isExtended
   ? "rail-collapsed:sr-only"
   : "sr-only rail-expanded:not-sr-only";
+
+// The tooltip repeats the label, so it's turned off while the label shows (see Tooltip)
+const tooltipOffClasses = isExtended
+  ? "[--ac-tooltip-off:1] rail-collapsed:[--ac-tooltip-off:0]"
+  : "rail-expanded:[--ac-tooltip-off:1]";
 ---
 
 <button
@@ -106,6 +115,7 @@ const labelClasses = isExtended
     sizeClasses,
     extendedClasses,
     collapsedRailClasses,
+    showTooltip && tooltipOffClasses,
     classList
   )}
   type={type ?? "button"}
@@ -113,4 +123,5 @@ const labelClasses = isExtended
 >
   <Icon class={iconSizeClasses} name={icon} />
   <span class={labelClasses}>{label}</span>
+  {showTooltip && <Tooltip>{label}</Tooltip>}
 </button>
