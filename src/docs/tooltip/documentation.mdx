@@ -68,10 +68,10 @@ A **rich** tooltip can hold buttons, which can't go inside another button or lin
 As in M3:
 
 - **Opening:** a tooltip shows 500ms into a hover, or straight away on keyboard focus. On a touchscreen it shows on a long press. The click that ends a long press is ignored, so holding an icon button to read its label doesn't also press it.
-- **Closing:** a tooltip stays for 1.5 seconds after the pointer leaves or the finger lifts. Moving keyboard focus away hides it straight away.
+- **Closing:** a tooltip stays for 1.5 seconds after the pointer leaves or the finger lifts. Moving keyboard focus away hides it straight away. Clicking one of a rich tooltip's actions closes it, returning focus to its element if focus was in the tooltip.
 - **One at a time:** showing a tooltip hides any other straight away. The exceptions are a rich tooltip that holds keyboard focus, and a persistent one, which stay.
 
-A **persistent** rich tooltip (`isPersistent`) works differently. A click on its element opens it, and it stays open until the person interacts with something else: a click anywhere else, focus moving elsewhere, Escape, or another click on the element. Don't use one on an icon button, since the icon button's click is its action. To introduce a new feature, a page can open one as soon as it loads with `showPopover()`. Give the Tooltip an `id`, then call `document.getElementById("whats-new").showPopover()`. A tooltip that opens on its own should always have a `subhead`, so it's clear what it's about.
+A **persistent** rich tooltip (`isPersistent`) works differently. A click on its element opens it, and it stays open until the person interacts with something else: a click anywhere else, focus moving elsewhere, Escape, another click on the element, or a click on one of its actions, which returns focus to the element. Don't use one on an icon button, since the icon button's click is its action. To introduce a new feature, a page can open one as soon as it loads with `showPopover()`. Give the Tooltip an `id`, then call `document.getElementById("whats-new").showPopover()`. A tooltip that opens on its own should always have a `subhead`, so it's clear what it's about.
 
 ## Accessibility
 

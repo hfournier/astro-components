@@ -140,7 +140,10 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
         </div>
       </div>
       {hasActions && (
-        <div class="flex min-h-9 flex-wrap items-center gap-2">
+        <div
+          class="flex min-h-9 flex-wrap items-center gap-2"
+          data-ac-tooltip-actions
+        >
           <slot name="actions" />
         </div>
       )}
@@ -344,6 +347,13 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
       tooltip.addEventListener("toggle", (event) => {
         if ((event as ToggleEvent).newState === "open") hideOthers(hideNow);
       });
+      // An action, once clicked, has done its job, so it closes the tooltip
+      const onAction = (dismiss: () => void) =>
+        tooltip
+          .querySelector("[data-ac-tooltip-actions]")
+          ?.addEventListener("click", (event) => {
+            if ((event.target as Element).closest("a, button")) dismiss();
+          });
 
       // A persistent rich tooltip is an auto popover its trigger toggles, so the browser closes it
       // on Escape or a click anywhere else (light dismiss), leaving out a click on the trigger.
@@ -374,14 +384,19 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
             tooltip.hidePopover();
           }
         });
+        // focus goes back to the element, rather than to the page as the action disappears
+        onAction(() => {
+          trigger.focus();
+          tooltip.hidePopover();
+        });
         return;
       }
 
       // A transient rich tooltip: a manual popover opened and closed from its trigger's hover,
       // focus and long press
       hideNowFns.add(hideNow);
-      // set by Escape, so returning focus to the trigger doesn't reopen the tooltip; cleared once
-      // the pointer leaves the trigger or focus leaves it
+      // set by Escape or an action, so returning focus to the trigger doesn't reopen the tooltip;
+      // cleared once the pointer enters or leaves the trigger, or focus leaves it
       let isDismissed = false;
       // Tracked here rather than with :hover, which sticks to an element after a tap
       let isPointerOver = false;
@@ -409,6 +424,7 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
         element.addEventListener("pointerenter", (event) => {
           if (event.pointerType === "touch") return;
           isPointerOver = true;
+          if (element === trigger) isDismissed = false;
           if (element === trigger && !isOpen()) open(hoverDelay);
           else clearTimeout(timer);
         });
@@ -437,12 +453,15 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
         }
       );
 
-      document.addEventListener("keydown", (event) => {
-        if (event.key !== "Escape" || !isOpen()) return;
+      const dismiss = () => {
         clearTimeout(timer);
         isDismissed = true;
         if (tooltip.contains(document.activeElement)) trigger.focus();
         tooltip.hidePopover();
+      };
+      onAction(dismiss);
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && isOpen()) dismiss();
       });
     });
 </script>

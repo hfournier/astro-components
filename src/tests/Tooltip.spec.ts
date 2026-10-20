@@ -86,9 +86,14 @@ test.describe("Tooltip", () => {
       await plainTrigger(page).focus();
       await expect(plainTooltip(page)).toBeVisible();
 
-      const trigger = await box(plainTrigger(page));
-      const tooltip = await box(plainTooltip(page));
-      expect(trigger.y - (tooltip.y + tooltip.height)).toBeCloseTo(4, 0);
+      // polled, as focusing the element can scroll the page between the two measurements
+      await expect
+        .poll(async () => {
+          const trigger = await box(plainTrigger(page));
+          const tooltip = await box(plainTooltip(page));
+          return Math.round(trigger.y - (tooltip.y + tooltip.height));
+        })
+        .toBe(4);
     });
 
     test('with placement="below", sits 4px below it, as in an app bar', async ({
@@ -99,10 +104,14 @@ test.describe("Tooltip", () => {
       await trigger.focus();
       await expect(tooltip).toBeVisible();
 
-      const triggerBox = await box(trigger);
-      expect(
-        (await box(tooltip)).y - (triggerBox.y + triggerBox.height)
-      ).toBeCloseTo(4, 0);
+      await expect
+        .poll(async () => {
+          const triggerBox = await box(trigger);
+          return Math.round(
+            (await box(tooltip)).y - (triggerBox.y + triggerBox.height)
+          );
+        })
+        .toBe(4);
     });
 
     test("shows 500ms into a hover", async ({ page }) => {
@@ -335,6 +344,39 @@ test.describe("Tooltip", () => {
       await expect(richTrigger(page)).toBeFocused();
     });
 
+    test("clicking its action closes it, and it opens again on the next hover", async ({
+      page,
+    }) => {
+      await gotoWithPausedClock(page);
+      await richTrigger(page).hover();
+      await page.clock.runFor(hoverDelay);
+      await expect(richTooltip(page)).toBeVisible();
+
+      await richTooltip(page)
+        .getByRole("button", { name: "Learn more" })
+        .click();
+      await expect.poll(() => isOpen(richTooltip(page))).toBe(false);
+
+      await page.mouse.move(0, 0);
+      await richTrigger(page).hover();
+      await page.clock.runFor(hoverDelay);
+      await expect(richTooltip(page)).toBeVisible();
+    });
+
+    test("activating its action from the keyboard closes it, and returns focus without reopening it", async ({
+      page,
+    }) => {
+      await richTrigger(page).focus();
+      await expect(richTooltip(page)).toBeVisible();
+      await page.keyboard.press("Tab");
+      await page.keyboard.press("Enter");
+      await expect.poll(() => isOpen(richTooltip(page))).toBe(false);
+      await expect(richTrigger(page)).toBeFocused();
+      // let a keyboard focus's (zero-delay) open run, had it been scheduled
+      await page.evaluate(() => new Promise((done) => setTimeout(done, 50)));
+      expect(await isOpen(richTooltip(page))).toBe(false);
+    });
+
     test("a plain tooltip opening closes it straight away", async ({
       page,
     }) => {
@@ -420,6 +462,23 @@ test.describe("Tooltip", () => {
       await expect(persistentTooltip(page)).toBeVisible();
       await persistentTrigger(page).click();
       await expect.poll(() => isOpen(persistentTooltip(page))).toBe(false);
+    });
+
+    test("clicking one of its actions closes it, and returns focus to its element", async ({
+      page,
+    }) => {
+      await persistentTrigger(page).click();
+      await expect(persistentTooltip(page)).toBeVisible();
+
+      await persistentTooltip(page)
+        .getByRole("button", { name: "Got it" })
+        .click();
+      await expect.poll(() => isOpen(persistentTooltip(page))).toBe(false);
+      await expect(persistentTrigger(page)).toBeFocused();
+      await expect(persistentTrigger(page)).toHaveAttribute(
+        "aria-expanded",
+        "false"
+      );
     });
 
     test("describes its element with its subhead and text", async ({
