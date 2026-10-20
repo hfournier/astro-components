@@ -58,6 +58,29 @@ test.describe("Badge", () => {
     expect({ width, height }).toEqual({ width: 16, height: 16 });
   });
 
+  test("centers its label's digits, from the cap line to the baseline, in the badge", async ({
+    page,
+  }) => {
+    for (const caseId of ["count", "over-999"] as const) {
+      const offset = await badge(page, caseId).evaluate((el) => {
+        const label = el.firstElementChild as HTMLElement;
+        // A zero-size inline-block's bottom sits on its line's baseline
+        const probe = document.createElement("span");
+        probe.style.cssText = "display:inline-block;width:0;height:0";
+        label.append(probe);
+        const baseline = probe.getBoundingClientRect().bottom;
+        probe.remove();
+        const style = getComputedStyle(label);
+        const context = document.createElement("canvas").getContext("2d")!;
+        context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+        const capHeight = context.measureText("H").actualBoundingBoxAscent;
+        const { top, height } = el.getBoundingClientRect();
+        return baseline - capHeight / 2 - (top + height / 2);
+      });
+      expect(Math.abs(offset)).toBeLessThanOrEqual(0.5);
+    }
+  });
+
   test("a badge with a count overlaps its anchor's top-end corner, per M3's offsets", async ({
     page,
   }) => {

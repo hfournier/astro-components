@@ -57,7 +57,10 @@ const placementClasses =
       {...attrs}
     >
       {value && (
-        <span class="inline-block align-top text-[11px] leading-4 font-medium tracking-[0.5px]">
+        // Centered by its ink, not its line box: trimmed to the digits' cap line and baseline,
+        // then pushed down by half the space left. A line box centers the font's ascent and
+        // descent instead, which leaves the digits up to 1px high (Chromium rounds the metrics).
+        <span class="mt-[calc((1rem-1cap)/2)] block text-[11px] leading-4 font-medium tracking-[0.5px] [text-box:trim-both_cap_alphabetic]">
           {typeof value === "string"
             ? value.substring(0, 4)
             : value > 999
