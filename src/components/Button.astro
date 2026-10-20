@@ -115,7 +115,7 @@ const borderClasses = {
 // "round" is half the height in px rather than rounded-full, so the corners can animate to and
 // from the pressed and selected radii (M3's shape morph) instead of jumping.
 const roundCorners = {
-  xs: "rounded-[16px]",
+  xs: "rounded-2xl",
   sm: "rounded-[20px]",
   md: "rounded-[28px]",
   lg: "rounded-[48px]",
@@ -151,27 +151,36 @@ const disabledContainer =
   "disabled:bg-(--theme-color-on-surface)/10 disabled:border-transparent";
 
 // M3: elevated rests at level 1 and rises to 2 on hover; filled and tonal rest at 0 and rise to 1
-const elevated = `shadow-theme-elevation-1 not-disabled:hover:shadow-theme-elevation-2 disabled:shadow-none`;
+const elevatedShadow = `shadow-theme-elevation-1 not-disabled:hover:shadow-theme-elevation-2 disabled:shadow-none`;
 const raisedOnHover = "not-disabled:hover:shadow-theme-elevation-1";
 
-// A toggle's selected colors only apply while enabled, so a disabled toggle looks disabled
 const variantClasses = {
-  elevated: isToggle
-    ? `bg-(--theme-color-surface-container-low) border-(--theme-color-surface-container-low) text-(--theme-color-primary) not-disabled:aria-pressed:bg-(--theme-color-primary) not-disabled:aria-pressed:border-(--theme-color-primary) not-disabled:aria-pressed:text-(--theme-color-on-primary) ${elevated} ${disabledContainer}`
-    : `bg-(--theme-color-surface-container-low) border-(--theme-color-surface-container-low) text-(--theme-color-primary) ${elevated} ${disabledContainer}`,
+  elevated: `bg-(--theme-color-surface-container-low) border-(--theme-color-surface-container-low) text-(--theme-color-primary) ${elevatedShadow} ${disabledContainer}`,
+  // M3's filled toggle sits on a surface container until it's selected
   filled: isToggle
-    ? `bg-(--theme-color-surface-container) border-(--theme-color-surface-container) text-(--theme-color-on-surface-variant) not-disabled:aria-pressed:bg-(--theme-color-primary) not-disabled:aria-pressed:border-(--theme-color-primary) not-disabled:aria-pressed:text-(--theme-color-on-primary) ${raisedOnHover} ${disabledContainer}`
+    ? `bg-(--theme-color-surface-container) border-(--theme-color-surface-container) text-(--theme-color-on-surface-variant) ${raisedOnHover} ${disabledContainer}`
     : `bg-(--theme-color-primary) border-(--theme-color-primary) text-(--theme-color-on-primary) ${raisedOnHover} ${disabledContainer}`,
-  outlined: isToggle
-    ? "bg-transparent border-(--theme-color-outline-variant) text-(--theme-color-on-surface-variant) not-disabled:aria-pressed:bg-(--theme-color-inverse-surface) not-disabled:aria-pressed:border-(--theme-color-inverse-surface) not-disabled:aria-pressed:text-(--theme-color-inverse-on-surface) disabled:aria-pressed:bg-(--theme-color-on-surface)/10 disabled:aria-pressed:border-transparent"
-    : "bg-transparent border-(--theme-color-outline-variant) text-(--theme-color-on-surface-variant)",
+  outlined:
+    "bg-transparent border-(--theme-color-outline-variant) text-(--theme-color-on-surface-variant)",
   text: "bg-transparent border-transparent text-(--theme-color-primary)",
-  tonal: isToggle
-    ? `bg-(--theme-color-secondary-container) border-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container) not-disabled:aria-pressed:bg-(--theme-color-secondary) not-disabled:aria-pressed:border-(--theme-color-secondary) not-disabled:aria-pressed:text-(--theme-color-on-secondary) ${raisedOnHover} ${disabledContainer}`
-    : `bg-(--theme-color-secondary-container) border-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container) ${raisedOnHover} ${disabledContainer}`,
+  tonal: `bg-(--theme-color-secondary-container) border-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container) ${raisedOnHover} ${disabledContainer}`,
 }[variant];
 
-const isPressable = isToggle && Tag === "button";
+// A toggle's selected colors only apply while enabled, so a disabled toggle looks disabled. A
+// selected outlined toggle has a container, so disabled it gets the disabled one.
+const selectedClasses = {
+  elevated:
+    "not-disabled:aria-pressed:bg-(--theme-color-primary) not-disabled:aria-pressed:border-(--theme-color-primary) not-disabled:aria-pressed:text-(--theme-color-on-primary)",
+  filled:
+    "not-disabled:aria-pressed:bg-(--theme-color-primary) not-disabled:aria-pressed:border-(--theme-color-primary) not-disabled:aria-pressed:text-(--theme-color-on-primary)",
+  outlined:
+    "not-disabled:aria-pressed:bg-(--theme-color-inverse-surface) not-disabled:aria-pressed:border-(--theme-color-inverse-surface) not-disabled:aria-pressed:text-(--theme-color-inverse-on-surface) disabled:aria-pressed:bg-(--theme-color-on-surface)/10 disabled:aria-pressed:border-transparent",
+  text: "",
+  tonal:
+    "not-disabled:aria-pressed:bg-(--theme-color-secondary) not-disabled:aria-pressed:border-(--theme-color-secondary) not-disabled:aria-pressed:text-(--theme-color-on-secondary)",
+}[variant];
+
+const isToggleButton = isToggle && Tag === "button";
 ---
 
 <Tag
@@ -188,29 +197,33 @@ const isPressable = isToggle && Tag === "button";
     borderClasses,
     variantClasses,
     shapeClasses,
-    isPressable && selectedShapeClasses,
+    isToggleButton && selectedClasses,
+    isToggleButton && selectedShapeClasses,
     pressedShapeClasses,
     sizeClasses,
     classList
   )}
   type={resolvedType}
-  aria-pressed={isPressable ? String(isSelected) : undefined}
-  data-ac-button-toggle={isPressable ? "" : undefined}
+  aria-pressed={isToggleButton ? String(isSelected) : undefined}
+  data-ac-button-toggle={isToggleButton ? "" : undefined}
   {...attrs}
 >
   {
     icon &&
-      (isPressable && selectedIcon ? (
+      (isToggleButton && selectedIcon ? (
         <>
           {/* swapped by CSS, so the icon follows aria-pressed however it changes */}
           <Icon
-            class:list={[iconSizeClasses, "group-aria-pressed/button:hidden"]}
+            class:list={[
+              iconSizeClasses,
+              "shrink-0 group-aria-pressed/button:hidden",
+            ]}
             name={icon}
           />
           <Icon
             class:list={[
               iconSizeClasses,
-              "hidden group-aria-pressed/button:block",
+              "hidden shrink-0 group-aria-pressed/button:block",
             ]}
             name={selectedIcon}
           />

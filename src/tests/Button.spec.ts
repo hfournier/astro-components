@@ -545,6 +545,16 @@ test.describe("Button", () => {
       await expect.poll(() => px(square, "border-top-left-radius")).toBe(20);
     });
 
+    test("pressed, a selected toggle morphs to the same pressed corners", async ({
+      page,
+    }) => {
+      const target = button(page, "toggle-selected", "Filled");
+      await target.hover();
+      await page.mouse.down();
+      await expect.poll(() => px(target, "border-top-left-radius")).toBe(8);
+      await page.mouse.up();
+    });
+
     test("shows its selectedIcon while selected", async ({ page }) => {
       const target = toggle(page, "Favorite");
       const icons = target.locator("svg");
