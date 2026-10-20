@@ -57,6 +57,15 @@ export const unwrapParagraph = (html: string) => {
 };
 
 /**
+ * Whether a Badge's `label` shows a count (a large badge), rather than a dot or no badge.
+ *
+ * @param badgeLabel - The Badge's `label`: a count, `""` for a dot, or `undefined` for no badge.
+ * @returns `false` for `undefined`, `""` and `0` (or `"0"`), which Badge hides.
+ */
+export const isBadgeCount = (badgeLabel: string | number | undefined) =>
+  badgeLabel !== undefined && badgeLabel !== "" && Number(badgeLabel) !== 0;
+
+/**
  * The accessible name of an element that carries a Badge. A Badge is hidden from assistive tech,
  * so, as M3 asks, the element's name says what it shows after its label: a count, or for a dot,
  * "New notification" or the given description.
@@ -73,7 +82,5 @@ export const badgedName = (
   badgeDescription = "New notification"
 ) => {
   if (badgeLabel === "") return `${label}, ${badgeDescription}`;
-  // Badge hides 0 (and "0")
-  if (badgeLabel === undefined || Number(badgeLabel) === 0) return undefined;
-  return `${label}, ${badgeLabel}`;
+  return isBadgeCount(badgeLabel) ? `${label}, ${badgeLabel}` : undefined;
 };

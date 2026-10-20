@@ -5,7 +5,7 @@ import { twMerge } from "tailwind-merge";
 import type { SvgIconNameTypes } from "../svgs";
 import Badge from "./Badge.astro";
 import Icon from "./Icon.astro";
-import { badgedName, isCurrentPath } from "../utils";
+import { badgedName, isBadgeCount, isCurrentPath } from "../utils";
 
 type Props = Omit<HTMLAttributes<"a">, "href"> & {
   href: string | URL;
@@ -32,8 +32,7 @@ const isCurrent = isCurrentPath(Astro.url.pathname, href);
 
 const hasBadge = badgeLabel !== undefined;
 // A badge with content, rather than a dot (Badge hides 0)
-const hasCount =
-  badgeLabel !== undefined && badgeLabel !== "" && Number(badgeLabel) !== 0;
+const hasCount = isBadgeCount(badgeLabel);
 const badgeAnchorName = `--anchorname-${crypto.randomUUID()}-badge`;
 // The badge is aria-hidden, so its count or description joins the item's name
 const accessibleName = badgedName(label, badgeLabel, badgeDescription);
