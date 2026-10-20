@@ -3,12 +3,11 @@ import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import type { SvgIconNameTypes } from "../svgs";
 import Button from "./Button.astro";
-import Icon from "./Icon.astro";
 
-// One action in a FabMenu. M3's item metrics are its medium button's, which is Button's lg, round
-// size (56px high, 24px side padding, an 8px icon-label gap, Title Medium); the item adds its
-// icon, the menu's color set (custom properties FabMenu sets), elevation 3, and the marker FabMenu
-// counts its items by and closes on.
+// One action in a FabMenu. M3's item metrics are its medium button's, which is Button's md, round
+// size (56px high, 24px side padding, a 24px leading icon 8px from the label, Title Medium); the
+// item adds the menu's color set (custom properties FabMenu sets), elevation 3, and the marker
+// FabMenu counts its items by and closes on.
 type Props = Omit<HTMLAttributes<"button">, "slot"> & {
   icon: SvgIconNameTypes;
   label: string;
@@ -18,12 +17,14 @@ const { icon, label, class: classList, ...attrs } = Astro.props;
 ---
 
 <Button
-  size="lg"
+  size="md"
   shape="round"
+  {icon}
   class={twMerge(
     // no border: a filled Button draws one in its container color, which would add 1px to the padding
     "border-0 bg-(--ac-fab-menu-container) text-(--ac-fab-menu-on-container)",
-    "shadow-theme-elevation-3",
+    // elevation 3, hovered too (Button raises a filled button to 1 on hover)
+    "shadow-theme-elevation-3 not-disabled:hover:shadow-theme-elevation-3",
     // Opening, each fades in and grows in width from the menu's aligned edge (FabMenu's clip
     // inset), nearest the FAB (the last item) first; closing reverses it. The open clip reaches
     // past the item so it doesn't cut off the shadow.
@@ -39,6 +40,5 @@ const { icon, label, class: classList, ...attrs } = Astro.props;
   data-ac-fab-menu-item
   {...attrs}
 >
-  <Icon name={icon} />
   {label}
 </Button>

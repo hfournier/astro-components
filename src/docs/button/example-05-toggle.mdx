@@ -1,0 +1,11 @@
+---
+title: Toggle button
+description: With `isToggle`, a click switches the button between selected and unselected (`aria-pressed`), changing its colors and swapping its shape. `isSelected` starts it selected, and `selectedIcon` replaces the icon while it is.
+---
+
+<div class="flex flex-wrap items-center gap-2">
+    <Button isToggle icon="favorite" selectedIcon="favorite-fill">Favorite</Button>
+    <Button isToggle isSelected icon="bookmark" selectedIcon="bookmark-fill" variant="tonal">Saved</Button>
+    <Button isToggle variant="outlined">Follow</Button>
+    <Button isToggle variant="elevated" shape="square">Notify me</Button>
+</div>

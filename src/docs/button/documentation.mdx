@@ -1,11 +1,11 @@
 ---
 name: Button
-description: A custom Button component that extends HTML's `<button>` element by adding properties that allow for styling and accessibility that is consistent with the design system.
+description: A Material 3 Expressive button, extending HTML's `<button>` element (or `<a>`). It has five styles, five sizes, an optional leading icon, and a toggle variant, and its corners tighten while it's pressed.
 category: Forms
 role: pattern
 meta:
   title: Button | astro-components HenriFournier.dev
-  description: A custom Button component that extends HTML's `<button>` element
+  description: A Material 3 Expressive button with five styles, five sizes, a leading icon and a toggle variant.
 extends:
   kind: element
   tag: [button, a]
@@ -20,25 +20,73 @@ props:
     type: '"elevated" | "filled" | "tonal" | "outlined" | "text"'
     required: false
     default: "filled"
-    description: The button's Material 3 style variant, from most to least emphasis. `filled` uses the theme's primary color, for the most important action. `tonal` uses the secondary container color, a softer alternative. `elevated` sits on a low surface container with a shadow that rises on hover, for separating a button from a patterned background. `outlined` has a border and no fill, for secondary actions. `text` has neither, for the lowest-priority actions. Every variant shows the same state layer on hover, focus and press, and the same muted appearance when disabled.
+    description: The button's Material 3 style, from most to least emphasis (see Style by emphasis). `filled` uses the primary color. `tonal` uses the secondary container color. `elevated` sits on a low surface container with a shadow. `outlined` has an outline and no fill. `text` has neither. Filled and tonal rise to elevation 1 on hover, and elevated from 1 to 2. As a toggle, `elevated` and `filled` turn primary when selected, `tonal` turns secondary and `outlined` turns inverse surface.
+  - name: size
+    type: '"xs" | "sm" | "md" | "lg" | "xl"'
+    required: false
+    default: "sm"
+    description: M3 Expressive's five sizes, from extra small to extra large. Each sets the height (32, 40, 56, 96 or 136px), the padding on each side (12, 16, 24, 48 or 64px), the label's type style (Label Large for `xs` and `sm`, Title Medium for `md`, Headline Small for `lg` and Headline Large for `xl`), the icon size, the corner radii and the outline width. Every size keeps a touch target at least 48px high.
+  - name: shape
+    type: '"round" | "square"'
+    required: false
+    default: "round"
+    description: The button's corners at rest. `round` is fully rounded. `square` uses corner radii that scale with `size` (12, 12, 16, 28 and 28px). Either way, the corners tighten while the button is pressed.
+  - name: icon
+    type: SvgIconNameTypes
+    required: false
+    description: An icon before the label, by its file name in `src/assets/svgs`. It's sized to match the label (20px for `xs` and `sm`, 24px for `md`, 32px for `lg`, 40px for `xl`), and goes after the label right to left. It's decorative, so the label alone names the button. Use one icon at most.
+  - name: isToggle
+    type: boolean
+    required: false
+    default: "false"
+    description: Makes the button a toggle that switches between selected and unselected on each click, exposed to assistive tech with `aria-pressed`. A selected toggle swaps its shape (round becomes square and square becomes round) and its colors (see `variant`). Only for a `<button>`, and not with `variant="text"`, since M3 has no toggle text button.
+  - name: isSelected
+    type: boolean
+    required: false
+    default: "false"
+    description: A toggle's initial state. It only applies with `isToggle`. After that, read or set the button's `aria-pressed` attribute.
+  - name: selectedIcon
+    type: SvgIconNameTypes
+    required: false
+    description: A toggle's icon while it's selected, in place of `icon`, such as `"favorite-fill"` for `"favorite"`. The swap is done in CSS, so the icon follows `aria-pressed` however it changes.
   - name: showFullwidth
     type: "boolean"
     required: false
     default: "false"
     description: When `true`, the button stretches to the full width of its container. Otherwise it is only as wide as its content.
-  - name: shape
-    type: '"round" | "square"'
-    required: false
-    default: "round"
-    description: The button's corner style. `round` gives fully rounded (pill-shaped) ends. `square` uses smaller corner radii that scale with `size`.
-  - name: size
-    type: '"sm" | "md" | "lg"'
-    required: false
-    default: "md"
-    description: Sets the button's minimum height (40px, 48px or 56px), inline padding (16px, 20px or 24px) and label type style. As in Material 3, buttons under 56px use Label Large (14px) and the 56px `lg` size uses Title Medium (16px). The `sm` size keeps a 48px touch target.
 slots:
   - name: default
-    description: The text to display inside the button.
+    description: The button's label. It never wraps or truncates, as M3 asks, so the button is always at least as wide as its label.
     kind: text
 ---
 
+## Style by emphasis
+
+Pick the style by how important the action is:
+
+- **Filled:** the final, most important action in a flow, such as Save, Join now or Confirm. Ideally there's one per page.
+- **Tonal:** a lower-priority action that needs a little more weight than an outline, such as Next in an onboarding flow.
+- **Elevated:** only when the button needs to stand out from a busy or patterned background.
+- **Outlined:** important actions that aren't the primary one, often next to a filled button, on simple backgrounds.
+- **Text:** the lowest-priority actions, in cards, dialogs and snackbars. Don't underline it: for something that looks like a link, use a link.
+
+Don't use too many buttons. Move low-priority actions into an overflow menu, or use icon buttons (ButtonIcon) for them.
+
+## Labels
+
+- Keep labels to 1–3 words, in sentence case: "Save draft", not "SAVE DRAFT" or "Save Draft".
+- The accessible name should match the visible label, so speech-control users can say what they see. It can add context after it, such as `aria-label="Delete, Draft 3"`, but should start with the label.
+
+## Width
+
+A button is as wide as its label, never narrower: its label doesn't wrap or truncate. With `showFullwidth`, cap the button's width on large windows, such as with `class="max-w-sm"`, so it doesn't become a long, flat bar.
+
+## Toggle buttons
+
+Use a toggle for a binary action that the button turns on and off, such as Save or Favorite. With an icon, use an outlined icon while it's unselected and the filled one while it's selected (`icon` and `selectedIcon`). If the label changes with the state, keep both labels about the same length, so the button doesn't jump in width. To react to a change, listen for the button's `click` event and read the new state from `aria-pressed`.
+
+## Accessibility
+
+Every style keeps a contrast of at least 3:1 against the background behind it: elevated, filled and tonal buttons are measured from their container, and outlined and text buttons from their label. Check it when you place a button on a colored surface.
+
+Keep buttons in the same order in the page source on small and large windows, even when the layout moves them, so keyboard and screen reader users meet them in the same order.

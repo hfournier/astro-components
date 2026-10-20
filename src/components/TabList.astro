@@ -36,7 +36,7 @@ const { randomId, tabs, variant } = Astro.props;
               : "aria-selected:text-(--theme-color-on-surface) aria-selected:[anchor-name:var(--ac-anchorname-tab-selected)]",
             // M3 state layer, drawn in the label color (primary on a selected primary tab, on-surface otherwise)
             "before:absolute before:inset-0 before:-z-10 before:bg-current before:opacity-0 hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10",
-            // M3 focus ring: rounded like Button's md square shape, and drawn on ::after so, on the selected tab, it can stop
+            // M3 focus ring: 14px corners, and drawn on ::after so, on the selected tab, it can stop
             // 1px above the indicator (3px primary, 2px secondary) instead of overlapping it
             "outline-none after:pointer-events-none after:absolute after:inset-x-0 after:top-0 after:rounded-[14px] focus-visible:after:ring-3 focus-visible:after:ring-(--theme-color-focus-ring-on-bg) focus-visible:after:ring-inset",
             "after:bottom-0",
