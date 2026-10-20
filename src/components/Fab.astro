@@ -95,11 +95,10 @@ const labelClasses = isExtended
   ? "rail-collapsed:sr-only"
   : "sr-only rail-expanded:not-sr-only";
 
-// The tooltip repeats the label, so it only shows while the label is hidden. Hidden, it can't show
-// (see Tooltip); `revert` hands its display back to the popover's own, none until it's open.
-const tooltipClasses = isExtended
-  ? "hidden! rail-collapsed:[display:revert]!"
-  : "rail-expanded:hidden!";
+// The tooltip repeats the label, so it's turned off while the label shows (see Tooltip)
+const tooltipOffClasses = isExtended
+  ? "[--ac-tooltip-off:1] rail-collapsed:[--ac-tooltip-off:0]"
+  : "rail-expanded:[--ac-tooltip-off:1]";
 ---
 
 <button
@@ -116,6 +115,7 @@ const tooltipClasses = isExtended
     sizeClasses,
     extendedClasses,
     collapsedRailClasses,
+    showTooltip && tooltipOffClasses,
     classList
   )}
   type={type ?? "button"}
@@ -123,5 +123,5 @@ const tooltipClasses = isExtended
 >
   <Icon class={iconSizeClasses} name={icon} />
   <span class={labelClasses}>{label}</span>
-  {showTooltip && <Tooltip class={tooltipClasses}>{label}</Tooltip>}
+  {showTooltip && <Tooltip>{label}</Tooltip>}
 </button>

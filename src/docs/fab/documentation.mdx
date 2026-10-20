@@ -18,7 +18,7 @@ props:
   - name: label
     type: string
     required: true
-    description: What the FAB does, such as `"Compose"`. It's always the FAB's accessible name, and an extended FAB shows it beside the icon. A FAB that shows only its icon keeps it as visually hidden text for screen readers.
+    description: What the FAB does, such as `"Compose a new message"`. It's always the FAB's accessible name, and an extended FAB shows it beside the icon. A FAB that shows only its icon keeps it as visually hidden text for screen readers, and shows it in its tooltip (see `showTooltip`).
   - name: color
     type: '"primary" | "primary-container" | "secondary" | "secondary-container" | "tertiary" | "tertiary-container"'
     required: false
@@ -43,7 +43,7 @@ props:
 
 ## When to use it
 
-Use a FAB for a screen's primary, constructive action, such as create, compose, share or starting a process. Don't use one for minor, overflow or destructive actions, such as archive, delete or dismissing an alert. Give it a clear, filled icon, and a `label` that names the action, such as `"Compose a new message"`.
+Use a FAB for a screen's primary, constructive action, such as create, compose, favorite, share or starting a process. Don't use one for minor, overflow or destructive actions, such as archive, delete or alerts. Give it a clear, filled icon, and a `label` that names the action, such as `"Compose a new message"`.
 
 ## Placement
 
@@ -64,4 +64,8 @@ A FAB has no disabled style. If its action isn't available, leave the FAB out ra
 
 ## In a NavRail
 
-In a NavRail's `fab` slot, the rail decides whether the FAB is extended, as M3 specifies: extended while the rail is expanded, and a plain FAB while it's collapsed, whatever `isExtended` says. It follows the rail's width, using a container query on the rail, so it changes as the rail expands and collapses.
+In a NavRail's `fab` slot, the rail decides whether the FAB is extended, as M3 specifies: extended while the rail is expanded, and a plain FAB while it's collapsed, whatever `isExtended` says. It follows the rail's width, using a container query on the rail, so it changes as the rail expands and collapses. Its tooltip follows too, showing only while the rail is collapsed and the label is hidden.
+
+## Accessibility
+
+The `label` is always the FAB's accessible name, whether or not it's visible. The tooltip repeats it for sighted users while it's hidden, so the tooltip is hidden from assistive tech. It can be dismissed with Escape, and stays open while the pointer is over it, as WCAG 1.4.13 requires.

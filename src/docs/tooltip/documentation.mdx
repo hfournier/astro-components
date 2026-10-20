@@ -43,6 +43,8 @@ slots:
 cssProps:
   - name: --ac-tooltip-anchor-inset
     description: Plain tooltips only. Set it on the tooltip's element to minus that element's border width (e.g. `[--ac-tooltip-anchor-inset:-1px]`), so the tooltip is placed from the outside of the border rather than the inside. ButtonIcon sets it for you.
+  - name: --ac-tooltip-off
+    description: Plain tooltips only. Set it to `1` on the tooltip's element while the tooltip isn't needed, such as while the element shows its label, and the tooltip won't show (nor hide another one). It's read each time the tooltip would show, so it can follow a media or container query (e.g. `rail-expanded:[--ac-tooltip-off:1]`). Fab sets it for you.
 ---
 
 ## Plain or rich
