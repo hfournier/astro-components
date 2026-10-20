@@ -9,6 +9,7 @@ export { default as Details } from "./components/Details.astro";
 export { default as Dialog } from "./components/Dialog.astro";
 export { default as DialogAcknowledge } from "./components/DialogAcknowledge.astro";
 export { default as DialogConfirm } from "./components/DialogConfirm.astro";
+export { default as DialogFullscreen } from "./components/DialogFullscreen.astro";
 export { default as Divider } from "./components/Divider.astro";
 export { default as Fab } from "./components/Fab.astro";
 export { default as FabMenu } from "./components/FabMenu.astro";
