@@ -46,6 +46,15 @@ const {
 } = Astro.props;
 
 const hasActions = Astro.slots.has("actions");
+
+// The confirm button's two copies, in the header and the action row, differ only in id and class
+const confirmProps = {
+  command: "close",
+  commandfor: id,
+  value: buttonConfirm.value,
+  size: "sm",
+  variant: "text",
+} as const;
 ---
 
 <BaseOverlay
@@ -92,7 +101,7 @@ const hasActions = Astro.slots.has("actions");
     ]}
   >
     <ButtonIcon
-      class="medium:hidden"
+      class="text-(--theme-color-on-surface) medium:hidden"
       icon="close"
       label={closeLabel}
       command="request-close"
@@ -115,12 +124,8 @@ const hasActions = Astro.slots.has("actions");
     }
     <Button
       class="ms-auto medium:hidden"
-      command="close"
-      commandfor={id}
       id={buttonConfirm.id && `${buttonConfirm.id}-header`}
-      value={buttonConfirm.value}
-      size="sm"
-      variant="text"
+      {...confirmProps}
     >
       {buttonConfirm.text}
     </Button>
@@ -164,15 +169,7 @@ const hasActions = Astro.slots.has("actions");
     >
       {closeLabel}
     </Button>
-    <Button
-      class="max-medium:hidden"
-      command="close"
-      commandfor={id}
-      id={buttonConfirm.id}
-      value={buttonConfirm.value}
-      size="sm"
-      variant="text"
-    >
+    <Button class="max-medium:hidden" id={buttonConfirm.id} {...confirmProps}>
       {buttonConfirm.text}
     </Button>
   </Footer>

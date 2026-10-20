@@ -161,6 +161,20 @@ test.describe("DialogFullscreen in a compact window", () => {
     ).toBe("");
   });
 
+  test("the close icon is M3's 24px, in on-surface", async ({ page }) => {
+    await open(page, "basic");
+    const close = dialogIn(page, "basic").getByRole("button", {
+      name: "Cancel",
+    });
+    const icon = close.locator("svg").first();
+
+    expect(await box(icon)).toMatchObject({ width: 24, height: 24 });
+    await expect(close).toHaveCSS(
+      "color",
+      await resolvedColor(page, "var(--theme-color-on-surface)")
+    );
+  });
+
   test("focus lands on the close button, the first interactive element", async ({
     page,
   }) => {
@@ -238,11 +252,19 @@ test.describe("DialogFullscreen from a medium window up", () => {
     // the action row's copy carries buttonConfirm's id
     await expect(save).toHaveAttribute("id", "basic-save");
   });
+
+  test("a click on the scrim cancels it, as Dialog", async ({ page }) => {
+    await open(page, "basic");
+    const dialog = dialogIn(page, "basic");
+
+    await page.mouse.click(5, 5);
+    await expect(dialog).toBeHidden();
+  });
 });
 
 test.describe("DialogFullscreen at every width", () => {
-  // The focused element's accessible name, or its tag for a text field
-  const focusedName = (page: Page) =>
+  // The focused button's text, or "input" for the text field
+  const focusedLabel = (page: Page) =>
     page.evaluate(() => {
       const el = document.activeElement as HTMLElement;
       return el.tagName === "INPUT" ? "input" : el.textContent!.trim();
@@ -268,10 +290,10 @@ test.describe("DialogFullscreen at every width", () => {
       );
       await expect(dialog.getByRole("button", { name: "Save" })).toHaveCount(1);
       // focus starts on the first; Tab goes through the rest
-      const visited = [await focusedName(page)];
+      const visited = [await focusedLabel(page)];
       for (let i = 1; i < order.length; i++) {
         await page.keyboard.press("Tab");
-        visited.push(await focusedName(page));
+        visited.push(await focusedLabel(page));
       }
       expect(visited).toEqual(order);
     });
@@ -295,14 +317,5 @@ test.describe("DialogFullscreen at every width", () => {
     await expect(panelOf(dialog)).toHaveCSS("border-radius", "0px");
     await expect(title).toHaveValue("Team lunch");
     await expect(title).toBeFocused();
-  });
-
-  test("a click on the scrim cancels it, as Dialog", async ({ page }) => {
-    await page.setViewportSize(MEDIUM);
-    await open(page, "basic");
-    const dialog = dialogIn(page, "basic");
-
-    await page.mouse.click(5, 5);
-    await expect(dialog).toBeHidden();
   });
 });
