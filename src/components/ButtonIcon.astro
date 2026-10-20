@@ -1,7 +1,7 @@
 ---
 import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
-import { svgIconNames, type SvgIconNameTypes } from "../svgs";
+import { filledIconFor, type SvgIconNameTypes } from "../svgs";
 import Icon from "./Icon.astro";
 import Tooltip from "./Tooltip.astro";
 
@@ -42,8 +42,8 @@ const {
 }: Props = Astro.props;
 
 // M3: a selected toggle shows the filled icon, so it doesn't rely on color alone
-const filledIcon = svgIconNames.find((name) => name === `${icon}-fill`);
-const selectedIcon = selectedIconProp ?? (isToggle ? filledIcon : undefined);
+const selectedIcon =
+  selectedIconProp ?? (isToggle ? filledIconFor(icon) : undefined);
 
 const iconSizeClasses = {
   xs: "size-5",

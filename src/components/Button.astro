@@ -1,7 +1,7 @@
 ---
 import type { HTMLTag, Polymorphic } from "astro/types";
 import { twMerge } from "tailwind-merge";
-import type { SvgIconNameTypes } from "../svgs";
+import { filledIconFor, type SvgIconNameTypes } from "../svgs";
 import { unwrapParagraph } from "../utils";
 import Icon from "./Icon.astro";
 
@@ -40,7 +40,8 @@ type ToggleProps =
       isToggle: true;
       // A toggle's initial state
       isSelected?: boolean;
-      // Shown in place of `icon` while the toggle is selected, e.g. "favorite-fill" for "favorite"
+      // Shown in place of `icon` while the toggle is selected. Defaults to the icon's -fill version,
+      // e.g. "favorite-fill" for "favorite", when there is one
       selectedIcon?: SvgIconNameTypes;
       variant?: Exclude<Variant, "text">;
     };
@@ -63,7 +64,7 @@ const {
   icon,
   isToggle = false,
   isSelected = false,
-  selectedIcon,
+  selectedIcon: selectedIconProp,
   variant = "filled",
   showFullwidth = false,
   shape = "round",
@@ -181,6 +182,12 @@ const selectedClasses = {
 }[variant];
 
 const isToggleButton = isToggle && Tag === "button";
+
+// M3: a selected toggle shows its icon filled, so it defaults to the -fill version when there is one
+const selectedIcon =
+  isToggleButton && icon
+    ? (selectedIconProp ?? filledIconFor(icon))
+    : undefined;
 ---
 
 <Tag
@@ -210,7 +217,7 @@ const isToggleButton = isToggle && Tag === "button";
 >
   {
     icon &&
-      (isToggleButton && selectedIcon ? (
+      (selectedIcon ? (
         <>
           {/* swapped by CSS, so the icon follows aria-pressed however it changes */}
           <Icon
