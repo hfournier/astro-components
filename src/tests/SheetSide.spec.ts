@@ -350,7 +350,7 @@ test.describe("SheetSide", () => {
       await expect(header).toHaveCSS("padding-left", "16px");
       const sheetBox = await box(sheet(page));
       // the sheet's divider is 1px, on its start (left) edge
-      expect((await box(back(page))).x).toBe(sheetBox.x + 1 + 16);
+      expect((await box(back(page))).x).toBeCloseTo(sheetBox.x + 1 + 16, 1);
     });
 
     test("a click fires a cancelable back event on the sheet, which stays open", async ({

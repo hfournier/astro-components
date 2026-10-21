@@ -53,7 +53,7 @@ props:
     type: boolean
     required: false
     default: "false"
-    description: Shows a back button at the start of the header, before the headline, for moving back within the sheet, such as from an item's details to a list. A click fires a cancelable `back` event (a `CustomEvent`) on the sheet; what going back means is up to the page, so it doesn't close the sheet. Its arrow points the other way right to left.
+    description: Shows a back button at the start of the header, before the headline, for moving back within the sheet, such as from an item's details to a list. A click fires a cancelable `back` event (a `CustomEvent`) on the sheet; what going back means is up to the page, so it doesn't close the sheet, and cancelling the event has no built-in effect, as it's for the page's own handlers. Its arrow points the other way right to left.
   - name: showCloseX
     type: boolean
     required: false
@@ -99,7 +99,7 @@ Use dividers to separate the actions from the content, as the actions row does, 
 
 ## Actions
 
-Show the main action with the most emphasis, such as a filled Save before an outlined or text Cancel.
+Show the main action with the most emphasis, such as a filled or tonal Save before a text Cancel.
 
 ## Layout
 
