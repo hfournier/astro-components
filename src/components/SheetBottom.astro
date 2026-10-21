@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import { twMerge } from "tailwind-merge";
 import type { BgColorType } from "../types";
 import BaseWrapper from "./BaseWrapper.astro";
+import ButtonIcon from "./ButtonIcon.astro";
 import Header from "./Header.astro";
 
 // An M3 bottom sheet: supplementary content anchored to the bottom of the window, in two kinds.
@@ -14,9 +15,16 @@ import Header from "./Header.astro";
 // - Modal (isModal): a <dialog> that slides up over the page under a scrim, opened with
 //   showModal(), so focus stays inside it, Escape closes it and the page is inert until it does.
 //   Open it with a button carrying command="show-modal" and commandfor set to the sheet's id. It
-//   also closes on a click on the scrim, and on a click or a drag down on its drag handle.
+//   also closes on a click on the scrim. As M3 asks, it opens at no more than half the window's
+//   height; content taller than that gives it a second, full height, which its drag handle
+//   toggles (a click, or a drag up and down), with a close button in its header. Otherwise the
+//   handle closes it, on a click or a drag down.
 type Props = Omit<HTMLAttributes<"aside" | "dialog">, "id"> & {
   bgColor?: BgColorType;
+  // The drag handle's accessible names, for what it does next: expand or collapse the sheet, or
+  // close a modal sheet with a single height (also the full-height close button's name). In
+  // English by default, so pass them on a page in another language.
+  dragHandleLabels?: { expand?: string; collapse?: string; close?: string };
   headline?: string;
   // Needed to open a modal sheet with commandfor; one is made up if it's left out
   id?: string;
@@ -27,6 +35,7 @@ type Props = Omit<HTMLAttributes<"aside" | "dialog">, "id"> & {
 };
 const {
   bgColor = "surface-container-low",
+  dragHandleLabels,
   headline,
   id = `ac-sheet-bottom-${crypto.randomUUID()}`,
   isCollapsed = false,
@@ -40,6 +49,15 @@ const Tag = isModal ? "dialog" : "aside";
 const headlineId = headline ? `${id}-headline` : undefined;
 const contentId = `${id}-content`;
 const hasHeader = showDragHandle || !!headline;
+const labels = {
+  expand: "Expand",
+  collapse: "Collapse",
+  close: "Close",
+  ...dragHandleLabels,
+};
+// A modal sheet with a handle has two heights: half the window, and full when its content is
+// taller than that. Without a handle to expand it, it keeps the full one.
+const hasHalfHeight = isModal && showDragHandle;
 // Only a standard sheet with a handle to expand it again can be collapsed
 const startsCollapsed = !isModal && showDragHandle && isCollapsed;
 
@@ -62,14 +80,26 @@ const modalClasses = isModal && [
   "motion-safe:backdrop:transition-[display,opacity,overlay] motion-safe:backdrop:transition-discrete motion-safe:backdrop:duration-(--theme-duration-base)",
 ];
 
-// A modal sheet's drag handle closes it; a standard sheet's collapses and expands it
+// A standard sheet's drag handle collapses and expands it. A modal sheet's closes it, until the
+// script finds it a second height to expand to, when it opens.
 const handleAttrs = isModal
-  ? { "aria-label": "Close" }
+  ? { "aria-label": labels.close }
   : {
-      "aria-label": "Sheet content",
+      "aria-label": startsCollapsed ? labels.expand : labels.collapse,
       "aria-controls": contentId,
       "aria-expanded": !startsCollapsed,
     };
+
+// Full height: the window's less M3's top margin, 72px, or 56px in a window wider than 640px.
+// A modal sheet with a handle is capped at half the window until it's expanded (data-expanded).
+const fullHeightClasses =
+  "max-h-[calc(100dvh-4.5rem)] [@media(width>640px)]:max-h-[calc(100dvh-3.5rem)]";
+const heightClasses = hasHalfHeight
+  ? [
+      "max-h-[50dvh] in-data-expanded:max-h-[calc(100dvh-4.5rem)] in-data-expanded:[@media(width>640px)]:max-h-[calc(100dvh-3.5rem)]",
+      "motion-safe:transition-[max-height] motion-safe:duration-(--theme-duration-base)",
+    ]
+  : fullHeightClasses;
 ---
 
 <Tag
@@ -80,15 +110,17 @@ const handleAttrs = isModal
   {...attrs}
 >
   {
-    /* Its height follows its content, up to the window's height less M3's top margin: 72px, or
-       56px in a window wider than 640px. Only the content scrolls. The headline is M3 Title
+    /* Its height follows its content, up to its height cap. Only the content scrolls. The headline is M3 Title
        Large. A BaseWrapper, so a modal sheet's focus rings and links follow its own surface, not
        the page it was placed in. role="none" on the header: in a modal sheet outside <main> and
        any sectioning element, it'd otherwise be the page's banner landmark while it's open. */
   }
   <BaseWrapper
     {bgColor}
-    class="flex max-h-[calc(100dvh-4.5rem)] flex-col overflow-hidden rounded-t-[28px] shadow-theme-elevation-1 [@media(width>640px)]:max-h-[calc(100dvh-3.5rem)]"
+    class:list={[
+      "flex flex-col overflow-hidden rounded-t-[28px] shadow-theme-elevation-1",
+      heightClasses,
+    ]}
   >
     {
       hasHeader && (
@@ -98,30 +130,55 @@ const handleAttrs = isModal
           role="none"
         >
           {
-            /* 22px above and below the 4px handle make a 48px-tall target. touch-none, so a
-               drag on it isn't taken as a scroll. */
+            /* M3: the sheet's whole top 48px is the handle's target, the 4px bar centred in it,
+               22px above and below. touch-none, so a drag on it isn't taken as a scroll. */
             showDragHandle && (
               <button
-                class="group flex cursor-grab touch-none justify-center self-center px-2 py-5.5 outline-none active:cursor-grabbing"
+                class="group flex h-12 w-full cursor-grab touch-none items-center justify-center outline-none active:cursor-grabbing"
                 type="button"
                 data-ac-sheet-bottom-handle
+                data-label-expand={labels.expand}
+                data-label-collapse={labels.collapse}
+                data-label-close={labels.close}
                 {...handleAttrs}
               >
                 <span class="block h-1 w-8 rounded-full bg-(--theme-color-on-bg-variant)/40 group-focus-visible:ring-3 group-focus-visible:ring-(--theme-color-focus-ring-on-bg) group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-(--theme-color-wrapper-bg)" />
               </button>
             )
           }
-          {headline && (
-            <h2
-              class:list={[
-                "px-6 pb-4 text-[1.375rem] leading-7 font-normal tracking-normal",
-                !showDragHandle && "pt-6",
-              ]}
-              id={headlineId}
-            >
-              {headline}
-            </h2>
-          )}
+          {
+            /* At full height, M3 adds a close affordance, at the end of the headline's row. It
+               fires a cancelable cancel, as Escape does. -my-1.5 keeps the row at the headline's
+               28px. */
+            (headline || hasHalfHeight) && (
+              <div
+                class:list={[
+                  "flex items-center gap-2 ps-6",
+                  hasHalfHeight && "in-data-expanded:pe-3",
+                  headline ? "pe-6 pb-4" : "in-data-expanded:pb-4",
+                  !showDragHandle && "pt-6",
+                ]}
+              >
+                {headline && (
+                  <h2
+                    class="min-w-0 flex-1 text-[1.375rem] leading-7 font-normal tracking-normal"
+                    id={headlineId}
+                  >
+                    {headline}
+                  </h2>
+                )}
+                {hasHalfHeight && (
+                  <ButtonIcon
+                    class="-my-1.5 ms-auto hidden in-data-expanded:grid"
+                    icon="close"
+                    label={labels.close}
+                    command="request-close"
+                    commandfor={id}
+                  />
+                )}
+              </div>
+            )
+          }
         </Header>
       )
     }
@@ -191,16 +248,73 @@ const handleAttrs = isModal
       );
       if (!handle) return;
       const isModal = sheet instanceof HTMLDialogElement;
+      const content = sheet.querySelector<HTMLElement>(
+        "[data-ac-sheet-bottom-content]"
+      )!;
+      const { labelExpand, labelCollapse, labelClose } = handle.dataset;
 
+      // A standard sheet: its content shown or hidden
       const setExpanded = (expanded: boolean) => {
-        const content = document.getElementById(
-          handle.getAttribute("aria-controls")!
-        );
-        if (!content) return;
         content.hidden = !expanded;
         handle.setAttribute("aria-expanded", String(expanded));
+        handle.setAttribute(
+          "aria-label",
+          expanded ? labelCollapse! : labelExpand!
+        );
       };
       const isExpanded = () => handle.getAttribute("aria-expanded") === "true";
+
+      // A modal sheet: at half the window's height, or expanded to full (data-expanded) when its
+      // content is taller than half, measured as the sheet's height with all of its content
+      // shown. With one height, the handle closes it, and has no expanded state.
+      const panel = content.parentElement!;
+      const hasTwoHeights = () =>
+        panel.offsetHeight - content.clientHeight + content.scrollHeight >
+        window.innerHeight / 2;
+      const syncModal = () => {
+        if (!(sheet as HTMLDialogElement).open) return;
+        if (!hasTwoHeights()) {
+          delete sheet.dataset.expanded;
+          handle.removeAttribute("aria-expanded");
+          handle.setAttribute("aria-label", labelClose!);
+          return;
+        }
+        const expanded = "expanded" in sheet.dataset;
+        handle.setAttribute("aria-expanded", String(expanded));
+        handle.setAttribute(
+          "aria-label",
+          expanded ? labelCollapse! : labelExpand!
+        );
+      };
+      const setModalExpanded = (expanded: boolean) => {
+        sheet.toggleAttribute("data-expanded", expanded);
+        syncModal();
+      };
+      if (isModal) {
+        // each opening starts at half height
+        sheet.addEventListener("close", () => delete sheet.dataset.expanded);
+        sheet.addEventListener("toggle", syncModal);
+        new ResizeObserver(syncModal).observe(content);
+        window.addEventListener("resize", syncModal);
+      }
+      // Its handle's click, Enter or Space: what its label says
+      const activate = () => {
+        if (!isModal) setExpanded(!isExpanded());
+        else if (handle.hasAttribute("aria-expanded"))
+          setModalExpanded(!isExpanded());
+        else (sheet as HTMLDialogElement).close("");
+      };
+      // A drag down collapses the sheet, from full height to half, or closes a modal sheet at
+      // half (or one height); a drag up expands it
+      const dragDown = () => {
+        if (!isModal) setExpanded(false);
+        else if (isExpanded()) setModalExpanded(false);
+        else (sheet as HTMLDialogElement).close("");
+      };
+      const dragUp = () => {
+        if (!isModal) setExpanded(true);
+        else if (handle.hasAttribute("aria-expanded")) setModalExpanded(true);
+      };
 
       // A drag ends in a click too, which mustn't undo what the drag just did
       let startY: number | undefined;
@@ -227,16 +341,12 @@ const handleAttrs = isModal
         if (startY === undefined) return;
         const dy = event.clientY - startY;
         startY = undefined;
-        if (isModal) {
-          // dropped in the same frame as close(), so it slides away from where it was let go
-          sheet.style.removeProperty("transition");
-          sheet.style.removeProperty("translate");
-          if (dy > dragThreshold) (sheet as HTMLDialogElement).close("");
-        } else if (dy > dragThreshold) {
-          setExpanded(false);
-        } else if (dy < -dragThreshold) {
-          setExpanded(true);
-        }
+        // dropped in the same frame as what the drag does, so the sheet moves on from where it
+        // was let go
+        sheet.style.removeProperty("transition");
+        sheet.style.removeProperty("translate");
+        if (dy > dragThreshold) dragDown();
+        else if (dy < -dragThreshold) dragUp();
       });
       // a cancelled drag puts the sheet back as it was
       handle.addEventListener("pointercancel", () => {
@@ -245,14 +355,12 @@ const handleAttrs = isModal
         sheet.style.removeProperty("translate");
       });
 
-      // A click, Enter or Space closes a modal sheet, or collapses or expands a standard one
       handle.addEventListener("click", () => {
         if (dragged) {
           dragged = false;
           return;
         }
-        if (isModal) (sheet as HTMLDialogElement).close("");
-        else setExpanded(!isExpanded());
+        activate();
       });
     });
 </script>
