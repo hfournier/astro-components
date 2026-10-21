@@ -14,16 +14,24 @@ import { twMerge } from "tailwind-merge";
 import TabList from "./TabList.astro";
 import TabPanels from "./TabPanels.astro";
 import BaseWrapper from "./BaseWrapper.astro";
-import type { TabType, TabVariantType } from "../types";
+import type { TabAlignType, TabType, TabVariantType } from "../types";
 import type { SvgIconNameTypes } from "../svgs";
 
 type BaseWrapperProps = ComponentProps<typeof BaseWrapper>;
 
 type Props = Omit<BaseWrapperProps, "as"> & {
+  align?: TabAlignType;
+  isScrollable?: boolean;
   variant?: TabVariantType;
 };
 
-const { variant = "primary", class: classList, ...attrs } = Astro.props;
+const {
+  align = "start",
+  isScrollable = false,
+  variant = "primary",
+  class: classList,
+  ...attrs
+} = Astro.props;
 
 const slot = Astro.slots.has("default")
   ? await Astro.slots.render("default")
@@ -89,7 +97,7 @@ if (tabs.length === 0) {
   data-ac-tablist-container
   {...attrs}
 >
-  <TabList {tabs} {randomId} {variant} />
+  <TabList {align} {isScrollable} {tabs} {randomId} {variant} />
 
   <TabPanels>
     {tabContents.map((content) => <Fragment set:html={content} />)}
@@ -103,8 +111,24 @@ if (tabs.length === 0) {
 
   allTabsContainers.forEach((tabsContainer) => {
     const tabList = tabsContainer.querySelector<HTMLDivElement>(
-      ":scope > [role='tablist']"
+      ":scope > [data-ac-tab-row] > [role='tablist']"
     );
+
+    // In scrollable tabs, a tab that gets focus or is selected scrolls into view, without
+    // scrolling the page more than it has to. Fixed tabs keep the browser's own focus scrolling,
+    // and selecting one doesn't scroll the page.
+    const isScrollable = tabList!.parentElement!.hasAttribute(
+      "data-ac-tab-row-scrollable"
+    );
+    const revealTab = (tab: HTMLButtonElement) => {
+      if (isScrollable) {
+        tab.scrollIntoView({ block: "nearest", inline: "nearest" });
+      }
+    };
+    const focusTab = (tab: HTMLButtonElement) => {
+      tab.focus({ preventScroll: isScrollable });
+      revealTab(tab);
+    };
     const tabs = Array.from(
       tabList!.querySelectorAll<HTMLButtonElement>(":scope > [role='tab']")
     );
@@ -123,11 +147,16 @@ if (tabs.length === 0) {
       if (currentIndex === -1) return; // Exit if the focused element is not a tab
       let newIndex: number;
 
+      // The arrow keys follow the tabs' visual direction, so they swap right to left
+      const isRtl = getComputedStyle(tabList!).direction === "rtl";
+      const nextKey = isRtl ? "ArrowLeft" : "ArrowRight";
+      const previousKey = isRtl ? "ArrowRight" : "ArrowLeft";
+
       switch (e.key) {
-        case "ArrowRight":
+        case nextKey:
           newIndex = (currentIndex + 1) % tabs.length;
           break;
-        case "ArrowLeft":
+        case previousKey:
           newIndex = (currentIndex - 1 + tabs.length) % tabs.length;
           break;
         case "Home":
@@ -147,7 +176,7 @@ if (tabs.length === 0) {
       tabs.forEach((tab, index) => {
         tab.tabIndex = index === newIndex ? 0 : -1;
       });
-      tabs[newIndex]!.focus();
+      focusTab(tabs[newIndex]!);
     });
 
     const showTab = (targetTab: HTMLButtonElement) => {
@@ -159,6 +188,7 @@ if (tabs.length === 0) {
       }
       targetTab.setAttribute("aria-selected", "true");
       targetTab.tabIndex = 0;
+      revealTab(targetTab);
 
       // Hide other tab panels and show the selected panel
       const targetTabPanel = document.getElementById(

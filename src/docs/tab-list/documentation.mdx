@@ -8,6 +8,14 @@ meta:
   description: Renders the row of tab buttons for the Tabs component, from a list of labels and their generated ids.
 parents: [Tabs]
 props:
+  - name: align
+    type: '"start" | "center"'
+    required: true
+    description: Where fixed tabs sit from a medium window up, passed down from Tabs.
+  - name: isScrollable
+    type: boolean
+    required: true
+    description: Whether the tabs scroll, passed down from Tabs. Scrollable tabs are as wide as their labels, at least 90px, with 52px of padding at each end of the row.
   - name: randomId
     type: string
     required: true

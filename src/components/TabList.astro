@@ -1,103 +1,145 @@
 ---
 import { twMerge } from "tailwind-merge";
-import type { TabType, TabVariantType } from "../types";
+import type { TabAlignType, TabType, TabVariantType } from "../types";
 import Badge from "./Badge.astro";
 import Icon from "./Icon.astro";
 import { badgedName } from "../utils";
 
 type Props = {
+  align: TabAlignType;
+  isScrollable: boolean;
   randomId: string;
   tabs: TabType[];
   variant: TabVariantType;
 };
 
-const { randomId, tabs, variant } = Astro.props;
+const { align, isScrollable, randomId, tabs, variant } = Astro.props;
 ---
 
+{
+  /* The tab row spans the full width with M3's divider, and scrolls the tabs when they're
+     scrollable. The tablist inside it holds only the tabs; the indicator is the row's, so it
+     scrolls with them. */
+}
 <div
-  class="relative grid auto-cols-fr grid-flow-col border-b border-(--theme-color-outline-variant) bg-(--theme-color-surface)"
-  role="tablist"
+  class:list={[
+    "relative border-b border-(--theme-color-outline-variant) bg-(--theme-color-surface)",
+    // No scrollbar, as in Compose: the cut-off tab shows there's more, and touch still scrolls
+    isScrollable && "scrollbar-none overflow-x-auto overflow-y-hidden",
+  ]}
   style={`--ac-anchorname-tab-selected: --anchorname-${randomId}-tab-selected;`}
+  data-ac-tab-row
+  data-ac-tab-row-scrollable={isScrollable ? "" : undefined}
 >
-  {
-    tabs.map((tab, index) => {
-      const hasBadge = tab.badgeLabel !== undefined;
-      // M3: a primary tab's badge overlaps its icon; otherwise it sits inline after the label
-      const badgeOnIcon = hasBadge && variant === "primary" && tab.icon;
-      const badgeAnchorName = `--anchorname-${randomId}-badge-${index + 1}`;
+  <div
+    class:list={[
+      "grid grid-flow-col",
+      isScrollable
+        ? // M3: each tab as wide as its label, at least 90px, the first 52px from the edge
+          // (Compose's ScrollableTabRowMinTabWidth and edge padding, at both ends)
+          "w-max auto-cols-max px-13"
+        : // M3: equal widths. On a phone they fill the width; from medium up, each is as wide
+          // as the widest (a 1fr column in a fit-content grid), the group at the start or centre
+          ["auto-cols-fr medium:w-fit", align === "center" && "medium:mx-auto"],
+    ]}
+    role="tablist"
+  >
+    {
+      tabs.map((tab, index) => {
+        const hasBadge = tab.badgeLabel !== undefined;
+        // M3: a primary tab's badge overlaps its icon; otherwise it sits inline after the label
+        const badgeOnIcon = hasBadge && variant === "primary" && tab.icon;
+        const badgeAnchorName = `--anchorname-${randomId}-badge-${index + 1}`;
 
-      return (
-        <button
-          class:list={twMerge(
-            "group/tab relative isolate flex min-h-12 cursor-pointer items-center justify-center px-4 select-none",
-            "text-sm leading-5 font-medium tracking-[0.1px] text-(--theme-color-on-surface-variant) not-aria-selected:hover:text-(--theme-color-on-surface) not-aria-selected:focus-visible:text-(--theme-color-on-surface) not-aria-selected:active:text-(--theme-color-on-surface)",
-            variant === "primary"
-              ? "aria-selected:text-(--theme-color-primary)"
-              : "aria-selected:text-(--theme-color-on-surface) aria-selected:[anchor-name:var(--ac-anchorname-tab-selected)]",
-            // M3 state layer, drawn in the label color (primary on a selected primary tab, on-surface otherwise)
-            "before:absolute before:inset-0 before:-z-10 before:bg-current before:opacity-0 hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10",
-            // M3 focus ring: 14px corners, and drawn on ::after so, on the selected tab, it can stop
-            // 1px above the indicator (3px primary, 2px secondary) instead of overlapping it
-            "outline-none after:pointer-events-none after:absolute after:inset-x-0 after:top-0 after:rounded-[14px] focus-visible:after:ring-3 focus-visible:after:ring-(--theme-color-focus-ring-on-bg) focus-visible:after:ring-inset",
-            "after:bottom-0",
-            variant === "primary"
-              ? "aria-selected:after:bottom-1"
-              : "aria-selected:after:bottom-0.75",
-            "aria-selected:cursor-default motion-safe:transition-colors motion-safe:duration-(--theme-duration-feedback) motion-safe:before:transition-opacity"
-          )}
-          id={`tab-${randomId}-${index + 1}`}
-          type="button"
-          role="tab"
-          aria-label={
-            // the badge is aria-hidden, so its count or description joins the tab's name
-            badgedName(tab.label, tab.badgeLabel, tab.badgeDescription)
-          }
-          aria-selected={index === 0}
-          aria-controls={`tabpanel-${randomId}-${index + 1}`}
-          tabindex={index === 0 ? "0" : "-1"}
-          data-ac-tab-button
-        >
-          {/* The content span is the primary indicator's anchor, so the indicator matches the
-              content's width rather than the tab's. */}
-          <span
-            class:list={[
-              "flex items-center",
+        return (
+          <button
+            class:list={twMerge(
+              "group/tab relative isolate flex min-h-12 cursor-pointer items-center justify-center px-4 select-none",
+              isScrollable && "min-w-[90px]",
+              "text-sm leading-5 font-medium tracking-[0.1px] text-(--theme-color-on-surface-variant) not-aria-selected:hover:text-(--theme-color-on-surface) not-aria-selected:focus-visible:text-(--theme-color-on-surface) not-aria-selected:active:text-(--theme-color-on-surface)",
+              variant === "primary"
+                ? "aria-selected:text-(--theme-color-primary)"
+                : "aria-selected:text-(--theme-color-on-surface) aria-selected:[anchor-name:var(--ac-anchorname-tab-selected)]",
+              // M3 state layer, drawn in the label color (primary on a selected primary tab, on-surface otherwise)
+              "before:absolute before:inset-0 before:-z-10 before:bg-current before:opacity-0 hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10",
+              // ...except pressing an inactive primary tab, whose layer is primary, as in M3's tokens
+              // and Compose's ripple, while its label stays on-surface
               variant === "primary" &&
-                "group-aria-selected/tab:[anchor-name:var(--ac-anchorname-tab-selected)]",
-              variant === "primary" && tab.icon
-                ? "min-h-16 flex-col justify-center gap-0.5"
-                : "gap-2",
-            ]}
+                "not-aria-selected:active:before:bg-(--theme-color-primary)",
+              // M3 focus ring: 14px corners, and drawn on ::after so, on the selected tab, it can stop
+              // 1px above the indicator (3px primary, 2px secondary) instead of overlapping it
+              "outline-none after:pointer-events-none after:absolute after:inset-x-0 after:top-0 after:rounded-[14px] focus-visible:after:ring-3 focus-visible:after:ring-(--theme-color-focus-ring-on-bg) focus-visible:after:ring-inset",
+              "after:bottom-0",
+              variant === "primary"
+                ? "aria-selected:after:bottom-1"
+                : "aria-selected:after:bottom-0.75",
+              "aria-selected:cursor-default motion-safe:transition-colors motion-safe:duration-(--theme-duration-feedback) motion-safe:before:transition-opacity"
+            )}
+            id={`tab-${randomId}-${index + 1}`}
+            type="button"
+            role="tab"
+            aria-label={
+              // the badge is aria-hidden, so its count or description joins the tab's name
+              badgedName(tab.label, tab.badgeLabel, tab.badgeDescription)
+            }
+            aria-selected={index === 0}
+            aria-controls={`tabpanel-${randomId}-${index + 1}`}
+            tabindex={index === 0 ? "0" : "-1"}
+            data-ac-tab-button
           >
-            {tab.icon && (
-              <Icon
-                class="pointer-events-none"
-                name={tab.icon}
-                style={
-                  badgeOnIcon ? `anchor-name: ${badgeAnchorName}` : undefined
-                }
+            {/* The content span is the primary indicator's anchor, so the indicator matches the
+              content's width rather than the tab's. */}
+            <span
+              class:list={[
+                "flex items-center",
+                variant === "primary" &&
+                  "group-aria-selected/tab:[anchor-name:var(--ac-anchorname-tab-selected)]",
+                variant === "primary" && tab.icon
+                  ? "min-h-16 flex-col justify-center gap-0.5"
+                  : "gap-2",
+              ]}
+            >
+              {tab.icon && (
+                <Icon
+                  class="pointer-events-none"
+                  name={tab.icon}
+                  style={
+                    badgeOnIcon ? `anchor-name: ${badgeAnchorName}` : undefined
+                  }
+                />
+              )}
+              {/* M3: a fixed tab's label can wrap to a second line, then truncates. CSS only
+                cuts what's shown, so the full label stays the tab's accessible name.
+                Inline text flow, so an inline badge aligns to the label's baseline and cap
+                height (see Badge). */}
+              <span
+                class:list={[
+                  isScrollable
+                    ? "whitespace-nowrap"
+                    : "line-clamp-2 text-center",
+                ]}
+              >
+                {tab.label}
+                {hasBadge && !badgeOnIcon && (
+                  <Badge
+                    class="ms-1"
+                    label={tab.badgeLabel}
+                    placement="inline"
+                  />
+                )}
+              </span>
+            </span>
+            {badgeOnIcon && (
+              <Badge
+                label={tab.badgeLabel}
+                style={`--ac-anchorname-badge: ${badgeAnchorName}`}
               />
             )}
-            {hasBadge && !badgeOnIcon ? (
-              // inline text flow, so the badge aligns to the label's baseline and cap height (see Badge)
-              <span>
-                {tab.label}
-                <Badge class="ms-1" label={tab.badgeLabel} placement="inline" />
-              </span>
-            ) : (
-              tab.label
-            )}
-          </span>
-          {badgeOnIcon && (
-            <Badge
-              label={tab.badgeLabel}
-              style={`--ac-anchorname-badge: ${badgeAnchorName}`}
-            />
-          )}
-        </button>
-      );
-    })
-  }
+          </button>
+        );
+      })
+    }
+  </div>
 
   <div
     class:list={[

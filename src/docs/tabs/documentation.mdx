@@ -1,15 +1,30 @@
 ---
 name: Tabs
-description: A custom Tabs component that extends HTML's `<div>` element.
+description: Material 3 tabs, which organize related content into panels at the same level, with a row of tabs above them. Primary tabs sit at the top of a content pane, and secondary tabs within content. Tabs are fixed, sharing the width, or scrollable, for longer labels or more tabs. Each Tab child supplies one tab and its panel.
 category: Text content
 role: pattern
 meta:
   title: Tabs | astro-components HenriFournier.dev
-  description: A custom Tabs component that extends HTML's `<div>` element.
+  description: Material 3 primary and secondary tabs, fixed or scrollable, organizing related content into panels.
 extends:
   kind: element
   tag: [div]
-props: []
+props:
+  - name: align
+    type: '"start" | "center"'
+    required: false
+    default: '"start"'
+    description: Where fixed tabs sit from a medium window up, where each is as wide as the widest tab rather than filling the width. M3's responsive layout guidance puts them at the leading edge or the center of the body region. The divider under them still spans the full width. Ignored on scrollable tabs.
+  - name: isScrollable
+    type: boolean
+    required: false
+    default: "false"
+    description: Makes them M3's scrollable tabs, which scroll sideways when they don't fit, for longer labels or more tabs. Each tab is as wide as its label, at least 90px, and the first starts 52px from the leading edge, so it's clear there's more. A tab that gets focus or is selected scrolls into view.
+  - name: variant
+    type: '"primary" | "secondary"'
+    required: false
+    default: '"primary"'
+    description: M3's tab style. Primary tabs, for the main destinations of a content pane, stack an icon above the label and mark the selected tab with a 3px indicator as wide as its content. Secondary tabs, for a second level within content, put the icon beside the label and use a 2px indicator as wide as the tab.
 slots:
   - name: default
     description: The set of tabs to render.
@@ -18,3 +33,33 @@ slots:
     multiple: true
 ---
 
+
+## Primary or secondary
+
+- **Primary tabs** sit at the top of a content pane, under an app bar, for its main destinations.
+- **Secondary tabs** sit within content, for a second level of hierarchy. When both are used, secondary tabs always go below primary ones.
+
+## Fixed or scrollable
+
+Fixed tabs share the row in equal widths. Keep to four or fewer: five or more get cramped, so use scrollable tabs instead.
+
+- **On a phone,** fixed tabs fill the width.
+- **From a medium window up,** each fixed tab is as wide as the widest one, and the group sits at the start, or in the center with `align="center"`. The divider under them still spans the full width.
+
+Scrollable tabs (`isScrollable`) scroll sideways when they don't fit, for longer labels or more tabs. The first starts 52px from the leading edge, so the cut-off tab at the other end shows there's more. They don't loop back to the start: an endlessly scrolling set can trap screen reader users.
+
+## Labels
+
+Keep labels short. A fixed tab's label can wrap to a second line, after which it's cut off with an ellipsis. The full label stays the tab's accessible name. For longer labels, use scrollable tabs, whose labels never wrap.
+
+## Icons
+
+Use simple, widely recognized icons. Give every tab an icon, or none: don't mix tabs with and without icons in one set.
+
+## Badges
+
+A Tab's `badgeLabel` shows a count, or `""` for a dot. Update or remove a tab's badge once its content has been seen. A count shows up to 4 characters, so a number over 999 shows as `999+`.
+
+## Placement
+
+Tabs attached to an app bar move with it: don't let them scroll behind it. Whether the tabs stay fixed at the top of the page or scroll off and come back as the page scrolls up is up to the page.
