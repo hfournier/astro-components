@@ -1,0 +1,218 @@
+---
+import type { ComponentProps } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import type { ButtonPropsType } from "../types";
+import BaseOverlay from "./BaseOverlay.astro";
+import Button from "./Button.astro";
+import ButtonIcon from "./ButtonIcon.astro";
+import Footer from "./Footer.astro";
+import Header from "./Header.astro";
+
+type BaseOverlayProps = ComponentProps<typeof BaseOverlay>;
+
+// An M3 full-screen dialog, for a task with several steps or fields. M3 keeps it to compact
+// windows, so from medium up it's a basic dialog instead, in CSS alone: one <dialog>, so its
+// content, form values and focus stay put if the window is resized while it's open.
+//
+// Its close and confirm actions move with it, as in M3: in a compact window, a close icon button
+// at the start of the header and the confirm text button at its end; from medium up, a dismiss
+// text button and then confirm at the end of the action row. Each is rendered in both places, and
+// the one that doesn't apply is display: none, so at every width there's exactly one of each, in
+// the Tab order and accessibility tree in visual order (a single element moved with grid or
+// `order` would be reached out of order). Both copies of each behave the same.
+//
+// No bgColor: M3 fixes it at Surface in a compact window, and Surface Container High from medium.
+type Props = Omit<BaseOverlayProps, "as" | "bgColor"> & {
+  headline?: string;
+  // The dialog's accessible name when it has no `headline`
+  label?: string;
+  // The dismiss text button's label, such as "Cancel", and the close icon button's accessible
+  // name and tooltip
+  closeLabel: string;
+  // The confirming action, such as "Save". Its id goes on the action row's copy; the header's
+  // copy gets the id with "-header" added.
+  buttonConfirm: ButtonPropsType;
+};
+
+const {
+  id,
+  headline,
+  label,
+  closeLabel,
+  buttonConfirm,
+  class: classList,
+  overlayClass,
+  ...attrs
+} = Astro.props;
+
+const hasActions = Astro.slots.has("actions");
+
+// The confirm button's two copies, in the header and the action row, differ only in id and class
+const confirmProps = {
+  command: "close",
+  commandfor: id,
+  value: buttonConfirm.value,
+  size: "sm",
+  variant: "text",
+} as const;
+---
+
+<BaseOverlay
+  class:list={twMerge(
+    // A scroll-state container, so the header and action row pinned in it restyle themselves
+    // while content scrolls under them
+    "[container-type:scroll-state] flex flex-col overflow-y-auto overscroll-contain",
+    // Compact: M3's full-screen dialog, Surface (bgColor) with square corners, filling the window
+    "max-medium:size-full",
+    // Medium and up: M3's basic dialog, as Dialog, on Surface Container High
+    "medium:max-h-[calc(100dvh-3rem)] medium:max-w-140 medium:min-w-70 medium:rounded-[28px] medium:[--theme-color-wrapper-bg:var(--theme-color-surface-container-high)]",
+    classList
+  )}
+  overlayClass={twMerge(
+    // Compact: no margins, no size limits and no visible scrim
+    "max-medium:m-0 max-medium:size-full max-medium:max-h-none max-medium:max-w-none max-medium:backdrop:bg-transparent",
+    overlayClass
+  )}
+  bgColor="surface"
+  transition="fade"
+  {id}
+  aria-labelledby={headline ? `${id}-headline` : undefined}
+  aria-label={label && !headline ? label : undefined}
+  data-ac-dialog-fullscreen
+  {...attrs}
+>
+  {
+    /* role="none" on the header and footer: outside <main> and any sectioning element, they'd
+       otherwise be the page's banner and contentinfo landmarks while the dialog is open. Both
+       are sticky in the scrolling panel, filled with its color, so content scrolls under them. */
+  }
+  <Header
+    bgColor="transparent"
+    role="none"
+    class:list={[
+      "sticky top-0 z-1 flex shrink-0 items-center gap-2 bg-(--theme-color-wrapper-bg)",
+      "motion-safe:transition-[background-color,box-shadow] motion-safe:duration-(--theme-duration-overlay) motion-safe:ease-theme-overlay",
+      // Compact: M3's 56px header, Surface Container at elevation 2 on scroll
+      "max-medium:h-14 max-medium:ps-2 max-medium:pe-3",
+      "max-medium:scrollable-top:bg-(--theme-color-surface-container) max-medium:scrollable-top:shadow-theme-elevation-2",
+      // Medium and up: Dialog's headline, with a divider below it on scroll
+      "medium:px-6 medium:pt-6 medium:pb-4 medium:scrollable-top:shadow-[0_1px_0_var(--theme-color-outline)]",
+      !headline && "medium:hidden",
+    ]}
+  >
+    <ButtonIcon
+      class="text-(--theme-color-on-surface) medium:hidden"
+      icon="close"
+      label={closeLabel}
+      command="request-close"
+      commandfor={id}
+    />
+    {
+      headline && (
+        <h2
+          class:list={[
+            "min-w-0 flex-1 font-normal text-(--theme-color-on-surface)",
+            // Compact: Title Large, on one line. Medium and up: Headline Small, as Dialog.
+            "max-medium:truncate max-medium:text-[22px] max-medium:leading-7",
+            "medium:text-2xl medium:leading-8",
+          ]}
+          id={`${id}-headline`}
+        >
+          {headline}
+        </h2>
+      )
+    }
+    <Button
+      class="ms-auto medium:hidden"
+      id={buttonConfirm.id && `${buttonConfirm.id}-header`}
+      {...confirmProps}
+    >
+      {buttonConfirm.text}
+    </Button>
+  </Header>
+
+  {/* Dialog's supporting text: Body Medium in on-surface-variant */}
+  <div
+    class:list={[
+      "px-6 text-sm leading-5 tracking-[0.25px] text-(--theme-color-on-surface-variant)",
+      "max-medium:py-6",
+      !headline && "medium:pt-6",
+    ]}
+    id={`${id}-content`}
+  >
+    <slot />
+  </div>
+
+  {
+    /* The actions slot, after the content in the DOM and so in the Tab order at every width. In a
+       compact window it's M3's bottom action bar, pinned to the bottom, at elevation 2 while
+       content is scrolled under it. From medium up, M3 allows a basic dialog only a dismissing and
+       a confirming action, so it's the end of the content instead, scrolling with it. */
+  }
+  {
+    hasActions && (
+      <div
+        class:list={[
+          "flex flex-wrap items-center gap-2",
+          "max-medium:sticky max-medium:bottom-0 max-medium:z-1 max-medium:mt-auto max-medium:h-14 max-medium:shrink-0 max-medium:justify-end max-medium:bg-(--theme-color-wrapper-bg) max-medium:px-3",
+          "motion-safe:transition-[box-shadow] motion-safe:duration-(--theme-duration-overlay) motion-safe:ease-theme-overlay",
+          "max-medium:scrollable-bottom:shadow-theme-elevation-2",
+          "medium:px-6 medium:pt-4",
+        ]}
+      >
+        <slot name="actions" />
+      </div>
+    )
+  }
+
+  {
+    /* From medium up, the dismissing and then the confirming action, as DialogConfirm, stacking
+      confirm above dismiss when they don't fit, as Dialog does. A compact window has them in the
+      header instead. */
+  }
+  <Footer
+    bgColor="transparent"
+    role="none"
+    class:list={[
+      "sticky bottom-0 z-1 mt-auto flex shrink-0 flex-wrap-reverse items-center justify-end gap-2 bg-(--theme-color-wrapper-bg) p-6 max-medium:hidden",
+      "motion-safe:transition-[box-shadow] motion-safe:duration-(--theme-duration-overlay) motion-safe:ease-theme-overlay",
+      "scrollable-bottom:shadow-[0_-1px_0_var(--theme-color-outline)]",
+    ]}
+  >
+    <Button command="request-close" commandfor={id} size="sm" variant="text">
+      {closeLabel}
+    </Button>
+    <Button id={buttonConfirm.id} {...confirmProps}>
+      {buttonConfirm.text}
+    </Button>
+  </Footer>
+</BaseOverlay>
+
+<script>
+  // As Dialog: Escape and the close and dismiss buttons (request-close) close it without setting
+  // its returnValue, and Firefox and WebKit keep the one from its last opening, so it's cleared:
+  // a dismissal never reads as the action chosen last time.
+  //
+  // From medium up, as a basic dialog, a click on its scrim cancels it too, as Escape does: a
+  // cancelable `cancel`, then close. The press must start there too, so a text selection dragged
+  // out of the content doesn't close it. In a compact window, the panel fills the dialog, so
+  // there's no scrim to click.
+  document
+    .querySelectorAll<HTMLDialogElement>("[data-ac-dialog-fullscreen]")
+    .forEach((dialog) => {
+      dialog.addEventListener("cancel", () => {
+        dialog.returnValue = "";
+      });
+
+      let pressedOnScrim = false;
+      dialog.addEventListener("pointerdown", (event) => {
+        pressedOnScrim = event.target === dialog;
+      });
+      dialog.addEventListener("click", (event) => {
+        if (event.target !== dialog || !pressedOnScrim) return;
+        pressedOnScrim = false;
+        if (dialog.dispatchEvent(new Event("cancel", { cancelable: true })))
+          dialog.close("");
+      });
+    });
+</script>

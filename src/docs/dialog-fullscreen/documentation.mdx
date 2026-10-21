@@ -1,0 +1,75 @@
+---
+name: DialogFullscreen
+description: A Material 3 full-screen dialog built on HTML's `<dialog>` element, for a task with several steps or fields, such as creating an event. In a compact window it fills the window, with a close button and the confirming action in its header. From a medium window up, as M3 asks, it's a basic dialog instead, with a dismissing and a confirming action at the end of its action row.
+category: Interactive elements
+role: pattern
+meta:
+  title: DialogFullscreen | astro-components HenriFournier.dev
+  description: A Material 3 full-screen dialog for compact windows that becomes a basic dialog from a medium window up, in CSS alone.
+extends:
+  kind: component
+  name: BaseOverlay
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog
+props:
+  - name: id
+    type: string
+    required: true
+    description: Unique id for the dialog, used as the `commandfor` target of the buttons that open and close it.
+  - name: headline
+    type: string
+    required: false
+    description: The dialog's headline, rendered as an `<h2>` and used as its accessible name via `aria-labelledby`. In a compact window it's M3 Title Large in the 56px header, on one line, so keep it short; put a longer one at the top of the content instead, and give the dialog a `label`. From medium up it's Dialog's Headline Small, and wraps.
+  - name: label
+    type: string
+    required: false
+    description: The dialog's accessible name (`aria-label`) when it has no `headline`. Ignored when a `headline` is given. Provide one of the two, so screen readers can announce the dialog.
+  - name: closeLabel
+    type: string
+    required: true
+    description: What closing the dialog does, such as `"Cancel"`. In a compact window, it's the accessible name and tooltip of the close icon button at the start of the header; from medium up, it's the label of the dismissing text button. Either way, closing fires a cancelable `cancel` event, as Escape does, and leaves `returnValue` empty.
+  - name: buttonConfirm
+    type: '{ id?: string; text: string; value: string }'
+    required: true
+    description: The confirming action, such as "Save". It's at the end of the header in a compact window, and last in the action row from medium up. Either one closes the dialog, setting its `returnValue` to `value`, so a `close` listener can tell it was chosen. The action row's copy takes `id`, and the header's takes `id` with `-header` added (e.g. `save` and `save-header`); prefer `returnValue` to telling them apart by id.
+slots:
+  - name: default
+    description: The dialog's content, such as form fields, styled as Material 3 supporting text. It scrolls under the pinned header (and action bar). In a compact window, the header turns Surface Container at elevation 2 while content is scrolled under it; from medium up, a divider shows instead, as in Dialog (in browsers that support scroll-state container queries).
+    kind: any
+  - name: actions
+    description: Optional buttons for other actions, such as text Buttons. In a compact window they're M3's bottom action bar, pinned to the bottom of the window. From medium up, where Material 3 allows a dialog only its dismissing and confirming actions, they end the content instead, scrolling with it.
+    kind: any
+---
+
+## When to use it
+
+Use a full-screen dialog for a task that needs the whole screen of a phone:
+
+- a task with several steps, such as creating a calendar event with its title, date, location and time
+- content that needs keyboard input, such as form fields
+- changes that aren't saved straight away
+- a task that opens other dialogs. Only a full-screen dialog can have another dialog over it.
+
+M3 keeps full-screen dialogs to compact windows, such as phones. From a medium window up, DialogFullscreen is a basic dialog, like Dialog. It changes in CSS alone, so if the window is resized while it's open, its content, form values and focus stay where they are.
+
+## Actions
+
+The actions move with the dialog, as in M3:
+
+- **Compact windows:** a close icon button at the start of the header, its only navigation, and the confirming action at the end. The `actions` slot is a bottom action bar.
+- **Medium windows and up:** no close icon. The dismissing action (`closeLabel`) and then the confirming action sit at the end of the action row, as in DialogConfirm. Material 3 gives a dialog at most these two actions, so the `actions` slot moves to the end of the content.
+
+Each of these is rendered in both places, and the one that doesn't apply is hidden with `display: none`. So at every width there's one close or dismiss button and one confirm button, reached with Tab in the order they're shown, and both copies behave the same.
+
+Name the confirming action after what it does, such as "Save", "Send" or "Create", not "Done", "OK" or "Close", and never disable it. When it succeeds, don't open another dialog; open one only if it fails.
+
+## Unsaved changes
+
+If closing would lose changes, ask first, with a DialogConfirm such as "Discard draft?". The page knows whether there are changes, so this is up to you, but DialogFullscreen lets it happen: the close button, the dismissing action, Escape and a click on the scrim (from medium up) all fire a cancelable `cancel` event first. Prevent it to keep the dialog open, and open the DialogConfirm instead.
+
+## Errors
+
+Show a field's error inline, next to the field. Show a general error, such as a failed network request on save, in a basic dialog (DialogAcknowledge).
+
+## Accessibility
+
+DialogFullscreen keeps the native `dialog` role, not `alertdialog`, since it holds forms and other content. When it opens, focus goes to its first interactive element: the close button in a compact window, and the first field (or the dismissing action) from medium up. Focus stays inside it while it's open, and returns to the button that opened it when it closes.

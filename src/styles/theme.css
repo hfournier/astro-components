@@ -26,6 +26,13 @@
 @custom-variant rail-expanded (@container rail (width >= 160px));
 @custom-variant rail-collapsed (@container rail (width < 160px));
 
+/* scroll state: inside a scroll-state container ([container-type:scroll-state]), what's pinned
+   over the scrolling content restyles itself while content is scrolled out of view above or
+   below, such as DialogFullscreen's header. Scroll-state queries are Chromium only for now, and
+   other browsers never match them. */
+@custom-variant scrollable-top (@container scroll-state(scrollable: top));
+@custom-variant scrollable-bottom (@container scroll-state(scrollable: bottom));
+
 @theme {
   /* easing: Tailwind's native namespace, role layer on top (ADR-0006) */
   --ease-theme-overlay: var(--ease-out);

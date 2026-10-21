@@ -1,0 +1,18 @@
+---
+title: DialogFullscreen
+description: The following example shows a DialogFullscreen with its required `id`, `closeLabel` and `buttonConfirm` properties and a `headline`, holding a form field. Narrow the window below 600px to see it fill the window, with its close and confirm actions in the header.
+---
+
+<Button command="show-modal" commandfor="dialog-fullscreen-usage">New event</Button>
+
+<DialogFullscreen
+  id="dialog-fullscreen-usage"
+  headline="New event"
+  closeLabel="Cancel"
+  buttonConfirm={{ text: "Save", value: "save" }}
+>
+  <label class="flex flex-col gap-1">
+    Title
+    <input class="rounded border border-(--theme-color-outline) px-3 py-2" name="title" type="text" />
+  </label>
+</DialogFullscreen>

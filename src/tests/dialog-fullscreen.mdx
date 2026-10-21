@@ -1,0 +1,41 @@
+---
+title: DialogFullscreen
+description: Tests for the DialogFullscreen component
+---
+
+<Heading level={1}>DialogFullscreen Tests</Heading>
+
+<Section data-testid="dialog-fullscreen-basic" class="p-4 space-y-4">
+  <Heading level={2}>Basic</Heading>
+  <Button command="show-modal" commandfor="basic-dialog-fullscreen">Open full-screen dialog</Button>
+
+  <DialogFullscreen
+    id="basic-dialog-fullscreen"
+    headline="New event"
+    closeLabel="Cancel"
+    buttonConfirm={{ id: "basic-save", text: "Save", value: "save" }}
+  >
+    <label class="block">
+      Title <input class="border" name="title" type="text" />
+    </label>
+  </DialogFullscreen>
+</Section>
+
+{/* Content taller than the window, so it scrolls under the header, with a bottom action bar */}
+
+<Section data-testid="dialog-fullscreen-scrolling" class="p-4 space-y-4">
+  <Heading level={2}>Scrolling, with actions</Heading>
+  <Button command="show-modal" commandfor="scrolling-dialog-fullscreen">Open full-screen dialog</Button>
+
+  <DialogFullscreen
+    id="scrolling-dialog-fullscreen"
+    headline="Terms of service"
+    closeLabel="Cancel"
+    buttonConfirm={{ text: "Accept", value: "accept" }}
+  >
+    <div class="h-[200vh]">Long content.</div>
+
+    <Button slot="actions" size="sm" variant="text">Print</Button>
+
+  </DialogFullscreen>
+</Section>

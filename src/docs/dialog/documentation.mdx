@@ -28,13 +28,13 @@ slots:
     description: The dialog's supporting text or custom content, styled as Material 3 supporting text. It scrolls when taller than the viewport allows, with dividers appearing at whichever edge has content scrolled out of view (in browsers that support scroll-state container queries). Put `autofocus` on an element here to choose what receives focus when the dialog opens.
     kind: any
   - name: actions
-    description: Buttons for the dialog's actions, in a row below the content, aligned to the end. Actions too long to fit side by side stack, the last (confirming) one on top, as M3 asks. Put the Buttons in the slot directly; the dialog lays them out. Give each a `value` and `command="close"`, and the dialog closes with its `returnValue` set to the value, so a `close` listener can tell which was chosen. Escape or a click on the scrim cancels the dialog, firing a `cancel` event you can prevent to keep it open, and leaves `returnValue` empty. Material 3 recommends at most two text buttons - see DialogConfirm and DialogAcknowledge for ready-made versions.
+    description: Buttons for the dialog's actions, in a row below the content, aligned to the end. Actions too long to fit side by side stack, the last (confirming) one on top, as M3 asks. Put the Buttons in the slot directly; the dialog lays them out. Give each a `value` and `command="close"`, and the dialog closes with its `returnValue` set to the value, so a `close` listener can tell which was chosen. Escape or a click on the scrim cancels the dialog, firing a `cancel` event you can prevent to keep it open, and leaves `returnValue` empty. Material 3 allows at most two, an acknowledgement or a dismissing and a confirming action (see Actions below). DialogAcknowledge and DialogConfirm are ready-made versions.
     kind: any
 ---
 
 ## When to use it
 
-Dialogs interrupt, so use them sparingly: for critical information, or a decision that has to be made before the task can go on. For low- and medium-priority messages, show something in the page's flow instead, or a snackbar.
+Dialogs interrupt, so use them sparingly: for critical information, or a decision that has to be made before the task can go on. For low- and medium-priority messages, show something in the page's flow instead, or a snackbar. For a task with several steps or fields on a phone, use DialogFullscreen.
 
 ## Headline
 
