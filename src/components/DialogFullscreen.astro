@@ -144,32 +144,45 @@ const confirmProps = {
   </div>
 
   {
-    /* From medium up, the actions slot, then dismiss and confirm, as DialogConfirm, stacking
-      confirm above dismiss when they don't fit, as Dialog does. Compact windows show only the
-      actions slot, as M3's bottom action bar, at elevation 2 on scroll. */
+    /* The actions slot, after the content in the DOM and so in the Tab order at every width. In a
+       compact window it's M3's bottom action bar, pinned to the bottom, at elevation 2 while
+       content is scrolled under it. From medium up, M3 allows a basic dialog only a dismissing and
+       a confirming action, so it's the end of the content instead, scrolling with it. */
+  }
+  {
+    hasActions && (
+      <div
+        class:list={[
+          "flex flex-wrap items-center gap-2",
+          "max-medium:sticky max-medium:bottom-0 max-medium:z-1 max-medium:mt-auto max-medium:h-14 max-medium:shrink-0 max-medium:justify-end max-medium:bg-(--theme-color-wrapper-bg) max-medium:px-3",
+          "motion-safe:transition-[box-shadow] motion-safe:duration-(--theme-duration-overlay) motion-safe:ease-theme-overlay",
+          "max-medium:scrollable-bottom:shadow-theme-elevation-2",
+          "medium:px-6 medium:pt-4",
+        ]}
+      >
+        <slot name="actions" />
+      </div>
+    )
+  }
+
+  {
+    /* From medium up, the dismissing and then the confirming action, as DialogConfirm, stacking
+      confirm above dismiss when they don't fit, as Dialog does. A compact window has them in the
+      header instead. */
   }
   <Footer
     bgColor="transparent"
     role="none"
     class:list={[
-      "sticky bottom-0 z-1 mt-auto flex shrink-0 items-center justify-end gap-2 bg-(--theme-color-wrapper-bg)",
+      "sticky bottom-0 z-1 mt-auto flex shrink-0 flex-wrap-reverse items-center justify-end gap-2 bg-(--theme-color-wrapper-bg) p-6 max-medium:hidden",
       "motion-safe:transition-[box-shadow] motion-safe:duration-(--theme-duration-overlay) motion-safe:ease-theme-overlay",
-      "max-medium:h-14 max-medium:px-3 max-medium:scrollable-bottom:shadow-theme-elevation-2",
-      !hasActions && "max-medium:hidden",
-      "medium:flex-wrap-reverse medium:p-6 medium:scrollable-bottom:shadow-[0_-1px_0_var(--theme-color-outline)]",
+      "scrollable-bottom:shadow-[0_-1px_0_var(--theme-color-outline)]",
     ]}
   >
-    <slot name="actions" />
-    <Button
-      class="max-medium:hidden"
-      command="request-close"
-      commandfor={id}
-      size="sm"
-      variant="text"
-    >
+    <Button command="request-close" commandfor={id} size="sm" variant="text">
       {closeLabel}
     </Button>
-    <Button class="max-medium:hidden" id={buttonConfirm.id} {...confirmProps}>
+    <Button id={buttonConfirm.id} {...confirmProps}>
       {buttonConfirm.text}
     </Button>
   </Footer>

@@ -36,7 +36,7 @@ slots:
     description: The dialog's content, such as form fields, styled as Material 3 supporting text. It scrolls under the pinned header (and action bar). In a compact window, the header turns Surface Container at elevation 2 while content is scrolled under it; from medium up, a divider shows instead, as in Dialog (in browsers that support scroll-state container queries).
     kind: any
   - name: actions
-    description: Optional buttons for other actions, such as text Buttons. In a compact window they're M3's bottom action bar, pinned to the bottom of the window. From medium up, they come first in the action row, before the dismissing and confirming actions.
+    description: Optional buttons for other actions, such as text Buttons. In a compact window they're M3's bottom action bar, pinned to the bottom of the window. From medium up, where Material 3 allows a dialog only its dismissing and confirming actions, they end the content instead, scrolling with it.
     kind: any
 ---
 
@@ -56,7 +56,7 @@ M3 keeps full-screen dialogs to compact windows, such as phones. From a medium w
 The actions move with the dialog, as in M3:
 
 - **Compact windows:** a close icon button at the start of the header, its only navigation, and the confirming action at the end. The `actions` slot is a bottom action bar.
-- **Medium windows and up:** no close icon. The `actions` slot, then the dismissing action (`closeLabel`) and the confirming action sit at the end of the action row, as in DialogConfirm.
+- **Medium windows and up:** no close icon. The dismissing action (`closeLabel`) and then the confirming action sit at the end of the action row, as in DialogConfirm. Material 3 gives a dialog at most these two actions, so the `actions` slot moves to the end of the content.
 
 Each of these is rendered in both places, and the one that doesn't apply is hidden with `display: none`. So at every width there's one close or dismiss button and one confirm button, reached with Tab in the order they're shown, and both copies behave the same.
 

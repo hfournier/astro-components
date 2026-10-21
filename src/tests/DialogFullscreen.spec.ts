@@ -22,6 +22,9 @@ const dialogIn = (page: Page, caseId: DialogFullscreenCaseId) =>
 const panelOf = (dialog: Locator) => dialog.locator("> div");
 const headerOf = (dialog: Locator) => dialog.locator("header");
 const footerOf = (dialog: Locator) => dialog.locator("footer");
+// The actions slot's container: the scrolling case's Print button's parent
+const actionsOf = (dialog: Locator) =>
+  dialog.getByRole("button", { name: "Print" }).locator("..");
 
 // Activates via the keyboard, as in Dialog.spec.ts: a mouse click leaves the pointer hovering
 async function open(page: Page, caseId: DialogFullscreenCaseId) {
@@ -79,23 +82,20 @@ test.describe("DialogFullscreen in a compact window", () => {
   }) => {
     await open(page, "scrolling");
     const dialog = dialogIn(page, "scrolling");
-    const bar = await box(footerOf(dialog));
+    const bar = await box(actionsOf(dialog));
 
     expect(bar.height).toBe(56);
     expect(bar.y + bar.height).toBe(COMPACT.height);
-    await expect(dialog.getByRole("button", { name: "Print" })).toBeVisible();
     // the dismiss and confirm copies are the header's
-    await expect(
-      footerOf(dialog).getByRole("button", { name: "Accept" })
-    ).toHaveCount(0);
+    await expect(footerOf(dialog)).toBeHidden();
   });
 
-  test("without an actions slot, there's no bottom action bar", async ({
+  test("without an actions slot, the header's close and confirm are its only buttons", async ({
     page,
   }) => {
     await open(page, "basic");
 
-    await expect(footerOf(dialogIn(page, "basic"))).toBeHidden();
+    await expect(dialogIn(page, "basic").getByRole("button")).toHaveCount(2);
   });
 
   test("the header turns Surface Container at elevation 2 once content scrolls under it", async ({
@@ -251,6 +251,27 @@ test.describe("DialogFullscreen from a medium window up", () => {
     );
     // the action row's copy carries buttonConfirm's id
     await expect(save).toHaveAttribute("id", "basic-save");
+  });
+
+  test("its actions slot ends the content, leaving the action row M3's two actions", async ({
+    page,
+  }) => {
+    await open(page, "scrolling");
+    const dialog = dialogIn(page, "scrolling");
+    const print = dialog.getByRole("button", { name: "Print" });
+
+    await expect(footerOf(dialog).getByRole("button")).toHaveText([
+      "Cancel",
+      "Accept",
+    ]);
+    // it scrolls with the content: out of view below the action row until scrolled to the end.
+    // It's this case's first focusable element, so WebKit scrolls it into view on opening.
+    const rowTop = async () => (await box(footerOf(dialog))).y;
+    await panelOf(dialog).evaluate((el) => el.scrollTo(0, 0));
+    expect((await box(print)).y).toBeGreaterThan(await rowTop());
+    await panelOf(dialog).evaluate((el) => el.scrollTo(0, el.scrollHeight));
+    const printBox = await box(print);
+    expect(printBox.y + printBox.height).toBeLessThanOrEqual(await rowTop());
   });
 
   test("a click on the scrim cancels it, as Dialog", async ({ page }) => {
