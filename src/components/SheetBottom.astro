@@ -21,10 +21,11 @@ import Header from "./Header.astro";
 //   handle closes it, on a click or a drag down.
 type Props = Omit<HTMLAttributes<"aside" | "dialog">, "id"> & {
   bgColor?: BgColorType;
-  // The drag handle's accessible names, for what it does next: expand or collapse the sheet, or
-  // close a modal sheet with a single height (also the full-height close button's name). In
-  // English by default, so pass them on a page in another language.
-  dragHandleLabels?: { expand?: string; collapse?: string; close?: string };
+  // The drag handle's accessible names, as in Compose: `handle` while it changes the sheet's
+  // height, its state in aria-expanded; `close` while it closes a modal sheet with one height
+  // (also the full-height close button's name). In English by default, so pass them on a page in
+  // another language.
+  dragHandleLabels?: { handle?: string; close?: string };
   headline?: string;
   // Needed to open a modal sheet with commandfor; one is made up if it's left out
   id?: string;
@@ -50,8 +51,7 @@ const headlineId = headline ? `${id}-headline` : undefined;
 const contentId = `${id}-content`;
 const hasHeader = showDragHandle || !!headline;
 const labels = {
-  expand: "Expand",
-  collapse: "Collapse",
+  handle: "Drag handle",
   close: "Close",
   ...dragHandleLabels,
 };
@@ -81,11 +81,12 @@ const modalClasses = isModal && [
 ];
 
 // A standard sheet's drag handle collapses and expands it. A modal sheet's closes it, until the
-// script finds it a second height to expand to, when it opens.
+// script finds it a second height to expand to, when it opens. Its name stays put while it
+// toggles, and aria-expanded carries the state.
 const handleAttrs = isModal
   ? { "aria-label": labels.close }
   : {
-      "aria-label": startsCollapsed ? labels.expand : labels.collapse,
+      "aria-label": labels.handle,
       "aria-controls": contentId,
       "aria-expanded": !startsCollapsed,
     };
@@ -137,8 +138,7 @@ const heightClasses = hasHalfHeight
                 class="group flex h-12 w-full cursor-grab touch-none items-center justify-center outline-none active:cursor-grabbing"
                 type="button"
                 data-ac-sheet-bottom-handle
-                data-label-expand={labels.expand}
-                data-label-collapse={labels.collapse}
+                data-label-handle={labels.handle}
                 data-label-close={labels.close}
                 {...handleAttrs}
               >
@@ -252,14 +252,11 @@ const heightClasses = hasHalfHeight
       const content = sheet.querySelector<HTMLElement>(
         "[data-ac-sheet-bottom-content]"
       )!;
-      const { labelExpand, labelCollapse, labelClose } = handle.dataset;
-      // the handle's state and name, for a sheet with two heights or states
+      const { labelHandle, labelClose } = handle.dataset;
+      // the handle's state, for a sheet with two heights or states
       const showExpanded = (expanded: boolean) => {
         handle.setAttribute("aria-expanded", String(expanded));
-        handle.setAttribute(
-          "aria-label",
-          expanded ? labelCollapse! : labelExpand!
-        );
+        handle.setAttribute("aria-label", labelHandle!);
       };
 
       // A standard sheet: its content shown or hidden

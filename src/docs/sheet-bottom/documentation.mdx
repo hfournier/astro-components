@@ -17,10 +17,10 @@ props:
     default: '"surface-container-low"'
     description: The sheet's background role, M3's by default. Text, links and focus rings follow the chosen background.
   - name: dragHandleLabels
-    type: "{ expand?: string; collapse?: string; close?: string }"
+    type: "{ handle?: string; close?: string }"
     required: false
-    default: "{ expand: 'Expand', collapse: 'Collapse', close: 'Close' }"
-    description: The drag handle's accessible names, each for what it does next. `expand` and `collapse` name a handle that changes the sheet's height, and `close` names a modal sheet's handle when the sheet has one height. `close` also names a modal sheet's full-height close button. They're in English by default, so a page in another language should pass all three.
+    default: "{ handle: 'Drag handle', close: 'Close' }"
+    description: The drag handle's accessible names. `handle` names a handle that changes the sheet's height, whose `aria-expanded` says which height the sheet is at. `close` names a modal sheet's handle when the sheet has one height, and its full-height close button. They're in English by default, so a page in another language should pass both.
   - name: headline
     type: string
     required: false
@@ -74,7 +74,7 @@ As M3 asks, a modal sheet opens at no more than half the window's height. If its
 
 ## Labels
 
-The drag handle is the only part of the sheet with a label, and its role is button. Its name says what it does next: "Expand" or "Collapse", or "Close" for a modal sheet with one height. Pass `dragHandleLabels` to put these in the page's language.
+The drag handle is the only part of the sheet with a label, and its role is button. As in Material's Jetpack Compose, it's named "Drag handle", and that name stays the same while it expands and collapses the sheet; its `aria-expanded` says which. A modal sheet with one height is different: its handle closes it, so it's named "Close" and has no expanded state. Pass `dragHandleLabels` to put these in the page's language.
 
 ## Content
 
