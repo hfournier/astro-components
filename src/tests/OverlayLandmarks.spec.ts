@@ -1,40 +1,46 @@
 import { test, expect } from "./support/a11y-fixture";
 
-// A modal Dialog, SheetSide and SheetBottom render their headline row in a <header> (and
-// Dialog and SheetSide their actions in a <footer>). Outside <main> and any sectioning element, a
-// bare <header> or <footer> is a banner or contentinfo landmark, which an overlay's title row and
-// buttons aren't. /tests/overlay-landmarks places one of each outside <main>. footerAction is
-// the button in the overlay's footer, for those that have one.
+// A modal Dialog and SheetSide render their headline row in a <header>, and SheetBottom its drag
+// handle (and Dialog and SheetSide their actions in a <footer>). Outside <main> and any sectioning
+// element, a bare <header> or <footer> is a banner or contentinfo landmark, which an overlay's top
+// row and buttons aren't. /tests/overlay-landmarks places one of each outside <main>. name is the
+// overlay's accessible name, inHeader what its header holds, and footerAction the button in its
+// footer, for those that have one.
 const overlays = [
   {
     component: "Dialog",
     trigger: "Open dialog",
-    headline: "Dialog headline",
+    name: "Dialog headline",
+    inHeader: { role: "heading", name: "Dialog headline" },
     footerAction: "Done",
   },
   {
     component: "SheetSide",
     trigger: "Open side sheet",
-    headline: "Side sheet headline",
+    name: "Side sheet headline",
+    inHeader: { role: "heading", name: "Side sheet headline" },
     footerAction: "Save",
   },
   {
     component: "SheetBottom",
     trigger: "Open bottom sheet",
-    headline: "Bottom sheet headline",
+    name: "Bottom sheet",
+    // its drag handle, which closes it, as its content fits in one height
+    inHeader: { role: "button", name: "Close" },
   },
-];
+] as const;
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/tests/overlay-landmarks");
 });
 
-for (const { component, trigger, headline, footerAction } of overlays) {
+for (const { component, trigger, name, inHeader, ...rest } of overlays) {
+  const footerAction = "footerAction" in rest ? rest.footerAction : undefined;
   test(`an open modal ${component} outside <main> adds no banner or contentinfo landmark`, async ({
     page,
   }) => {
     await page.getByRole("button", { name: trigger }).click();
-    const overlay = page.getByRole("dialog", { name: headline });
+    const overlay = page.getByRole("dialog", { name });
     await expect(overlay).toBeVisible();
 
     // The elements are still there; only their landmark roles are gone
@@ -44,7 +50,9 @@ for (const { component, trigger, headline, footerAction } of overlays) {
 
     // ...and what's in them keeps its own roles
     await expect(
-      overlay.getByRole("heading", { level: 2, name: headline })
+      overlay
+        .locator("header")
+        .getByRole(inHeader.role, { name: inHeader.name, exact: true })
     ).toBeVisible();
     if (footerAction) {
       const footer = overlay.locator("footer");

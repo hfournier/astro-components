@@ -1,11 +1,15 @@
 ---
 title: Modal SheetBottom with scrolling content
-description: A modal sheet opens at no more than half the window's height, and its content scrolls under the drag handle and headline. When the content is taller than that, a click on the handle (or a drag up) expands the sheet to the window's height less M3's top margin, with a close button by its headline, and another click returns it to half.
+description: A modal sheet opens at no more than half the window's height, and its content scrolls under the drag handle. When the content is taller than that, a click on the handle (or a drag up) expands the sheet to the window's height less M3's top margin, and another click returns it to half. As M3 asks of a sheet that reaches full height, its content starts with a row holding a heading, which names the sheet through `aria-labelledby`, and a close button with `command="request-close"`. The row is sticky, so it stays in place while the rest scrolls.
 ---
 
 <Button command="show-modal" commandfor="sheet-bottom-scrolling">Open tall bottom sheet</Button>
 
-<SheetBottom id="sheet-bottom-scrolling" headline="Terms" isModal>
+<SheetBottom id="sheet-bottom-scrolling" aria-labelledby="sheet-bottom-scrolling-title" isModal>
+  <div class="sticky top-0 z-10 -mx-6 mb-2 flex items-center gap-2 bg-(--theme-color-wrapper-bg) ps-6 pe-4 pb-2">
+    <h2 class="min-w-0 flex-1 text-[1.375rem] leading-7" id="sheet-bottom-scrolling-title">Terms</h2>
+    <ButtonIcon icon="close" label="Close" command="request-close" commandfor="sheet-bottom-scrolling" />
+  </div>
   <p class="mb-4">Paragraph 1 of the terms.</p>
   <p class="mb-4">Paragraph 2 of the terms.</p>
   <p class="mb-4">Paragraph 3 of the terms.</p>

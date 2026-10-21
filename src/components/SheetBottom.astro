@@ -4,32 +4,34 @@ import crypto from "node:crypto";
 import { twMerge } from "tailwind-merge";
 import type { BgColorType } from "../types";
 import BaseWrapper from "./BaseWrapper.astro";
-import ButtonIcon from "./ButtonIcon.astro";
 import Header from "./Header.astro";
 
 // An M3 bottom sheet: supplementary content anchored to the bottom of the window, in two kinds.
 //
 // - Standard (default): an <aside> stuck to the bottom of its scroll container, alongside the
-//   main content, both usable at once. Its drag handle collapses it to its handle (and headline)
-//   and expands it again, by a click or a drag.
+//   main content, both usable at once. Its drag handle collapses it to the handle alone and
+//   expands it again, by a click or a drag.
 // - Modal (isModal): a <dialog> that slides up over the page under a scrim, opened with
 //   showModal(), so focus stays inside it, Escape closes it and the page is inert until it does.
 //   Open it with a button carrying command="show-modal" and commandfor set to the sheet's id. It
 //   also closes on a click on the scrim. As M3 asks, it opens at no more than half the window's
 //   height; content taller than that gives it a second, full height, which its drag handle
-//   toggles (a click, or a drag up and down), with a close button in its header. Otherwise the
-//   handle closes it, on a click or a drag down.
+//   toggles (a click, or a drag up and down). Otherwise the handle closes it, on a click or a
+//   drag down.
+//
+// As in M3 and Compose, the sheet is a container, an optional drag handle and (modal) a scrim:
+// it has no headline or close button of its own. Name it with aria-label, or aria-labelledby
+// pointing at a heading in its content. A sheet that can reach full height should have a close
+// button in its content, as M3 asks, such as one with command="request-close" in a top row.
 type Props = Omit<HTMLAttributes<"aside" | "dialog">, "id"> & {
   bgColor?: BgColorType;
   // The drag handle's accessible names, as in Compose: `handle` while it changes the sheet's
-  // height, its state in aria-expanded; `close` while it closes a modal sheet with one height
-  // (also the full-height close button's name). In English by default, so pass them on a page in
-  // another language.
+  // height, its state in aria-expanded; `close` while it closes a modal sheet with one height.
+  // In English by default, so pass them on a page in another language.
   dragHandleLabels?: { handle?: string; close?: string };
-  headline?: string;
   // Needed to open a modal sheet with commandfor; one is made up if it's left out
   id?: string;
-  // A standard sheet only: starts collapsed to its drag handle (and headline)
+  // A standard sheet only: starts collapsed to its drag handle
   isCollapsed?: boolean;
   isModal?: boolean;
   showDragHandle?: boolean;
@@ -37,7 +39,6 @@ type Props = Omit<HTMLAttributes<"aside" | "dialog">, "id"> & {
 const {
   bgColor = "surface-container-low",
   dragHandleLabels,
-  headline,
   id = `ac-sheet-bottom-${crypto.randomUUID()}`,
   isCollapsed = false,
   isModal = false,
@@ -47,9 +48,7 @@ const {
 } = Astro.props;
 
 const Tag = isModal ? "dialog" : "aside";
-const headlineId = headline ? `${id}-headline` : undefined;
 const contentId = `${id}-content`;
-const hasHeader = showDragHandle || !!headline;
 const labels = {
   handle: "Drag handle",
   close: "Close",
@@ -106,15 +105,14 @@ const heightClasses = hasHalfHeight
 <Tag
   class:list={twMerge(placementClasses, widthClasses, modalClasses, classList)}
   id={id}
-  aria-labelledby={headlineId}
   data-ac-sheet-bottom={isModal ? "modal" : "standard"}
   {...attrs}
 >
   {
-    /* Its height follows its content, up to its height cap. Only the content scrolls. The
-       headline is M3 Title Large. A BaseWrapper, so a modal sheet's focus rings and links follow
-       its own surface, not the page it was placed in. role="none" on the header: in a modal sheet outside <main> and
-       any sectioning element, it'd otherwise be the page's banner landmark while it's open. */
+    /* Its height follows its content, up to its height cap. Only the content scrolls. A
+       BaseWrapper, so a modal sheet's focus rings and links follow its own surface, not the page
+       it was placed in. role="none" on the header: in a modal sheet outside <main> and any
+       sectioning element, it'd otherwise be the page's banner landmark while it's open. */
   }
   <BaseWrapper
     {bgColor}
@@ -124,61 +122,24 @@ const heightClasses = hasHalfHeight
     ]}
   >
     {
-      hasHeader && (
+      /* M3: the sheet's whole top 48px is the handle's target, the 4px bar centred in it, 22px
+         above and below. touch-none, so a drag on it isn't taken as a scroll. */
+      showDragHandle && (
         <Header
           bgColor="transparent"
           class="flex shrink-0 flex-col"
           role="none"
         >
-          {
-            /* M3: the sheet's whole top 48px is the handle's target, the 4px bar centred in it,
-               22px above and below. touch-none, so a drag on it isn't taken as a scroll. */
-            showDragHandle && (
-              <button
-                class="group flex h-12 w-full cursor-grab touch-none items-center justify-center outline-none active:cursor-grabbing"
-                type="button"
-                data-ac-sheet-bottom-handle
-                data-label-handle={labels.handle}
-                data-label-close={labels.close}
-                {...handleAttrs}
-              >
-                <span class="block h-1 w-8 rounded-full bg-(--theme-color-on-bg-variant)/40 group-focus-visible:ring-3 group-focus-visible:ring-(--theme-color-focus-ring-on-bg) group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-(--theme-color-wrapper-bg)" />
-              </button>
-            )
-          }
-          {
-            /* At full height, M3 adds a close affordance, at the end of the headline's row. It
-               fires a cancelable cancel, as Escape does. -my-1.5 keeps the row at the headline's
-               28px. */
-            (headline || hasHalfHeight) && (
-              <div
-                class:list={[
-                  "flex items-center gap-2 ps-6",
-                  hasHalfHeight && "in-data-expanded:pe-3",
-                  headline ? "pe-6 pb-4" : "in-data-expanded:pb-4",
-                  !showDragHandle && "pt-6",
-                ]}
-              >
-                {headline && (
-                  <h2
-                    class="min-w-0 flex-1 text-[1.375rem] leading-7 font-normal tracking-normal"
-                    id={headlineId}
-                  >
-                    {headline}
-                  </h2>
-                )}
-                {hasHalfHeight && (
-                  <ButtonIcon
-                    class="-my-1.5 ms-auto hidden in-data-expanded:grid"
-                    icon="close"
-                    label={labels.close}
-                    command="request-close"
-                    commandfor={id}
-                  />
-                )}
-              </div>
-            )
-          }
+          <button
+            class="group flex h-12 w-full cursor-grab touch-none items-center justify-center outline-none active:cursor-grabbing"
+            type="button"
+            data-ac-sheet-bottom-handle
+            data-label-handle={labels.handle}
+            data-label-close={labels.close}
+            {...handleAttrs}
+          >
+            <span class="block h-1 w-8 rounded-full bg-(--theme-color-on-bg-variant)/40 group-focus-visible:ring-3 group-focus-visible:ring-(--theme-color-focus-ring-on-bg) group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-(--theme-color-wrapper-bg)" />
+          </button>
         </Header>
       )
     }
@@ -186,7 +147,7 @@ const heightClasses = hasHalfHeight
       class:list={[
         "min-h-0 flex-1 overflow-y-auto px-6 pb-6",
         "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-inset",
-        !hasHeader && "pt-6",
+        !showDragHandle && "pt-6",
       ]}
       id={contentId}
       hidden={startsCollapsed}
