@@ -6,7 +6,14 @@ import { test, expect } from "./support/a11y-fixture";
 // row and buttons aren't. /tests/overlay-landmarks places one of each outside <main>. name is the
 // overlay's accessible name, inHeader what its header holds, and footerAction the button in its
 // footer, for those that have one.
-const overlays = [
+type Overlay = {
+  component: string;
+  trigger: string;
+  name: string;
+  inHeader: { role: "heading" | "button"; name: string };
+  footerAction?: string;
+};
+const overlays: Overlay[] = [
   {
     component: "Dialog",
     trigger: "Open dialog",
@@ -28,14 +35,13 @@ const overlays = [
     // its drag handle, which closes it, as its content fits in one height
     inHeader: { role: "button", name: "Close" },
   },
-] as const;
+];
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/tests/overlay-landmarks");
 });
 
-for (const { component, trigger, name, inHeader, ...rest } of overlays) {
-  const footerAction = "footerAction" in rest ? rest.footerAction : undefined;
+for (const { component, trigger, name, inHeader, footerAction } of overlays) {
   test(`an open modal ${component} outside <main> adds no banner or contentinfo landmark`, async ({
     page,
   }) => {

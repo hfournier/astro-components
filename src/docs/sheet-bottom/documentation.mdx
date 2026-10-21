@@ -46,16 +46,16 @@ slots:
     kind: any
 ---
 
+## When to use it
+
+Use a bottom sheet for content and actions that support the page, not for its main content, in compact and medium windows. In a large window, put the same content in a SheetSide.
+
 ## Anatomy
 
 As in M3 and Jetpack Compose, a bottom sheet is a container, an optional drag handle and, for a modal sheet, a scrim. It has no headline or close button of its own: what it holds is up to its content.
 
 - **Naming it:** a modal sheet is a dialog, so it needs an accessible name. Give it an `aria-label`, or put a heading in its content and set the sheet's `aria-labelledby` to the heading's `id`. A standard sheet is a complementary landmark, which a name also helps tell apart.
 - **Closing it at full height:** M3 asks for a close affordance in a modal sheet at full height, in an app bar in the sheet. Put a row at the top of the content with a close ButtonIcon that has `command="request-close"` and `commandfor` set to the sheet's `id`. Like Escape, it fires a cancelable `cancel` event. The scrolling example below shows one.
-
-## When to use it
-
-Use a bottom sheet for content and actions that support the page, not for its main content, in compact and medium windows. In a large window, put the same content in a SheetSide.
 
 ## Standard and modal
 
