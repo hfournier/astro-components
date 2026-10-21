@@ -5,11 +5,14 @@ import { twMerge } from "tailwind-merge";
 import type { SvgIconNameTypes } from "../svgs";
 import Badge from "./Badge.astro";
 import Icon from "./Icon.astro";
-import { badgedName, isBadgeCount, isCurrentPath } from "../utils";
+import { badgedName, isCurrentPath } from "../utils";
 
 type Props = Omit<HTMLAttributes<"a">, "href"> & {
   href: string | URL;
   icon: SvgIconNameTypes;
+  // M3: shown instead of `icon` on the current destination, usually its filled version, so the
+  // current destination doesn't rely on color alone
+  activeIcon?: SvgIconNameTypes;
   label: string;
   // A Badge on the icon: a count, or "" for a dot. 0 shows no badge.
   badgeLabel?: string | number;
@@ -19,6 +22,7 @@ type Props = Omit<HTMLAttributes<"a">, "href"> & {
 const {
   href,
   icon,
+  activeIcon,
   label,
   badgeLabel,
   badgeDescription,
@@ -29,10 +33,10 @@ const {
 // The current page's destination is its own href, or a page under it (see isCurrentPath). An
 // explicit `aria-current` passed by the consumer still wins, since `attrs` is spread after it.
 const isCurrent = isCurrentPath(Astro.url.pathname, href);
+const ariaCurrent = attrs["aria-current"] ?? (isCurrent ? "page" : undefined);
+const shownIcon = (ariaCurrent === "page" && activeIcon) || icon;
 
 const hasBadge = badgeLabel !== undefined;
-// A badge with content, rather than a dot (Badge hides 0)
-const hasCount = isBadgeCount(badgeLabel);
 const badgeAnchorName = `--anchorname-${crypto.randomUUID()}-badge`;
 // The badge is aria-hidden, so its count or description joins the item's name
 const accessibleName = badgedName(label, badgeLabel, badgeDescription);
@@ -40,12 +44,17 @@ const accessibleName = badgedName(label, badgeLabel, badgeDescription);
 
 <a
   class:list={twMerge(
-    // M3 collapsed rail item: Label Medium below the icon's indicator
-    "group/item relative isolate flex w-full flex-col items-center gap-1 rounded-2xl text-center text-xs leading-4 font-medium tracking-[0.5px]",
+    // M3 collapsed rail item: Label Medium below the icon's indicator, in a 64px target (6px
+    // above and below)
+    "group/item relative isolate flex w-full flex-col items-center gap-1 rounded-2xl py-1.5 text-center text-xs leading-4 font-medium tracking-[0.5px]",
     "text-(--theme-color-on-surface-variant) aria-[current=page]:text-(--theme-color-secondary)",
     // M3 expanded rail item: Label Large beside the icon. The item itself is the indicator here.
-    "rail-expanded:h-14 rail-expanded:w-fit rail-expanded:flex-row rail-expanded:gap-2 rail-expanded:rounded-full rail-expanded:px-4 rail-expanded:text-sm rail-expanded:leading-5 rail-expanded:tracking-[0.1px] rail-expanded:whitespace-nowrap",
+    // A label too long for the rail wraps between words, and the item grows to hold it.
+    "rail-expanded:min-h-14 rail-expanded:w-fit rail-expanded:flex-row rail-expanded:gap-2 rail-expanded:rounded-full rail-expanded:px-4 rail-expanded:text-start rail-expanded:text-sm rail-expanded:leading-5 rail-expanded:tracking-[0.1px]",
     "rail-expanded:aria-[current=page]:bg-(--theme-color-secondary-container) rail-expanded:aria-[current=page]:text-(--theme-color-on-secondary-container)",
+    // M3: the expanded item's target spans the rail, though its indicator hugs its content. The
+    // ::after reaches the end of the row: the rail's width less its 20px side padding (see NavRail).
+    "after:absolute after:inset-y-0 after:start-0 after:hidden after:w-[calc(100cqw-2.5rem)] rail-expanded:after:block",
     // expanded state layer, on the whole indicator (collapsed, it's on the icon's indicator below)
     "before:absolute before:inset-0 before:-z-10 before:hidden before:rounded-full before:bg-(--theme-color-on-secondary-container) before:opacity-0 rail-expanded:before:block",
     "hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10",
@@ -55,14 +64,14 @@ const accessibleName = badgedName(label, badgeLabel, badgeDescription);
     classList
   )}
   href={href}
-  aria-current={isCurrent ? "page" : undefined}
+  aria-current={ariaCurrent}
   aria-label={accessibleName}
   data-ac-nav-rail-item
   {...attrs}
 >
   <span
     class:list={[
-      "relative isolate flex h-8 w-14 items-center justify-center rounded-full",
+      "relative isolate flex h-8 w-14 shrink-0 items-center justify-center rounded-full",
       "group-aria-[current=page]/item:bg-(--theme-color-secondary-container) group-aria-[current=page]/item:text-(--theme-color-on-secondary-container)",
       // M3 state layer, on the indicator only, in on-secondary-container for active and inactive items
       "before:absolute before:inset-0 before:-z-10 before:rounded-full before:bg-(--theme-color-on-secondary-container) before:opacity-0",
@@ -74,16 +83,16 @@ const accessibleName = badgedName(label, badgeLabel, badgeDescription);
     ]}
   >
     <Icon
-      name={icon}
+      name={shownIcon}
       style={hasBadge ? `anchor-name: ${badgeAnchorName}` : undefined}
     />
   </span>
   <span>
     {label}
     {
-      hasCount && (
-        // Expanded, a count follows the label rather than covering it, 8px from the icon (see
-        // Badge for its inline alignment); collapsed, it's on the icon below
+      hasBadge && (
+        // M3: expanded, a badge, count or dot, follows the label rather than covering the icon
+        // (see Badge for its inline alignment); collapsed, it's on the icon below
         <Badge
           class="ms-1 rail-collapsed:hidden"
           label={badgeLabel}
@@ -95,7 +104,7 @@ const accessibleName = badgedName(label, badgeLabel, badgeDescription);
   {
     hasBadge && (
       <Badge
-        class:list={[hasCount && "rail-expanded:hidden"]}
+        class="rail-expanded:hidden"
         label={badgeLabel}
         style={`--ac-anchorname-badge: ${badgeAnchorName}`}
       />

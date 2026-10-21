@@ -1,0 +1,61 @@
+---
+// An expandable NavRail, which the site's own (in BaseLayout) isn't. A page can have only one
+// rail, so this page has its own layout rather than BaseLayout's. The rail is labelled "Test
+// rail", centers its items and draws its divider; its destinations are this page (current, with a
+// filled active icon and a section of sub-items), a short one with a dot badge, and one with a label
+// too long for a 220px rail. See src/tests/NavRail.spec.ts.
+import "../../styles/global.css";
+import BaseHead from "../../internal/BaseHead.astro";
+import Fab from "../../components/Fab.astro";
+import Main from "../../components/Main.astro";
+import NavRail from "../../components/NavRail.astro";
+import NavRailItem from "../../components/NavRailItem.astro";
+import NavRailSubItems from "../../components/NavRailSubItems.astro";
+---
+
+<html lang="en">
+  <BaseHead
+    title="Expandable NavRail"
+    description="An expandable NavRail, with centered items and a divider"
+  />
+  <body
+    class="grid grid-cols-1 bg-(--theme-color-surface) text-(--theme-color-on-surface) medium:grid-cols-[auto_1fr]"
+  >
+    <NavRail label="Test rail" itemAlign="center" showDivider>
+      <Fab icon="search" label="Search" slot="fab" />
+
+      <NavRailItem
+        href="/tests/nav-rail-expandable"
+        icon="home"
+        activeIcon="home-fill"
+        label="Home"
+      />
+      <NavRailItem
+        href="/tests/badge"
+        icon="notifications"
+        activeIcon="notifications-fill"
+        label="Badges"
+        badgeLabel=""
+      />
+      <NavRailItem
+        href="/tests/nav-rail-item"
+        icon="settings"
+        label="Settings for notifications and alerts"
+      />
+
+      <NavRailSubItems
+        slot="sub-items"
+        parentHref="/tests/nav-rail-expandable"
+        subItems={[
+          { href: "#first", label: "First" },
+          { href: "#second", label: "Second" },
+        ]}
+      />
+    </NavRail>
+
+    <Main class="space-y-4 px-4 pt-28 medium:px-6 medium:pt-6">
+      <h1>Expandable NavRail</h1>
+      <p>The page beside the rail.</p>
+    </Main>
+  </body>
+</html>

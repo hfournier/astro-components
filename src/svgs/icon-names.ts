@@ -25,6 +25,7 @@ export const svgIconNames = [
   "close",
   "code",
   "code_blocks",
+  "code_blocks-fill",
   "content_copy",
   "dark_mode",
   "delete",

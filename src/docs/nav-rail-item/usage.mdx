@@ -1,11 +1,16 @@
 ---
 title: NavRailItem
-description: The following example shows three NavRailItems in a NavRail, each with its required `icon`, `label` and `href` properties. The second has a Badge with a count, set with `badgeLabel`.
+description: The following example shows three NavRailItems in a NavRail, each with its required `icon`, `label` and `href` properties. The first and last have an `activeIcon`, their filled icon, shown while they're the current destination. The second has a Badge with a count, set with `badgeLabel`.
 show: code-only
 ---
 
 <NavRail>
-  <NavRailItem href="/" icon="home" label="Home" />
+  <NavRailItem href="/" icon="home" activeIcon="home-fill" label="Home" />
   <NavRailItem href="/inbox" icon="inbox" label="Inbox" badgeLabel={3} />
-  <NavRailItem href="/settings" icon="settings" label="Settings" />
+  <NavRailItem
+    href="/settings"
+    icon="settings"
+    activeIcon="settings-fill"
+    label="Settings"
+  />
 </NavRail>

@@ -33,6 +33,21 @@ export async function box(target: Locator) {
   return rect;
 }
 
+/**
+ * Whether an element casts no shadow: `none`, or only transparent layers (Tailwind's shadow
+ * utilities always stack its ring and shadow layers, transparent while unused).
+ */
+export const castsNoShadow = (target: Locator) =>
+  target.evaluate((el) => {
+    const shadow = getComputedStyle(el).boxShadow;
+    return (
+      shadow === "none" ||
+      shadow
+        .split(/,(?![^(]*\))/)
+        .every((layer) => /rgba\(0, 0, 0, 0\)|\/ 0\)/.test(layer))
+    );
+  });
+
 /** Waits for the page's finite animations and transitions, so boxes measured after it are at rest. */
 export const settled = (page: Page) =>
   page.evaluate(() =>

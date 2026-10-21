@@ -78,4 +78,4 @@ A FAB has no disabled style. If its action isn't available, leave the FAB out ra
 
 ## In a NavRail
 
-In a NavRail's `fab` slot, the rail decides whether the FAB is extended, as M3 specifies: extended while the rail is expanded, and a plain FAB while it's collapsed, whatever `isExtended` says. It follows the rail's width, using a container query on the rail, so it animates between the two as the rail expands and collapses. Its tooltip follows too, showing only while the rail is collapsed and the label is hidden.
+In a NavRail's `fab` slot, the rail decides whether the FAB is extended, as M3 specifies: extended while the rail is expanded, and a plain FAB while it's collapsed, whatever `isExtended` says. It follows the rail's width, using a container query on the rail, so it animates between the two as the rail expands and collapses. Its tooltip follows too, showing only while the rail is collapsed and the label is hidden. As M3 asks of a FAB nested in another component, it sits at elevation 0 in the rail (and in a NavDrawer), at rest and on hover, rather than its usual 3 and 4.

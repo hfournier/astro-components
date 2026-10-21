@@ -1,0 +1,11 @@
+Use a navigation rail for three to seven main destinations, on medium windows and up. It's the page's only visible navigation, in the same place on every page: along the leading edge of the window, outside any panes. In a medium window with only a few destinations, consider a NavBar instead. The modal configuration below medium also suits dense layouts, or a site with many destinations.
+
+- **Labels:** one word where possible, and meaningful. Never truncate a label or set it in a smaller type to make it fit.
+- **Icons:** pass a filled `activeIcon` for each destination that has one (see NavRailItem), so the current destination shows through its icon, not only its color.
+- **The FAB** goes at the top, above the destinations, never below them.
+- **A logo** at the top of the rail mustn't look like a button, and must never be the menu button.
+- **Colors:** keep the default colors. Use at most two colors for the destinations, with at least 3:1 contrast.
+
+### When not to use it
+
+Never use a navigation rail and a NavBar at the same time, and never lay a rail out horizontally: that's a NavBar. Don't hide a collapsed rail until its menu button is pressed; M3 says the collapsed rail should stay visible.

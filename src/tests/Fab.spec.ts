@@ -1,6 +1,12 @@
 import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "./support/a11y-fixture";
-import { box, resolvedColor } from "./support/helpers";
+import {
+  box,
+  castsNoShadow,
+  expectFocusRing,
+  resolvedColor,
+  settled,
+} from "./support/helpers";
 
 // Each case on /tests/fab is a Section with data-testid="fab-<caseId>". A Fab's accessible name
 // is its `label`, visible or not. Each label names the color or size it shows, except the
@@ -308,5 +314,25 @@ test.describe("Fab", () => {
     expect(atRest).not.toBe("none");
     await noProps.hover();
     await expect.poll(shadow).not.toBe(atRest);
+  });
+
+  test("in a rail, collapsed or expanded, sits at elevation 0, also on hover", async ({
+    page,
+  }) => {
+    for (const caseId of ["rail-collapsed", "rail-expanded"] as const) {
+      for (const name of ["Search", "Compose"]) {
+        const inRail = fab(page, caseId, name);
+        expect(await castsNoShadow(inRail)).toBe(true);
+        await inRail.hover();
+        await settled(page);
+        expect(await castsNoShadow(inRail)).toBe(true);
+      }
+    }
+  });
+
+  test("in a rail, still shows its focus ring", async ({ page }) => {
+    const inRail = fab(page, "rail-collapsed", "Search");
+    await inRail.focus();
+    await expectFocusRing(inRail);
   });
 });
