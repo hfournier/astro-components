@@ -78,6 +78,19 @@ const usage = defineCollection({
   }),
 });
 
+// Guidance sections every component can have, rendered by the page in a fixed place under a
+// fixed heading, so they can't drift in name or order the way free prose in a
+// documentation.mdx body does. The body holds only the heading-less section content.
+const whenToUse = defineCollection({
+  loader: glob({ pattern: "**/when-to-use.mdx", base: "./src/docs" }),
+  schema: z.object({}),
+});
+
+const accessibility = defineCollection({
+  loader: glob({ pattern: "**/accessibility.mdx", base: "./src/docs" }),
+  schema: z.object({}),
+});
+
 const examples = defineCollection({
   loader: glob({ pattern: "**/example-*.mdx", base: "./src/docs" }),
   schema: z.object({
@@ -94,4 +107,11 @@ const tests = defineCollection({
   }),
 });
 
-export const collections = { components, examples, tests, usage };
+export const collections = {
+  accessibility,
+  components,
+  examples,
+  tests,
+  usage,
+  whenToUse,
+};

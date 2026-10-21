@@ -1,0 +1,3 @@
+The FAB is a disclosure button: it's announced as expanded or collapsed, and its name stays `label` while it's open. Opening the menu leaves focus on the FAB, now the close button, as M3 specifies. The items follow it in the DOM, so Tab (or Down) from the open FAB moves to the top item, then down through the rest. Space or Enter activates the focused button. Closed, the items are hidden from everyone.
+
+The menu closes, returning focus to the FAB, on Escape, a click outside it, the FAB again, or choosing an item (after the item's own handlers have run).

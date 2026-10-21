@@ -90,11 +90,3 @@ Use a toggle for a binary action that the button turns on and off, such as favor
 A toggle uses the outlined icon while it's unselected and the filled one while it's selected. This isn't just style: M3 requires the selected state to show through at least two properties, not color alone. Give `icon` the outlined name, such as `"bookmark"`, and a toggle switches to `"bookmark-fill"` on its own. Almost every Material Symbol has a filled version; if `src/assets/svgs` doesn't have it yet, add it as `<name>-fill.svg` (and to `src/svgs/icon-names.ts`). For an icon whose filled and outlined shapes look the same, M3 makes the selected icon bolder (semibold or bold) instead, so supply a bolder SVG as `selectedIcon`.
 
 A button that shows and hides other content, such as a menu or a panel, isn't a toggle: leave out `isToggle` and give it `aria-expanded` instead, as MenuToggle does. Never use both on one button.
-
-## Accessibility
-
-An icon button has no visible text, so `label` is required: it's the button's accessible name, such as `"Delete"` or `"Add to favorites"`. Name the action, not the icon. The tooltip repeats the label for sighted users, so it's hidden from assistive tech. It can be dismissed with Escape, and stays open while the pointer is over it, as WCAG 1.4.13 requires.
-
-A toggle keeps the same label whether it's selected or not (`"Bookmark"`, not `"Add bookmark"` / `"Remove bookmark"`), since screen readers announce the pressed state from `aria-pressed`. To react to a change, listen for the button's `click` event and read the new state from `aria-pressed`.
-
-The default color roles meet M3's contrast requirement. If you change them, keep a contrast of at least 3:1 between the icon and its container, or the background behind it for a standard button.

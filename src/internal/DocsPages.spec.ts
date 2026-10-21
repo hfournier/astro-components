@@ -27,4 +27,58 @@ test.describe("Docs pages", () => {
       ).toBeVisible();
     });
   }
+
+  // SheetBottom's page has every section: When to use it and Accessibility from their own files,
+  // Usage, its documentation.mdx body (Anatomy...), Properties, Slots and Examples
+  test("sections render in a fixed order, matching the table of contents", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/components/sheet-bottom");
+
+    // Overview, the first link, goes to the top of the page, so it's left out
+    const toc = await page
+      .getByRole("navigation", { name: "Table of contents" })
+      .getByRole("link")
+      .evaluateAll((anchors) => {
+        const entries = anchors.slice(1).map((a) => ({
+          text: a.textContent!.trim(),
+          target: document.getElementById(
+            decodeURIComponent((a as HTMLAnchorElement).hash.slice(1))
+          ),
+        }));
+        return entries.map(({ text, target }, i) => {
+          const previous = entries[i - 1]?.target;
+          return {
+            text,
+            targetText: target?.textContent?.trim(),
+            followsPrevious:
+              !previous ||
+              (!!target &&
+                !!(
+                  previous.compareDocumentPosition(target) &
+                  Node.DOCUMENT_POSITION_FOLLOWING
+                )),
+          };
+        });
+      });
+
+    for (const { text, targetText, followsPrevious } of toc) {
+      expect(targetText, text).toBe(text);
+      expect(followsPrevious, text).toBe(true);
+    }
+
+    const sections = [
+      "When to use it",
+      "Usage",
+      "Anatomy",
+      "Accessibility",
+      "Properties",
+      "Slots",
+      "Examples",
+    ];
+    expect(
+      toc.map(({ text }) => text).filter((text) => sections.includes(text))
+    ).toEqual(sections);
+  });
 });

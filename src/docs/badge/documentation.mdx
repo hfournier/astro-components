@@ -21,15 +21,6 @@ props:
     description: 'The default, `anchored`, overlaps the top-end corner of the element named by `--ac-anchorname-badge` (see Anchoring), typically an icon. `inline` places the badge in the text flow, such as after a label that has no icon to anchor to. As in M3, an inline dot sits on the text baseline, and an inline badge with content aligns its top with the top of the text''s capital letters.'
 ---
 
-## When to use it
-
-As in M3, a badge belongs on a navigation destination, such as an item in a NavBar or NavRail, an app bar's action or a Tab, to show a notification, a count or a status:
-
-- **A small dot** for an unread notification without a count.
-- **A large badge** for a count or a short status, up to 4 characters.
-
-When a badge marks unread notifications, hide it once its destination is selected, by no longer passing a `label` (or rendering the Badge) on that page.
-
 ## Placement
 
 - **Where space is tight,** such as an app bar, use a dot, which stays inside the icon's corner, so it can't run into the edge of the screen.
@@ -53,11 +44,3 @@ The badge follows the anchor named in its `--ac-anchorname-badge` custom propert
 <Icon class="[anchor-name:--inbox-badge]" name="inbox" label="Inbox, 3 unread" />
 <Badge class="[--ac-anchorname-badge:--inbox-badge]" label={3} />
 ```
-
-## Accessibility
-
-A badge is visual only: it's always rendered with `aria-hidden="true"`, since screen readers would otherwise read its count on its own ("3") with no context. Put the full meaning in the decorated element's accessible name instead, after its own name, as M3 does: a count, such as Icon's `label="Inbox, 3 unread"`, and keep the two in sync whenever the count changes.
-
-A dot needs words too, or a screen-reader user never learns there's anything new: M3 announces it as "New notification", e.g. `label="Inbox, new notification"`. NavBarItem, NavRailItem and Tab add a count or "New notification" to their names for you, and their `badgeDescription` prop changes the phrase.
-
-Use Icon's `label` prop rather than a raw `aria-label`: without `label`, Icon adds `aria-hidden="true"`, which hides the `aria-label` too.

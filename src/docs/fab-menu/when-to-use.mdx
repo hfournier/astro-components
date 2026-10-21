@@ -1,0 +1,6 @@
+Use a FAB menu, as M3 does, to open 2 to 6 related actions from the FAB, in place of a speed dial or a stack of small FABs.
+
+### When not to use it
+
+- **Not in a NavRail, or beside a toolbar.** M3 says not to use a FAB menu when the FAB is paired with another component, such as a floating toolbar or a navigation rail, to avoid clutter. A plain Fab is fine there. In particular, don't put a FabMenu in a NavRail's `fab` slot: an expanded rail extends its FAB, and M3 doesn't open a FAB menu from an extended FAB (or from any other component).
+- **Not for unrelated actions.** Its 2-6 items should be closely related under the FAB's one action, such as Share. For a single action, use a Fab.

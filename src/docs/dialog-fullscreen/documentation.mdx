@@ -40,17 +40,6 @@ slots:
     kind: any
 ---
 
-## When to use it
-
-Use a full-screen dialog for a task that needs the whole screen of a phone:
-
-- a task with several steps, such as creating a calendar event with its title, date, location and time
-- content that needs keyboard input, such as form fields
-- changes that aren't saved straight away
-- a task that opens other dialogs. Only a full-screen dialog can have another dialog over it.
-
-M3 keeps full-screen dialogs to compact windows, such as phones. From a medium window up, DialogFullscreen is a basic dialog, like Dialog. It changes in CSS alone, so if the window is resized while it's open, its content, form values and focus stay where they are.
-
 ## Actions
 
 The actions move with the dialog, as in M3:
@@ -69,7 +58,3 @@ If closing would lose changes, ask first, with a DialogConfirm such as "Discard 
 ## Errors
 
 Show a field's error inline, next to the field. Show a general error, such as a failed network request on save, in a basic dialog (DialogAcknowledge).
-
-## Accessibility
-
-DialogFullscreen keeps the native `dialog` role, not `alertdialog`, since it holds forms and other content. When it opens, focus goes to its first interactive element: the close button in a compact window, and the first field (or the dismissing action) from medium up. Focus stays inside it while it's open, and returns to the button that opened it when it closes.

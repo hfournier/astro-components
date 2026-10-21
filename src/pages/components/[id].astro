@@ -5,13 +5,18 @@ import {
   render,
   type CollectionEntry,
 } from "astro:content";
-import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
+import type {
+  GetStaticPaths,
+  InferGetStaticPropsType,
+  MarkdownHeading,
+} from "astro";
 import { components as mdxComponents } from "../../mdx";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Main from "../../components/Main.astro";
 import Heading from "../../components/Heading.astro";
 import Link from "../../components/Link.astro";
 import Usage from "../../internal/Usage.astro";
+import DocSection from "../../internal/DocSection.astro";
 import DocSlots from "../../internal/DocSlots.astro";
 import DocProps from "../../internal/DocProps.astro";
 import Example from "../../internal/Example.astro";
@@ -42,6 +47,16 @@ const usage = await getEntry(
   "usage",
   component.id.replace("/documentation", "/usage")
 );
+// Optional, unlike usage.mdx: getEntry would warn for each component without one
+const [whenToUse] = await getCollection(
+  "whenToUse",
+  (entry) => entry.id === component.id.replace("/documentation", "/when-to-use")
+);
+const [accessibility] = await getCollection(
+  "accessibility",
+  (entry) =>
+    entry.id === component.id.replace("/documentation", "/accessibility")
+);
 const examples = await getCollection("examples", (entry) =>
   entry.id.startsWith(component.id.replace("/documentation", "/"))
 );
@@ -58,21 +73,46 @@ const headings: ToCHeadingType[] = [];
 headings.push({ id: "", text: component.data.name, level: 1 });
 headings.push({ id: "top", text: "Overview", level: 2 });
 
+// An MDX entry's own h2/h3s. Astro has already given them ids (with its own slugger); slugging
+// their text here too reserves those ids, so a later heading with the same text gets a suffixed
+// id instead of a duplicate.
+const pushMdxHeadings = (mdxHeadings: MarkdownHeading[]) =>
+  mdxHeadings
+    .filter(({ depth }) => depth === 2 || depth === 3)
+    .forEach(({ slug, text, depth }) => {
+      slugger.slug(text);
+      headings.push({ id: slug, text, level: depth as 2 | 3 });
+    });
+
+// A When to use it or Accessibility section: the page gives its heading, the file its content
+const pushDocSection = async (
+  title: string,
+  entry: CollectionEntry<"whenToUse" | "accessibility">
+) => {
+  const headingId = slugger.slug(title);
+  headings.push({ id: headingId, text: title, level: 2 });
+  pushMdxHeadings((await render(entry)).headings);
+  return headingId;
+};
+
+// The sections below are pushed in the order the page renders them
+let whenToUseHeadingId: string | undefined;
+if (whenToUse) {
+  whenToUseHeadingId = await pushDocSection("When to use it", whenToUse);
+}
+
 let usageHeadingId: string | undefined;
 if (usage) {
   usageHeadingId = slugger.slug("Usage");
   headings.push({ id: usageHeadingId, text: "Usage", level: 2 });
 }
 
-// The documentation.mdx body renders after Usage, so its headings come next. Astro has already
-// given them ids (with its own slugger); slugging their text here too reserves those ids, so a
-// later prop/slot/example heading with the same text gets a suffixed id instead of a duplicate.
-bodyHeadings
-  .filter(({ depth }) => depth === 2 || depth === 3)
-  .forEach(({ slug, text, depth }) => {
-    slugger.slug(text);
-    headings.push({ id: slug, text, level: depth as 2 | 3 });
-  });
+pushMdxHeadings(bodyHeadings);
+
+let accessibilityHeadingId: string | undefined;
+if (accessibility) {
+  accessibilityHeadingId = await pushDocSection("Accessibility", accessibility);
+}
 
 let propsHeadingId: string | undefined;
 let propsWithIds: PropWithHeadingType[] = [];
@@ -165,9 +205,29 @@ if (examples && examples.length > 0) {
           )
       }
 
+      {
+        whenToUse && whenToUseHeadingId && (
+          <DocSection
+            headingId={whenToUseHeadingId}
+            title="When to use it"
+            entry={whenToUse}
+          />
+        )
+      }
+
       {usage && <Usage headingId={usageHeadingId} {usage} />}
 
       <Content components={{ ...mdxComponents }} />
+
+      {
+        accessibility && accessibilityHeadingId && (
+          <DocSection
+            headingId={accessibilityHeadingId}
+            title="Accessibility"
+            entry={accessibility}
+          />
+        )
+      }
 
       {
         component.data.props && (

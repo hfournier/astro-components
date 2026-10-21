@@ -84,9 +84,3 @@ A button is as wide as its label, never narrower: its label doesn't wrap or trun
 ## Toggle buttons
 
 Use a toggle for a binary action that the button turns on and off, such as Save or Favorite. With an icon, use an outlined icon while it's unselected and the filled one while it's selected: give `icon` the outlined name, such as `"favorite"`, and the toggle switches to `"favorite-fill"` on its own (see ButtonIcon's docs for icons without a filled version). If the label changes with the state, keep both labels about the same length, so the button doesn't jump in width. To react to a change, listen for the button's `click` event and read the new state from `aria-pressed`.
-
-## Accessibility
-
-Every style keeps a contrast of at least 3:1 against the background behind it: elevated, filled and tonal buttons are measured from their container, and outlined and text buttons from their label. Check it when you place a button on a colored surface.
-
-Keep buttons in the same order in the page source on small and large windows, even when the layout moves them, so keyboard and screen reader users meet them in the same order.

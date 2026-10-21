@@ -1,0 +1,5 @@
+A badge is visual only: it's always rendered with `aria-hidden="true"`, since screen readers would otherwise read its count on its own ("3") with no context. Put the full meaning in the decorated element's accessible name instead, after its own name, as M3 does: a count, such as Icon's `label="Inbox, 3 unread"`, and keep the two in sync whenever the count changes.
+
+A dot needs words too, or a screen-reader user never learns there's anything new: M3 announces it as "New notification", e.g. `label="Inbox, new notification"`. NavBarItem, NavRailItem and Tab add a count or "New notification" to their names for you, and their `badgeDescription` prop changes the phrase.
+
+Use Icon's `label` prop rather than a raw `aria-label`: without `label`, Icon adds `aria-hidden="true"`, which hides the `aria-label` too.

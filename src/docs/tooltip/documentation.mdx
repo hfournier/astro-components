@@ -75,12 +75,6 @@ As in M3:
 
 A **persistent** rich tooltip (`isPersistent`) works differently. A click on its element opens it, and it stays open until the person interacts with something else: a click anywhere else, focus moving elsewhere, Escape, another click on the element, or a click on one of its actions, which returns focus to the element. Don't use one on an icon button, since the icon button's click is its action. To introduce a new feature, a page can open one as soon as it loads with `showPopover()`. Give the Tooltip an `id`, then call `document.getElementById("whats-new").showPopover()`. A tooltip that opens on its own should always have a `subhead`, so it's clear what it's about.
 
-## Accessibility
-
-A plain tooltip is hidden from assistive tech, so its text should repeat its element's accessible name, such as an icon button's `label`. It deliberately has no `tooltip` role: screen readers would otherwise read the name twice.
-
-A rich tooltip has the `tooltip` role, as M3 asks, and its subhead and text become its element's accessible description (`aria-describedby`); the actions aren't included. That departs from the ARIA Authoring Practices, whose tooltips never hold anything focusable: M3's rich tooltip can have actions, and the description still reaches screen readers through `aria-describedby`, while keyboard users reach the actions with Tab. Both variants can be dismissed with Escape, and stay open while the pointer is over them, as WCAG 1.4.13 requires.
-
 ## In MDX
 
 In an MDX file, keep a rich tooltip on one line, as in the examples below. Otherwise MDX wraps its text in a paragraph, which adds a margin, and can drop the `actions` slot.

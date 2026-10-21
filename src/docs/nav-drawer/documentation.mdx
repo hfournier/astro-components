@@ -42,11 +42,3 @@ cssProps:
 Put the NavDrawer right after its NavRail (with `isExpandable={false}`), as siblings. From the large breakpoint up, the drawer takes its place in the layout, so give it a column, for example with a grid of `grid-cols-1 medium:grid-cols-[auto_1fr] large:grid-cols-[auto_auto_1fr]` on their parent. Below large it's a fixed overlay stacked under the rail, so it takes no space and slides out from under the rail's edge. Below medium the drawer isn't used: the rail is hidden until its MenuToggle opens it as a modal expanded rail (see NavRail), and the drawer moves its sections into the rail, after its destinations, where only the current page's section shows. From medium up they move back. It finds its rail and rail items by itself, matching each rail item's `href` to a section's `parentHref`, so there's nothing to wire up.
 
 The drawer slides out from under the rail, so NavRail is `z-30`, the drawer `z-20` and its scrim `z-10`. Anything else on the page with a higher z-index shows above the open drawer.
-
-## Keyboard and screen readers
-
-In every mode, Tab goes from a rail item into its section's links and then on to the next rail item, Shift+Tab goes back, and ArrowRight and ArrowLeft move between a rail item and its section. Escape closes the drawer (or, from large up, ends a preview) and returns focus to the rail item. A modal drawer doesn't open on focus, so keyboard users can tab past the rail without it opening at every item.
-
-Below large, each rail item with a section has `aria-expanded` and `aria-controls`, so screen readers announce whether its section is open. The drawer's `<nav>` is labelled "Section"; pass `aria-label` to change it.
-
-On a touchscreen from medium to large, where there's no hover, tapping a rail item opens its section (or switches to it) instead of following the link, and tapping it again while its section is open goes to its page. This is decided per tap, so a mouse on a touchscreen laptop still follows the link. Below medium, the sections are in the rail.

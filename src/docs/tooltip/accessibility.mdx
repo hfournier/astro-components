@@ -1,0 +1,3 @@
+A plain tooltip is hidden from assistive tech, so its text should repeat its element's accessible name, such as an icon button's `label`. It deliberately has no `tooltip` role: screen readers would otherwise read the name twice.
+
+A rich tooltip has the `tooltip` role, as M3 asks, and its subhead and text become its element's accessible description (`aria-describedby`); the actions aren't included. That departs from the ARIA Authoring Practices, whose tooltips never hold anything focusable: M3's rich tooltip can have actions, and the description still reaches screen readers through `aria-describedby`, while keyboard users reach the actions with Tab. Both variants can be dismissed with Escape, and stay open while the pointer is over them, as WCAG 1.4.13 requires.

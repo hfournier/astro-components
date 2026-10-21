@@ -1,0 +1,1 @@
+DialogFullscreen keeps the native `dialog` role, not `alertdialog`, since it holds forms and other content. When it opens, focus goes to its first interactive element: the close button in a compact window, and the first field (or the dismissing action) from medium up. Focus stays inside it while it's open, and returns to the button that opened it when it closes.
