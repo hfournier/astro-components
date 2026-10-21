@@ -29,6 +29,7 @@ const { align, isScrollable, randomId, tabs, variant } = Astro.props;
   ]}
   style={`--ac-anchorname-tab-selected: --anchorname-${randomId}-tab-selected;`}
   data-ac-tab-row
+  data-ac-tab-row-scrollable={isScrollable ? "" : undefined}
 >
   <div
     class:list={[

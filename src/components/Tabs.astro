@@ -114,11 +114,20 @@ if (tabs.length === 0) {
       ":scope > [data-ac-tab-row] > [role='tablist']"
     );
 
-    // A tab that gets focus or is selected scrolls into view in scrollable tabs, without scrolling
-    // the page more than it has to
+    // In scrollable tabs, a tab that gets focus or is selected scrolls into view, without
+    // scrolling the page more than it has to. Fixed tabs keep the browser's own focus scrolling,
+    // and selecting one doesn't scroll the page.
+    const isScrollable = tabList!.parentElement!.hasAttribute(
+      "data-ac-tab-row-scrollable"
+    );
+    const revealTab = (tab: HTMLButtonElement) => {
+      if (isScrollable) {
+        tab.scrollIntoView({ block: "nearest", inline: "nearest" });
+      }
+    };
     const focusTab = (tab: HTMLButtonElement) => {
-      tab.focus({ preventScroll: true });
-      tab.scrollIntoView({ block: "nearest", inline: "nearest" });
+      tab.focus({ preventScroll: isScrollable });
+      revealTab(tab);
     };
     const tabs = Array.from(
       tabList!.querySelectorAll<HTMLButtonElement>(":scope > [role='tab']")
@@ -179,7 +188,7 @@ if (tabs.length === 0) {
       }
       targetTab.setAttribute("aria-selected", "true");
       targetTab.tabIndex = 0;
-      targetTab.scrollIntoView({ block: "nearest", inline: "nearest" });
+      revealTab(targetTab);
 
       // Hide other tab panels and show the selected panel
       const targetTabPanel = document.getElementById(

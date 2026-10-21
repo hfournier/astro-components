@@ -41,6 +41,8 @@ const indicator = (page: Page, caseId: TabsCaseId) =>
   tabRow(page, caseId).locator("[data-ac-tab-indicator]");
 // A tab's content span: the primary indicator's anchor
 const tabContent = (tab: Locator) => tab.locator(":scope > span");
+// A tab's label (with an inline badge after it), inside its content span
+const tabLabel = (tab: Locator) => tabContent(tab).locator(":scope > span");
 
 async function indicatorRect(
   page: Page,
@@ -291,9 +293,7 @@ test.describe("Tabs", () => {
       .getByRole("tab")
       .first();
     const icon = await box(iconTab.locator("svg"));
-    const iconLabel = await textBox(
-      tabContent(iconTab).locator(":scope > span")
-    );
+    const iconLabel = await textBox(tabLabel(iconTab));
     expect(iconLabel.x - (icon.x + icon.width)).toBeCloseTo(8, 0);
 
     const badge = tablist(page, "secondary-variant-with-badges")
@@ -382,7 +382,7 @@ test.describe("Tabs", () => {
     const label =
       "A label long enough to need more than two lines in a narrow tab";
     const tab = tablist(page, "long-labels").getByRole("tab").first();
-    const labelSpan = tabContent(tab).locator(":scope > span");
+    const labelSpan = tabLabel(tab);
 
     await expect(tab).toHaveAccessibleName(label);
     // Title Small's line height is 20px
@@ -407,9 +407,7 @@ test.describe("Tabs", () => {
 
       // "Photos and videos" fits on one line, so the widest tab is its label plus 16px each side
       const photosTab = tablist(page, "uneven-labels").getByRole("tab").nth(1);
-      const photosLabel = await box(
-        tabContent(photosTab).locator(":scope > span")
-      );
+      const photosLabel = await box(tabLabel(photosTab));
       // one line of Title Small
       expect(photosLabel.height).toBe(20);
       expect(photos).toBeCloseTo(photosLabel.width + 32, 0);
@@ -432,6 +430,27 @@ test.describe("Tabs", () => {
         tabsCase(page, "align-center").locator("[data-ac-tablist-container]")
       );
       expect(row.width).toBeCloseTo(tabs.width, 0);
+    });
+
+    test("right to left, the group sits at the right edge", async ({
+      page,
+    }) => {
+      const row = await box(tabRow(page, "rtl"));
+      const list = await box(tablist(page, "rtl"));
+      expect(list.x + list.width).toBeCloseTo(row.x + row.width, 0);
+      expect(list.width).toBeLessThan(row.width);
+    });
+
+    test("selecting one doesn't scroll the page", async ({ page }) => {
+      // the tab's top edge just below the top of the window, the rest of it above
+      const tab = tablist(page, "default").getByRole("tab").nth(1);
+      const { y } = await box(tab);
+      await page.evaluate((top) => scrollTo(0, top), y + 10);
+      const scrollY = await page.evaluate(() => window.scrollY);
+
+      await tab.dispatchEvent("click");
+      await expect(tab).toHaveAttribute("aria-selected", "true");
+      expect(await page.evaluate(() => window.scrollY)).toBe(scrollY);
     });
 
     test("below medium, they fill the width", async ({ page }) => {
@@ -468,7 +487,7 @@ test.describe("Tabs", () => {
       expect(row.x + row.width - (first.x + first.width)).toBeCloseTo(52, 0);
     });
 
-    test("a tab scrolls into view when it gets focus, and the indicator follows it", async ({
+    test("arrowing to an off-screen tab scrolls it into view, and the indicator follows it", async ({
       page,
     }) => {
       const row = tabRow(page, "scrollable");
@@ -481,8 +500,9 @@ test.describe("Tabs", () => {
       };
       expect(await isInView(last)).toBe(false);
 
+      // ArrowLeft from the first tab wraps to the last, which is off-screen
       await tabs.first().focus();
-      await page.keyboard.press("End");
+      await page.keyboard.press("ArrowLeft");
       await expect(last).toBeFocused();
       await expect.poll(() => isInView(last)).toBe(true);
 
