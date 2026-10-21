@@ -4,7 +4,7 @@
 
 > **Folder layout superseded by ADR-0013**: components now sit flat in `src/components/`, and the documentation files and specs this ADR places beside them live in `src/docs/<id>/`.
 
-> **Point 1 amended**: `documentation.mdx`'s body no longer has to be empty. It holds the component's guidance prose (when to use it, choosing a style, accessibility notes), which the component page renders after Usage and before Properties, adding its h2/h3 headings to the page's table of contents. Examples and baseline usage still live in their own files, for the reasons below.
+> **Point 1 amended**: `documentation.mdx`'s body no longer has to be empty. It holds the component's guidance prose (when to use it, choosing a style, accessibility notes), which the component page renders after Usage and before Properties, adding its h2/h3 headings to the page's table of contents. Examples and baseline usage still live in their own files, for the reasons below. ADR-0017 moves the When to use it and Accessibility sections out of the body too, into their own files.
 
 Implementing ADR-0009 surfaced a need it didn't anticipate: an example's source code has to work as two different things — a live rendered `<Content>` preview and a displayed code block showing the source that produced it (`src/internal/Example.astro`/`Usage.astro` render both from the same MDX entry, via Astro's `render()` for the preview and the entry's raw `.body` string for the `<Code>` block). That dual rendering needs each example to be its own content-collection document with its own `.body` — a single `documentation.mdx` body holding several examples end-to-end, plus the props table content above it, can't be sliced back into one clean string per example.
 

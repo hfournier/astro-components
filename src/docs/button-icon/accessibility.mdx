@@ -1,0 +1,5 @@
+An icon button has no visible text, so `label` is required: it's the button's accessible name, such as `"Delete"` or `"Add to favorites"`. Name the action, not the icon. The tooltip repeats the label for sighted users, so it's hidden from assistive tech. It can be dismissed with Escape, and stays open while the pointer is over it, as WCAG 1.4.13 requires.
+
+A toggle keeps the same label whether it's selected or not (`"Bookmark"`, not `"Add bookmark"` / `"Remove bookmark"`), since screen readers announce the pressed state from `aria-pressed`. To react to a change, listen for the button's `click` event and read the new state from `aria-pressed`.
+
+The default color roles meet M3's contrast requirement. If you change them, keep a contrast of at least 3:1 between the icon and its container, or the background behind it for a standard button.

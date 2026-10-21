@@ -1,0 +1,4 @@
+A Divider is an `<hr>`, so screen readers announce it as a separator. That's right between sections of content, but not everywhere:
+
+- **Between list items:** an `<hr>` can't go directly inside `<ul>` or `<ol>`. Give the items a border instead, e.g. `divide-y divide-(--theme-color-outline-variant)` on the list.
+- **Purely visual lines:** where a line adds nothing for someone who can't see it, such as between rows that are already separate items, use a border so screen readers don't announce an empty separator.

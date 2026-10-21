@@ -65,7 +65,7 @@ A component distributed as source a consumer copies directly into their own proj
 _Avoid_: package component, library component
 
 **Component documentation file**:
-The `documentation.mdx` file in a component's docs folder (`src/docs/<id>/`) (superseding the working name `examples.mdx`). Its frontmatter holds structured, machine-checkable facts — `name`, `description`, `role`, `meta`, the [[Prop manifest]], and `slots`/`cssProps`/`extends`/`parents` — consumed equally by a rendered props table for humans and by a coding agent. Its MDX body holds the component's guidance prose (when to use it, choosing a style, accessibility notes), rendered after Usage and before Properties; baseline usage and live rendered examples live in the component's sibling [[Usage file]] and [[Example file]]s instead.
+The `documentation.mdx` file in a component's docs folder (`src/docs/<id>/`) (superseding the working name `examples.mdx`). Its frontmatter holds structured, machine-checkable facts — `name`, `description`, `role`, `meta`, the [[Prop manifest]], and `slots`/`cssProps`/`extends`/`parents` — consumed equally by a rendered props table for humans and by a coding agent. Its MDX body holds the component's own guidance prose (choosing a style, placement, behavior), rendered after Usage and before Accessibility; when to use it and accessibility notes live in its sibling [[Section file]]s, and baseline usage and live rendered examples in its [[Usage file]] and [[Example file]]s.
 _Avoid_: examples.mdx (superseded name), examples file
 
 **Usage file**:
@@ -75,6 +75,10 @@ _Avoid_: example (ambiguous with [[Example file]]), demo
 **Example file**:
 An `example-NN-<slug>.mdx` file in a component's docs folder: one per named variant or scenario (a component can have several), frontmatter `title`/`description`, MDX body showing that one variant. Always rendered as a live-preview/source-code tab pair — unlike a [[Usage file]], it has no `show` field, since showing both is the whole point. Documentation only: specs never target an example, they use the component's [[Test page]] (ADR-0015).
 _Avoid_: usage (ambiguous with [[Usage file]]), demo
+
+**Section file**:
+A `when-to-use.mdx` or `accessibility.mdx` file in a component's docs folder: optional, no frontmatter, its body the content of the page's "When to use it" or "Accessibility" section. The page gives the heading and places the section, When to use it before Usage and Accessibility after the [[Component documentation file]]'s body, so these sections read the same on every page (ADR-0017).
+_Avoid_: putting these sections in the documentation.mdx body
 
 **Test page**:
 A `src/tests/<id>.mdx` page, rendered at `/tests/<id>`, showing a component across many cases at once — every variant, every background role — both for checking by eye and as the fixtures its spec runs against. Each case is a `Section` with `data-testid="<id>-<case>"`, which the spec scopes to. Cases that must throw at render time, or must not sit in a `Section`, go on a dedicated `.astro` page under `src/pages/tests/` instead (ADR-0015).

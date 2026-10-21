@@ -58,17 +58,6 @@ The items are a popover, so they're drawn in the top layer: no ancestor's `overf
 
 When the window is too short for all the items, such as a phone in landscape, the list scrolls, as M3 specifies. It stays clear of the close button and 16px from the top of the window, with the top items showing first. It has no scrollbar: the cut-off item shows there's more, and moving focus to an item scrolls it into view.
 
-## Keyboard and screen readers
-
-The FAB is a disclosure button: it's announced as expanded or collapsed, and its name stays `label` while it's open. Opening the menu leaves focus on the FAB, now the close button, as M3 specifies. The items follow it in the DOM, so Tab (or Down) from the open FAB moves to the top item, then down through the rest. Space or Enter activates the focused button. Closed, the items are hidden from everyone.
-
-The menu closes, returning focus to the FAB, on Escape, a click outside it, the FAB again, or choosing an item (after the item's own handlers have run).
-
-## When not to use it
-
-- **Not in a NavRail, or beside a toolbar.** M3 says not to use a FAB menu when the FAB is paired with another component, such as a floating toolbar or a navigation rail, to avoid clutter. A plain Fab is fine there. In particular, don't put a FabMenu in a NavRail's `fab` slot: an expanded rail extends its FAB, and M3 doesn't open a FAB menu from an extended FAB (or from any other component).
-- **Not for unrelated actions.** Its 2-6 items should be closely related under the FAB's one action, such as Share. For a single action, use a Fab.
-
 ## On the web
 
 M3's guidelines say that on the web a FAB menu uses a menu component, and Google's Material Web library doesn't implement M3 Expressive. FabMenu brings the Expressive FAB menu to the web as Jetpack Compose builds it, at every window size.

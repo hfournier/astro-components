@@ -41,12 +41,6 @@ props:
     description: Shows a plain Tooltip with the `label` above the FAB on hover (after a short delay), on keyboard focus and on a long press on a touchscreen, while the label is hidden. An extended FAB, or one in an expanded NavRail, shows its label instead, so it shows no tooltip; M3 says it doesn't need one. Turn it off when a rich Tooltip describes the FAB instead.
 ---
 
-## When to use it
-
-Use a FAB for a screen's primary, constructive action, such as create, compose, favorite, share or starting a process. Don't use one for minor, overflow or destructive actions, such as archive, delete or alerts. Give it a clear, filled icon, and a `label` that names the action, such as `"Compose a new message"`.
-
-Use an extended FAB (`isExtended`) where a label makes the action clearer, or for more emphasis, such as on long scrolling screens like a checkout. Keep its label to one or two words, leaving room for longer translations. Don't use one as one option in a set of actions; use a filled Button there. Unlike a plain FAB, an extended FAB doesn't need an icon.
-
 ## Placement
 
 Use one FAB per screen, for its single most important action. A FAB isn't positioned on its own: it sits wherever you put it, such as in a NavRail's `fab` slot or fixed to a corner of the page (e.g. `class="fixed end-4 bottom-4"`; `end-*` keeps it in the trailing corner right to left). Use an extended FAB where a label makes the action clearer and there's room for it.
@@ -85,7 +79,3 @@ A FAB has no disabled style. If its action isn't available, leave the FAB out ra
 ## In a NavRail
 
 In a NavRail's `fab` slot, the rail decides whether the FAB is extended, as M3 specifies: extended while the rail is expanded, and a plain FAB while it's collapsed, whatever `isExtended` says. It follows the rail's width, using a container query on the rail, so it animates between the two as the rail expands and collapses. Its tooltip follows too, showing only while the rail is collapsed and the label is hidden.
-
-## Accessibility
-
-The `label` is always the FAB's accessible name, whether or not it's visible. Use the same icon and label for the same action throughout. If you set your own `aria-label`, start it with the visible label's first word, such as `aria-label="Create a new invite"` for a visible "Create", so voice control users can say what they see (WCAG 2.5.3). The tooltip repeats it for sighted users while it's hidden, so the tooltip is hidden from assistive tech. It can be dismissed with Escape, and stays open while the pointer is over it, as WCAG 1.4.13 requires.

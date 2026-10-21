@@ -22,6 +22,7 @@ src/components/Button.astro         # the component itself
 src/docs/button/
 ├── documentation.mdx               # name, description, role, category, prop manifest, slots
 ├── usage.mdx                       # baseline usage: prose + a live preview/source pair
+├── accessibility.mdx               # optional: the Accessibility section (when-to-use.mdx likewise)
 └── example-01-variants.mdx         # one file per named variant/scenario
 src/tests/
 ├── button.mdx                      # test page at /tests/button: the cases the spec runs against
@@ -31,8 +32,10 @@ src/tests/
 `documentation.mdx` holds structured, machine-checkable frontmatter (props,
 slots, `role: primitive | pattern | internal`, `category`, an optional `mdn`
 link, ...) consumed by both the rendered props table and a coding agent; its
-MDX body stays empty. Prose and live examples live in the sibling `usage.mdx`
-and `example-*.mdx` files instead. See [`CONTEXT.md`](./CONTEXT.md) for the
+MDX body holds the component's own guidance prose. The When to use it and
+Accessibility sections live in the optional sibling `when-to-use.mdx` and
+`accessibility.mdx`, which the page places in a fixed order, and live examples
+in `usage.mdx` and `example-*.mdx`. See [`CONTEXT.md`](./CONTEXT.md) for the
 full vocabulary (tokens, color roles, variants, background roles, component
 roles) and [`docs/adr/`](./docs/adr) for the design decisions behind it.
 

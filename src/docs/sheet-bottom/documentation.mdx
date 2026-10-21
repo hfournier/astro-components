@@ -46,10 +46,6 @@ slots:
     kind: any
 ---
 
-## When to use it
-
-Use a bottom sheet for content and actions that support the page, not for its main content, in compact and medium windows. In a large window, put the same content in a SheetSide.
-
 ## Anatomy
 
 As in M3 and Jetpack Compose, a bottom sheet is a container, an optional drag handle and, for a modal sheet, a scrim. It has no headline or close button of its own: what it holds is up to its content.
@@ -74,10 +70,6 @@ As M3 asks, a modal sheet opens at no more than half the window's height. If its
 - **Changing height:** a click, Enter or Space on the drag handle toggles between the two heights, and the handle's `aria-expanded` says which height it's at. A drag up on it expands the sheet. A drag down returns it to half, and from half closes it.
 - **Closing at full height:** the drag handle, Escape and the scrim still close it. Add a close button to the content too, as M3 asks (see Anatomy).
 - **Each opening** starts at half height again.
-
-## Labels
-
-The drag handle is the only part of the sheet with a label, and its role is button. As in Material's Jetpack Compose, it's named "Drag handle", and that name stays the same while it expands and collapses the sheet; its `aria-expanded` says which. A modal sheet with one height is different: its handle closes it, so it's named "Close" and has no expanded state. Pass `dragHandleLabels` to put these in the page's language.
 
 ## Content
 

@@ -1,0 +1,26 @@
+---
+import { render, type CollectionEntry } from "astro:content";
+import { components as mdxComponents } from "../mdx";
+import H2 from "./mdx/H2.astro";
+import Section from "../components/Section.astro";
+
+type Props = {
+  headingId: string;
+  title: string;
+  entry: CollectionEntry<"whenToUse" | "accessibility">;
+};
+
+const { headingId, title, entry } = Astro.props;
+
+const { Content } = await render(entry);
+---
+
+{
+  /* The same heading and spacing as the documentation.mdx body's own sections, which these
+     sections were split out of: the body's elements are spaced by the article's space-y-8. */
+}
+<Section class="space-y-8">
+  <H2 id={headingId}>{title}</H2>
+
+  <Content components={{ ...mdxComponents }} />
+</Section>
