@@ -11,11 +11,21 @@ extends:
   tag: [aside, dialog]
 mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/aside
 props:
+  - name: backLabel
+    type: string
+    required: false
+    default: '"Back"'
+    description: The back button's accessible name, also shown in its tooltip. Set it on pages in other languages.
   - name: bgColor
     type: BgColorType
     required: false
     default: '"surface" (standard) or "surface-container-low" (modal)'
     description: The sheet's background role, M3's by default. Text, links and focus rings follow the chosen background.
+  - name: closeLabel
+    type: string
+    required: false
+    default: '"Close"'
+    description: The close button's accessible name, also shown in its tooltip. Set it on pages in other languages.
   - name: edge
     type: '"start" | "end"'
     required: false
@@ -24,7 +34,7 @@ props:
   - name: headline
     type: string
     required: false
-    description: The sheet's headline, in M3's Title Large, at the top of the sheet. It also names the sheet for assistive tech (`aria-labelledby`). Give a modal sheet one, or an `aria-label`.
+    description: The sheet's headline, in M3's Title Large in on-surface-variant, at the top of the sheet. It also names the sheet for assistive tech (`aria-labelledby`). Give a modal sheet one, or an `aria-label`.
   - name: id
     type: string
     required: false
@@ -39,14 +49,19 @@ props:
     required: false
     default: "false"
     description: Makes the sheet M3's modal side sheet, a `<dialog>` that slides in from its edge over a scrim. Opened with `showModal()` (or a button with `command="show-modal"`), it keeps focus inside it and makes the rest of the page inert. It closes with its close button, Escape or a click on the scrim, each leaving its `returnValue` empty. Escape and a click on the scrim fire a `cancel` event first, which you can prevent to keep it open.
+  - name: showBack
+    type: boolean
+    required: false
+    default: "false"
+    description: Shows a back button at the start of the header, before the headline, for moving back within the sheet, such as from an item's details to a list. A click fires a cancelable `back` event (a `CustomEvent`) on the sheet; what going back means is up to the page, so it doesn't close the sheet, and cancelling the event has no built-in effect, as it's for the page's own handlers. Its arrow points the other way right to left.
   - name: showCloseX
     type: boolean
     required: false
-    default: "true (modal) or false (standard)"
-    description: Shows a close button at the top end of the sheet. A modal sheet's closes its dialog; a standard sheet's hides it with the `hidden` attribute, which you remove to show it again.
+    default: "true"
+    description: Shows a close button at the top end of the sheet. A modal sheet's closes its dialog; a standard sheet's hides it with the `hidden` attribute, which you remove to show it again. M3 requires one in every side sheet, so people can tell whether it's temporary and how to close it. Set it to `false` only for a sheet that's a permanent part of the layout, such as this site's table of contents column, which can't be closed.
 slots:
   - name: default
-    description: The sheet's content, which scrolls if it's taller than the sheet.
+    description: The sheet's content, which scrolls if it's taller than the sheet. It never scrolls sideways, so keep it within the sheet's width (see Content).
     kind: any
   - name: actions
     description: Buttons for the sheet's actions, in a row at the bottom of the sheet, aligned to the start, under a divider. They stay in place while the content scrolls. In a modal sheet, give each a `value` and `command="close"`, and the sheet closes with its `returnValue` set to the value, so a `close` listener can tell which was chosen (an empty `returnValue` means it was dismissed). A standard sheet isn't a dialog, so its actions need click handlers of their own.
@@ -58,10 +73,34 @@ cssProps:
 
 ## Standard and modal
 
-A standard sheet sits beside the main content, and both can be used at the same time. Put it in your layout, such as the last column of a grid, so the content beside it narrows to make room. Docked, it's sticky, as tall as the window, with a divider on its inner edge.
+A standard sheet sits beside the main content, and both can be used at the same time. Use one in medium and larger windows, for actions that affect the main content, such as filters, or for supplemental content and details. Put it in your layout, such as the last column of a grid, so the content beside it narrows to make room. Docked, it's sticky, as tall as the window, with a divider on its inner edge.
 
-A modal sheet floats over the page, at elevation 1 with large corners on its inner edge, and the page under its scrim can't be used until it closes. Use one on smaller screens, where there's no room beside the content, or for content the user deals with before going back to the page. A sheet can be standard on larger screens and modal on smaller ones by rendering one of each and showing whichever fits, as this site's table of contents does.
+A modal sheet floats over the page, at elevation 1 with large corners on its inner edge, and the page under its scrim can't be used until it closes. Use one in compact windows, where there's no room beside the content, or for content the user deals with before going back to the page. A sheet can be modal in small windows and standard in larger ones by rendering one of each and showing whichever fits, as this site's table of contents does.
+
+## Roles
+
+M3 gives side sheets the dialog role. The modal sheet is a `<dialog>`, so it has it. The standard sheet is deliberately an `<aside>` (the complementary role) instead: on the web it's part of the page, used alongside the main content, and it doesn't take focus when it appears, so announcing it as a dialog would mislead.
+
+## Placement
+
+Put the sheet on the end edge, the default, unless there's a reason not to: navigation usually sits on the start edge, and the two would clash. Detach it (`isDetached`) if you want it to float; M3 detaches it by 16px, and never more.
+
+## Close and back buttons
+
+Every sheet has a close button, since M3 requires one: without it, people can't predict how the sheet opens and closes, or tell whether it's temporary. Leave it out (`showCloseX={false}`) only when the sheet is a permanent part of the layout that can't be closed.
+
+Add a back button (`showBack`) when the sheet has views of its own to move back through, such as an item's details opened from a list in the sheet. Listen for its `back` event and show the previous view. Both buttons show their label in a tooltip; set `closeLabel` and `backLabel` on pages in other languages.
+
+## Content
+
+Side sheets never scroll sideways, so keep content within the sheet's width: let text wrap, give flex children `min-w-0` so they can shrink, and make tables and media responsive (e.g. `max-w-full` on images). Anything wider is cut off.
+
+Use dividers to separate the actions from the content, as the actions row does, and to separate user-generated content from system-generated content.
+
+## Actions
+
+Show the main action with the most emphasis, such as a filled or tonal Save before a text Cancel.
 
 ## Layout
 
-Following M3, the sheet has 24px of padding at its start and end, 12px between the headline and the close button, and its actions in a 72px row at the bottom (16px above the buttons, 24px below), aligned to the start. Only the content scrolls; the headline and actions stay in place.
+Following M3, the sheet has 24px of padding at its start and end (16px at the start of the header with a back button), 12px between the header's elements, and its actions in a 72px row at the bottom (16px above the buttons, 24px below), aligned to the start. Only the content scrolls; the headline and actions stay in place.

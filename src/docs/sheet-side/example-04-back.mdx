@@ -1,0 +1,11 @@
+---
+title: SheetSide with a back button
+description: Set `showBack` for a back button at the start of the header, for moving back within the sheet, such as from an item's details to the list it came from. A click fires a cancelable `back` event on the sheet; listen for it and show the previous view. It doesn't close the sheet.
+---
+
+<div class="flex h-80 overflow-hidden border border-(--theme-color-outline-variant)">
+  <div class="flex-1 p-4">The main content.</div>
+  <SheetSide class="h-full" headline="Item details" showBack>
+    <p>Details of an item picked from a list in the sheet.</p>
+  </SheetSide>
+</div>
