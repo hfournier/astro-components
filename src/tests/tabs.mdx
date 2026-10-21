@@ -181,3 +181,65 @@ description: Tests for the Tabs component
     <Tab label="Indented">Indented like the Tabs around it.</Tab>
   </Tabs>
 </Section>
+
+<Section data-testid="tabs-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <Tabs>
+    <Tab label="Tab 1">First panel.</Tab>
+    <Tab label="Tab 2">Second panel.</Tab>
+    <Tab label="Tab 3">Third panel.</Tab>
+  </Tabs>
+</Section>
+
+<Section data-testid="tabs-uneven-labels" class="p-4 space-y-4">
+  <Heading level={2}>Labels of different lengths</Heading>
+  <Tabs>
+    <Tab label="All">Everything.</Tab>
+    <Tab label="Photos and videos">Photos and videos.</Tab>
+    <Tab label="Docs">Documents.</Tab>
+  </Tabs>
+</Section>
+
+<Section data-testid="tabs-align-center" class="p-4 space-y-4">
+  <Heading level={2}>Centered</Heading>
+  <Tabs align="center">
+    <Tab label="All">Everything.</Tab>
+    <Tab label="Photos and videos">Photos and videos.</Tab>
+    <Tab label="Docs">Documents.</Tab>
+  </Tabs>
+</Section>
+
+<Section data-testid="tabs-long-labels" class="p-4 space-y-4">
+  <Heading level={2}>Long labels</Heading>
+  <Tabs class="max-w-xs">
+    <Tab label="A label long enough to need more than two lines in a narrow tab">Long.</Tab>
+    <Tab label="Short">Short.</Tab>
+    <Tab label="Brief">Brief.</Tab>
+  </Tabs>
+</Section>
+
+<Section data-testid="tabs-scrollable" class="p-4 space-y-4">
+  <Heading level={2}>Scrollable</Heading>
+  <Tabs class="max-w-md" isScrollable>
+    <Tab label="Explore">Explore.</Tab>
+    <Tab label="Flights">Flights.</Tab>
+    <Tab label="Hotels">Hotels.</Tab>
+    <Tab label="Vacation rentals">Vacation rentals.</Tab>
+    <Tab label="Things to do">Things to do.</Tab>
+    <Tab label="Car rentals">Car rentals.</Tab>
+    <Tab label="Trains">Trains.</Tab>
+    <Tab label="Cruises">Cruises.</Tab>
+  </Tabs>
+</Section>
+
+<Section data-testid="tabs-scrollable-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Scrollable, right to left</Heading>
+  <Tabs class="max-w-md" isScrollable>
+    <Tab label="Explore">Explore.</Tab>
+    <Tab label="Flights">Flights.</Tab>
+    <Tab label="Hotels">Hotels.</Tab>
+    <Tab label="Vacation rentals">Vacation rentals.</Tab>
+    <Tab label="Things to do">Things to do.</Tab>
+    <Tab label="Car rentals">Car rentals.</Tab>
+  </Tabs>
+</Section>

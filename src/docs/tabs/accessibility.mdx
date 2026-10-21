@@ -1,0 +1,7 @@
+The tabs have the `tablist`, `tab` and `tabpanel` roles, and each tab is connected to its panel. Only one tab is in the Tab order, the selected one or the last one focused with the arrow keys, so Tab moves from the tabs on to the panel, which can take focus itself.
+
+- **Arrow keys** move focus between the tabs, following the order they're shown in, so right to left, ArrowLeft goes to the next tab. They wrap from the last tab to the first.
+- **Home and End** move focus to the first and last tab.
+- **Space or Enter** selects the focused tab and shows its panel. As M3 asks, they don't move between tabs, and moving focus doesn't select a tab.
+
+A tab's badge is hidden from screen readers. Its count, or `badgeDescription` for a dot, is added to the tab's accessible name instead, e.g. "Inbox, 3".

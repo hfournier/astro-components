@@ -100,6 +100,8 @@ export type TabType = {
   label: string;
 };
 
+export type TabAlignType = "start" | "center";
+
 export type TabTransitionType = "fade" | "fade-up" | "slide-left";
 
 export type TabVariantType = "primary" | "secondary";

@@ -11,7 +11,10 @@ import {
 // are the ones this spec uses: default (primary, labels only), icons (primary with stacked icons),
 // icons-and-badges (primary with icons, Updates with a dot badge), secondary-variant (labels only),
 // secondary-variant-with-icons (inline icons), secondary-variant-with-badges (Mentions with a
-// count, Replies with 0, Drafts with a dot described as "New draft") and mdx-spacing-and-comments.
+// count, Replies with 0, Drafts with a dot described as "New draft"), mdx-spacing-and-comments,
+// rtl (default's tabs right to left), uneven-labels ("All", "Photos and videos", "Docs"),
+// align-center (the same, centred), long-labels (a first label too long for two lines, in a
+// 320px Tabs), and scrollable and scrollable-rtl (8 and 6 scrollable tabs in a 448px Tabs).
 type TabsCaseId =
   | "default"
   | "icons"
@@ -19,14 +22,25 @@ type TabsCaseId =
   | "secondary-variant"
   | "secondary-variant-with-icons"
   | "secondary-variant-with-badges"
-  | "mdx-spacing-and-comments";
+  | "mdx-spacing-and-comments"
+  | "rtl"
+  | "uneven-labels"
+  | "align-center"
+  | "long-labels"
+  | "scrollable"
+  | "scrollable-rtl";
 
 const tabsCase = (page: Page, caseId: TabsCaseId) =>
   page.getByTestId(`tabs-${caseId}`);
 const tablist = (page: Page, caseId: TabsCaseId) =>
   tabsCase(page, caseId).getByRole("tablist");
+// The full-width row around the tablist: the divider, the scroll container and the indicator's
+const tabRow = (page: Page, caseId: TabsCaseId) =>
+  tabsCase(page, caseId).locator("[data-ac-tab-row]");
 const indicator = (page: Page, caseId: TabsCaseId) =>
-  tablist(page, caseId).locator("[data-ac-tab-indicator]");
+  tabRow(page, caseId).locator("[data-ac-tab-indicator]");
+// A tab's content span: the primary indicator's anchor
+const tabContent = (tab: Locator) => tab.locator(":scope > span");
 
 async function indicatorRect(
   page: Page,
@@ -170,7 +184,7 @@ test.describe("Tabs", () => {
     page,
   }) => {
     const tabs = tablist(page, "default").getByRole("tab");
-    const content = (i: number) => tabs.nth(i).locator(":scope > span");
+    const content = (i: number) => tabContent(tabs.nth(i));
 
     await waitForIndicatorToTrack(page, "default", content(0));
 
@@ -217,7 +231,7 @@ test.describe("Tabs", () => {
       const ringBottom =
         tabRect.bottom - parseFloat(getComputedStyle(el, "::after").bottom);
       const indicator = el
-        .closest('[role="tablist"]')!
+        .closest("[data-ac-tab-row]")!
         .querySelector("[data-ac-tab-indicator]")!
         .getBoundingClientRect();
       return indicator.top - ringBottom;
@@ -236,9 +250,9 @@ test.describe("Tabs", () => {
   test("the divider under the tabs is M3's 1px outline-variant rule", async ({
     page,
   }) => {
-    const defaultTablist = tablist(page, "default");
-    await expect(defaultTablist).toHaveCSS("border-bottom-width", "1px");
-    await expect(defaultTablist).toHaveCSS(
+    const row = tabRow(page, "default");
+    await expect(row).toHaveCSS("border-bottom-width", "1px");
+    await expect(row).toHaveCSS(
       "border-bottom-color",
       await resolvedColor(page, "var(--theme-color-outline-variant)")
     );
@@ -277,7 +291,9 @@ test.describe("Tabs", () => {
       .getByRole("tab")
       .first();
     const icon = await box(iconTab.locator("svg"));
-    const iconLabel = await textBox(iconTab.locator(":scope > span"));
+    const iconLabel = await textBox(
+      tabContent(iconTab).locator(":scope > span")
+    );
     expect(iconLabel.x - (icon.x + icon.width)).toBeCloseTo(8, 0);
 
     const badge = tablist(page, "secondary-variant-with-badges")
@@ -300,6 +316,183 @@ test.describe("Tabs", () => {
     // the dot sits inside the icon's top-end corner
     expect(icon.x + icon.width - dot.x).toBeCloseTo(6, 0);
     expect(dot.y + dot.height - icon.y).toBeCloseTo(6, 0);
+  });
+
+  test("right to left, ArrowLeft focuses the next tab and ArrowRight the previous one", async ({
+    page,
+  }) => {
+    const tabs = tablist(page, "rtl").getByRole("tab");
+    const [tab1, tab2, tab3] = [tabs.nth(0), tabs.nth(1), tabs.nth(2)];
+
+    // the next tab is visually to the left
+    expect((await box(tab2)).x).toBeLessThan((await box(tab1)).x);
+
+    await tab1.focus();
+    await page.keyboard.press("ArrowLeft");
+    await expect(tab2).toBeFocused();
+    await page.keyboard.press("ArrowRight");
+    await expect(tab1).toBeFocused();
+    await page.keyboard.press("ArrowRight");
+    await expect(tab3).toBeFocused();
+
+    await page.keyboard.press("Home");
+    await expect(tab1).toBeFocused();
+    await page.keyboard.press("End");
+    await expect(tab3).toBeFocused();
+  });
+
+  test("pressing an inactive primary tab shows a primary state layer, a secondary tab an on-surface one", async ({
+    page,
+  }) => {
+    const layerColor = (tab: Locator) =>
+      tab.evaluate((el) => getComputedStyle(el, "::before").backgroundColor);
+    const press = async (tab: Locator) => {
+      // the mouse works in viewport coordinates
+      await tab.scrollIntoViewIfNeeded();
+      const { x, y, width, height } = await box(tab);
+      await page.mouse.move(x + width / 2, y + height / 2);
+      await page.mouse.down();
+    };
+    const onSurface = await resolvedColor(
+      page,
+      "var(--theme-color-on-surface)"
+    );
+
+    const primaryTab = tablist(page, "default").getByRole("tab").nth(1);
+    await press(primaryTab);
+    expect(await layerColor(primaryTab)).toBe(
+      await resolvedColor(page, "var(--theme-color-primary)")
+    );
+    // the label keeps its on-surface color, once its color transition ends
+    await expect(primaryTab).toHaveCSS("color", onSurface);
+    await page.mouse.up();
+
+    const secondaryTab = tablist(page, "secondary-variant")
+      .getByRole("tab")
+      .nth(1);
+    await press(secondaryTab);
+    // the layer is the label's color, which transitions to on-surface
+    await expect.poll(() => layerColor(secondaryTab)).toBe(onSurface);
+    await page.mouse.up();
+  });
+
+  test("a fixed tab's label truncates after two lines, keeping the full label as its name", async ({
+    page,
+  }) => {
+    const label =
+      "A label long enough to need more than two lines in a narrow tab";
+    const tab = tablist(page, "long-labels").getByRole("tab").first();
+    const labelSpan = tabContent(tab).locator(":scope > span");
+
+    await expect(tab).toHaveAccessibleName(label);
+    // Title Small's line height is 20px
+    expect((await box(labelSpan)).height).toBe(40);
+    expect(
+      await labelSpan.evaluate((el) => el.scrollHeight > el.clientHeight)
+    ).toBe(true);
+  });
+
+  test.describe("fixed tabs", () => {
+    const widths = async (page: Page, caseId: TabsCaseId) => {
+      const tabs = await tablist(page, caseId).getByRole("tab").all();
+      return Promise.all(tabs.map(async (tab) => (await box(tab)).width));
+    };
+
+    test("from medium up, each is as wide as the widest, the group at the start", async ({
+      page,
+    }) => {
+      const [all, photos, docs] = await widths(page, "uneven-labels");
+      expect(all).toBeCloseTo(photos!, 0);
+      expect(docs).toBeCloseTo(photos!, 0);
+
+      // "Photos and videos" fits on one line, so the widest tab is its label plus 16px each side
+      const photosTab = tablist(page, "uneven-labels").getByRole("tab").nth(1);
+      const photosLabel = await box(
+        tabContent(photosTab).locator(":scope > span")
+      );
+      // one line of Title Small
+      expect(photosLabel.height).toBe(20);
+      expect(photos).toBeCloseTo(photosLabel.width + 32, 0);
+
+      const row = await box(tabRow(page, "uneven-labels"));
+      const list = await box(tablist(page, "uneven-labels"));
+      expect(list.x).toBeCloseTo(row.x, 0);
+      expect(list.width).toBeLessThan(row.width);
+    });
+
+    test("align='center' centres the group, and the divider still spans the full width", async ({
+      page,
+    }) => {
+      const row = await box(tabRow(page, "align-center"));
+      const list = await box(tablist(page, "align-center"));
+      expect(list.x + list.width / 2).toBeCloseTo(row.x + row.width / 2, 0);
+
+      // the row, which draws the divider, fills the Tabs
+      const tabs = await box(
+        tabsCase(page, "align-center").locator("[data-ac-tablist-container]")
+      );
+      expect(row.width).toBeCloseTo(tabs.width, 0);
+    });
+
+    test("below medium, they fill the width", async ({ page }) => {
+      await page.setViewportSize({ width: 500, height: 800 });
+      const row = await box(tabRow(page, "uneven-labels"));
+      const list = await box(tablist(page, "uneven-labels"));
+      expect(list.width).toBeCloseTo(row.width, 0);
+    });
+  });
+
+  test.describe("scrollable tabs", () => {
+    test("scroll, each tab at least 90px wide, the first 52px from the start", async ({
+      page,
+    }) => {
+      const row = tabRow(page, "scrollable");
+      expect(await row.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(
+        true
+      );
+
+      const tabs = await tablist(page, "scrollable").getByRole("tab").all();
+      for (const tab of tabs) {
+        expect((await box(tab)).width).toBeGreaterThanOrEqual(90);
+      }
+      expect((await box(tabs[0]!)).x - (await box(row)).x).toBeCloseTo(52, 0);
+    });
+
+    test("right to left, the first tab is 52px from the right edge", async ({
+      page,
+    }) => {
+      const row = await box(tabRow(page, "scrollable-rtl"));
+      const first = await box(
+        tablist(page, "scrollable-rtl").getByRole("tab").first()
+      );
+      expect(row.x + row.width - (first.x + first.width)).toBeCloseTo(52, 0);
+    });
+
+    test("a tab scrolls into view when it gets focus, and the indicator follows it", async ({
+      page,
+    }) => {
+      const row = tabRow(page, "scrollable");
+      const tabs = tablist(page, "scrollable").getByRole("tab");
+      const last = tabs.last();
+
+      const isInView = async (tab: Locator) => {
+        const [r, t] = [await box(row), await box(tab)];
+        return t.x >= r.x - 1 && t.x + t.width <= r.x + r.width + 1;
+      };
+      expect(await isInView(last)).toBe(false);
+
+      await tabs.first().focus();
+      await page.keyboard.press("End");
+      await expect(last).toBeFocused();
+      await expect.poll(() => isInView(last)).toBe(true);
+
+      await page.keyboard.press("Enter");
+      await waitForIndicatorToTrack(page, "scrollable", tabContent(last));
+
+      // scrolled back to the start, the indicator stays under the selected (now off-screen) tab
+      await row.evaluate((el) => el.scrollTo({ left: 0 }));
+      await waitForIndicatorToTrack(page, "scrollable", tabContent(last));
+    });
   });
 });
 
