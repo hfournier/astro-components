@@ -62,7 +62,11 @@ description: Tests for the SheetBottom component
 <Section data-testid="sheet-bottom-collapsed" class="p-4 space-y-4">
   <Heading level={2}>Collapsed</Heading>
   <div class="flex h-80 flex-col justify-end overflow-y-auto border border-(--theme-color-outline-variant)">
-    <SheetBottom headline="Map layers" isCollapsed>
+    <SheetBottom
+      headline="Map layers"
+      isCollapsed
+      dragHandleLabels={{ handle: "Poignée de déplacement" }}
+    >
       <p>Controls for the layers of the map.</p>
     </SheetBottom>
   </div>

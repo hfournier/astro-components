@@ -5,7 +5,8 @@ import { box, resolvedColor } from "./support/helpers";
 // Each case on /tests/sheet-bottom is a Section with data-testid="sheet-bottom-<caseId>" holding
 // one SheetBottom: modal (the "Share" sheet and its "Open bottom sheet" button), modal-scrolling
 // (the tall "Terms" sheet and its "Open tall bottom sheet" button), standard ("Now playing", the
-// last child of a scrolling region) and collapsed ("Map layers", starting collapsed).
+// last child of a scrolling region) and collapsed ("Map layers", starting collapsed, with French
+// dragHandleLabels).
 type SheetBottomCaseId = "modal" | "modal-scrolling" | "standard" | "collapsed";
 
 const sheetCase = (page: Page, caseId: SheetBottomCaseId) =>
@@ -45,6 +46,14 @@ const recordedEvents = (sheet: Locator) =>
     (el) => (el as HTMLDialogElement & { events: string[] }).events
   );
 
+// A mouse drag of dy pixels, straight up (negative) or down, from (x, y)
+async function drag(page: Page, x: number, y: number, dy: number) {
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x, y + dy, { steps: 5 });
+  await page.mouse.up();
+}
+
 test.describe("SheetBottom", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/tests/sheet-bottom");
@@ -76,14 +85,15 @@ test.describe("SheetBottom", () => {
     test("puts its drag handle and headline in a <header>", async ({
       page,
     }) => {
-      // read closed, so includeHidden
+      await open(page);
+      // at half height, the full-height close button is hidden, so the handle is the one Close
       const header = sheet(page).locator("header");
-      await expect(
-        header.getByRole("button", { name: "Close", includeHidden: true })
-      ).toHaveCount(1);
-      await expect(
-        header.getByRole("heading", { name: "Share", includeHidden: true })
-      ).toHaveCount(1);
+      await expect(header.getByRole("button", { name: "Close" })).toHaveCount(
+        1
+      );
+      await expect(header.getByRole("heading", { name: "Share" })).toHaveCount(
+        1
+      );
     });
 
     test("uses M3's surface and a centred 32x4px drag handle with 22px above and below it", async ({
@@ -110,30 +120,171 @@ test.describe("SheetBottom", () => {
       );
     });
 
-    test("is full width in a window up to 640px wide, with a 72px top margin", async ({
+    test("with content taller than half the window, opens at half its height, its handle named Drag handle", async ({
       page,
     }) => {
       await page.setViewportSize({ width: 400, height: 600 });
       const tall = modalSheet(page, "modal-scrolling");
       await opener(page, "modal-scrolling").click();
 
+      await expect.poll(async () => (await box(tall)).y).toBe(300);
+      const handle = tall.getByRole("button", {
+        name: "Drag handle",
+        exact: true,
+      });
+      await expect(handle).toHaveAttribute("aria-expanded", "false");
+    });
+
+    test("in a window up to 640px wide, Enter on its handle expands it, full width, to a 72px top margin, and Enter again returns it to half", async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 400, height: 600 });
+      const tall = modalSheet(page, "modal-scrolling");
+      await opener(page, "modal-scrolling").click();
+      await expect.poll(async () => (await box(tall)).y).toBe(300);
+
+      await tall
+        .getByRole("button", { name: "Drag handle", exact: true })
+        .press("Enter");
       await expect.poll(async () => (await box(tall)).y).toBe(72);
       const { x, width } = await box(tall);
       expect(x).toBe(0);
       expect(width).toBe(await viewportWidth(page));
+      const handle = tall.getByRole("button", {
+        name: "Drag handle",
+        exact: true,
+      });
+      await expect(handle).toHaveAttribute("aria-expanded", "true");
+
+      await handle.press("Enter");
+      await expect.poll(async () => (await box(tall)).y).toBe(300);
+      expect(await isOpen(tall)).toBe(true);
     });
 
-    test("is at most 640px wide, centred, with a 56px top margin, in a wider window", async ({
+    test("is at most 640px wide, centred, with a 56px top margin when expanded, in a wider window", async ({
       page,
     }) => {
       await page.setViewportSize({ width: 1000, height: 800 });
       const tall = modalSheet(page, "modal-scrolling");
       await opener(page, "modal-scrolling").click();
 
+      await tall
+        .getByRole("button", { name: "Drag handle", exact: true })
+        .press("Enter");
       await expect.poll(async () => (await box(tall)).y).toBe(56);
       const { x, width } = await box(tall);
       expect(width).toBe(640);
       expect(x).toBe(((await viewportWidth(page)) - 640) / 2);
+    });
+
+    test("expands on a drag up on its handle; a drag down returns it to half, and another closes it", async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 400, height: 600 });
+      const tall = modalSheet(page, "modal-scrolling");
+      await opener(page, "modal-scrolling").click();
+      await expect.poll(async () => (await box(tall)).y).toBe(300);
+      // on the handle, halfway across the sheet
+      const dragHandle = async (dy: number) => {
+        const { x, y } = await box(tall);
+        await drag(page, x + 200, y + 24, dy);
+      };
+
+      await dragHandle(-100);
+      await expect.poll(async () => (await box(tall)).y).toBe(72);
+      await dragHandle(100);
+      await expect.poll(async () => (await box(tall)).y).toBe(300);
+      await dragHandle(100);
+      await expect.poll(() => isOpen(tall)).toBe(false);
+    });
+
+    test("shows a close button only at full height, which cancels it like Escape", async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 400, height: 600 });
+      const tall = modalSheet(page, "modal-scrolling");
+      await opener(page, "modal-scrolling").click();
+      const close = tall.getByRole("button", { name: "Close", exact: true });
+      await expect(close).toBeHidden();
+
+      await tall
+        .getByRole("button", { name: "Drag handle", exact: true })
+        .press("Enter");
+      await expect(close).toBeVisible();
+      await recordEvents(tall);
+      await close.click();
+
+      await expect.poll(() => isOpen(tall)).toBe(false);
+      expect(await recordedEvents(tall)).toEqual(["cancel", "close:"]);
+    });
+
+    test("opens at half height again after closing at full height", async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 400, height: 600 });
+      const tall = modalSheet(page, "modal-scrolling");
+      await opener(page, "modal-scrolling").click();
+      await tall
+        .getByRole("button", { name: "Drag handle", exact: true })
+        .press("Enter");
+      await expect.poll(async () => (await box(tall)).y).toBe(72);
+      await page.keyboard.press("Escape");
+      await expect.poll(() => isOpen(tall)).toBe(false);
+
+      await opener(page, "modal-scrolling").click();
+      await expect.poll(async () => (await box(tall)).y).toBe(300);
+    });
+
+    test("gains its full height when its content grows past half the window while it's open", async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 400, height: 600 });
+      await open(page);
+      await expect(
+        sheet(page).getByRole("button", { name: "Close", exact: true })
+      ).toBeVisible();
+      const grow = (height: string) =>
+        sheet(page)
+          .locator("p")
+          .evaluate((p, h) => (p.style.height = h), height);
+
+      await grow("150px");
+      await expect(
+        sheet(page).getByRole("button", { name: "Close", exact: true })
+      ).toBeVisible();
+      await grow("400px");
+      await expect(
+        sheet(page).getByRole("button", { name: "Drag handle", exact: true })
+      ).toHaveAttribute("aria-expanded", "false");
+    });
+
+    test("with content that fits, has one height: its handle, labelled Close, closes it", async ({
+      page,
+    }) => {
+      await open(page);
+      const handle = sheet(page).getByRole("button", {
+        name: "Close",
+        exact: true,
+      });
+      await expect(handle).not.toHaveAttribute("aria-expanded");
+
+      await handle.click();
+      await expect.poll(() => isOpen(sheet(page))).toBe(false);
+    });
+
+    test("its whole top 48px is the handle's target: a drag down from near its top-left corner closes it", async ({
+      page,
+    }) => {
+      await open(page);
+      const { x, y, width } = await box(sheet(page));
+      const handleBox = await box(
+        sheet(page).getByRole("button", { name: "Close", exact: true })
+      );
+      expect(handleBox).toMatchObject({ x, y, width, height: 48 });
+
+      // just inside the 28px corner's curve, which clips the sheet
+      await drag(page, x + 24, y + 12, 100);
+      await expect.poll(() => isOpen(sheet(page))).toBe(false);
     });
 
     test("keeps 56px from the window's start and end edges just past 640px", async ({
@@ -169,10 +320,7 @@ test.describe("SheetBottom", () => {
 
       await openWithStaleValue();
       const { x, y, width, height } = await box(handle);
-      await page.mouse.move(x + width / 2, y + height / 2);
-      await page.mouse.down();
-      await page.mouse.move(x + width / 2, y + height / 2 + 100, { steps: 5 });
-      await page.mouse.up();
+      await drag(page, x + width / 2, y + height / 2, 100);
       await closed();
 
       await openWithStaleValue();
@@ -223,7 +371,7 @@ test.describe("SheetBottom", () => {
         name: "Now playing",
       });
     const handle = (page: Page) =>
-      sheet(page).getByRole("button", { name: "Sheet content" });
+      sheet(page).getByRole("button", { name: "Drag handle", exact: true });
 
     test("is an aside stuck to the bottom of its scrolling region", async ({
       page,
@@ -244,7 +392,7 @@ test.describe("SheetBottom", () => {
     }) => {
       const header = sheet(page).locator("header");
       await expect(
-        header.getByRole("button", { name: "Sheet content" })
+        header.getByRole("button", { name: "Drag handle", exact: true })
       ).toBeVisible();
       await expect(
         header.getByRole("heading", { name: "Now playing" })
@@ -258,21 +406,37 @@ test.describe("SheetBottom", () => {
       await handle(page).click();
       await expect(content).toBeHidden();
       await expect(handle(page)).toHaveAttribute("aria-expanded", "false");
+      // its name stays put, and aria-expanded carries the state
+      await expect(handle(page)).toHaveAccessibleName("Drag handle");
       await expect(sheet(page).getByRole("heading")).toBeVisible();
 
       await handle(page).press("Enter");
       await expect(content).toBeVisible();
     });
 
-    test("a collapsed sheet expands on a drag up on its handle", async ({
+    test("a drag down from near its top-left corner collapses it", async ({
+      page,
+    }) => {
+      const content = sheet(page).getByText("Details about the item");
+      await sheet(page).scrollIntoViewIfNeeded();
+      // it's at the window's bottom edge, so a short drag, which stays in the window
+      const { x, y } = await box(sheet(page));
+      // just inside the 28px corner's curve, which clips the sheet
+      await drag(page, x + 24, y + 12, 60);
+
+      await expect(content).toBeHidden();
+    });
+
+    test("a collapsed sheet expands on a drag up on its handle, labelled by dragHandleLabels", async ({
       page,
     }) => {
       const collapsed = sheetCase(page, "collapsed").getByRole(
         "complementary",
         { name: "Map layers" }
       );
+      // this case passes French labels
       const collapsedHandle = collapsed.getByRole("button", {
-        name: "Sheet content",
+        name: "Poignée de déplacement",
       });
       const content = collapsed.getByText(
         "Controls for the layers of the map."
@@ -281,10 +445,7 @@ test.describe("SheetBottom", () => {
 
       await collapsedHandle.scrollIntoViewIfNeeded();
       const { x, y, width, height } = await box(collapsedHandle);
-      await page.mouse.move(x + width / 2, y + height / 2);
-      await page.mouse.down();
-      await page.mouse.move(x + width / 2, y + height / 2 - 100, { steps: 5 });
-      await page.mouse.up();
+      await drag(page, x + width / 2, y + height / 2, -100);
 
       await expect(content).toBeVisible();
       await expect(collapsedHandle).toHaveAttribute("aria-expanded", "true");

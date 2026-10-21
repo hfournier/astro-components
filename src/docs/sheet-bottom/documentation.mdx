@@ -16,6 +16,11 @@ props:
     required: false
     default: '"surface-container-low"'
     description: The sheet's background role, M3's by default. Text, links and focus rings follow the chosen background.
+  - name: dragHandleLabels
+    type: "{ handle?: string; close?: string }"
+    required: false
+    default: "{ handle: 'Drag handle', close: 'Close' }"
+    description: The drag handle's accessible names. `handle` names a handle that changes the sheet's height, whose `aria-expanded` says which height the sheet is at. `close` names a modal sheet's handle when the sheet has one height, and its full-height close button. They're in English by default, so a page in another language should pass both.
   - name: headline
     type: string
     required: false
@@ -33,24 +38,50 @@ props:
     type: boolean
     required: false
     default: "false"
-    description: Makes the sheet M3's modal bottom sheet, a `<dialog>` that slides up over a scrim. Opened with `showModal()` (or a button with `command="show-modal"`), it keeps focus inside it and makes the rest of the page inert. It closes with its drag handle, Escape or a click on the scrim. Escape and a click on the scrim fire a `cancel` event first, which you can prevent to keep it open.
+    description: Makes the sheet M3's modal bottom sheet, a `<dialog>` that slides up over a scrim. Opened with `showModal()` (or a button with `command="show-modal"`), it keeps focus inside it and makes the rest of the page inert. It opens at no more than half the window's height (see Heights). It closes with its drag handle, Escape, a click on the scrim, or its close button at full height. All but the drag handle fire a `cancel` event first, which you can prevent to keep it open.
   - name: showDragHandle
     type: boolean
     required: false
     default: "true"
-    description: Shows M3's drag handle, centred at the top of the sheet. It's a button, so it works with a click, Enter or Space as well as a drag. A modal sheet's closes it, on a click or a drag down; a standard sheet's collapses it on a click or a drag down, and expands it on a click or a drag up.
+    description: Shows M3's drag handle, centred at the top of the sheet, with the sheet's whole top 48px as its target. It's a button, so it works with a click, Enter or Space as well as a drag. A click toggles the sheet between its heights, and a drag up or down expands or collapses it. A modal sheet with one height closes on a click or a drag down, as it does on a drag down at half height. Without a handle, a modal sheet can't change height, so it opens at full height.
 slots:
   - name: default
     description: The sheet's content, which scrolls if it's taller than the sheet.
     kind: any
 ---
 
+## When to use it
+
+Use a bottom sheet for content and actions that support the page, not for its main content, in compact and medium windows. In a large window, put the same content in a SheetSide.
+
 ## Standard and modal
 
 A standard sheet sits at the bottom of the main content, and both can be used at the same time. Put it last in a scrolling container (the page, or a scrolling region of it): it's sticky, so it stays at the container's bottom edge while the content scrolls behind it. Its drag handle collapses it to the handle and headline, and expands it again.
 
-A modal sheet slides up over the page, and the page under its scrim can't be used until it closes. Use one for a set of choices, such as a share sheet or a menu on a small screen, that the user deals with before going back to the page.
+A modal sheet slides up over the page, and the page under its scrim can't be used until it closes. Use one on a small screen for a set of choices that the user deals with before going back to the page. Examples are a share sheet, a menu with a long list of actions, or actions that need icons and longer descriptions.
+
+Choosing an item or action in a modal sheet should close it. Give those buttons `command="close"`, a `value`, and `commandfor` set to the sheet's `id`. The sheet closes with its `returnValue` set to the value, so a `close` listener can tell which was chosen.
+
+Use a standard sheet for content that complements the page while the page is still in use, such as an audio player, or details over a map. Collapsed, it shows its drag handle and headline.
+
+## Heights
+
+As M3 asks, a modal sheet opens at no more than half the window's height. If its content fits, that's its only height. If the content is taller, it scrolls inside that half, and the sheet gains a second, full height, the window's height less M3's top margin.
+
+- **Changing height:** a click, Enter or Space on the drag handle toggles between the two heights, and the handle's `aria-expanded` says which height it's at. A drag up on it expands the sheet. A drag down returns it to half, and from half closes it.
+- **Closing at full height:** a close button appears at the end of the headline's row. Like Escape, it fires a cancelable `cancel` event.
+- **Each opening** starts at half height again.
+
+## Labels
+
+The drag handle is the only part of the sheet with a label, and its role is button. As in Material's Jetpack Compose, it's named "Drag handle", and that name stays the same while it expands and collapses the sheet; its `aria-expanded` says which. A modal sheet with one height is different: its handle closes it, so it's named "Close" and has no expanded state. Pass `dragHandleLabels` to put these in the page's language.
+
+## Content
+
+Lists, groups of actions separated by Dividers, and media all fit in a sheet. For a list of actions, use a `<ul>` of Buttons, with a Divider between groups.
 
 ## Layout
 
-Following M3, the sheet spans the full width, up to 640px, centred, and in a window wider than 640px it also keeps 56px from the window's start and end edges. Its height follows its content, up to the window's height less a 72px top margin, or 56px in a window wider than 640px; past that, its content scrolls. It has extra-large (28px) top corners and sits at elevation 1. Its drag handle is 32 by 4px, centred, with 22px above and below it.
+Following M3, the sheet spans the full width, up to 640px, centred, and in a window wider than 640px it also keeps 56px from the window's start and end edges. Its height follows its content, up to the window's height less a 72px top margin, or 56px in a window wider than 640px. A modal sheet is capped at half the window until it's expanded (see Heights). Past its cap, its content scrolls. It has extra-large (28px) top corners and sits at elevation 1. Its drag handle is 32 by 4px, centred in the sheet's top 48px.
+
+The 640px maximum width can be changed with a class for a special case, such as `class="max-w-200"`. For a complex task in a large window, use a surface that stays on screen instead, such as a SheetSide or the page itself.

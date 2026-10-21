@@ -1,0 +1,17 @@
+---
+title: Modal SheetBottom with a list of actions
+description: A list of actions is a `<ul>` of Buttons, with a Divider between groups. Choosing one closes the sheet. Each Button has `command="close"`, a `value` and `commandfor` set to the sheet's `id`, so the sheet closes with its `returnValue` set to the action chosen.
+---
+
+<Button command="show-modal" commandfor="sheet-bottom-actions">Open sheet of actions</Button>
+
+<SheetBottom id="sheet-bottom-actions" headline="Share" isModal>
+  <ul class="-mx-3">
+    <li><Button class="w-full justify-start" command="close" commandfor="sheet-bottom-actions" value="copy-link" variant="text">Copy link</Button></li>
+    <li><Button class="w-full justify-start" command="close" commandfor="sheet-bottom-actions" value="email" variant="text">Email</Button></li>
+  </ul>
+  <Divider class="my-2" />
+  <ul class="-mx-3">
+    <li><Button class="w-full justify-start" command="close" commandfor="sheet-bottom-actions" value="report" variant="text">Report a problem</Button></li>
+  </ul>
+</SheetBottom>
