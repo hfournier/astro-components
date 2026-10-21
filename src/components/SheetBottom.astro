@@ -110,9 +110,9 @@ const heightClasses = hasHalfHeight
   {...attrs}
 >
   {
-    /* Its height follows its content, up to its height cap. Only the content scrolls. The headline is M3 Title
-       Large. A BaseWrapper, so a modal sheet's focus rings and links follow its own surface, not
-       the page it was placed in. role="none" on the header: in a modal sheet outside <main> and
+    /* Its height follows its content, up to its height cap. Only the content scrolls. The
+       headline is M3 Title Large. A BaseWrapper, so a modal sheet's focus rings and links follow
+       its own surface, not the page it was placed in. role="none" on the header: in a modal sheet outside <main> and
        any sectioning element, it'd otherwise be the page's banner landmark while it's open. */
   }
   <BaseWrapper
@@ -247,20 +247,25 @@ const heightClasses = hasHalfHeight
         "[data-ac-sheet-bottom-handle]"
       );
       if (!handle) return;
-      const isModal = sheet instanceof HTMLDialogElement;
+      // a modal sheet's dialog
+      const dialog = sheet instanceof HTMLDialogElement ? sheet : undefined;
       const content = sheet.querySelector<HTMLElement>(
         "[data-ac-sheet-bottom-content]"
       )!;
       const { labelExpand, labelCollapse, labelClose } = handle.dataset;
-
-      // A standard sheet: its content shown or hidden
-      const setExpanded = (expanded: boolean) => {
-        content.hidden = !expanded;
+      // the handle's state and name, for a sheet with two heights or states
+      const showExpanded = (expanded: boolean) => {
         handle.setAttribute("aria-expanded", String(expanded));
         handle.setAttribute(
           "aria-label",
           expanded ? labelCollapse! : labelExpand!
         );
+      };
+
+      // A standard sheet: its content shown or hidden
+      const setExpanded = (expanded: boolean) => {
+        content.hidden = !expanded;
+        showExpanded(expanded);
       };
       const isExpanded = () => handle.getAttribute("aria-expanded") === "true";
 
@@ -272,47 +277,51 @@ const heightClasses = hasHalfHeight
         panel.offsetHeight - content.clientHeight + content.scrollHeight >
         window.innerHeight / 2;
       const syncModal = () => {
-        if (!(sheet as HTMLDialogElement).open) return;
+        if (!dialog?.open) return;
         if (!hasTwoHeights()) {
           delete sheet.dataset.expanded;
           handle.removeAttribute("aria-expanded");
           handle.setAttribute("aria-label", labelClose!);
           return;
         }
-        const expanded = "expanded" in sheet.dataset;
-        handle.setAttribute("aria-expanded", String(expanded));
-        handle.setAttribute(
-          "aria-label",
-          expanded ? labelCollapse! : labelExpand!
-        );
+        showExpanded("expanded" in sheet.dataset);
       };
       const setModalExpanded = (expanded: boolean) => {
         sheet.toggleAttribute("data-expanded", expanded);
         syncModal();
       };
-      if (isModal) {
-        // each opening starts at half height
-        sheet.addEventListener("close", () => delete sheet.dataset.expanded);
-        sheet.addEventListener("toggle", syncModal);
+      if (dialog) {
+        // Each opening starts at half height. Reset as it opens, not on close, so a sheet closed
+        // at full height slides away at full height; at once, as it's still below the window.
+        dialog.addEventListener("toggle", (event) => {
+          if (event.newState === "open" && "expanded" in sheet.dataset) {
+            panel.style.transition = "none";
+            delete sheet.dataset.expanded;
+            panel.getBoundingClientRect();
+            panel.style.removeProperty("transition");
+          }
+          syncModal();
+        });
+        // for content added or resized while it's open
         new ResizeObserver(syncModal).observe(content);
         window.addEventListener("resize", syncModal);
       }
       // Its handle's click, Enter or Space: what its label says
       const activate = () => {
-        if (!isModal) setExpanded(!isExpanded());
+        if (!dialog) setExpanded(!isExpanded());
         else if (handle.hasAttribute("aria-expanded"))
           setModalExpanded(!isExpanded());
-        else (sheet as HTMLDialogElement).close("");
+        else dialog.close("");
       };
       // A drag down collapses the sheet, from full height to half, or closes a modal sheet at
       // half (or one height); a drag up expands it
       const dragDown = () => {
-        if (!isModal) setExpanded(false);
+        if (!dialog) setExpanded(false);
         else if (isExpanded()) setModalExpanded(false);
-        else (sheet as HTMLDialogElement).close("");
+        else dialog.close("");
       };
       const dragUp = () => {
-        if (!isModal) setExpanded(true);
+        if (!dialog) setExpanded(true);
         else if (handle.hasAttribute("aria-expanded")) setModalExpanded(true);
       };
 
@@ -331,7 +340,7 @@ const heightClasses = hasHalfHeight
         if (startY === undefined) return;
         const dy = event.clientY - startY;
         if (Math.abs(dy) > 4) dragged = true;
-        if (isModal) {
+        if (dialog) {
           sheet.style.transition = "none";
           sheet.style.translate = `0 ${Math.max(dy, 0)}px`;
         }

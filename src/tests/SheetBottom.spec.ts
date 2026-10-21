@@ -46,6 +46,14 @@ const recordedEvents = (sheet: Locator) =>
     (el) => (el as HTMLDialogElement & { events: string[] }).events
   );
 
+// A mouse drag of dy pixels, straight up (negative) or down, from (x, y)
+async function drag(page: Page, x: number, y: number, dy: number) {
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x, y + dy, { steps: 5 });
+  await page.mouse.up();
+}
+
 test.describe("SheetBottom", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/tests/sheet-bottom");
@@ -173,19 +181,17 @@ test.describe("SheetBottom", () => {
       const tall = modalSheet(page, "modal-scrolling");
       await opener(page, "modal-scrolling").click();
       await expect.poll(async () => (await box(tall)).y).toBe(300);
-      const drag = async (dy: number) => {
+      // on the handle, halfway across the sheet
+      const dragHandle = async (dy: number) => {
         const { x, y } = await box(tall);
-        await page.mouse.move(x + 200, y + 24);
-        await page.mouse.down();
-        await page.mouse.move(x + 200, y + 24 + dy, { steps: 5 });
-        await page.mouse.up();
+        await drag(page, x + 200, y + 24, dy);
       };
 
-      await drag(-100);
+      await dragHandle(-100);
       await expect.poll(async () => (await box(tall)).y).toBe(72);
-      await drag(100);
+      await dragHandle(100);
       await expect.poll(async () => (await box(tall)).y).toBe(300);
-      await drag(100);
+      await dragHandle(100);
       await expect.poll(() => isOpen(tall)).toBe(false);
     });
 
@@ -226,6 +232,29 @@ test.describe("SheetBottom", () => {
       await expect.poll(async () => (await box(tall)).y).toBe(300);
     });
 
+    test("gains its full height when its content grows past half the window while it's open", async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 400, height: 600 });
+      await open(page);
+      await expect(
+        sheet(page).getByRole("button", { name: "Close", exact: true })
+      ).toBeVisible();
+      const grow = (height: string) =>
+        sheet(page)
+          .locator("p")
+          .evaluate((p, h) => (p.style.height = h), height);
+
+      await grow("150px");
+      await expect(
+        sheet(page).getByRole("button", { name: "Close", exact: true })
+      ).toBeVisible();
+      await grow("400px");
+      await expect(
+        sheet(page).getByRole("button", { name: "Expand", exact: true })
+      ).toHaveAttribute("aria-expanded", "false");
+    });
+
     test("with content that fits, has one height: its handle, labelled Close, closes it", async ({
       page,
     }) => {
@@ -251,10 +280,7 @@ test.describe("SheetBottom", () => {
       expect(handleBox).toMatchObject({ x, y, width, height: 48 });
 
       // just inside the 28px corner's curve, which clips the sheet
-      await page.mouse.move(x + 24, y + 12);
-      await page.mouse.down();
-      await page.mouse.move(x + 24, y + 112, { steps: 5 });
-      await page.mouse.up();
+      await drag(page, x + 24, y + 12, 100);
       await expect.poll(() => isOpen(sheet(page))).toBe(false);
     });
 
@@ -291,10 +317,7 @@ test.describe("SheetBottom", () => {
 
       await openWithStaleValue();
       const { x, y, width, height } = await box(handle);
-      await page.mouse.move(x + width / 2, y + height / 2);
-      await page.mouse.down();
-      await page.mouse.move(x + width / 2, y + height / 2 + 100, { steps: 5 });
-      await page.mouse.up();
+      await drag(page, x + width / 2, y + height / 2, 100);
       await closed();
 
       await openWithStaleValue();
@@ -397,10 +420,7 @@ test.describe("SheetBottom", () => {
       // it's at the window's bottom edge, so a short drag, which stays in the window
       const { x, y } = await box(sheet(page));
       // just inside the 28px corner's curve, which clips the sheet
-      await page.mouse.move(x + 24, y + 12);
-      await page.mouse.down();
-      await page.mouse.move(x + 24, y + 72, { steps: 5 });
-      await page.mouse.up();
+      await drag(page, x + 24, y + 12, 60);
 
       await expect(content).toBeHidden();
     });
@@ -423,10 +443,7 @@ test.describe("SheetBottom", () => {
 
       await collapsedHandle.scrollIntoViewIfNeeded();
       const { x, y, width, height } = await box(collapsedHandle);
-      await page.mouse.move(x + width / 2, y + height / 2);
-      await page.mouse.down();
-      await page.mouse.move(x + width / 2, y + height / 2 - 100, { steps: 5 });
-      await page.mouse.up();
+      await drag(page, x + width / 2, y + height / 2, -100);
 
       await expect(content).toBeVisible();
       const expandedHandle = collapsed.getByRole("button", { name: "Réduire" });
