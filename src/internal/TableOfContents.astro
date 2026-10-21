@@ -28,6 +28,7 @@ const { headings, isDocked = false } = Astro.props;
     <SheetSide
       class="hidden w-fit max-w-[clamp(var(--ac-sheet-side-width),100cqw-75ch-5rem,400px)] min-w-(--ac-sheet-side-width) large:block"
       headline="On this page"
+      showCloseX={false}
     >
       <nav class="relative" aria-label="Table of contents">
         <TableOfContentsMenu {headings} />

@@ -5,8 +5,18 @@ import { box, resolvedColor } from "./support/helpers";
 // Each case on /tests/sheet-side is a Section with data-testid="sheet-side-<caseId>" holding one
 // SheetSide: modal (the "Details" sheet on the end edge), modal-start (on the start edge),
 // modal-detached (detached, with Save and Cancel actions), each with its own opener, and standard
-// ("Filters", the last column of a flex row, with a close button).
-type SheetSideCaseId = "modal" | "modal-start" | "modal-detached" | "standard";
+// sheets, each the last column of a flex row: standard ("Filters", with its default close button
+// and content wider than itself), permanent ("Contents", showCloseX={false}), back ("Item
+// details", with a back button) and rtl ("Détails", right to left, with French back and close
+// labels).
+type SheetSideCaseId =
+  | "modal"
+  | "modal-start"
+  | "modal-detached"
+  | "standard"
+  | "permanent"
+  | "back"
+  | "rtl";
 
 const sheetCase = (page: Page, caseId: SheetSideCaseId) =>
   page.getByTestId(`sheet-side-${caseId}`);
@@ -33,6 +43,11 @@ const viewportWidth = (page: Page) =>
   page.evaluate(() => document.documentElement.clientWidth);
 const isOpen = (sheet: Locator) =>
   sheet.evaluate((el) => (el as HTMLDialogElement).open);
+// The accessible names of the buttons in a sheet's header, in order
+const buttonNames = (header: Locator) =>
+  header
+    .getByRole("button")
+    .evaluateAll((buttons) => buttons.map((b) => b.getAttribute("aria-label")));
 const returnValue = (sheet: Locator) =>
   sheet.evaluate((el) => (el as HTMLDialogElement).returnValue);
 
@@ -78,13 +93,33 @@ test.describe("SheetSide", () => {
       expect(height).toBe(page.viewportSize()!.height);
     });
 
-    test("uses M3's surface", async ({ page }) => {
+    test("uses M3's surface, with its headline in on-surface-variant", async ({
+      page,
+    }) => {
       await opener(page, "modal").click();
 
       await expect(sheet(page).locator("> *")).toHaveCSS(
         "background-color",
         await resolvedColor(page, "var(--theme-color-surface-container-low)")
       );
+      await expect(
+        sheet(page).getByRole("heading", { name: "Details" })
+      ).toHaveCSS(
+        "color",
+        await resolvedColor(page, "var(--theme-color-on-surface-variant)")
+      );
+    });
+
+    test("its close button shows its label as a tooltip on hover", async ({
+      page,
+    }) => {
+      await opener(page, "modal").click();
+      const close = sheet(page).getByRole("button", { name: "Close" });
+      const tooltip = close.locator("[data-ac-tooltip]");
+
+      await expect(tooltip).toHaveText("Close");
+      await close.hover();
+      await expect(tooltip).toBeVisible();
     });
 
     test("closes with its close button, Escape or a click on the scrim", async ({
@@ -235,7 +270,8 @@ test.describe("SheetSide", () => {
       page,
     }) => {
       await expect(sheet(page)).toBeVisible();
-      expect((await box(sheet(page))).width).toBe(256);
+      // close to: Firefox lays out in 1/60px units, so it can be a hair over
+      expect((await box(sheet(page))).width).toBeCloseTo(256, 2);
       const surface = sheet(page).locator("> *");
       await expect(surface).toHaveCSS("border-left-width", "1px");
       await expect(surface).toHaveCSS(
@@ -261,6 +297,112 @@ test.describe("SheetSide", () => {
     test("its close button hides it", async ({ page }) => {
       await sheet(page).getByRole("button", { name: "Close" }).click();
       await expect(sheet(page)).toBeHidden();
+    });
+
+    test("its headline is on-surface-variant", async ({ page }) => {
+      await expect(
+        sheet(page).getByRole("heading", { name: "Filters" })
+      ).toHaveCSS(
+        "color",
+        await resolvedColor(page, "var(--theme-color-on-surface-variant)")
+      );
+    });
+
+    test("doesn't scroll sideways when its content is wider than it", async ({
+      page,
+    }) => {
+      const content = sheet(page).getByText("Content wider than the sheet.");
+      await expect(content.locator("..")).toHaveCSS("overflow-x", "hidden");
+
+      // not the wide element, which Playwright would scroll into view itself
+      await sheet(page).getByText("Controls that filter").hover();
+      await page.mouse.wheel(300, 0);
+      await page.mouse.wheel(-300, 0);
+      await page.mouse.wheel(300, 0);
+      expect(await content.locator("..").evaluate((el) => el.scrollLeft)).toBe(
+        0
+      );
+    });
+
+    test("showCloseX={false} leaves the close button out", async ({ page }) => {
+      const permanent = sheetCase(page, "permanent").getByRole(
+        "complementary",
+        { name: "Contents" }
+      );
+      await expect(permanent).toBeVisible();
+      await expect(permanent.getByRole("button")).toHaveCount(0);
+    });
+  });
+
+  test.describe("back button", () => {
+    const sheet = (page: Page) =>
+      sheetCase(page, "back").getByRole("complementary", {
+        name: "Item details",
+      });
+    const back = (page: Page) =>
+      sheet(page).getByRole("button", { name: "Back", exact: true });
+
+    test("comes first in the header, with 16px of start padding", async ({
+      page,
+    }) => {
+      const header = sheet(page).locator("header");
+      expect(await buttonNames(header)).toEqual(["Back", "Close"]);
+      await expect(header).toHaveCSS("padding-left", "16px");
+      const sheetBox = await box(sheet(page));
+      // the sheet's divider is 1px, on its start (left) edge
+      expect((await box(back(page))).x).toBe(sheetBox.x + 1 + 16);
+    });
+
+    test("a click fires a cancelable back event on the sheet, which stays open", async ({
+      page,
+    }) => {
+      await sheet(page).evaluate((el) => {
+        el.addEventListener("back", (event) => {
+          (el as HTMLElement & { back: unknown }).back = {
+            isCustomEvent: event instanceof CustomEvent,
+            cancelable: event.cancelable,
+          };
+        });
+      });
+      await back(page).click();
+
+      expect(
+        await sheet(page).evaluate(
+          (el) => (el as HTMLElement & { back: unknown }).back
+        )
+      ).toEqual({ isCustomEvent: true, cancelable: true });
+      await expect(sheet(page)).toBeVisible();
+    });
+
+    test("shows its label as a tooltip on hover", async ({ page }) => {
+      const tooltip = back(page).locator("[data-ac-tooltip]");
+      await expect(tooltip).toHaveText("Back");
+      await back(page).hover();
+      await expect(tooltip).toBeVisible();
+    });
+
+    test("right to left, it takes its own labels, sits on the right and its arrow flips", async ({
+      page,
+    }) => {
+      const rtl = sheetCase(page, "rtl").getByRole("complementary", {
+        name: "Détails",
+      });
+      const header = rtl.locator("header");
+      expect(await buttonNames(header)).toEqual(["Retour", "Fermer"]);
+      await expect(header).toHaveCSS("padding-right", "16px");
+
+      const rtlArrow = rtl
+        .getByRole("button", { name: "Retour" })
+        .locator("svg");
+      const ltrArrow = back(page).locator("svg");
+      // the arrow's horizontal scale, -1 when mirrored
+      const scaleX = (arrow: Locator) =>
+        arrow.evaluate((el) => {
+          const { scale } = getComputedStyle(el);
+          return scale === "none" ? 1 : parseFloat(scale);
+        });
+      expect(await scaleX(ltrArrow)).toBe(1);
+      expect(await scaleX(rtlArrow)).toBe(-1);
     });
   });
 });

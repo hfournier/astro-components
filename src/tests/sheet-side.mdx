@@ -38,8 +38,39 @@ description: Tests for the SheetSide component
   <Heading level={2}>Standard</Heading>
   <div class="flex h-80 overflow-hidden border border-(--theme-color-outline-variant)">
     <div class="flex-1 p-4">The main content.</div>
-    <SheetSide class="h-full" headline="Filters" showCloseX>
+    <SheetSide class="h-full" headline="Filters">
       <p>Controls that filter the main content.</p>
+      <div class="h-4 w-[600px]">Content wider than the sheet.</div>
+    </SheetSide>
+  </div>
+</Section>
+
+<Section data-testid="sheet-side-permanent" class="p-4 space-y-4">
+  <Heading level={2}>Standard, part of the layout, without a close button</Heading>
+  <div class="flex h-80 overflow-hidden border border-(--theme-color-outline-variant)">
+    <div class="flex-1 p-4">The main content.</div>
+    <SheetSide class="h-full" headline="Contents" showCloseX={false}>
+      <p>Always shown.</p>
+    </SheetSide>
+  </div>
+</Section>
+
+<Section data-testid="sheet-side-back" class="p-4 space-y-4">
+  <Heading level={2}>Standard, with a back button</Heading>
+  <div class="flex h-80 overflow-hidden border border-(--theme-color-outline-variant)">
+    <div class="flex-1 p-4">The main content.</div>
+    <SheetSide class="h-full" headline="Item details" showBack>
+      <p>Details of an item picked from a list.</p>
+    </SheetSide>
+  </div>
+</Section>
+
+<Section data-testid="sheet-side-rtl" class="p-4 space-y-4" dir="rtl" lang="fr">
+  <Heading level={2}>Right to left, with its own labels</Heading>
+  <div class="flex h-80 overflow-hidden border border-(--theme-color-outline-variant)">
+    <div class="flex-1 p-4">Le contenu principal.</div>
+    <SheetSide class="h-full" headline="Détails" showBack backLabel="Retour" closeLabel="Fermer">
+      <p>Le contenu de la feuille.</p>
     </SheetSide>
   </div>
 </Section>

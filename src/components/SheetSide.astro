@@ -20,24 +20,36 @@ import Header from "./Header.astro";
 //
 // Either kind can be detached (isDetached): 16px from the window's edges, with all four corners
 // rounded, rather than docked flush to its edge.
+//
+// M3 requires a close button in every side sheet, so both kinds have one unless showCloseX is
+// false, for a sheet that's a permanent part of the layout. An optional back button (showBack)
+// fires a cancelable `back` event on the sheet, for the page to move back within it.
 type Props = Omit<HTMLAttributes<"aside" | "dialog">, "id"> & {
+  // The back button's accessible name and tooltip, for pages in other languages
+  backLabel?: string;
   bgColor?: BgColorType;
+  // The close button's accessible name and tooltip, for pages in other languages
+  closeLabel?: string;
   edge?: "start" | "end";
   headline?: string;
   // Needed to open a modal sheet with commandfor; one is made up if it's left out
   id?: string;
   isDetached?: boolean;
   isModal?: boolean;
+  showBack?: boolean;
   showCloseX?: boolean;
 };
 const {
   isModal = false,
+  backLabel = "Back",
   bgColor = isModal ? "surface-container-low" : "surface",
+  closeLabel = "Close",
   edge = "end",
   headline,
   id = `ac-sheet-side-${crypto.randomUUID()}`,
   isDetached = false,
-  showCloseX = isModal,
+  showBack = false,
+  showCloseX = true,
   class: classList,
   ...attrs
 } = Astro.props;
@@ -45,7 +57,7 @@ const {
 const Tag = isModal ? "dialog" : "aside";
 const headlineId = headline ? `${id}-headline` : undefined;
 const hasActions = Astro.slots.has("actions");
-const hasHeader = !!headline || showCloseX;
+const hasHeader = !!headline || showBack || showCloseX;
 
 // M3: 256px wide, at most 400px. Set as a custom property, so a consumer overrides it with one
 // class, such as `[--ac-sheet-side-width:320px]`. Never wider than the window, less its margins.
@@ -127,11 +139,23 @@ const closeAttrs = isModal
         <Header
           bgColor="transparent"
           role="none"
-          class="flex shrink-0 items-center gap-3 px-6 pt-6 pb-4"
+          class:list={[
+            "flex shrink-0 items-center gap-3 pe-6 pt-6 pb-4",
+            // M3: 16px at the start with a back button, 24px without
+            showBack ? "ps-4" : "ps-6",
+          ]}
         >
+          {showBack && (
+            <ButtonIcon
+              class="rtl:[&>svg]:-scale-x-100"
+              icon="arrow_back"
+              label={backLabel}
+              data-ac-sheet-side-back
+            />
+          )}
           {headline && (
             <h2
-              class="min-w-0 flex-1 text-[1.375rem] leading-7 font-normal tracking-normal"
+              class="min-w-0 flex-1 text-[1.375rem] leading-7 font-normal tracking-normal text-(--theme-color-on-bg-variant)"
               id={headlineId}
             >
               {headline}
@@ -141,8 +165,7 @@ const closeAttrs = isModal
             <ButtonIcon
               class="ms-auto -me-2"
               icon="close"
-              label="Close"
-              showTooltip={false}
+              label={closeLabel}
               {...closeAttrs}
             />
           )}
@@ -151,7 +174,8 @@ const closeAttrs = isModal
     }
     <div
       class:list={[
-        "min-h-0 flex-1 overflow-y-auto px-6 pb-6",
+        // M3: side sheets never scroll sideways
+        "min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-6 pb-6",
         !hasHeader && "pt-6",
       ]}
     >
@@ -198,11 +222,18 @@ const closeAttrs = isModal
       });
     });
 
-  // A standard sheet's close button hides it; remove its hidden attribute to show it again
+  // A standard sheet's close button hides it; remove its hidden attribute to show it again. The
+  // back button fires a cancelable `back` on its sheet, for the page to decide what going back
+  // means, so it doesn't close the sheet.
   document.addEventListener("click", (event) => {
-    const sheet = (event.target as Element)
+    const target = event.target as Element;
+    const sheet = target
       .closest("[data-ac-sheet-side-close]")
       ?.closest<HTMLElement>('[data-ac-sheet-side="standard"]');
     if (sheet) sheet.hidden = true;
+    target
+      .closest("[data-ac-sheet-side-back]")
+      ?.closest("[data-ac-sheet-side]")
+      ?.dispatchEvent(new CustomEvent("back", { cancelable: true }));
   });
 </script>
