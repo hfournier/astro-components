@@ -1,6 +1,6 @@
 ---
 title: Standard SheetBottom
-description: A standard sheet sits at the bottom of the main content, and both can be used at once. Here it's the last child of a scrolling region, so it stays at the region's bottom edge while the content scrolls behind it. Its drag handle collapses it to the handle and headline, and expands it again.
+description: A standard sheet sits at the bottom of the main content, and both can be used at once. Here it's the last child of a scrolling region, so it stays at the region's bottom edge while the content scrolls behind it. Its drag handle collapses it to the handle alone, and expands it again. An `aria-label` names it.
 ---
 
 <div class="h-80 overflow-y-auto border border-(--theme-color-outline-variant)">
@@ -12,7 +12,7 @@ description: A standard sheet sits at the bottom of the main content, and both c
     <p>More of the main content.</p>
     <p>The end of the main content.</p>
   </div>
-  <SheetBottom headline="Now playing">
+  <SheetBottom aria-label="Now playing">
     <p>Details about the item being played.</p>
   </SheetBottom>
 </div>

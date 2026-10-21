@@ -1,10 +1,10 @@
 ---
 title: SheetBottom
-description: The following example shows a modal SheetBottom with a headline, opened by a button with `command="show-modal"` and `commandfor` set to the sheet's `id`, so no JavaScript is needed. It slides up from the bottom of the window, and closes with a click or a drag down on its drag handle, Escape or a click on the scrim. Its content fits in half the window, so it has one height.
+description: The following example shows a modal SheetBottom named by its `aria-label`, opened by a button with `command="show-modal"` and `commandfor` set to the sheet's `id`, so no JavaScript is needed. It slides up from the bottom of the window, and closes with a click or a drag down on its drag handle, Escape or a click on the scrim. Its content fits in half the window, so it has one height.
 ---
 
 <Button command="show-modal" commandfor="sheet-bottom-usage">Open bottom sheet</Button>
 
-<SheetBottom id="sheet-bottom-usage" headline="Share" isModal>
+<SheetBottom id="sheet-bottom-usage" aria-label="Share" isModal>
   <p>Options for the page, such as ways to share it.</p>
 </SheetBottom>

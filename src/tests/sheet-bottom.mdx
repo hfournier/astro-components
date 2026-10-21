@@ -9,7 +9,7 @@ description: Tests for the SheetBottom component
   <Heading level={2}>Modal</Heading>
   <Button command="show-modal" commandfor="modal-sheet-bottom">Open bottom sheet</Button>
 
-  <SheetBottom id="modal-sheet-bottom" headline="Share" isModal>
+  <SheetBottom id="modal-sheet-bottom" aria-label="Share" isModal>
     <p>Options for the page, such as ways to share it.</p>
   </SheetBottom>
 </Section>
@@ -18,7 +18,11 @@ description: Tests for the SheetBottom component
   <Heading level={2}>Modal with scrolling content</Heading>
   <Button command="show-modal" commandfor="modal-scrolling-sheet-bottom">Open tall bottom sheet</Button>
 
-  <SheetBottom id="modal-scrolling-sheet-bottom" headline="Terms" isModal>
+  <SheetBottom id="modal-scrolling-sheet-bottom" aria-labelledby="modal-scrolling-sheet-bottom-title" isModal>
+    <div class="mb-4 flex items-center gap-2">
+      <h2 class="min-w-0 flex-1 text-[1.375rem] leading-7" id="modal-scrolling-sheet-bottom-title">Terms</h2>
+      <ButtonIcon class="-me-2" icon="close" label="Close" command="request-close" commandfor="modal-scrolling-sheet-bottom" />
+    </div>
     <p class="mb-4">Paragraph 1 of the terms.</p>
     <p class="mb-4">Paragraph 2 of the terms.</p>
     <p class="mb-4">Paragraph 3 of the terms.</p>
@@ -53,7 +57,7 @@ description: Tests for the SheetBottom component
       <p>More of the main content.</p>
       <p>The end of the main content.</p>
     </div>
-    <SheetBottom headline="Now playing">
+    <SheetBottom aria-label="Now playing">
       <p>Details about the item being played.</p>
     </SheetBottom>
   </div>
@@ -63,7 +67,7 @@ description: Tests for the SheetBottom component
   <Heading level={2}>Collapsed</Heading>
   <div class="flex h-80 flex-col justify-end overflow-y-auto border border-(--theme-color-outline-variant)">
     <SheetBottom
-      headline="Map layers"
+      aria-label="Map layers"
       isCollapsed
       dragHandleLabels={{ handle: "Poignée de déplacement" }}
     >

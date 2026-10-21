@@ -3,10 +3,11 @@ import { test, expect } from "./support/a11y-fixture";
 import { box, resolvedColor } from "./support/helpers";
 
 // Each case on /tests/sheet-bottom is a Section with data-testid="sheet-bottom-<caseId>" holding
-// one SheetBottom: modal (the "Share" sheet and its "Open bottom sheet" button), modal-scrolling
-// (the tall "Terms" sheet and its "Open tall bottom sheet" button), standard ("Now playing", the
-// last child of a scrolling region) and collapsed ("Map layers", starting collapsed, with French
-// dragHandleLabels).
+// one SheetBottom, named with aria-label unless noted: modal (the "Share" sheet and its "Open
+// bottom sheet" button), modal-scrolling (the tall sheet and its "Open tall bottom sheet" button,
+// named by its content's "Terms" heading through aria-labelledby, beside a Close button of the
+// page's own), standard ("Now playing", the last child of a scrolling region) and collapsed ("Map
+// layers", starting collapsed, with French dragHandleLabels).
 type SheetBottomCaseId = "modal" | "modal-scrolling" | "standard" | "collapsed";
 
 const sheetCase = (page: Page, caseId: SheetBottomCaseId) =>
@@ -72,7 +73,7 @@ test.describe("SheetBottom", () => {
         .toBe(page.viewportSize()!.height);
     };
 
-    test("opens from its button as a dialog named by its headline, on the bottom edge", async ({
+    test("opens from its button as a dialog named by its aria-label, on the bottom edge", async ({
       page,
     }) => {
       await expect(sheet(page)).toBeHidden();
@@ -82,18 +83,23 @@ test.describe("SheetBottom", () => {
       ).toBeVisible();
     });
 
-    test("puts its drag handle and headline in a <header>", async ({
+    test("puts only its drag handle in a <header>, with no headline of its own", async ({
       page,
     }) => {
       await open(page);
-      // at half height, the full-height close button is hidden, so the handle is the one Close
       const header = sheet(page).locator("header");
-      await expect(header.getByRole("button", { name: "Close" })).toHaveCount(
-        1
-      );
-      await expect(header.getByRole("heading", { name: "Share" })).toHaveCount(
-        1
-      );
+      await expect(header.getByRole("button")).toHaveCount(1);
+      await expect(header.getByRole("button", { name: "Close" })).toBeVisible();
+      await expect(sheet(page).getByRole("heading")).toHaveCount(0);
+    });
+
+    test("is named by a heading in its content through aria-labelledby", async ({
+      page,
+    }) => {
+      await opener(page, "modal-scrolling").click();
+      await expect(
+        page.getByRole("dialog", { name: "Terms", exact: true })
+      ).toBeVisible();
     });
 
     test("uses M3's surface and a centred 32x4px drag handle with 22px above and below it", async ({
@@ -198,19 +204,25 @@ test.describe("SheetBottom", () => {
       await expect.poll(() => isOpen(tall)).toBe(false);
     });
 
-    test("shows a close button only at full height, which cancels it like Escape", async ({
+    test("builds in no close button at either height; one in its content cancels it like Escape", async ({
       page,
     }) => {
       await page.setViewportSize({ width: 400, height: 600 });
       const tall = modalSheet(page, "modal-scrolling");
       await opener(page, "modal-scrolling").click();
+      // the page's own, in the content
       const close = tall.getByRole("button", { name: "Close", exact: true });
-      await expect(close).toBeHidden();
+      await expect(close).toHaveCount(1);
+      await expect(
+        tall.locator("header").getByRole("button")
+      ).toHaveAccessibleName("Drag handle");
 
       await tall
         .getByRole("button", { name: "Drag handle", exact: true })
         .press("Enter");
-      await expect(close).toBeVisible();
+      await expect(tall).toHaveAttribute("data-expanded");
+      await expect(close).toHaveCount(1);
+      await expect(tall.locator("header").getByRole("button")).toHaveCount(1);
       await recordEvents(tall);
       await close.click();
 
@@ -282,8 +294,9 @@ test.describe("SheetBottom", () => {
       );
       expect(handleBox).toMatchObject({ x, y, width, height: 48 });
 
-      // just inside the 28px corner's curve, which clips the sheet
-      await drag(page, x + 24, y + 12, 100);
+      // just inside the 28px corner's curve, which clips the sheet. 60px, past the 32px
+      // threshold but short of the window's bottom edge, below which Firefox drops the pointerup.
+      await drag(page, x + 24, y + 12, 60);
       await expect.poll(() => isOpen(sheet(page))).toBe(false);
     });
 
@@ -320,7 +333,8 @@ test.describe("SheetBottom", () => {
 
       await openWithStaleValue();
       const { x, y, width, height } = await box(handle);
-      await drag(page, x + width / 2, y + height / 2, 100);
+      // short of the window's bottom edge, as above
+      await drag(page, x + width / 2, y + height / 2, 60);
       await closed();
 
       await openWithStaleValue();
@@ -387,16 +401,12 @@ test.describe("SheetBottom", () => {
       );
     });
 
-    test("puts its drag handle and headline in a <header>", async ({
-      page,
-    }) => {
+    test("puts only its drag handle in a <header>", async ({ page }) => {
       const header = sheet(page).locator("header");
-      await expect(
-        header.getByRole("button", { name: "Drag handle", exact: true })
-      ).toBeVisible();
-      await expect(
-        header.getByRole("heading", { name: "Now playing" })
-      ).toBeVisible();
+      await expect(header.getByRole("button")).toHaveAccessibleName(
+        "Drag handle"
+      );
+      await expect(sheet(page).getByRole("heading")).toHaveCount(0);
     });
 
     test("its drag handle collapses and expands it", async ({ page }) => {
@@ -408,7 +418,8 @@ test.describe("SheetBottom", () => {
       await expect(handle(page)).toHaveAttribute("aria-expanded", "false");
       // its name stays put, and aria-expanded carries the state
       await expect(handle(page)).toHaveAccessibleName("Drag handle");
-      await expect(sheet(page).getByRole("heading")).toBeVisible();
+      // collapsed to its 48px drag handle alone
+      expect((await box(sheet(page))).height).toBe(48);
 
       await handle(page).press("Enter");
       await expect(content).toBeVisible();

@@ -20,11 +20,7 @@ props:
     type: "{ handle?: string; close?: string }"
     required: false
     default: "{ handle: 'Drag handle', close: 'Close' }"
-    description: The drag handle's accessible names. `handle` names a handle that changes the sheet's height, whose `aria-expanded` says which height the sheet is at. `close` names a modal sheet's handle when the sheet has one height, and its full-height close button. They're in English by default, so a page in another language should pass both.
-  - name: headline
-    type: string
-    required: false
-    description: The sheet's headline, in M3's Title Large, under the drag handle. It also names the sheet for assistive tech (`aria-labelledby`). Give a modal sheet one, or an `aria-label`.
+    description: The drag handle's accessible names. `handle` names a handle that changes the sheet's height, whose `aria-expanded` says which height the sheet is at. `close` names a modal sheet's handle when the sheet has one height, since it then closes the sheet. They're in English by default, so a page in another language should pass both.
   - name: id
     type: string
     required: false
@@ -33,12 +29,12 @@ props:
     type: boolean
     required: false
     default: "false"
-    description: Starts a standard sheet collapsed to its drag handle and headline. Its drag handle expands it. Ignored on a modal sheet, or one without a drag handle.
+    description: Starts a standard sheet collapsed to its drag handle. Its drag handle expands it. Ignored on a modal sheet, or one without a drag handle.
   - name: isModal
     type: boolean
     required: false
     default: "false"
-    description: Makes the sheet M3's modal bottom sheet, a `<dialog>` that slides up over a scrim. Opened with `showModal()` (or a button with `command="show-modal"`), it keeps focus inside it and makes the rest of the page inert. It opens at no more than half the window's height (see Heights). It closes with its drag handle, Escape, a click on the scrim, or its close button at full height. All but the drag handle fire a `cancel` event first, which you can prevent to keep it open.
+    description: Makes the sheet M3's modal bottom sheet, a `<dialog>` that slides up over a scrim. Opened with `showModal()` (or a button with `command="show-modal"`), it keeps focus inside it and makes the rest of the page inert. It opens at no more than half the window's height (see Heights). It closes with its drag handle, Escape or a click on the scrim. Escape and the scrim fire a `cancel` event first, which you can prevent to keep it open. Name it with `aria-label`, or `aria-labelledby` set to a heading in its content.
   - name: showDragHandle
     type: boolean
     required: false
@@ -54,22 +50,29 @@ slots:
 
 Use a bottom sheet for content and actions that support the page, not for its main content, in compact and medium windows. In a large window, put the same content in a SheetSide.
 
+## Anatomy
+
+As in M3 and Jetpack Compose, a bottom sheet is a container, an optional drag handle and, for a modal sheet, a scrim. It has no headline or close button of its own: what it holds is up to its content.
+
+- **Naming it:** a modal sheet is a dialog, so it needs an accessible name. Give it an `aria-label`, or put a heading in its content and set the sheet's `aria-labelledby` to the heading's `id`. A standard sheet is a complementary landmark, which a name also helps tell apart.
+- **Closing it at full height:** M3 asks for a close affordance in a modal sheet at full height, in an app bar in the sheet. Put a row at the top of the content with a close ButtonIcon that has `command="request-close"` and `commandfor` set to the sheet's `id`. Like Escape, it fires a cancelable `cancel` event. The scrolling example below shows one.
+
 ## Standard and modal
 
-A standard sheet sits at the bottom of the main content, and both can be used at the same time. Put it last in a scrolling container (the page, or a scrolling region of it): it's sticky, so it stays at the container's bottom edge while the content scrolls behind it. Its drag handle collapses it to the handle and headline, and expands it again.
+A standard sheet sits at the bottom of the main content, and both can be used at the same time. Put it last in a scrolling container (the page, or a scrolling region of it): it's sticky, so it stays at the container's bottom edge while the content scrolls behind it. Its drag handle collapses it to the handle alone, and expands it again.
 
 A modal sheet slides up over the page, and the page under its scrim can't be used until it closes. Use one on a small screen for a set of choices that the user deals with before going back to the page. Examples are a share sheet, a menu with a long list of actions, or actions that need icons and longer descriptions.
 
 Choosing an item or action in a modal sheet should close it. Give those buttons `command="close"`, a `value`, and `commandfor` set to the sheet's `id`. The sheet closes with its `returnValue` set to the value, so a `close` listener can tell which was chosen.
 
-Use a standard sheet for content that complements the page while the page is still in use, such as an audio player, or details over a map. Collapsed, it shows its drag handle and headline.
+Use a standard sheet for content that complements the page while the page is still in use, such as an audio player, or details over a map. Collapsed, it shows only its drag handle.
 
 ## Heights
 
 As M3 asks, a modal sheet opens at no more than half the window's height. If its content fits, that's its only height. If the content is taller, it scrolls inside that half, and the sheet gains a second, full height, the window's height less M3's top margin.
 
 - **Changing height:** a click, Enter or Space on the drag handle toggles between the two heights, and the handle's `aria-expanded` says which height it's at. A drag up on it expands the sheet. A drag down returns it to half, and from half closes it.
-- **Closing at full height:** a close button appears at the end of the headline's row. Like Escape, it fires a cancelable `cancel` event.
+- **Closing at full height:** the drag handle, Escape and the scrim still close it. Add a close button to the content too, as M3 asks (see Anatomy).
 - **Each opening** starts at half height again.
 
 ## Labels
