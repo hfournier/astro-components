@@ -8,8 +8,37 @@ description: Tests for the NavBar component
 <Section data-testid="nav-bar-three-destinations" class="p-4 space-y-4">
   <Heading level={2}>Three destinations</Heading>
   <NavBar class="static" label="Three destinations">
-    <NavBarItem href="#" icon="home-fill" label="Home" aria-current="page" />
+    <NavBarItem href="#" icon="home" activeIcon="home-fill" label="Home" aria-current="page" />
     <NavBarItem href="#" icon="search" label="Search" />
-    <NavBarItem href="#" icon="settings" label="Settings" />
+    <NavBarItem href="#" icon="settings" activeIcon="settings-fill" label="Settings" />
+  </NavBar>
+</Section>
+
+<Section data-testid="nav-bar-five-destinations" class="p-4 space-y-4">
+  <Heading level={2}>Five destinations</Heading>
+  <NavBar class="static" label="Five destinations">
+    <NavBarItem href="#" icon="home" label="Home" aria-current="page" />
+    <NavBarItem href="#" icon="search" label="Search" />
+    <NavBarItem href="#" icon="inbox" label="Inbox" />
+    <NavBarItem href="#" icon="chat" label="Chat" />
+    <NavBarItem href="#" icon="bookmark" label="Saved" />
+  </NavBar>
+</Section>
+
+<Section data-testid="nav-bar-long-label" class="p-4 space-y-4">
+  <Heading level={2}>Long label</Heading>
+  <NavBar class="static" label="Long label">
+    <NavBarItem href="#" icon="home" label="Home" aria-current="page" />
+    <NavBarItem href="#" icon="settings" label="Notifications, privacy and security settings" />
+    <NavBarItem href="#" icon="search" label="Search" />
+  </NavBar>
+</Section>
+
+<Section data-testid="nav-bar-reselect" class="p-4 space-y-4">
+  <Heading level={2}>Re-selecting the current destination</Heading>
+  <NavBar class="static" label="Re-select">
+    <NavBarItem href="/tests/nav-bar" icon="home" label="This page" />
+    <NavBarItem href="/tests" icon="grading" label="Tests" />
+    <NavBarItem href="/components" icon="code_blocks" label="Components" />
   </NavBar>
 </Section>

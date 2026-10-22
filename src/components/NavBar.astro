@@ -25,24 +25,36 @@ if (itemCount < 3 || itemCount > 5) {
     `NavBar: M3 navigation bars have 3 to 5 destinations (NavBarItems), but this one has ${itemCount}.`
   );
 }
+
+// M3: horizontal items have a fixed width, the extra space going to the bar's ends. As Compose's
+// centered arrangement does, the items share 60%, 70% or 80% of the bar for 3, 4 or 5 of them; an
+// item whose content is wider grows, up to an equal share of the whole bar. Set as percentages,
+// they resolve against the <nav> where NavBarItem uses them.
+const groupShare = 30 + 10 * itemCount;
+const itemWidths = `--ac-nav-bar-item-width: calc(${groupShare}% / ${itemCount}); --ac-nav-bar-item-max-width: calc(100% / ${itemCount})`;
 ---
 
 {
   /* M3 flexible navigation bar, fixed to the bottom of the viewport, above the
      device's bottom safe area. Its destinations follow the window size, not the bar's own width:
      below medium they're vertical items sharing the bar's width equally, and from medium up
-     they're horizontal items grouped in the middle (NavBarItem restyles itself with medium:). */
+     they're horizontal items grouped in the middle (NavBarItem restyles itself with medium:).
+     It's at least 64px high, and grows when a label wraps or the text is larger. */
 }
 <BaseWrapper
   class:list={twMerge(
-    "fixed inset-x-0 bottom-0 z-30 box-content h-16 pb-[env(safe-area-inset-bottom)]",
+    "fixed inset-x-0 bottom-0 z-30 box-content pb-[env(safe-area-inset-bottom)]",
     classList
   )}
   {bgColor}
   data-ac-nav-bar
   {...attrs}
 >
-  <nav class="flex h-full medium:justify-center" aria-label={label}>
+  <nav
+    class="flex min-h-16 medium:justify-center"
+    style={itemWidths}
+    aria-label={label}
+  >
     <Fragment set:html={items} />
   </nav>
 </BaseWrapper>
