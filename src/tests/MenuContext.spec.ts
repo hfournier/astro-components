@@ -2,9 +2,11 @@ import type { Page } from "@playwright/test";
 import { test, expect } from "./support/a11y-fixture";
 import { box, settled } from "./support/helpers";
 
-// The "context" case on /tests/menu: a focusable "Photo" box (#context-target) with a context menu,
-// "Photo actions", of "Copy image", "Save image" and Delete. A paragraph, "Elsewhere", follows it.
-const target = (page: Page) => page.locator("#context-target");
+// The "context" case on /tests/menu (data-testid="menu-context"): a focusable "Photo" box (#context-target) with a
+// context menu, "Photo actions", of "Copy image", "Save image" and Delete. A paragraph,
+// "Elsewhere", follows it.
+const section = (page: Page) => page.getByTestId("menu-context");
+const target = (page: Page) => section(page).locator("#context-target");
 const contextMenu = (page: Page) =>
   page.getByRole("menu", { name: "Photo actions", exact: true });
 const item = (page: Page, name: string) =>
@@ -67,6 +69,19 @@ test.describe("Menu context menus", () => {
     await page.keyboard.press("Escape");
   });
 
+  test("a contextmenu event without a pointer, as from assistive technology, opens it at the target", async ({
+    page,
+  }) => {
+    await target(page).dispatchEvent("contextmenu", { button: 0 });
+    await expect(item(page, "Copy image")).toBeFocused();
+    await settled(page);
+    const area = await box(target(page));
+    const opened = await box(surface(page));
+    expect(Math.abs(opened.x - area.x)).toBeLessThanOrEqual(1);
+    expect(Math.abs(opened.y - area.y)).toBeLessThanOrEqual(1);
+    await page.keyboard.press("Escape");
+  });
+
   test("the Menu key on the target opens it", async ({ page }) => {
     await target(page).focus();
     await page.keyboard.press("ContextMenu");
@@ -98,7 +113,9 @@ test.describe("Menu context menus", () => {
     page,
   }) => {
     await watchBrowserMenu(page);
-    await page.locator("#context-elsewhere").click({ button: "right" });
+    await section(page)
+      .getByText("Elsewhere", { exact: true })
+      .click({ button: "right" });
     await expect(contextMenu(page)).toBeHidden();
     expect(await prevented(page)).toEqual([false]);
   });

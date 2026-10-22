@@ -122,6 +122,26 @@ const surfaceClasses = [
   const hoverCloseMs = 300; // off it before its submenu closes, to cross diagonally into it
   const keyboardContextMs = 500; // after the keyboard opens a context menu, for its own event
 
+  // The one submenu a hover is about to open, shared, so the pointer crossing other parent items
+  // on its way into an open submenu doesn't open theirs
+  let hoverOpenTimer: number | undefined;
+  let hoverOpenItem: HTMLElement | undefined;
+  const hoverOpen = (item: HTMLElement, open: () => void) => {
+    if (hoverOpenItem === item) return;
+    clearTimeout(hoverOpenTimer);
+    hoverOpenItem = item;
+    hoverOpenTimer = window.setTimeout(() => {
+      hoverOpenItem = undefined;
+      open();
+    }, hoverOpenMs);
+  };
+  // Cancels the pending one, or only the given item's
+  const cancelHoverOpen = (item?: HTMLElement) => {
+    if (item && hoverOpenItem !== item) return;
+    clearTimeout(hoverOpenTimer);
+    hoverOpenItem = undefined;
+  };
+
   // Each menu's way to close every menu up to the one first opened, focusing that one's trigger
   const closeTrees = new WeakMap<HTMLElement, (shouldFocus: boolean) => void>();
 
@@ -319,10 +339,12 @@ const surfaceClasses = [
     const towardKey = (el: Element) => (isRtl(el) ? "ArrowLeft" : "ArrowRight");
     const awayKey = (el: Element) => (isRtl(el) ? "ArrowRight" : "ArrowLeft");
 
-    let hoverTimer: number | undefined;
-    const later = (action: () => void, ms: number) => {
-      clearTimeout(hoverTimer);
-      hoverTimer = window.setTimeout(action, ms);
+    // Hovering away from the parent item closes the submenu after a moment, unless the pointer
+    // reaches it first
+    let hoverCloseTimer: number | undefined;
+    const cancelHoverClose = () => {
+      clearTimeout(hoverCloseTimer);
+      hoverCloseTimer = undefined;
     };
     parentItems.forEach((item) => {
       item.addEventListener("click", () => openFrom(item, true));
@@ -338,13 +360,18 @@ const surfaceClasses = [
         if (event.pointerType === "touch") return;
         const over = (event.target as Element).closest("[data-ac-menu-item]");
         if (!over) return;
+        const isShowingItem = isOpen() && trigger === item;
         if (over === item) {
-          if (!isOpen() || trigger !== item)
-            later(() => openFrom(item, false), hoverOpenMs);
-          else clearTimeout(hoverTimer);
-        } else if (isOpen() && trigger === item)
-          later(() => menu.hidePopover(), hoverCloseMs);
-        else if (trigger === item) clearTimeout(hoverTimer);
+          cancelHoverClose();
+          if (!isShowingItem) hoverOpen(item, () => openFrom(item, false));
+          return;
+        }
+        cancelHoverOpen(item);
+        if (isShowingItem && hoverCloseTimer === undefined)
+          hoverCloseTimer = window.setTimeout(() => {
+            hoverCloseTimer = undefined;
+            menu.hidePopover();
+          }, hoverCloseMs);
       });
       // Focus moving to another item in the parent menu closes it
       parent?.addEventListener("focusin", (event) => {
@@ -352,7 +379,12 @@ const surfaceClasses = [
           menu.hidePopover();
       });
     });
-    menu.addEventListener("pointerenter", () => clearTimeout(hoverTimer));
+    // Reaching the submenu keeps it open, and cancels any other parent item's submenu the pointer
+    // started opening on the way
+    menu.addEventListener("pointerenter", () => {
+      cancelHoverClose();
+      if (hoverOpenItem && !menu.contains(hoverOpenItem)) cancelHoverOpen();
+    });
 
     let typed = "";
     let typedAt = 0;
@@ -501,8 +533,16 @@ const surfaceClasses = [
       focusItem(0);
     };
 
-    // The keyboard's context menu keys open it at the target, in place of the browser's
+    // The keyboard's context menu keys open it at the target, in place of the browser's. The
+    // keys are handled themselves, as not every browser fires the event for them; the event that
+    // may follow is the keyboard's too.
     let keyboardOpenedAt = -Infinity;
+    const isAfterKeyboard = () =>
+      performance.now() - keyboardOpenedAt < keyboardContextMs;
+    const openAtTarget = () => {
+      const { left, right, top } = contextTarget.getBoundingClientRect();
+      openAt(isRtl(contextTarget) ? right : left, top);
+    };
     contextTarget.addEventListener("keydown", (event) => {
       if (
         event.key !== "ContextMenu" &&
@@ -510,8 +550,7 @@ const surfaceClasses = [
       )
         return;
       event.preventDefault();
-      const { left, right, top } = contextTarget.getBoundingClientRect();
-      openAt(isRtl(contextTarget) ? right : left, top);
+      openAtTarget();
       keyboardOpenedAt = performance.now();
     });
 
@@ -525,9 +564,13 @@ const surfaceClasses = [
     });
     window.addEventListener("pointerup", () => (isPressed = false), true);
     contextTarget.addEventListener("contextmenu", (event) => {
-      const isKeyboard =
-        performance.now() - keyboardOpenedAt < keyboardContextMs;
-      if (isKeyboard) return event.preventDefault();
+      if (isAfterKeyboard()) return event.preventDefault();
+      // Fired without a pointer, such as by assistive technology: at the target, as from the
+      // keyboard (no secondary button, and no pointer type where the event has one)
+      if (event.button !== 2 && !(event as PointerEvent).pointerType) {
+        event.preventDefault();
+        return openAtTarget();
+      }
       if (event.shiftKey || wasOpen) {
         wasOpen = false;
         if (isOpen()) menu.hidePopover();
@@ -547,8 +590,7 @@ const surfaceClasses = [
     });
     // The keyboard's own context menu event, after focus has moved into the menu
     menu.addEventListener("contextmenu", (event) => {
-      if (performance.now() - keyboardOpenedAt < keyboardContextMs)
-        event.preventDefault();
+      if (isAfterKeyboard()) event.preventDefault();
     });
   });
 </script>

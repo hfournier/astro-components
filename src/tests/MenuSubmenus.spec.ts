@@ -171,6 +171,26 @@ test.describe("Menu submenus", () => {
     await page.keyboard.press("Escape");
   });
 
+  test("crossing another parent item on the way into an open submenu doesn't open that one's", async ({
+    page,
+  }) => {
+    await fileTrigger(page).click();
+    await recent(page).hover();
+    await expect(recentMenu(page)).toBeVisible();
+    // over Share's far end, then straight into Open recent's submenu, faster than the hover delay
+    const share = await box(item(fileMenu(page), "Share"));
+    const notes = await box(item(recentMenu(page), "Notes.txt"));
+    await page.mouse.move(
+      share.x + share.width - 8,
+      share.y + share.height / 2
+    );
+    await page.mouse.move(notes.x + 20, notes.y + notes.height / 2);
+    await page.waitForTimeout(500);
+    await expect(recentMenu(page)).toBeVisible();
+    await expect(shareMenu(page)).toBeHidden();
+    await page.keyboard.press("Escape");
+  });
+
   test("hovering another parent item opens its submenu in place of the first", async ({
     page,
   }) => {
