@@ -356,32 +356,32 @@ const widthClasses = {
       });
 
       // M3: Up and Down move between the shown section's links, stopping at the ends. There's no
-      // roving tabindex, so Tab still reaches each one.
+      // roving tabindex, so Tab still reaches each one. Tab out of a section goes back to the rail:
+      // forward to the rail item after its opener, back to its opener. The arrow key toward the
+      // rail goes back to the opener too. Those need an opener; Up and Down don't, as from large up
+      // a section's links can be reached without one.
       drawer.addEventListener("keydown", (event) => {
-        if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
         const sectionLinks = links();
         const index = sectionLinks.indexOf(
           document.activeElement as HTMLAnchorElement
         );
         if (index === -1) return;
-        event.preventDefault();
-        sectionLinks[index + (event.key === "ArrowDown" ? 1 : -1)]?.focus();
-      });
-
-      // Tab out of a section goes back to the rail: forward to the rail item after its opener,
-      // back to its opener. The arrow key toward the rail goes back to the opener too.
-      drawer.addEventListener("keydown", (event) => {
-        if (!opener) return;
-        const sectionLinks = links();
-        const isFirst = document.activeElement === sectionLinks[0];
-        const isLast = document.activeElement === sectionLinks.at(-1);
-        if (
+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+          event.preventDefault();
+          sectionLinks[index + (event.key === "ArrowDown" ? 1 : -1)]?.focus();
+        } else if (!opener) {
+          return;
+        } else if (
           event.key === towardRail() ||
-          (event.key === "Tab" && event.shiftKey && isFirst)
+          (event.key === "Tab" && event.shiftKey && index === 0)
         ) {
           event.preventDefault();
           opener.focus();
-        } else if (event.key === "Tab" && !event.shiftKey && isLast) {
+        } else if (
+          event.key === "Tab" &&
+          !event.shiftKey &&
+          index === sectionLinks.length - 1
+        ) {
           const next = nextInRail(opener);
           if (next) {
             event.preventDefault();
