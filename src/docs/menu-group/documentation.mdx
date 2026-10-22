@@ -1,0 +1,31 @@
+---
+name: MenuGroup
+description: A group of related items in a Menu, extending HTML's `<div>` element, with an optional section label. In a grouped menu it's a surface of its own; in a standard one, a divider separates it from the group before it.
+category: Interactive elements
+role: pattern
+meta:
+  title: MenuGroup | astro-components HenriFournier.dev
+  description: A group of related items in a Material 3 menu, with an optional section label.
+extends:
+  kind: element
+  tag: [div]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/div
+parents: [Menu]
+props:
+  - name: label
+    type: string
+    required: false
+    description: M3's section label, shown above the group's items in Label Large, and the group's accessible name.
+slots:
+  - name: default
+    description: The group's items, MenuItem, MenuItemCheckbox or MenuItemRadio.
+    kind: any
+---
+
+## Appearance
+
+The group is `role="group"`, named by its `label` when it has one. The label is at least 32px high, 12px from the start, in `on-surface-variant` (`on-tertiary-container` in a vibrant menu). The group's first item has 12px top corners and its last 12px bottom corners, the rest 4px.
+
+The menu's `layout` sets the rest. Grouped, the group is a surface in the menu's color at elevation 2, with 2px above and below its items, 16px corners at the menu's top (the first group) and bottom (the last group), and 8px corners elsewhere. Standard, every group but the first has a divider above it, inset 12px with 2px above and below. The divider isn't an element, so it's never focused or announced.
+
+MenuItemRadios check one at a time within their MenuGroup, so put each set of radio items in its own group.

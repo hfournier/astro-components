@@ -160,6 +160,8 @@ const variantClasses = {
     "group/icon-button grid cursor-pointer place-items-center",
     "relative isolate before:absolute before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0 motion-safe:before:transition-opacity",
     "not-disabled:hover:before:opacity-8 not-disabled:focus-visible:before:opacity-10 not-disabled:active:before:opacity-10",
+    // M3: a button whose menu is open keeps its pressed state layer
+    "aria-[haspopup=menu]:aria-expanded:before:opacity-10",
     // M3 touch target: at least 48x48, centered on the button, for every size and width
     "after:absolute after:top-1/2 after:left-1/2 after:size-12 after:min-h-full after:min-w-full after:-translate-1/2",
     "disabled:cursor-default disabled:text-(--theme-color-on-surface)/38",

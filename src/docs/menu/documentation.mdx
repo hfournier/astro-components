@@ -1,0 +1,60 @@
+---
+name: Menu
+description: A Material 3 Expressive vertical menu, extending HTML's `<div>` element as an auto popover. It holds a temporary list of actions or choices (MenuItem, MenuItemCheckbox, MenuItemRadio), in MenuGroups or not, opened by a button with `commandfor` set to its `id`.
+category: Interactive elements
+role: pattern
+meta:
+  title: Menu | astro-components HenriFournier.dev
+  description: A Material 3 Expressive vertical menu of actions or choices, opened from a button, with M3's keyboard and screen reader support.
+extends:
+  kind: element
+  tag: [div]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/popover
+props:
+  - name: id
+    type: string
+    required: true
+    description: The menu's id, which each trigger's `commandfor` points at. Unique on the page.
+  - name: color
+    type: '"standard" | "vibrant"'
+    required: false
+    default: '"standard"'
+    description: M3's menu colors. Standard is `surface-container-low`, with `tertiary-container` checked items. Vibrant is `tertiary-container`, with `tertiary` checked items, and stands out more, so use it sparingly.
+  - name: layout
+    type: '"standard" | "grouped"'
+    required: false
+    default: '"grouped"'
+    description: M3's two layouts. Grouped puts each MenuGroup on its own surface, 2px apart. Standard is one surface with a divider between groups. M3 has no gaps in a scrolling menu, so a grouped menu too tall for the room beside its trigger is shown in the standard layout.
+  - name: label
+    type: string
+    required: false
+    description: The menu's accessible name. Without it, the menu is named by its trigger, which suits a trigger whose label says what the menu holds. Pass one when it doesn't.
+slots:
+  - name: default
+    description: The menu's items, MenuItem, MenuItemCheckbox or MenuItemRadio, either directly or in MenuGroups.
+    kind: any
+---
+
+## Triggers
+
+Any button opens the menu with `command="toggle-popover"` and `commandfor` set to the menu's `id`, such as a Button, a ButtonIcon or a plain `<button>`. Menu's script finds its triggers, and gives each `aria-haspopup="menu"`, `aria-controls` and `aria-expanded`, kept in step with the menu. A Button or ButtonIcon keeps its pressed state layer while its menu is open, as M3 asks. A menu can have more than one trigger; it opens beside whichever opened it.
+
+## Placement
+
+The menu is in the top layer, in front of everything else. It opens below its trigger, lined up with the trigger's start edge (its right edge, right to left), 4px away. When there isn't room below, it opens above, and when there isn't room at that edge, it lines up with the other one. The menu keeps 48px from the window's top and bottom. When it's taller than the room on either side of its trigger, it takes the roomier side and scrolls, in the standard layout, since M3 has no gaps in a scrolling menu. It fits again as the page scrolls or the window resizes while it's open. Its scrollbar follows the user's system setting, so on macOS it may only show while scrolling.
+
+## Appearance
+
+The menu is 112px to 280px wide, as wide as its widest item, at elevation 2. In the grouped layout, each MenuGroup is a surface with M3's group corners: 16px at the menu's outer corners, 8px between groups. In the standard layout, the menu is one surface with 16px corners, and a divider, inset 12px, separates its groups. A menu without MenuGroups is one surface in either layout.
+
+The menu opens and closes with a short fade, or none with reduced motion.
+
+## Choosing an item
+
+The page handles each item's `click` as usual. Choosing a MenuItem closes the menu once the click's handlers have run, and returns focus to the trigger, unless a handler has moved focus elsewhere, such as into a dialog it opened. A MenuItemCheckbox toggles and the menu stays open, as M3's multi-select menus do. A MenuItemRadio checks itself, unchecks the other radio items in its group, and closes the menu. Both fire a `change` event on the menu, whose `detail` is the item's `{ name, value, checked }`:
+
+```js
+document.querySelector("#format-menu").addEventListener("change", (event) => {
+  const { name, value, checked } = event.detail;
+});
+```

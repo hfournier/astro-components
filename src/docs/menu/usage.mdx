@@ -1,0 +1,17 @@
+---
+title: Menu
+description: The following example shows a Menu with only its required `id`, opened by a Button whose `commandfor` points at it, holding two groups of MenuItems.
+---
+
+<Button command="toggle-popover" commandfor="menu-usage" variant="outlined">Edit</Button>
+<Menu id="menu-usage">
+  <MenuGroup>
+    <MenuItem icon="content_copy" label="Copy" trailingText="Ctrl+C" />
+    <MenuItem icon="edit" label="Rename" />
+    <MenuItem icon="share" label="Share" />
+  </MenuGroup>
+  <MenuGroup>
+    <MenuItem icon="download" label="Download" />
+    <MenuItem icon="delete" label="Delete" />
+  </MenuGroup>
+</Menu>

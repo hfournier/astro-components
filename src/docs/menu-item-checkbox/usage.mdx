@@ -1,0 +1,10 @@
+---
+title: MenuItemCheckbox
+description: The following example shows MenuItemCheckboxes in a Menu, the first checked. The menu stays open as they toggle.
+---
+
+<Button command="toggle-popover" commandfor="menu-item-checkbox-usage" variant="outlined">View</Button>
+<Menu id="menu-item-checkbox-usage">
+  <MenuItemCheckbox icon="visibility" label="Show hidden files" name="view" value="hidden" isChecked />
+  <MenuItemCheckbox label="Show extensions" name="view" value="extensions" />
+</Menu>

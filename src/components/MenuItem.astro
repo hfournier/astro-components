@@ -1,0 +1,13 @@
+---
+import type { ComponentProps } from "astro/types";
+import MenuItemBase from "./MenuItemBase.astro";
+
+// An action in a Menu (role menuitem): a <button>, or an <a> with `href`. Choosing it closes the
+// menu, once the page's own click handlers have run.
+type Props = Omit<
+  ComponentProps<typeof MenuItemBase>,
+  "role" | "isChecked" | "checkedIcon" | "name" | "value"
+>;
+---
+
+<MenuItemBase role="menuitem" {...Astro.props} />

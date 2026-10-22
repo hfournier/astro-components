@@ -22,9 +22,9 @@ export type BgColorType =
   | "surface-container-highest"
   | "transparent";
 
-// M3 overlay surfaces: full-screen dialogs (Surface), sheets/drawers (Low), menus and rich tooltips
-// (Container), dialogs (High), plain tooltips and snackbars (Inverse). Tinted backgrounds have no
-// overlay use in M3.
+// M3 overlay surfaces: full-screen dialogs (Surface), sheets/drawers and vertical menus (Low),
+// vibrant vertical menus (Tertiary container), baseline menus and rich tooltips (Container), dialogs
+// (High), plain tooltips and snackbars (Inverse). Other tinted backgrounds have no overlay use in M3.
 export type OverlayBgColorType = Extract<
   BgColorType,
   | "surface"
@@ -32,6 +32,7 @@ export type OverlayBgColorType = Extract<
   | "surface-container"
   | "surface-container-high"
   | "inverse-surface"
+  | "tertiary-container"
 >;
 
 // A popover is menu-, dialog- or tooltip-like, so sheets' Low surface is left out.

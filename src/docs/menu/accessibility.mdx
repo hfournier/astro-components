@@ -1,0 +1,14 @@
+The menu follows WAI-ARIA's menu button pattern. Each trigger has `aria-haspopup="menu"`, `aria-controls` and `aria-expanded`, and the menu (`role="menu"`) is named by its trigger, or by `label`. Items are `menuitem`, `menuitemcheckbox` or `menuitemradio`, the last two with `aria-checked`, and MenuGroups are groups named by their labels. An item's badge count joins its name ("Download, 3"), and its supporting and trailing text describe it.
+
+| Key | On the trigger | In the open menu |
+| --- | --- | --- |
+| Space or Enter | Opens the menu, focusing its first item | Chooses the focused item |
+| ArrowDown or ArrowUp | Opens the menu, focusing its first or last item | Moves to the next or previous item, wrapping around |
+| Home or End | | Moves to the first or last item |
+| A letter | | Moves to the next item whose label starts with it |
+| Escape | | Closes the menu, returning focus to the trigger |
+| Tab | | Closes the menu, moving focus on from the trigger |
+
+The items are one Tab stop: each has `tabindex="-1"`, and the keys move focus between them. A disabled item (`aria-disabled`) can still be focused, so it's announced, but choosing it does nothing, as M3 asks. A click outside closes the menu and leaves focus where it was sent.
+
+Checked items don't rely on color alone: each shows a check, as M3 recommends. Every item is at least 44px high.

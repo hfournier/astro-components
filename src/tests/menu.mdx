@@ -1,0 +1,80 @@
+---
+title: Menu
+description: Tests for the Menu, MenuGroup, MenuItem, MenuItemCheckbox and MenuItemRadio components
+---
+
+<Heading level={1}>Menu Tests</Heading>
+
+<Section data-testid="menu-actions" class="p-4 space-y-4">
+  <Heading level={2}>Actions</Heading>
+  <Button id="actions-trigger" command="toggle-popover" commandfor="actions-menu" variant="outlined">Edit</Button>
+  <Menu id="actions-menu">
+    <MenuGroup>
+      <MenuItem icon="content_copy" label="Copy" trailingText="Ctrl+C" />
+      <MenuItem icon="edit" label="Rename" />
+      <MenuItem icon="share" label="Share" supportingText="With people or apps" />
+    </MenuGroup>
+    <MenuGroup label="More">
+      <MenuItem icon="download" label="Download" badgeLabel={3} />
+      <MenuItem icon="settings" label="Settings" href="#settings" />
+      <MenuItem icon="delete" label="Delete" isDisabled />
+      <MenuItem label="Print" />
+    </MenuGroup>
+  </Menu>
+  <Button variant="text">After the trigger</Button>
+</Section>
+
+<Section data-testid="menu-standard-layout" class="p-4 space-y-4">
+  <Heading level={2}>Standard layout</Heading>
+  <ButtonIcon icon="more_vert" label="More options" command="toggle-popover" commandfor="standard-menu" showTooltip={false} />
+  <Menu id="standard-menu" layout="standard">
+    <MenuGroup>
+      <MenuItem icon="content_copy" label="Copy" />
+      <MenuItem icon="share" label="Share" />
+    </MenuGroup>
+    <MenuGroup>
+      <MenuItem icon="delete" label="Delete" />
+    </MenuGroup>
+  </Menu>
+</Section>
+
+<Section data-testid="menu-selection" class="p-4 space-y-4">
+  <Heading level={2}>Selection</Heading>
+  <Button command="toggle-popover" commandfor="selection-menu" variant="tonal">Format</Button>
+  <Menu id="selection-menu" color="vibrant">
+    <MenuGroup label="Style">
+      <MenuItemCheckbox label="Bold" name="style" value="bold" isChecked />
+      <MenuItemCheckbox label="Italic" name="style" value="italic" />
+    </MenuGroup>
+    <MenuGroup label="Align">
+      <MenuItemRadio label="Left" name="align" value="left" isChecked />
+      <MenuItemRadio label="Center" name="align" value="center" />
+      <MenuItemRadio label="Right" name="align" value="right" isDisabled />
+    </MenuGroup>
+  </Menu>
+</Section>
+
+<Section data-testid="menu-standard-checked" class="p-4 space-y-4">
+  <Heading level={2}>Standard color, checked</Heading>
+  <Button command="toggle-popover" commandfor="standard-checked-menu" variant="text">View</Button>
+  <Menu id="standard-checked-menu" label="View options">
+    <MenuItemCheckbox icon="visibility" label="Show hidden files" isChecked />
+    <MenuItemCheckbox label="Show extensions" />
+  </Menu>
+</Section>
+
+<Section data-testid="menu-three-groups" class="p-4 space-y-4">
+  <Heading level={2}>Three groups</Heading>
+  <Button command="toggle-popover" commandfor="three-groups-menu" variant="text">Arrange</Button>
+  <Menu id="three-groups-menu">
+    <MenuGroup>
+      <MenuItem label="Bring forward" />
+    </MenuGroup>
+    <MenuGroup>
+      <MenuItem label="Group" />
+    </MenuGroup>
+    <MenuGroup>
+      <MenuItem label="Align" />
+    </MenuGroup>
+  </Menu>
+</Section>

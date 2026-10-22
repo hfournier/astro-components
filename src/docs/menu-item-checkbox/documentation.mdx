@@ -1,0 +1,28 @@
+---
+name: MenuItemCheckbox
+description: A choice in a multi-select Menu (`role="menuitemcheckbox"`), extending HTML's `<button>` element. Choosing it toggles it, and the menu stays open. A checked item is highlighted and shows a check.
+category: Interactive elements
+role: pattern
+meta:
+  title: MenuItemCheckbox | astro-components HenriFournier.dev
+  description: A checkable choice in a Material 3 multi-select menu, which toggles and keeps the menu open.
+extends:
+  kind: component
+  name: MenuItemBase
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button
+parents: [Menu, MenuGroup]
+props:
+  - name: isChecked
+    type: boolean
+    required: false
+    default: "false"
+    description: Whether the item starts checked (`aria-checked`). Choosing it toggles it.
+---
+
+## Choosing it
+
+Choosing the item toggles `aria-checked` and fires a `change` event on its Menu, whose `detail` is `{ name, value, checked }`. The menu stays open, as M3's multi-select menus do, until it's dismissed.
+
+## Appearance
+
+A checked item has a `tertiary-container` container with `on-tertiary-container` content (`tertiary` and `on-tertiary` in a vibrant menu), 12px corners all round, and a check in place of its leading icon. It always keeps the leading icon's space, so the check doesn't move its label.

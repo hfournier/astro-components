@@ -1,0 +1,16 @@
+---
+title: Standard layout
+description: The standard layout is one surface, with a divider between groups. It's also how a menu tall enough to scroll is shown. This one opens from an icon button, which names it "More options", and its second group is labelled.
+---
+
+<ButtonIcon icon="more_vert" label="More options" command="toggle-popover" commandfor="menu-standard-layout" />
+<Menu id="menu-standard-layout" layout="standard">
+  <MenuGroup>
+    <MenuItem icon="content_copy" label="Copy" />
+    <MenuItem icon="share" label="Share" supportingText="With people or apps" />
+  </MenuGroup>
+  <MenuGroup label="File">
+    <MenuItem icon="download" label="Download" badgeLabel={3} />
+    <MenuItem icon="delete" label="Delete" isDisabled />
+  </MenuGroup>
+</Menu>

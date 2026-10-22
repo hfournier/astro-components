@@ -1,0 +1,28 @@
+---
+name: MenuItemRadio
+description: A choice in a single-select Menu (`role="menuitemradio"`), extending HTML's `<button>` element. Choosing it checks it, unchecks the other radio items in its MenuGroup, and closes the menu. A checked item is highlighted and shows a check.
+category: Interactive elements
+role: pattern
+meta:
+  title: MenuItemRadio | astro-components HenriFournier.dev
+  description: A single-select choice in a Material 3 menu, which checks itself, unchecks its group's others and closes the menu.
+extends:
+  kind: component
+  name: MenuItemBase
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button
+parents: [Menu, MenuGroup]
+props:
+  - name: isChecked
+    type: boolean
+    required: false
+    default: "false"
+    description: Whether the item starts checked (`aria-checked`). Check one item per group.
+---
+
+## Choosing it
+
+Choosing the item sets its `aria-checked` and clears the other radio items' in its MenuGroup (or in the menu, if it isn't in one), fires a `change` event on its Menu, whose `detail` is `{ name, value, checked: true }`, and closes the menu. Put each set of radio items in its own MenuGroup.
+
+## Appearance
+
+A checked item looks like a checked MenuItemCheckbox: a `tertiary-container` container with `on-tertiary-container` content (`tertiary` and `on-tertiary` in a vibrant menu), 12px corners all round, and a check in place of its leading icon.

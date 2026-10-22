@@ -1,0 +1,13 @@
+---
+title: MenuItemRadio
+description: The following example shows MenuItemRadios in a MenuGroup, the first checked. Choosing one checks it and closes the menu.
+---
+
+<Button command="toggle-popover" commandfor="menu-item-radio-usage" variant="outlined">Sort</Button>
+<Menu id="menu-item-radio-usage">
+  <MenuGroup label="Sort by">
+    <MenuItemRadio label="Name" name="sort" value="name" isChecked />
+    <MenuItemRadio label="Date modified" name="sort" value="date" />
+    <MenuItemRadio label="Size" name="sort" value="size" />
+  </MenuGroup>
+</Menu>
