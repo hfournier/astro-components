@@ -13,7 +13,7 @@ type Props = Omit<BaseWrapperProps, "as"> & {
   isExpandable?: boolean;
   // M3: the destinations as a group at the top, or centered in the space below the menu button
   // and FAB, which stay at the top
-  itemAlign?: "top" | "center";
+  align?: "top" | "center";
   // The <nav>'s accessible name
   label?: string;
   // M3's optional divider on the rail's end edge, beside the page's content, from medium up
@@ -23,7 +23,7 @@ const {
   bgColor = "surface",
   expandedWidth = "narrow",
   isExpandable = true,
-  itemAlign = "top",
+  align = "top",
   label = "Main",
   showDivider = false,
   class: classList,
@@ -139,7 +139,7 @@ const expandedWidthClasses = {
     <nav
       class:list={[
         "mt-10 flex w-full flex-col gap-1 rail-expanded:gap-0",
-        itemAlign === "center" && "flex-1 justify-center",
+        align === "center" && "flex-1 justify-center",
       ]}
       aria-label={label}
     >

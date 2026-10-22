@@ -6,9 +6,10 @@ import { box, resolvedColor, settled, textBox } from "./support/helpers";
 
 // A NavRail can't be previewed live without taking over the site's own, so this checks the one
 // in BaseLayout, on a component page: a rail that isn't expandable (its sub-items are in a
-// NavDrawer), with a Search FAB and three destinations, "Components" being current. Each window
-// size class is its own describe, with a viewport inside it (M3: compact < 600px, medium < 840px,
-// large >= 1200px).
+// NavDrawer), filled with surface-container-low, with a Search FAB and three destinations,
+// "Components" being current.
+// Each window size class is its own describe, with a viewport inside it (M3: compact < 600px,
+// medium < 840px, large >= 1200px).
 const rail = (page: Page) => page.locator("[data-ac-nav-rail]");
 const railNav = (page: Page) =>
   page.getByRole("navigation", { name: "Main", exact: true });
@@ -68,12 +69,10 @@ test.describe("NavRail", () => {
       );
     });
 
-    test("sits on surface at elevation 0, as M3's standard rail", async ({
-      page,
-    }) => {
+    test("is filled with its bgColor, at elevation 0", async ({ page }) => {
       await expect(rail(page)).toHaveCSS(
         "background-color",
-        await resolvedColor(page, "var(--theme-color-surface)")
+        await resolvedColor(page, "var(--theme-color-surface-container-low)")
       );
       await expect(rail(page)).toHaveCSS("box-shadow", "none");
     });
@@ -164,7 +163,7 @@ test.describe("NavRail", () => {
       expect(await isMainInert(page)).toBe(true);
     });
 
-    test("opens on surface-container at elevation 2, M3's modal rail", async ({
+    test("opens at elevation 2, M3's modal rail, keeping its bgColor", async ({
       page,
     }) => {
       await menuToggle(page).click();
@@ -173,7 +172,7 @@ test.describe("NavRail", () => {
 
       await expect(rail(page)).toHaveCSS(
         "background-color",
-        await resolvedColor(page, "var(--theme-color-surface-container)")
+        await resolvedColor(page, "var(--theme-color-surface-container-low)")
       );
       // after Tailwind's transparent ring layers
       expect(await css(rail(page), "box-shadow")).toContain(
@@ -302,6 +301,16 @@ test.describe("NavRail, expandable", () => {
       expect((await box(menuToggle(page))).y).toBe(44);
     });
 
+    test("sits on surface at elevation 0 by default, as M3's standard rail", async ({
+      page,
+    }) => {
+      await expect(rail(page)).toHaveCSS(
+        "background-color",
+        await resolvedColor(page, "var(--theme-color-surface)")
+      );
+      await expect(rail(page)).toHaveCSS("box-shadow", "none");
+    });
+
     test("labels its navigation with `label`", async ({ page }) => {
       await expect(testNav(page)).toBeVisible();
       await expect(
@@ -321,7 +330,7 @@ test.describe("NavRail, expandable", () => {
       ).toHaveAttribute("d", iconPath("notifications"));
     });
 
-    test("itemAlign center centers its destinations below the menu toggle and FAB", async ({
+    test("align center centers its destinations below the menu toggle and FAB", async ({
       page,
     }) => {
       const nav = await box(testNav(page));
@@ -439,6 +448,19 @@ test.describe("NavRail, expandable", () => {
       expect(await css(rail(page), "border-top-right-radius")).toBe("0px");
       // no divider on the modal rail
       expect(await css(rail(page), "border-inline-end-width")).toBe("0px");
+    });
+
+    test("with the default bgColor, opens on surface-container, M3's modal rail", async ({
+      page,
+    }) => {
+      await menuToggle(page).click();
+      await expect(menuToggle(page)).toHaveAttribute("aria-expanded", "true");
+      await settled(page);
+
+      await expect(rail(page)).toHaveCSS(
+        "background-color",
+        await resolvedColor(page, "var(--theme-color-surface-container)")
+      );
     });
   });
 });
