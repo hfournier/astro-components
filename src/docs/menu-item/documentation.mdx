@@ -7,45 +7,15 @@ meta:
   title: MenuItem | astro-components HenriFournier.dev
   description: An action in a Material 3 menu, a button or link with a label, optional icons, supporting text, a badge and trailing text.
 extends:
-  kind: element
-  tag: [button, a]
+  kind: component
+  name: MenuItemBase
 mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button
 parents: [Menu, MenuGroup]
-props:
-  - name: label
-    type: string
-    required: true
-    description: The item's visible label, in Label Large, and its accessible name.
-  - name: icon
-    type: SvgIconNameTypes
-    required: false
-    description: A 20px leading icon, by its file name in `src/assets/svgs`. It's decorative, so the label must say it all. In a menu where some items have one, the others keep its space, so their labels line up.
-  - name: trailingIcon
-    type: SvgIconNameTypes
-    required: false
-    description: A 20px icon at the item's end, also decorative.
-  - name: trailingText
-    type: string
-    required: false
-    description: Text at the item's end, in Label Large, such as a keyboard shortcut ("Ctrl+C"). It describes the item for screen readers.
-  - name: supportingText
-    type: string
-    required: false
-    description: A line below the label, in Body Small. It describes the item for screen readers.
-  - name: badgeLabel
-    type: string | number
-    required: false
-    description: Shows a Badge at the item's end, before any trailing text or icon. Pass a count (a number over 999 shows as `999+`, and `0` hides it) or `""` for a dot. A count joins the item's accessible name, e.g. "Download, 3".
-  - name: href
-    type: string
-    required: false
-    description: Makes the item a link (`<a role="menuitem">`) to this URL, instead of a `<button>`.
-  - name: isDisabled
-    type: boolean
-    required: false
-    default: "false"
-    description: Disables the item with `aria-disabled`, so it's still focused and announced, but choosing it does nothing, as M3 asks. Its content is at 38%.
 ---
+
+## Props
+
+MenuItem's props are MenuItemBase's, other than `role`, which it sets to `menuitem`, and the checkable items' `isChecked`, `checkedIcon`, `name` and `value`: `label` (required), `icon`, `trailingIcon`, `trailingText`, `supportingText`, `badgeLabel`, `href` and `isDisabled`. See MenuItemBase for each.
 
 ## Actions
 

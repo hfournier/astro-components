@@ -21,20 +21,27 @@ import {
 //   (disabled), name "align".
 // - standard-checked: "View" opens a standard-color menu labelled "View options" by its `label`,
 //   with checkbox items "Show hidden files" (checked, with an icon) and "Show extensions".
+// - three-groups: "Arrange" opens a grouped menu of three one-item groups.
 type MenuCaseId =
-  "actions" | "standard-layout" | "selection" | "standard-checked";
+  | "actions"
+  | "standard-layout"
+  | "selection"
+  | "standard-checked"
+  | "three-groups";
 
 const triggerNames: Record<MenuCaseId, string> = {
   actions: "Edit",
   "standard-layout": "More options",
   selection: "Format",
   "standard-checked": "View",
+  "three-groups": "Arrange",
 };
 const menuNames: Record<MenuCaseId, string> = {
   actions: "Edit",
   "standard-layout": "More options",
   selection: "Format",
   "standard-checked": "View options",
+  "three-groups": "Arrange",
 };
 
 const trigger = (page: Page, caseId: MenuCaseId) =>
@@ -429,6 +436,31 @@ test.describe("Menu", () => {
       expect(secondBox.y - (firstBox.y + firstBox.height)).toBeCloseTo(2, 0);
       expect(await radii(first)).toEqual(["16px", "16px", "8px", "8px"]);
       expect(await radii(second)).toEqual(["8px", "8px", "16px", "16px"]);
+    });
+
+    test("a middle group has 8px corners all round", async ({ page }) => {
+      await open(page, "three-groups");
+      expect(await radii(groups(page, "three-groups").nth(1))).toEqual([
+        "8px",
+        "8px",
+        "8px",
+        "8px",
+      ]);
+      // closed again, so axe doesn't read the page through it
+      await page.keyboard.press("Escape");
+    });
+
+    test("ArrowUp from the trigger's open menu, with focus on no item, goes to the last item", async ({
+      page,
+    }) => {
+      await open(page, "three-groups");
+      // focus on the menu itself, on no item
+      await menu(page, "three-groups").evaluate((el) => {
+        el.tabIndex = -1;
+        el.focus();
+      });
+      await page.keyboard.press("ArrowUp");
+      await expect(item(page, "three-groups", "Align")).toBeFocused();
     });
 
     test("is 112px to 280px wide, as wide as its widest item", async ({

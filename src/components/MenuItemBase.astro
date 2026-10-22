@@ -3,8 +3,8 @@ import type { HTMLAttributes } from "astro/types";
 import crypto from "node:crypto";
 import { twMerge } from "tailwind-merge";
 import type { SvgIconNameTypes } from "../svgs";
-import Badge from "../components/Badge.astro";
-import Icon from "../components/Icon.astro";
+import Badge from "./Badge.astro";
+import Icon from "./Icon.astro";
 import { badgedName } from "../utils";
 
 // The markup MenuItem, MenuItemCheckbox and MenuItemRadio share: an M3 vertical menu item, with
@@ -143,11 +143,6 @@ const variantContent =
     }
   </span>
   {
-    badgeLabel !== undefined && (
-      <Badge class={disabledContent} label={badgeLabel} placement="inline" />
-    )
-  }
-  {
     trailingText && (
       <span
         class:list={["shrink-0", variantContent, disabledContent]}
@@ -155,6 +150,12 @@ const variantContent =
       >
         {trailingText}
       </span>
+    )
+  }
+  {
+    /* M3: at the item's end, before any trailing icon */
+    badgeLabel !== undefined && (
+      <Badge class={disabledContent} label={badgeLabel} placement="inline" />
     )
   }
   {

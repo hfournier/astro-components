@@ -23,6 +23,7 @@ export { default as Main } from "./components/Main.astro";
 export { default as Menu } from "./components/Menu.astro";
 export { default as MenuGroup } from "./components/MenuGroup.astro";
 export { default as MenuItem } from "./components/MenuItem.astro";
+export { default as MenuItemBase } from "./components/MenuItemBase.astro";
 export { default as MenuItemCheckbox } from "./components/MenuItemCheckbox.astro";
 export { default as MenuItemRadio } from "./components/MenuItemRadio.astro";
 export { default as MenuToggle } from "./components/MenuToggle.astro";

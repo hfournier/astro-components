@@ -62,3 +62,19 @@ description: Tests for the Menu, MenuGroup, MenuItem, MenuItemCheckbox and MenuI
     <MenuItemCheckbox label="Show extensions" />
   </Menu>
 </Section>
+
+<Section data-testid="menu-three-groups" class="p-4 space-y-4">
+  <Heading level={2}>Three groups</Heading>
+  <Button command="toggle-popover" commandfor="three-groups-menu" variant="text">Arrange</Button>
+  <Menu id="three-groups-menu">
+    <MenuGroup>
+      <MenuItem label="Bring forward" />
+    </MenuGroup>
+    <MenuGroup>
+      <MenuItem label="Group" />
+    </MenuGroup>
+    <MenuGroup>
+      <MenuItem label="Align" />
+    </MenuGroup>
+  </Menu>
+</Section>

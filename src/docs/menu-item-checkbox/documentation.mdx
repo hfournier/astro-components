@@ -7,58 +7,16 @@ meta:
   title: MenuItemCheckbox | astro-components HenriFournier.dev
   description: A checkable choice in a Material 3 multi-select menu, which toggles and keeps the menu open.
 extends:
-  kind: element
-  tag: [button]
+  kind: component
+  name: MenuItemBase
 mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button
 parents: [Menu, MenuGroup]
 props:
-  - name: label
-    type: string
-    required: true
-    description: The item's visible label and accessible name.
   - name: isChecked
     type: boolean
     required: false
     default: "false"
     description: Whether the item starts checked (`aria-checked`). Choosing it toggles it.
-  - name: name
-    type: string
-    required: false
-    description: The setting the item belongs to, passed in the menu's `change` event, e.g. `"style"`.
-  - name: value
-    type: string
-    required: false
-    description: The item's value, passed in the menu's `change` event, e.g. `"bold"`.
-  - name: checkedIcon
-    type: SvgIconNameTypes
-    required: false
-    default: '"check"'
-    description: The icon shown in place of the leading icon while the item is checked.
-  - name: icon
-    type: SvgIconNameTypes
-    required: false
-    description: A 20px leading icon, shown while the item is unchecked, as MenuItem's.
-  - name: trailingIcon
-    type: SvgIconNameTypes
-    required: false
-    description: A 20px icon at the item's end, as MenuItem's.
-  - name: trailingText
-    type: string
-    required: false
-    description: Text at the item's end, as MenuItem's.
-  - name: supportingText
-    type: string
-    required: false
-    description: A line below the label, as MenuItem's.
-  - name: badgeLabel
-    type: string | number
-    required: false
-    description: A Badge at the item's end, as MenuItem's.
-  - name: isDisabled
-    type: boolean
-    required: false
-    default: "false"
-    description: Disables the item with `aria-disabled`, as MenuItem's. A checked disabled item's container is at 38% too.
 ---
 
 ## Choosing it

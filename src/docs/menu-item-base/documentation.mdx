@@ -1,0 +1,73 @@
+---
+name: MenuItemBase
+description: The markup MenuItem, MenuItemCheckbox and MenuItemRadio share, an M3 vertical menu item extending HTML's `<button>` element, or `<a>` with `href`. Each of the three sets its `role`; it isn't meant to be used on its own.
+category: Interactive elements
+role: internal
+meta:
+  title: MenuItemBase | astro-components HenriFournier.dev
+  description: The shared markup of Material 3 menu items, its leading icon or check, label, supporting text, badge and trailing content.
+extends:
+  kind: element
+  tag: [button, a]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button
+parents: [MenuItem, MenuItemCheckbox, MenuItemRadio]
+props:
+  - name: role
+    type: '"menuitem" | "menuitemcheckbox" | "menuitemradio"'
+    required: true
+    description: The item's ARIA role, set by MenuItem, MenuItemCheckbox or MenuItemRadio.
+  - name: label
+    type: string
+    required: true
+    description: The item's visible label, in Label Large, and its accessible name.
+  - name: icon
+    type: SvgIconNameTypes
+    required: false
+    description: A 20px leading icon, by its file name in `src/assets/svgs`. It's decorative, so the label must say it all. In a menu where some items have one, the others keep its space, so their labels line up.
+  - name: trailingIcon
+    type: SvgIconNameTypes
+    required: false
+    description: A 20px icon at the item's end, also decorative.
+  - name: trailingText
+    type: string
+    required: false
+    description: Text at the item's end, in Label Large, such as a keyboard shortcut ("Ctrl+C"). It describes the item for screen readers.
+  - name: supportingText
+    type: string
+    required: false
+    description: A line below the label, in Body Small. It describes the item for screen readers.
+  - name: badgeLabel
+    type: string | number
+    required: false
+    description: Shows a Badge at the item's end, before any trailing text or icon. Pass a count (a number over 999 shows as `999+`, and `0` hides it) or `""` for a dot. A count joins the item's accessible name, e.g. "Download, 3".
+  - name: href
+    type: string
+    required: false
+    description: Makes the item a link (`<a role="menuitem">`) to this URL, instead of a `<button>`.
+  - name: isDisabled
+    type: boolean
+    required: false
+    default: "false"
+    description: Disables the item with `aria-disabled`, so it's still focused and announced, but choosing it does nothing, as M3 asks. Its content is at 38%.
+  - name: isChecked
+    type: boolean
+    required: false
+    description: A checkbox or radio item's state (`aria-checked`); left out for an action. A checked item has M3's selected colors, 12px corners all round, and a check in place of its leading icon.
+  - name: checkedIcon
+    type: SvgIconNameTypes
+    required: false
+    default: '"check"'
+    description: The icon shown in place of the leading icon while a checkable item is checked.
+  - name: name
+    type: string
+    required: false
+    description: A checkable item's setting, passed in the menu's `change` event, e.g. `"style"`.
+  - name: value
+    type: string
+    required: false
+    description: A checkable item's value, passed in the menu's `change` event, e.g. `"bold"`.
+---
+
+## Layout
+
+From the start: the leading icon (or, on a checked item, the check, or else the icon's empty space when other items in the menu have an icon or a check), the label with its supporting text below it, the trailing text, the badge, and the trailing icon. See MenuItem for its sizes and colors.

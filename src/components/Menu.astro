@@ -28,13 +28,22 @@ const {
   ...attrs
 } = Astro.props;
 
-// The checked item's colors (M3's selected item), which the items read
-const colorClasses = {
-  standard:
-    "[--ac-menu-checked:var(--theme-color-tertiary-container)] [--ac-menu-on-checked:var(--theme-color-on-tertiary-container)]",
-  vibrant:
-    "[--ac-menu-checked:var(--theme-color-tertiary)] [--ac-menu-on-checked:var(--theme-color-on-tertiary)]",
-}[color];
+// M3's colors: the menu's surface, and the checked item's colors (M3's selected item), which the
+// items read
+const colors = (
+  {
+    standard: {
+      bgColor: "surface-container-low",
+      checked:
+        "[--ac-menu-checked:var(--theme-color-tertiary-container)] [--ac-menu-on-checked:var(--theme-color-on-tertiary-container)]",
+    },
+    vibrant: {
+      bgColor: "tertiary-container",
+      checked:
+        "[--ac-menu-checked:var(--theme-color-tertiary)] [--ac-menu-on-checked:var(--theme-color-on-tertiary)]",
+    },
+  } as const
+)[color];
 
 // The menu's surface: 112-280px wide (as wide as its widest item), with 2px above and below its
 // items, at elevation 2, and 16px corners. In the standard layout it scrolls when taller than
@@ -57,13 +66,13 @@ const surfaceClasses = [
 }
 <BaseOverlay
   as="div"
-  bgColor={color === "vibrant" ? "tertiary-container" : "surface-container-low"}
+  bgColor={colors.bgColor}
   class:list={twMerge(surfaceClasses, classList)}
   overlayClass={[
     "group/menu inset-auto m-0 overflow-visible p-0",
     "top-[calc(anchor(bottom)+4px)] left-[anchor(left)] rtl:right-[anchor(right)] rtl:left-auto",
     "[position-try-fallbacks:flip-block,flip-inline,flip-block_flip-inline]",
-    colorClasses,
+    colors.checked,
   ].join(" ")}
   showBackdrop={false}
   id={id}
@@ -82,7 +91,7 @@ const surfaceClasses = [
   // M3's menu with WAI-ARIA's menu button pattern. Each trigger is a button with commandfor set
   // to the menu's id, so the browser toggles the popover; this keeps the triggers' ARIA in step,
   // and moves focus and handles keys as the pattern asks.
-  const typeAheadReset = 500; // ms after the last letter before type-ahead starts over
+  const typeAheadResetMs = 500; // after the last letter before type-ahead starts over
 
   document.querySelectorAll<HTMLElement>("[data-ac-menu]").forEach((menu) => {
     const triggers = Array.from(
@@ -168,7 +177,8 @@ const surfaceClasses = [
         case "ArrowDown":
           return move(index + 1);
         case "ArrowUp":
-          return move(index - 1);
+          // from no item (focus elsewhere), the last
+          return move((index === -1 ? 0 : index) - 1);
         case "Home":
           return move(0);
         case "End":
@@ -199,7 +209,7 @@ const surfaceClasses = [
       )
         return;
       const now = performance.now();
-      typed = (now - typedAt > typeAheadReset ? "" : typed) + event.key;
+      typed = (now - typedAt > typeAheadResetMs ? "" : typed) + event.key;
       typedAt = now;
       const find = (query: string, start: number) => {
         const ordered = [...all.slice(start), ...all.slice(0, start)];
