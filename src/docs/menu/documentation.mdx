@@ -24,7 +24,7 @@ props:
     type: '"standard" | "grouped"'
     required: false
     default: '"grouped"'
-    description: M3's two layouts. Grouped puts each MenuGroup on its own surface, 2px apart. Standard is one surface with a divider between groups; use it for a menu tall enough to scroll, since a grouped menu doesn't.
+    description: M3's two layouts. Grouped puts each MenuGroup on its own surface, 2px apart. Standard is one surface with a divider between groups. M3 has no gaps in a scrolling menu, so a grouped menu too tall for the room beside its trigger is shown in the standard layout.
   - name: label
     type: string
     required: false
@@ -41,7 +41,7 @@ Any button opens the menu with `command="toggle-popover"` and `commandfor` set t
 
 ## Placement
 
-The menu is in the top layer, in front of everything else. It opens below its trigger, lined up with the trigger's start edge (its right edge, right to left), 4px away. When there isn't room below, it opens above, and when there isn't room at that edge, it lines up with the other one. A menu in the standard layout scrolls when it's taller than the window, keeping 48px from its top and bottom, with a visible scrollbar.
+The menu is in the top layer, in front of everything else. It opens below its trigger, lined up with the trigger's start edge (its right edge, right to left), 4px away. When there isn't room below, it opens above, and when there isn't room at that edge, it lines up with the other one. The menu keeps 48px from the window's top and bottom. When it's taller than the room on either side of its trigger, it takes the roomier side and scrolls, in the standard layout, since M3 has no gaps in a scrolling menu. It fits again as the page scrolls or the window resizes while it's open. Its scrollbar follows the user's system setting, so on macOS it may only show while scrolling.
 
 ## Appearance
 

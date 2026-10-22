@@ -97,6 +97,9 @@ const changeLog = (page: Page) =>
 
 test.describe("Menu", () => {
   test.beforeEach(async ({ page }) => {
+    // tall enough for each menu to open whole, 48px from the window's edge, beside its trigger
+    // wherever a click scrolls it to; the placement tests set their own
+    await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/tests/menu");
   });
 
@@ -372,6 +375,8 @@ test.describe("Menu", () => {
         { name: "style", value: "italic", checked: true },
         { name: "style", value: "bold", checked: false },
       ]);
+      // closed, so axe doesn't read the next case's trigger through it
+      await page.keyboard.press("Escape");
     });
 
     test("a radio item checks itself, unchecks its group's others, fires change and closes", async ({
@@ -411,6 +416,7 @@ test.describe("Menu", () => {
         "false"
       );
       await expect(menu(page, "selection")).toBeVisible();
+      await page.keyboard.press("Escape");
     });
   });
 
@@ -703,6 +709,80 @@ test.describe("Menu", () => {
       const button = await box(trigger(page, "standard-checked"));
       const opened = await box(menu(page, "standard-checked"));
       expect(button.y - (opened.y + opened.height)).toBeCloseTo(4, 0);
+    });
+
+    test("keeps 48px from the window's edge, and a grouped menu that scrolls takes the standard layout", async ({
+      page,
+    }) => {
+      // a short window, scrolled so the trigger's top is 100px down: less room below than the
+      // menu's height
+      await page.setViewportSize({ width: 1280, height: 400 });
+      await trigger(page, "actions").evaluate((el) =>
+        window.scrollBy(0, el.getBoundingClientRect().top - 100)
+      );
+      await trigger(page, "actions").focus();
+      await page.keyboard.press("Enter");
+      await expect(menu(page, "actions")).toBeVisible();
+      await settled(page);
+      const button = await box(trigger(page, "actions"));
+      const opened = await box(surface(page, "actions"));
+      expect(opened.y - (button.y + button.height)).toBeCloseTo(4, 0);
+      expect(400 - (opened.y + opened.height)).toBeCloseTo(48, 0);
+      // one scrolling surface, with a divider in place of the gap
+      await expect(menu(page, "actions")).toHaveAttribute(
+        "data-ac-menu-layout",
+        "standard"
+      );
+      expect(
+        await surface(page, "actions").evaluate(
+          (el) => el.scrollHeight > el.clientHeight
+        )
+      ).toBe(true);
+      expect(await castsNoShadow(groups(page, "actions").first())).toBe(true);
+      // End scrolls to the last item
+      await page.keyboard.press("End");
+      await expect(item(page, "actions", "Print")).toBeInViewport();
+      await page.keyboard.press("Escape");
+    });
+
+    test("a grouped menu goes back to its layout once it fits again", async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 1280, height: 400 });
+      await trigger(page, "actions").evaluate((el) =>
+        window.scrollBy(0, el.getBoundingClientRect().top - 100)
+      );
+      await trigger(page, "actions").focus();
+      await page.keyboard.press("Enter");
+      await expect(menu(page, "actions")).toBeVisible();
+      await page.keyboard.press("Escape");
+      await page.setViewportSize({ width: 1280, height: 800 });
+      await trigger(page, "actions").focus();
+      await page.keyboard.press("Enter");
+      await expect(menu(page, "actions")).toHaveAttribute(
+        "data-ac-menu-layout",
+        "grouped"
+      );
+      await page.keyboard.press("Escape");
+    });
+
+    test("lined up with the trigger's end edge when there's no room past its start", async ({
+      page,
+    }) => {
+      // the trigger pinned 8px from the window's right edge, so the menu can't open rightward
+      await trigger(page, "standard-checked").evaluate((el) => {
+        el.style.position = "fixed";
+        el.style.top = "100px";
+        el.style.right = "8px";
+      });
+      await trigger(page, "standard-checked").focus();
+      await page.keyboard.press("Enter");
+      await expect(menu(page, "standard-checked")).toBeVisible();
+      await settled(page);
+      const button = await box(trigger(page, "standard-checked"));
+      const opened = await box(surface(page, "standard-checked"));
+      expect(opened.x + opened.width).toBeCloseTo(button.x + button.width, 0);
+      await page.keyboard.press("Escape");
     });
 
     test("right to left, lined up with the trigger's right edge", async ({

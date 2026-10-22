@@ -14,7 +14,8 @@ type Props = Omit<HTMLAttributes<"div">, "id"> & {
   // M3's color: standard (surface-container-low) or vibrant (tertiary-container)
   color?: "standard" | "vibrant";
   // M3's layouts: "grouped" puts each MenuGroup on its own surface, 2px apart; "standard" is one
-  // surface with a divider between groups, and the one that scrolls
+  // surface with a divider between groups. A grouped menu too tall for the room it has is shown
+  // in the standard layout, as M3 has no gaps in a scrolling menu.
   layout?: "standard" | "grouped";
   // The menu's accessible name, only for a menu whose trigger has no label of its own to name it
   label?: string;
@@ -46,22 +47,23 @@ const colors = (
 )[color];
 
 // The menu's surface: 112-280px wide (as wide as its widest item), with 2px above and below its
-// items, at elevation 2, and 16px corners. In the standard layout it scrolls when taller than
-// the window, keeping 48px from its top and bottom (Compose's MenuVerticalMargin), with a visible
-// scrollbar, as M3 asks. In the grouped layout each MenuGroup is a surface instead, 2px apart, so
-// this one is only their column; it doesn't scroll, as M3 doesn't scroll grouped menus (and it
-// would clip the groups' shadows).
+// items, at elevation 2, and 16px corners. It scrolls when taller than the room beside its
+// trigger less 48px (Compose's MenuVerticalMargin), which the script sets as
+// --ac-menu-max-height as the menu opens. In the grouped layout each MenuGroup is a surface
+// instead, 2px apart, so this one is only their column, and doesn't clip their shadows. M3 has no
+// gaps in a scrolling menu, so the script shows a grouped menu that doesn't fit in the standard
+// layout; the layout is the popover's data-ac-menu-layout, for the script to change.
 const surfaceClasses = [
   "flex w-max max-w-70 min-w-28 flex-col rounded-2xl py-0.5 shadow-theme-elevation-2",
-  layout === "standard"
-    ? "max-h-[calc(100dvh-6rem)] overflow-y-auto"
-    : "has-[[data-ac-menu-group]]:gap-0.5 has-[[data-ac-menu-group]]:bg-transparent has-[[data-ac-menu-group]]:py-0 has-[[data-ac-menu-group]]:shadow-none",
+  "max-h-(--ac-menu-max-height) overflow-y-auto",
+  "group-data-[ac-menu-layout=grouped]/menu:has-[[data-ac-menu-group]]:gap-0.5 group-data-[ac-menu-layout=grouped]/menu:has-[[data-ac-menu-group]]:bg-transparent group-data-[ac-menu-layout=grouped]/menu:has-[[data-ac-menu-group]]:py-0 group-data-[ac-menu-layout=grouped]/menu:has-[[data-ac-menu-group]]:shadow-none group-data-[ac-menu-layout=grouped]/menu:has-[[data-ac-menu-group]]:overflow-visible",
 ];
 ---
 
 {
   /* Below its trigger, lined up with the trigger's start edge, 4px away; above it, or toward its
-     other edge, when there isn't room. Anchor insets rather than position-area, which Firefox
+     other edge, when there isn't room, keeping 48px from the window's edge (its far margin,
+     which flip-block moves to its top). Anchor insets rather than position-area, which Firefox
      places wrongly right to left. The script anchors it to the trigger that opened it. */
 }
 <BaseOverlay
@@ -69,7 +71,8 @@ const surfaceClasses = [
   bgColor={colors.bgColor}
   class:list={twMerge(surfaceClasses, classList)}
   overlayClass={[
-    "group/menu inset-auto m-0 overflow-visible p-0",
+    // Without the script, at most the window's height less 48px at each end
+    "group/menu inset-auto m-0 mb-12 overflow-visible p-0 [--ac-menu-max-height:calc(100dvh-6rem)]",
     "top-[calc(anchor(bottom)+4px)] left-[anchor(left)] rtl:right-[anchor(right)] rtl:left-auto",
     "[position-try-fallbacks:flip-block,flip-inline,flip-block_flip-inline]",
     colors.checked,
@@ -103,6 +106,8 @@ const surfaceClasses = [
       Array.from(menu.querySelectorAll<HTMLElement>("[data-ac-menu-item]"));
     const isOpen = () => menu.matches(":popover-open");
     const anchorName = `--ac-menu-${menu.id}`;
+    const list = menu.querySelector<HTMLElement>("[data-ac-wrapper]");
+    const layout = menu.dataset.acMenuLayout;
 
     // The trigger the menu belongs to now: the one that opened it last
     let trigger = triggers[0];
@@ -116,10 +121,28 @@ const surfaceClasses = [
     // Focus an item as the menu opens without scrolling the page: the menu already sits where it
     // fits beside its trigger. A scrolling menu shows its first or last item itself.
     const focusItem = (index: number) => {
-      const item = items().at(index);
-      item?.focus({ preventScroll: true });
-      const list = item?.closest<HTMLElement>("[data-ac-wrapper]");
+      items().at(index)?.focus({ preventScroll: true });
       if (list) list.scrollTop = index === 0 ? 0 : list.scrollHeight;
+    };
+
+    // The menu is as tall as the room on the roomier side of its trigger, less its 4px gap and
+    // 48px from the window's edge, set before it opens, so it fits below or above
+    const fitToWindow = () => {
+      if (!trigger) return;
+      const { top, bottom } = trigger.getBoundingClientRect();
+      const room = Math.max(innerHeight - bottom, top) - 4 - 48;
+      menu.style.setProperty("--ac-menu-max-height", `${room}px`);
+    };
+
+    // M3 has no gaps in a scrolling menu: a grouped menu that doesn't fit takes the standard
+    // layout, keeping the last item in view if it has focus
+    const fitLayout = () => {
+      if (layout !== "grouped" || !list) return;
+      menu.dataset.acMenuLayout = layout;
+      if (list.scrollHeight <= list.clientHeight) return;
+      menu.dataset.acMenuLayout = "standard";
+      if (items().at(-1) === document.activeElement)
+        list.scrollTop = list.scrollHeight;
     };
 
     triggers.forEach((button, index) => {
@@ -143,9 +166,30 @@ const surfaceClasses = [
     if (!menu.hasAttribute("aria-label") && trigger)
       menu.setAttribute("aria-labelledby", trigger.id);
 
+    menu.addEventListener("beforetoggle", (event) => {
+      if ((event as ToggleEvent).newState === "open") fitToWindow();
+    });
+
+    // While open, the menu fits again as the page scrolls or the window resizes, moving its
+    // trigger; not as the menu itself scrolls
+    let refit: AbortController | undefined;
+    const fit = (event?: Event) => {
+      if (event?.target instanceof Node && menu.contains(event.target)) return;
+      fitToWindow();
+      fitLayout();
+    };
+
     // M3: focus goes to the first item as the menu opens, unless a key has already put it on one
     menu.addEventListener("toggle", (event) => {
       const isOpening = (event as ToggleEvent).newState === "open";
+      refit?.abort();
+      if (isOpening) {
+        fit();
+        refit = new AbortController();
+        const options = { capture: true, passive: true, signal: refit.signal };
+        window.addEventListener("scroll", fit, options);
+        window.addEventListener("resize", fit, options);
+      }
       triggers.forEach((button) =>
         button.setAttribute(
           "aria-expanded",
