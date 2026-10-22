@@ -1,0 +1,14 @@
+Use a navigation bar for three to five destinations of equal importance, in compact and medium windows. Each destination is a distinct page, and the destinations keep their places: don't scroll the bar or reorder them.
+
+- **Labels:** always show them, in one or two short words that fit on one line. Don't count on a longer label wrapping: wrapping is there for larger text sizes.
+- **Icons:** pass a filled `activeIcon` for each destination that has one (see NavBarItem), so the current destination shows through its icon, not only its color.
+- **Badges:** a dot for an update, a count for a number of items.
+- **A FAB** goes above the bar, never covering it.
+- **Colors:** keep the default colors, with at least 3:1 contrast for the icons.
+
+### When not to use it
+
+- On wider windows, use a NavRail instead (see Layout).
+- Never show a navigation bar and a NavRail at the same time.
+- For fewer than three destinations, use Tabs.
+- For related content within one page, use Tabs.

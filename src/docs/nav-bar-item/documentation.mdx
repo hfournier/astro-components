@@ -15,11 +15,15 @@ props:
   - name: icon
     type: SvgIconNameTypes
     required: true
-    description: The destination's icon, by its file name in `src/assets/svgs`. M3 uses a filled icon for the current destination, so if the icon has a `-fill` version, consider passing it on the current page.
+    description: The destination's icon, by its file name in `src/assets/svgs`, ideally an outlined one. It's shown while the destination isn't current, and also while it is, unless you pass `activeIcon`.
+  - name: activeIcon
+    type: SvgIconNameTypes
+    required: false
+    description: Shown instead of `icon` while this is the current destination. M3 uses a filled icon there and outlined ones for the others, so the current destination doesn't rely on color alone. Pass the icon's `-fill` version (e.g. `icon="home"` with `activeIcon="home-fill"`) when it has one.
   - name: label
     type: string
     required: true
-    description: The destination's name, shown below the icon below medium and beside it from medium up. Keep it to a word, since below medium up to five items share a phone's width.
+    description: The destination's name, shown below the icon below medium and beside it from medium up. Keep it to a word, or two short ones, that fits on one line, as M3 asks, since below medium up to five items share a phone's width. It wraps rather than being cut off, so that it stays readable at larger text sizes.
   - name: badgeLabel
     type: string | number
     required: false
@@ -33,12 +37,14 @@ props:
 
 ## Compact and medium
 
-Below the medium breakpoint (600px), the item is M3's vertical navigation bar item: the icon in a 56×32px active indicator, with the label in Label Medium 4px below it. It takes an equal share of the bar's width, and a label too long for it is cut off with an ellipsis. From medium up, it's M3's horizontal item: the icon and the label side by side 4px apart, in a 40px-high indicator that fits them with 16px either side.
+Below the medium breakpoint (600px), the item is M3's vertical navigation bar item: the icon in a 56×32px active indicator, with the label in Label Medium 4px below it. It takes an equal share of the bar's width, and a label that doesn't fit it, at a larger text size, wraps onto another line, between words where it can. From medium up, it's M3's horizontal item: the icon and the label side by side 4px apart, in an indicator at least 40px high that fits them with 16px either side, centered in an item as wide as NavBar sets (see NavBar). A label that doesn't fit the item wraps inside the indicator, which grows taller, and only between words.
 
 ## Current page
 
-NavBarItem marks itself as the current destination (`aria-current="page"`) when its `href` is the current page's path or a parent of it, so `href="/components"` is also current on `/components/button`. `href="/"` is only current on the home page, or it would match every page. The current destination's indicator is in the secondary container color, with an `on-secondary-container` icon; its label is `secondary` below medium, where it's outside the indicator, and `on-secondary-container` from medium up, where it's inside it. To decide this yourself, pass `aria-current`.
+NavBarItem marks itself as the current destination (`aria-current="page"`) when its `href` is the current page's path or a parent of it, so `href="/components"` is also current on `/components/button`. `href="/"` is only current on the home page, or it would match every page. The current destination's indicator is in the secondary container color, with an `on-secondary-container` icon; its label is `secondary` below medium, where it's outside the indicator, and `on-secondary-container` from medium up, where it's inside it. With `activeIcon`, the current destination's icon also changes, to its filled version. Its label keeps the same weight: the flexible bar's tokens and Compose have no bold label for it (the bold one is the older baseline bar's). To decide this yourself, pass `aria-current`.
+
+Re-selecting the current destination scrolls the page back to the top instead of reloading it, when its `href` is the current page exactly (see NavBar's Accessibility).
 
 ## Badges
 
-`badgeLabel` adds a Badge on the top-end corner of the icon, as in M3: a count, or a dot for `""`. Each item anchors its badge to its icon with its own anchor name, so there's nothing to set up. From medium up, where the label sits 4px from the icon, a count would cover the label, so it moves into the text flow after the label instead; a dot stays on the icon. Keep `badgeLabel` in step with the count it shows, since it also sets the item's accessible name: a count after the label ("Inbox, 3"), or `badgeDescription` for a dot ("Updates, New notification"). In a right-to-left page, the badge moves to the icon's top-left corner, its trailing corner there.
+`badgeLabel` adds a Badge on the top-end corner of the icon, as in M3: a count, or a dot for `""`. Each item anchors its badge to its icon with its own anchor name, so there's nothing to set up. It stays on the icon at every width: from medium up, where the label sits 4px from the icon, a large count reaches over the gap and the start of the label, as in M3's own images. Keep `badgeLabel` in step with the count it shows, since it also sets the item's accessible name: a count after the label ("Inbox, 3"), or `badgeDescription` for a dot ("Updates, New notification"). In a right-to-left page, the badge moves to the icon's top-left corner, its trailing corner there.

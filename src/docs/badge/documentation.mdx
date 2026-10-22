@@ -25,7 +25,7 @@ props:
 
 - **Where space is tight,** such as an app bar, use a dot, which stays inside the icon's corner, so it can't run into the edge of the screen.
 - **Where there's room,** such as a navigation rail, a large badge won't collide with anything.
-- **When text or another element follows the icon,** don't let a large badge overlap it: place it after the text with `placement="inline"`, or use a dot. NavBarItem, NavRailItem and Tab already do this.
+- **When text or another element follows the icon,** don't let a large badge overlap it: place it after the text with `placement="inline"`, or use a dot. An expanded NavRailItem and Tab already do this. M3's navigation bar is the exception: its badges overlap the icon in horizontal items too, so NavBarItem keeps them there, a large count reaching over the start of its label.
 - **Keep it in its place:** don't move a badge from the icon's top-end corner, or place it over the middle of the icon.
 
 In a right-to-left page, an anchored badge moves to the icon's top-left corner, its trailing corner there, with M3's offsets mirrored. An inline badge follows the text, so it comes after the label either way.

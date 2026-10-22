@@ -5,11 +5,14 @@ import { twMerge } from "tailwind-merge";
 import type { SvgIconNameTypes } from "../svgs";
 import Badge from "./Badge.astro";
 import Icon from "./Icon.astro";
-import { badgedName, isBadgeCount, isCurrentPath } from "../utils";
+import { badgedName, isCurrentPath } from "../utils";
 
 type Props = Omit<HTMLAttributes<"a">, "href"> & {
   href: string | URL;
   icon: SvgIconNameTypes;
+  // M3: shown instead of `icon` on the current destination, usually its filled version, so the
+  // current destination doesn't rely on color alone
+  activeIcon?: SvgIconNameTypes;
   label: string;
   // A Badge on the icon: a count, or "" for a dot. 0 shows no badge.
   badgeLabel?: string | number;
@@ -19,6 +22,7 @@ type Props = Omit<HTMLAttributes<"a">, "href"> & {
 const {
   href,
   icon,
+  activeIcon,
   label,
   badgeLabel,
   badgeDescription,
@@ -29,10 +33,10 @@ const {
 // The current page's destination is its own href, or a page under it (see isCurrentPath). An
 // explicit `aria-current` passed by the consumer still wins, since `attrs` is spread after it.
 const isCurrent = isCurrentPath(Astro.url.pathname, href);
+const ariaCurrent = attrs["aria-current"] ?? (isCurrent ? "page" : undefined);
+const shownIcon = (ariaCurrent === "page" && activeIcon) || icon;
 
 const hasBadge = badgeLabel !== undefined;
-// A badge with content, rather than a dot (Badge hides 0)
-const hasCount = isBadgeCount(badgeLabel);
 const badgeAnchorName = `--anchorname-${crypto.randomUUID()}-badge`;
 // The badge is aria-hidden, so its count or description joins the item's name
 const accessibleName = badgedName(label, badgeLabel, badgeDescription);
@@ -42,13 +46,16 @@ const accessibleName = badgedName(label, badgeLabel, badgeDescription);
   class:list={twMerge(
     // M3 vertical bar item, below medium: the items share the bar's width equally
     "group/item flex min-w-0 flex-1 justify-center py-1.5 outline-none",
-    // M3 horizontal bar item, from medium up: the items are grouped in the middle of the bar
-    "medium:flex-none medium:items-center medium:py-0",
+    // M3 horizontal bar item, from medium up: the items are grouped in the middle of the bar, each
+    // as wide as NavBar sets (an equal share of 60-80% of it), or wider for its content, up to an
+    // equal share of the whole bar. 12px above and below its 40px indicator, so a taller one
+    // (a wrapped label) keeps the padding.
+    "medium:w-max medium:max-w-(--ac-nav-bar-item-max-width) medium:min-w-(--ac-nav-bar-item-width) medium:flex-none medium:items-center medium:py-3",
     "text-(--theme-color-on-surface-variant) aria-[current=page]:text-(--theme-color-secondary) medium:aria-[current=page]:text-(--theme-color-on-secondary-container)",
     classList
   )}
   href={href}
-  aria-current={isCurrent ? "page" : undefined}
+  aria-current={ariaCurrent}
   aria-label={accessibleName}
   data-ac-nav-bar-item
   {...attrs}
@@ -57,9 +64,12 @@ const accessibleName = badgedName(label, badgeLabel, badgeDescription);
     class:list={[
       // Below medium: the icon's indicator above the label in Label Medium, 4px apart
       "relative isolate flex max-w-full flex-col items-center gap-1 rounded-2xl text-center text-xs leading-4 font-medium tracking-[0.5px]",
-      // From medium up: icon and label side by side, 4px apart, in a 40px high indicator that
-      // hugs them with 16px either side. This span is the indicator there.
-      "medium:h-10 medium:flex-row medium:rounded-full medium:px-4 medium:whitespace-nowrap",
+      // From medium up: icon and label side by side, 4px apart, in an indicator at least 40px
+      // high that hugs them with 16px either side. This span is the indicator there. A long label
+      // wraps to keep it within its item, but the indicator is never narrower than the label's
+      // longest word, so the label only breaks between words: in a bar too narrow for that, it
+      // overflows its item, centered, rather than breaking a word.
+      "medium:min-h-10 medium:min-w-min medium:flex-row medium:rounded-full medium:px-4",
       "medium:group-aria-[current=page]/item:bg-(--theme-color-secondary-container)",
       // state layer on the whole indicator from medium up (below it, it's on the icon's indicator)
       "before:absolute before:inset-0 before:-z-10 before:hidden before:rounded-full before:bg-(--theme-color-on-secondary-container) before:opacity-0 medium:before:block",
@@ -84,36 +94,69 @@ const accessibleName = badgedName(label, badgeLabel, badgeDescription);
       ]}
     >
       <Icon
-        name={icon}
+        name={shownIcon}
         style={hasBadge ? `anchor-name: ${badgeAnchorName}` : undefined}
       />
     </span>
     {
-      /* truncate only below medium, where the items share the bar's width: from medium up, its
-         overflow-hidden would clip the bottom of an inline count, which hangs below the label's
-         line (see Badge) */
+      /* M3: labels are one or two words on one line, but at larger text sizes they wrap, and the
+         bar grows to hold them, so the full label stays visible (M3 asks that up to 2x; this
+         never truncates). Below medium, where the items share the bar's width,
+         a word too long for its item breaks; from medium up, the indicator is never narrower
+         than the label's longest word, so it only breaks between words. */
     }
-    <span class="max-w-full truncate medium:overflow-visible">
-      {label}
-      {
-        hasCount && (
-          // inline text flow, so the badge aligns to the label's baseline and cap height (see Badge)
-          <Badge
-            class="ms-1 max-medium:hidden"
-            label={badgeLabel}
-            placement="inline"
-          />
-        )
-      }
-    </span>
+    <span class="max-w-full text-balance wrap-anywhere medium:wrap-break-word"
+      >{label}</span
+    >
   </span>
+  {
+    /* M3: the badge overlaps the icon's top-end corner in vertical and horizontal items alike */
+  }
   {
     hasBadge && (
       <Badge
-        class:list={[hasCount && "medium:hidden"]}
         label={badgeLabel}
         style={`--ac-anchorname-badge: ${badgeAnchorName}`}
       />
     )
   }
 </a>
+
+<script>
+  import { trimSlash } from "../utils";
+
+  // M3: re-selecting the current destination scrolls the page back to the top, rather than
+  // reloading it. Only an item whose href is this page exactly: one that's current because this
+  // page is under it still goes to its own page, and one with a #fragment jumps to it. A modified
+  // click (a new tab or window) is left to the browser. One listener on the document, so it still
+  // works for bars swapped in by Astro's ClientRouter.
+  const pageOf = (url: URL | Location) => trimSlash(url.pathname) + url.search;
+
+  document.addEventListener("click", (event) => {
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey ||
+      !(event.target instanceof Element)
+    )
+      return;
+    const link = event.target.closest<HTMLAnchorElement>(
+      "a[data-ac-nav-bar-item]"
+    );
+    if (!link) return;
+    const target = new URL(link.href);
+    if (
+      target.origin !== location.origin ||
+      target.hash ||
+      pageOf(target) !== pageOf(location)
+    )
+      return;
+    event.preventDefault();
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+  });
+</script>
