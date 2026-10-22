@@ -11,11 +11,21 @@ type Props = Omit<BaseWrapperProps, "as"> & {
   // width, pass a class such as `[--ac-nav-rail-expanded-width:300px]`; it's kept within those limits.
   expandedWidth?: "narrow" | "wide";
   isExpandable?: boolean;
+  // M3: the destinations as a group at the top, or centered in the space below the menu button
+  // and FAB, which stay at the top
+  align?: "top" | "center";
+  // The <nav>'s accessible name
+  label?: string;
+  // M3's optional divider on the rail's end edge, beside the page's content, from medium up
+  showDivider?: boolean;
 };
 const {
-  bgColor = "surface-container-low",
+  bgColor = "surface",
   expandedWidth = "narrow",
   isExpandable = true,
+  align = "top",
+  label = "Main",
+  showDivider = false,
   class: classList,
   ...attrs
 } = Astro.props;
@@ -46,8 +56,8 @@ const expandedWidthClasses = {
      collapsed and expanded widths). A container's width can't depend on its content, so the
      expanded rail has a set width rather than growing to fit its labels.
 
-     Below medium it's a modal overlay, off the left edge until its MenuToggle, which stays in place over
-     the page, slides it in. Open while data-open is set (by the script); closed, it's invisible
+     Below medium it's a modal overlay, off the start edge until its MenuToggle, which stays in place
+     over the page, slides it in. Open while data-open is set (by the script); closed, it's invisible
      (all but the toggle), so it can't be focused or reached by assistive tech. */
 }
 <BaseWrapper
@@ -55,53 +65,70 @@ const expandedWidthClasses = {
     // M3 collapsed rail. No padding here: the container query measures the
     // content box, so the padding is on the inner div.
     "peer/nav-rail @container/rail sticky top-0 z-30 h-screen w-24 min-w-0 shrink-0 overflow-y-auto",
+    showDivider &&
+      "medium:border-e medium:border-(--theme-color-outline-variant)",
     // Below medium: M3's modal expanded rail, every rail (one that isn't expandable gets its
-    // NavDrawer's sections). It slides in, visible straight away so focus can move into it, and
-    // slides back out, still visible until it's gone. It slides by `left`, not `translate`: a
-    // transform would make the rail the containing block of its fixed MenuToggle, which would then
-    // slide with it. Closed, it's its own (clamped) width off the left edge, plus its shadow.
+    // NavDrawer's sections), on M3's surface-container at elevation 2, unless the rail has its own
+    // background. It's set as the wrapper's background, so the toggle, focus rings and links follow
+    // it. It slides in from the start edge, visible straight away so focus can move into it, and
+    // slides back out, still visible until it's gone. It slides by `inset-inline-start`, not
+    // `translate`: a transform would make the rail the containing block of its fixed MenuToggle,
+    // which would then slide with it. Closed, it's its own (clamped) width off the start edge, plus
+    // its shadow.
     expandedWidthClasses,
+    bgColor === "surface" &&
+      "max-medium:[--theme-color-wrapper-bg:var(--theme-color-surface-container)]",
     "max-medium:w-(--ac-nav-rail-expanded-width) max-medium:max-w-90 max-medium:min-w-55",
-    "max-medium:invisible max-medium:fixed max-medium:left-[calc(-1*clamp(220px,var(--ac-nav-rail-expanded-width),360px)-1rem)] max-medium:h-dvh max-medium:rounded-r-2xl max-medium:shadow-theme-elevation-1",
-    "max-medium:data-open:visible max-medium:data-open:left-0",
-    "max-medium:motion-safe:transition-[left,visibility] max-medium:motion-safe:duration-(--theme-duration-base) max-medium:motion-safe:data-open:transition-[left]",
-    // From medium up, an expandable rail expands while its MenuToggle is expanded, and always from large
-    // up (where the toggle is hidden), to its expanded width, kept within M3's 220-360px
+    "max-medium:invisible max-medium:fixed max-medium:start-[calc(-1*clamp(220px,var(--ac-nav-rail-expanded-width),360px)-1rem)] max-medium:h-dvh max-medium:rounded-e-2xl max-medium:shadow-theme-elevation-2",
+    "max-medium:data-open:visible max-medium:data-open:start-0",
+    "max-medium:motion-safe:transition-[inset-inline-start,visibility] max-medium:motion-safe:duration-(--theme-duration-base) max-medium:motion-safe:data-open:transition-[inset-inline-start]",
+    // From medium up, an expandable rail expands while its MenuToggle is expanded, to its expanded
+    // width, kept within M3's 220-360px. The script expands the toggle from large up by default.
     isExpandable && [
       "has-[[data-ac-menu-toggle][aria-expanded=true]]:w-(--ac-nav-rail-expanded-width) has-[[data-ac-menu-toggle][aria-expanded=true]]:max-w-90 has-[[data-ac-menu-toggle][aria-expanded=true]]:min-w-55",
-      "large:w-(--ac-nav-rail-expanded-width) large:max-w-90 large:min-w-55",
       "medium:motion-safe:transition-[width,min-width] medium:motion-safe:duration-(--theme-duration-base)",
     ],
     classList
   )}
   {bgColor}
   data-ac-nav-rail
+  data-ac-nav-rail-expandable={isExpandable ? "" : undefined}
   {...attrs}
 >
   <div
     class:list={[
-      "flex min-h-full flex-col items-center gap-1 px-1 py-5",
+      // M3's 44px top space from medium up. Below medium it's 20px, so the toggle, which also sits
+      // over the page while the rail is closed, fits in a page header there (see the docs).
+      "flex min-h-full flex-col items-center gap-1 px-1 py-5 medium:pt-11",
       // M3 expanded rail
       "rail-expanded:items-start rail-expanded:px-5",
     ]}
   >
     {
-      /* An expandable rail's toggle expands it from medium to large. Every rail has one below medium, where
-         it opens and closes the modal rail: fixed where it sits in the open rail, and visible while
-         the rest of the rail isn't, so it stays in place over the page whether the rail is open or
-         not. It's filled with the rail's background, so it's readable over whatever is behind it
-         while the rail is closed, and blends into the rail when it's open. The div keeps its place
-         in the rail. */
+      /* An expandable rail's toggle expands and collapses it from medium up. Every rail has one
+         below medium, where it opens and closes the modal rail: fixed where it sits in the open
+         rail, and visible while the rest of the rail isn't, so it stays in place over the page
+         whether the rail is open or not. It's filled with the rail's background, so it's readable
+         over whatever is behind it while the rail is closed, and blends into the rail when it's
+         open. The div keeps its place in the rail. */
     }
-    <div
-      class:list={[
-        "size-14 shrink-0",
-        isExpandable ? "large:hidden" : "medium:hidden",
-      ]}
-    >
+    <div class:list={["size-14 shrink-0", !isExpandable && "medium:hidden"]}>
       <MenuToggle
-        class="max-medium:visible max-medium:fixed max-medium:top-5 max-medium:left-5 max-medium:z-10 max-medium:bg-(--theme-color-wrapper-bg)"
+        class="max-medium:visible max-medium:fixed max-medium:start-5 max-medium:top-5 max-medium:z-10 max-medium:bg-(--theme-color-wrapper-bg)"
       />
+      <script is:inline>
+        // M3: a rail can be expanded by default on larger windows, so an expandable one starts
+        // expanded from large up. Set before the rail is first painted, so it doesn't show
+        // collapsed and then expand. M3's large window size; keep in step with
+        // --breakpoint-large in theme.css.
+        if (
+          document.currentScript.closest("[data-ac-nav-rail-expandable]") &&
+          window.matchMedia("(width >= 75rem)").matches
+        )
+          document.currentScript.parentElement
+            .querySelector("[data-ac-menu-toggle]")
+            .setAttribute("aria-expanded", "true");
+      </script>
     </div>
 
     <slot name="fab" />
@@ -110,8 +137,11 @@ const expandedWidthClasses = {
       /* No gap between destinations when expanded, where each item is its own indicator */
     }
     <nav
-      class="mt-10 flex w-full flex-col gap-4 rail-expanded:gap-0"
-      aria-label="Main"
+      class:list={[
+        "mt-10 flex w-full flex-col gap-1 rail-expanded:gap-0",
+        align === "center" && "flex-1 justify-center",
+      ]}
+      aria-label={label}
     >
       <Fragment set:html={items} />
 
@@ -137,14 +167,38 @@ const expandedWidthClasses = {
   // scrim. It closes with the toggle, Escape or a click on the scrim. The toggle stays in place, so
   // focus stays on it, except that Escape from inside the rail brings focus back to it. Its
   // aria-expanded is the open state: MenuToggle flips it on click, and the rail follows.
-  // M3's medium window size; keep in step with --breakpoint-medium in theme.css
+  // From medium up, an expandable rail's toggle expands and collapses it, and starts expanded from
+  // large up.
+  // M3's medium and large window sizes; keep in step with --breakpoint-* in theme.css
   const medium = window.matchMedia("(width >= 37.5rem)");
+  const large = window.matchMedia("(width >= 75rem)");
+
+  const isVisible = (element: HTMLElement) =>
+    element.getClientRects().length > 0;
 
   document
     .querySelectorAll<HTMLElement>("[data-ac-nav-rail]")
     .forEach((rail) => {
       const toggle = rail.querySelector<HTMLElement>("[data-ac-menu-toggle]");
-      if (!toggle) return;
+      const nav = rail.querySelector("nav");
+      if (!toggle || !nav) return;
+      const isExpandable = rail.hasAttribute("data-ac-nav-rail-expandable");
+
+      // M3: arrows move between the rail's items too, its destinations and any sub-items it shows.
+      // There's no roving tabindex, so Tab still reaches each one. Up and Down follow the visual
+      // order, which right to left doesn't change.
+      nav.addEventListener("keydown", (event) => {
+        if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+        const links = Array.from(
+          nav.querySelectorAll<HTMLAnchorElement>("a[href]")
+        ).filter(isVisible);
+        const index = links.indexOf(
+          document.activeElement as HTMLAnchorElement
+        );
+        if (index === -1) return;
+        event.preventDefault();
+        links[index + (event.key === "ArrowDown" ? 1 : -1)]?.focus();
+      });
 
       const inerted: HTMLElement[] = [];
       const isOpen = () => rail.hasAttribute("data-open");
@@ -201,10 +255,17 @@ const expandedWidthClasses = {
         if (isOpen() && !rail.contains(event.target as Node)) close();
       });
 
-      // From medium up the rail is in the layout. Crossing medium either way starts the toggle collapsed.
-      medium.addEventListener("change", () => {
+      // From medium up the rail is in the layout. Crossing medium or large either way resets the
+      // toggle to the new size's default: expanded from large up for an expandable rail, otherwise
+      // collapsed. Within one size, the user's choice holds.
+      const reset = () => {
         close();
-        toggle.setAttribute("aria-expanded", "false");
-      });
+        toggle.setAttribute(
+          "aria-expanded",
+          String(isExpandable && large.matches)
+        );
+      };
+      medium.addEventListener("change", reset);
+      large.addEventListener("change", reset);
     });
 </script>

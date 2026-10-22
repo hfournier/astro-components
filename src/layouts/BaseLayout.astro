@@ -47,11 +47,21 @@ const testItems = tests.map((test) => ({
   >
     <SkipToContent />
 
-    <NavRail isExpandable={false}>
+    <NavRail bgColor="surface-container-low" isExpandable={false}>
       <Fab icon="search" label="Search" slot="fab" />
 
-      <NavRailItem href="/" icon="home" label="Start here" />
-      <NavRailItem href="/components" icon="code_blocks" label="Components" />
+      <NavRailItem
+        href="/"
+        icon="home"
+        activeIcon="home-fill"
+        label="Start here"
+      />
+      <NavRailItem
+        href="/components"
+        icon="code_blocks"
+        activeIcon="code_blocks-fill"
+        label="Components"
+      />
       <NavRailItem href="/tests" icon="grading" label="Tests" />
     </NavRail>
 

@@ -1,0 +1,9 @@
+The destinations are links in a `<nav>` named by `label` ("Main"), and the current one has `aria-current="page"`. The menu button is a disclosure button, announced as "collapsed" or "expanded".
+
+- **Tab** reaches each destination, sub-item and the FAB in turn.
+- **Up and Down arrows** also move focus between the destinations, and any sub-items the rail shows, in the order they're shown. They stop at the first and last.
+- **Escape** closes the modal rail below medium, and brings focus back to its menu button.
+
+Each destination's target is at least 64px high in a collapsed rail, and spans the rail's width in an expanded one, though its indicator only hugs its icon and label. A label too long for the expanded rail wraps rather than being cut off, so the whole label stays visible at larger text sizes.
+
+If a visible label is ambiguous on its own, give the destination a fuller accessible name with `aria-label`, e.g. "Recent images" for "Recent".

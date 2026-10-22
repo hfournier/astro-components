@@ -120,6 +120,9 @@ const tooltipOffClasses = isExtended
     "[interpolate-size:allow-keywords]",
     // M3: elevation level 3 at rest, focused and pressed; level 4 on hover
     "shadow-theme-elevation-3 hover:shadow-theme-elevation-4 active:shadow-theme-elevation-3",
+    // M3: nested in another component, such as a NavRail (a `rail` container), level 0. ! so it
+    // also wins over hover and active.
+    "rail-expanded:shadow-none! rail-collapsed:shadow-none!",
     // M3 state layer, in the icon's color
     "relative isolate before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0",
     "hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10",
