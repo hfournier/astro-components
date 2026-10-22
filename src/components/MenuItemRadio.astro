@@ -7,7 +7,7 @@ import MenuItemBase from "./MenuItemBase.astro";
 // on the menu and closes it.
 type Props = Omit<
   ComponentProps<typeof MenuItemBase>,
-  "role" | "href" | "isChecked"
+  "role" | "href" | "isChecked" | "submenu"
 > & {
   isChecked?: boolean;
 };

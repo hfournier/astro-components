@@ -4,12 +4,14 @@ import { twMerge } from "tailwind-merge";
 import BaseOverlay from "./BaseOverlay.astro";
 
 // An M3 Expressive vertical menu: a temporary list of actions or choices (MenuItem,
-// MenuItemCheckbox, MenuItemRadio), in MenuGroups or not, opened by any button with
-// `commandfor` set to its id and `command="toggle-popover"`. An auto popover, so it's in the top
-// layer, and a click outside or Escape closes it; the script adds the menu button pattern: the
-// triggers' ARIA, focus on open and on close, the keyboard, and what choosing an item does.
+// MenuItemCheckbox, MenuItemRadio), in MenuGroups or not. It opens from any button with
+// `commandfor` set to its id and `command="toggle-popover"`, as a submenu from any MenuItem with
+// `submenu` set to its id, or, with `isContextMenu`, as the context menu of the element `for`
+// names. An auto popover, so it's in the top layer, and a click outside or Escape closes it; the
+// script adds the menu button pattern: the triggers' ARIA, focus on open and on close, the
+// keyboard, and what choosing an item does.
 type Props = Omit<HTMLAttributes<"div">, "id"> & {
-  // the popover's id, which its triggers' `commandfor` points at
+  // the popover's id, which its triggers' `commandfor`, or its parent items' `submenu`, points at
   id: string;
   // M3's color: standard (surface-container-low) or vibrant (tertiary-container)
   color?: "standard" | "vibrant";
@@ -19,12 +21,19 @@ type Props = Omit<HTMLAttributes<"div">, "id"> & {
   layout?: "standard" | "grouped";
   // The menu's accessible name, only for a menu whose trigger has no label of its own to name it
   label?: string;
+  // M3's context menu: it opens on a secondary click, a long press or the keyboard's context menu
+  // keys on the element `for` names, in place of the browser's own menu
+  isContextMenu?: boolean;
+  // the id of the element a context menu belongs to
+  for?: string;
 };
 const {
   id,
   color = "standard",
   layout = "grouped",
   label,
+  isContextMenu = false,
+  for: contextFor,
   class: classList,
   ...attrs
 } = Astro.props;
@@ -57,6 +66,10 @@ const surfaceClasses = [
   "flex w-max max-w-70 min-w-28 flex-col rounded-2xl py-0.5 shadow-theme-elevation-2",
   "max-h-(--ac-menu-max-height) overflow-y-auto",
   "group-data-[ac-menu-layout=grouped]/menu:has-[[data-ac-menu-group]]:gap-0.5 group-data-[ac-menu-layout=grouped]/menu:has-[[data-ac-menu-group]]:bg-transparent group-data-[ac-menu-layout=grouped]/menu:has-[[data-ac-menu-group]]:py-0 group-data-[ac-menu-layout=grouped]/menu:has-[[data-ac-menu-group]]:shadow-none group-data-[ac-menu-layout=grouped]/menu:has-[[data-ac-menu-group]]:overflow-visible",
+  // M3's active and inactive shapes: with a submenu open, the menu holding focus or the pointer
+  // has 16px corners and the others 8px, morphing on the fast spatial spring
+  "group-data-[ac-menu-inactive]/menu:rounded-lg",
+  "motion-safe:transition-[border-radius] motion-safe:duration-(--theme-duration-spring-fast-spatial) motion-safe:ease-spring-fast-spatial",
 ];
 ---
 
@@ -64,7 +77,8 @@ const surfaceClasses = [
   /* Below its trigger, lined up with the trigger's start edge, 4px away; above it, or toward its
      other edge, when there isn't room, keeping 48px from the window's edge (its far margin,
      which flip-block moves to its top). Anchor insets rather than position-area, which Firefox
-     places wrongly right to left. The script anchors it to the trigger that opened it. */
+     places wrongly right to left. The script anchors it to the trigger that opened it, and sets
+     data-ac-menu-placement for a submenu or a context menu. */
 }
 <BaseOverlay
   as="div"
@@ -75,6 +89,13 @@ const surfaceClasses = [
     "group/menu inset-auto m-0 mb-12 overflow-visible p-0 [--ac-menu-max-height:calc(100dvh-6rem)]",
     "top-[calc(anchor(bottom)+4px)] left-[anchor(left)] rtl:right-[anchor(right)] rtl:left-auto",
     "[position-try-fallbacks:flip-block,flip-inline,flip-block_flip-inline]",
+    // A context menu: at the pointer, or the target's top start corner, with no gap
+    "data-[ac-menu-placement=point]:top-[anchor(bottom)]",
+    // A submenu: 4px past its parent menu's end edge, level with its parent item; past the
+    // parent's start edge, then upward, when there isn't room
+    "data-[ac-menu-placement=submenu]:top-[anchor(top)] data-[ac-menu-placement=submenu]:left-[calc(anchor(var(--ac-menu-parent)_right)+4px)]",
+    "rtl:data-[ac-menu-placement=submenu]:right-[calc(anchor(var(--ac-menu-parent)_left)+4px)] rtl:data-[ac-menu-placement=submenu]:left-auto",
+    "data-[ac-menu-placement=submenu]:[position-try-fallbacks:flip-inline,flip-block,flip-block_flip-inline]",
     colors.checked,
   ].join(" ")}
   showBackdrop={false}
@@ -85,6 +106,7 @@ const surfaceClasses = [
   style={`position-anchor: --ac-menu-${id}`}
   data-ac-menu
   data-ac-menu-layout={layout}
+  data-ac-menu-context-for={isContextMenu ? contextFor : undefined}
   {...attrs}
 >
   <slot />
@@ -93,15 +115,42 @@ const surfaceClasses = [
 <script>
   // M3's menu with WAI-ARIA's menu button pattern. Each trigger is a button with commandfor set
   // to the menu's id, so the browser toggles the popover; this keeps the triggers' ARIA in step,
-  // and moves focus and handles keys as the pattern asks.
+  // and moves focus and handles keys as the pattern asks. A submenu opens from its parent item as
+  // a nested popover (its `source`), so its parent stays open, and a click outside closes both.
   const typeAheadResetMs = 500; // after the last letter before type-ahead starts over
+  const hoverOpenMs = 200; // on a parent item before its submenu opens
+  const hoverCloseMs = 300; // off it before its submenu closes, to cross diagonally into it
+  const keyboardContextMs = 500; // after the keyboard opens a context menu, for its own event
+
+  // Each menu's way to close every menu up to the one first opened, focusing that one's trigger
+  const closeTrees = new WeakMap<HTMLElement, (shouldFocus: boolean) => void>();
+
+  // M3's active menu: the open one holding focus or the pointer has 16px corners, the others 8px
+  const activate = (active: HTMLElement) =>
+    document
+      .querySelectorAll<HTMLElement>("[data-ac-menu]")
+      .forEach((other) =>
+        other.toggleAttribute(
+          "data-ac-menu-inactive",
+          other !== active && other.matches(":popover-open")
+        )
+      );
 
   document.querySelectorAll<HTMLElement>("[data-ac-menu]").forEach((menu) => {
-    const triggers = Array.from(
+    const commandTriggers = Array.from(
       document.querySelectorAll<HTMLButtonElement>(
         `[commandfor="${CSS.escape(menu.id)}"]`
       )
     );
+    const parentItems = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        `[data-ac-submenu="${CSS.escape(menu.id)}"]`
+      )
+    );
+    const contextId = menu.dataset.acMenuContextFor;
+    const contextTarget = contextId ? document.getElementById(contextId) : null;
+    const isSubmenu = parentItems.length > 0;
+    const triggers: HTMLElement[] = [...commandTriggers, ...parentItems];
     const items = () =>
       Array.from(menu.querySelectorAll<HTMLElement>("[data-ac-menu-item]"));
     const isOpen = () => menu.matches(":popover-open");
@@ -109,13 +158,30 @@ const surfaceClasses = [
     const list = menu.querySelector<HTMLElement>("[data-ac-wrapper]");
     const layout = menu.dataset.acMenuLayout;
 
-    // The trigger the menu belongs to now: the one that opened it last
-    let trigger = triggers[0];
+    // Its own box, which its submenus open beside
+    menu.style.anchorName = `--ac-menu-box-${menu.id}`;
+    if (isSubmenu) menu.dataset.acMenuPlacement = "submenu";
+    if (contextTarget) menu.dataset.acMenuPlacement = "point";
 
-    const useTrigger = (button: HTMLButtonElement) => {
-      triggers.forEach((other) => (other.style.anchorName = ""));
-      button.style.anchorName = anchorName;
-      trigger = button;
+    // The element the menu belongs to now: the trigger or parent item that opened it last, or a
+    // context menu's target. It gets focus back as the menu closes. The menu sits beside its
+    // anchor: the trigger itself, or a context menu's point.
+    let trigger: HTMLElement | null = triggers[0] ?? contextTarget;
+    let anchor: HTMLElement | null = trigger;
+    const parentMenu = () =>
+      isSubmenu ? trigger?.closest<HTMLElement>("[data-ac-menu]") : null;
+
+    const useTrigger = (opener: HTMLElement, at: HTMLElement = opener) => {
+      if (anchor) anchor.style.anchorName = "";
+      at.style.anchorName = anchorName;
+      anchor = at;
+      trigger = opener;
+      const parent = parentMenu();
+      if (parent)
+        menu.style.setProperty(
+          "--ac-menu-parent",
+          `--ac-menu-box-${parent.id}`
+        );
     };
 
     // Focus an item as the menu opens without scrolling the page: the menu already sits where it
@@ -125,12 +191,17 @@ const surfaceClasses = [
       if (list) list.scrollTop = index === 0 ? 0 : list.scrollHeight;
     };
 
-    // The menu is as tall as the room on the roomier side of its trigger, less its 4px gap and
-    // 48px from the window's edge, set before it opens, so it fits below or above
+    // The menu is as tall as the room on the roomier side of its anchor, less any gap and 48px
+    // from the window's edge, set before it opens, so it fits below or above. A submenu is level
+    // with its parent item's top, or its bottom when it opens upward.
     const fitToWindow = () => {
-      if (!trigger) return;
-      const { top, bottom } = trigger.getBoundingClientRect();
-      const room = Math.max(innerHeight - bottom, top) - 4 - 48;
+      if (!anchor) return;
+      const { top, bottom } = anchor.getBoundingClientRect();
+      const gap = menu.dataset.acMenuPlacement ? 0 : 4;
+      const [below, above] = isSubmenu
+        ? [innerHeight - top, bottom]
+        : [innerHeight - bottom - gap, top - gap];
+      const room = Math.max(below, above) - 48;
       menu.style.setProperty("--ac-menu-max-height", `${room}px`);
     };
 
@@ -150,7 +221,9 @@ const surfaceClasses = [
       button.setAttribute("aria-controls", menu.id);
       button.setAttribute("aria-expanded", "false");
       button.id ||= `${menu.id}-trigger${index === 0 ? "" : `-${index + 1}`}`;
-      // Each trigger anchors the menu as it's pressed, before the browser opens it
+    });
+    // Each trigger anchors the menu as it's pressed, before the browser opens it
+    commandTriggers.forEach((button) => {
       button.addEventListener("pointerdown", () => useTrigger(button));
       // ArrowDown and ArrowUp open the menu on its first and last item
       button.addEventListener("keydown", (event) => {
@@ -163,7 +236,7 @@ const surfaceClasses = [
     });
     if (trigger) useTrigger(trigger);
     // Named by its trigger's label, unless it has a label of its own
-    if (!menu.hasAttribute("aria-label") && trigger)
+    if (!menu.hasAttribute("aria-label") && trigger?.id)
       menu.setAttribute("aria-labelledby", trigger.id);
 
     menu.addEventListener("beforetoggle", (event) => {
@@ -179,7 +252,9 @@ const surfaceClasses = [
       fitLayout();
     };
 
-    // M3: focus goes to the first item as the menu opens, unless a key has already put it on one
+    // M3: focus goes to the first item as the menu opens, unless a key has already put it on one,
+    // or in a submenu it opened. A submenu moves focus itself, as hovering its parent item opens it
+    // without.
     menu.addEventListener("toggle", (event) => {
       const isOpening = (event as ToggleEvent).newState === "open";
       refit?.abort();
@@ -189,6 +264,12 @@ const surfaceClasses = [
         const options = { capture: true, passive: true, signal: refit.signal };
         window.addEventListener("scroll", fit, options);
         window.addEventListener("resize", fit, options);
+        // a submenu becomes the active menu once it has focus or the pointer
+        if (!isSubmenu) activate(menu);
+      } else {
+        menu.removeAttribute("data-ac-menu-inactive");
+        const parent = parentMenu();
+        if (parent?.matches(":popover-open")) activate(parent);
       }
       triggers.forEach((button) =>
         button.setAttribute(
@@ -196,8 +277,15 @@ const surfaceClasses = [
           String(isOpening && button === trigger)
         )
       );
-      if (isOpening && !menu.contains(document.activeElement)) focusItem(0);
+      if (
+        isOpening &&
+        !isSubmenu &&
+        !document.activeElement?.closest("[data-ac-menu]")
+      )
+        focusItem(0);
     });
+    menu.addEventListener("focusin", () => activate(menu));
+    menu.addEventListener("pointerenter", () => activate(menu));
 
     // Closing with focus in the menu returns it to the trigger. The popover does this itself, but
     // only to the element that had focus as it opened, and in Safari a click doesn't focus a
@@ -206,6 +294,65 @@ const surfaceClasses = [
       if (menu.contains(document.activeElement)) trigger?.focus();
       if (isOpen()) menu.hidePopover();
     };
+
+    // Closing the whole tree: a submenu passes it up to its parent, and the first menu closes,
+    // closing the submenus nested in it
+    const closeTree = (shouldFocus: boolean) => {
+      const parent = parentMenu();
+      const closeParent = parent && closeTrees.get(parent);
+      if (closeParent) return closeParent(shouldFocus);
+      if (shouldFocus) trigger?.focus();
+      if (isOpen()) menu.hidePopover();
+    };
+    closeTrees.set(menu, closeTree);
+
+    // A submenu opens from its parent item on a click, Enter, Space, or the arrow key toward it,
+    // focusing its first item, or on hovering the item, without
+    const openFrom = (item: HTMLElement, shouldFocus: boolean) => {
+      if (item.getAttribute("aria-disabled") === "true") return;
+      useTrigger(item);
+      if (!isOpen()) menu.showPopover({ source: item });
+      if (shouldFocus) focusItem(0);
+    };
+    const isRtl = (el: Element) => getComputedStyle(el).direction === "rtl";
+    // The arrow key pointing toward the submenu, which opens it, and away, which closes it
+    const towardKey = (el: Element) => (isRtl(el) ? "ArrowLeft" : "ArrowRight");
+    const awayKey = (el: Element) => (isRtl(el) ? "ArrowRight" : "ArrowLeft");
+
+    let hoverTimer: number | undefined;
+    const later = (action: () => void, ms: number) => {
+      clearTimeout(hoverTimer);
+      hoverTimer = window.setTimeout(action, ms);
+    };
+    parentItems.forEach((item) => {
+      item.addEventListener("click", () => openFrom(item, true));
+      item.addEventListener("keydown", (event) => {
+        if (event.key !== towardKey(item)) return;
+        event.preventDefault();
+        openFrom(item, true);
+      });
+      // Hovering the parent item opens the submenu after a moment; hovering another item in the
+      // parent menu closes it after another, which reaching the submenu cancels
+      const parent = item.closest<HTMLElement>("[data-ac-menu]");
+      parent?.addEventListener("pointerover", (event) => {
+        if (event.pointerType === "touch") return;
+        const over = (event.target as Element).closest("[data-ac-menu-item]");
+        if (!over) return;
+        if (over === item) {
+          if (!isOpen() || trigger !== item)
+            later(() => openFrom(item, false), hoverOpenMs);
+          else clearTimeout(hoverTimer);
+        } else if (isOpen() && trigger === item)
+          later(() => menu.hidePopover(), hoverCloseMs);
+        else if (trigger === item) clearTimeout(hoverTimer);
+      });
+      // Focus moving to another item in the parent menu closes it
+      parent?.addEventListener("focusin", (event) => {
+        if (isOpen() && trigger === item && event.target !== item)
+          menu.hidePopover();
+      });
+    });
+    menu.addEventListener("pointerenter", () => clearTimeout(hoverTimer));
 
     let typed = "";
     let typedAt = 0;
@@ -230,11 +377,17 @@ const surfaceClasses = [
         case "Escape":
           event.preventDefault();
           return close();
-        case "Tab":
-          // Focus moves on from the trigger, so the menu is one Tab stop in the page's order
-          trigger?.focus();
-          menu.hidePopover();
+        case "ArrowLeft":
+        case "ArrowRight":
+          // A submenu closes on the arrow key pointing back toward its parent
+          if (isSubmenu && event.key === awayKey(menu)) {
+            event.preventDefault();
+            close();
+          }
           return;
+        case "Tab":
+          // Focus moves on from the trigger, so the menus are one Tab stop in the page's order
+          return closeTree(true);
         case " ":
           // A link doesn't activate on Space, as a button does
           if (document.activeElement instanceof HTMLAnchorElement) {
@@ -295,15 +448,15 @@ const surfaceClasses = [
     );
 
     // Choosing an item: a checkbox toggles and the menu stays open (M3's multi-select menu); a
-    // radio checks itself, unchecks its group's others, and closes; an action closes. Checkbox
-    // and radio items fire `change` on the menu. The menu closes once the click has run every
-    // handler, unless one has moved focus out of the menu (into a dialog it opened, say), which
-    // then stays there.
+    // radio checks itself, unchecks its group's others, and closes; an action closes; a parent
+    // item opens its submenu. Checkbox and radio items fire `change` on the menu. Every menu
+    // closes once the click has run every handler, unless one has moved focus out of the menu
+    // (into a dialog it opened, say), which then stays there.
     menu.addEventListener("click", (event) => {
       const chosen = (event.target as Element).closest<HTMLElement>(
         "[data-ac-menu-item]"
       );
-      if (!chosen) return;
+      if (!chosen || chosen.hasAttribute("data-ac-submenu")) return;
       const role = chosen.getAttribute("role");
       if (role === "menuitemcheckbox" || role === "menuitemradio") {
         const isChecked =
@@ -329,8 +482,73 @@ const surfaceClasses = [
         if (role === "menuitemcheckbox") return;
       }
       setTimeout(() => {
-        if (isOpen()) close();
+        if (isOpen()) closeTree(menu.contains(document.activeElement));
       });
+    });
+
+    if (!contextTarget) return;
+
+    // A context menu sits beside a point: the pointer, or the target's top start corner from the
+    // keyboard. The point is an empty fixed element the menu anchors to.
+    const point = document.createElement("span");
+    point.style.cssText = "position: fixed; pointer-events: none";
+    document.body.append(point);
+    const openAt = (x: number, y: number) => {
+      point.style.left = `${x}px`;
+      point.style.top = `${y}px`;
+      useTrigger(contextTarget, point);
+      if (!isOpen()) menu.showPopover();
+      focusItem(0);
+    };
+
+    // The keyboard's context menu keys open it at the target, in place of the browser's
+    let keyboardOpenedAt = -Infinity;
+    contextTarget.addEventListener("keydown", (event) => {
+      if (
+        event.key !== "ContextMenu" &&
+        !(event.shiftKey && event.key === "F10")
+      )
+        return;
+      event.preventDefault();
+      const { left, right, top } = contextTarget.getBoundingClientRect();
+      openAt(isRtl(contextTarget) ? right : left, top);
+      keyboardOpenedAt = performance.now();
+    });
+
+    // A secondary click or a long press opens it at the pointer. Shift + right-click, or a second
+    // right-click while it's open, leaves the browser's own menu, for copy, inspect and the like.
+    let wasOpen = false;
+    let isPressed = false;
+    contextTarget.addEventListener("pointerdown", (event) => {
+      wasOpen = isOpen();
+      isPressed = event.button === 2;
+    });
+    window.addEventListener("pointerup", () => (isPressed = false), true);
+    contextTarget.addEventListener("contextmenu", (event) => {
+      const isKeyboard =
+        performance.now() - keyboardOpenedAt < keyboardContextMs;
+      if (isKeyboard) return event.preventDefault();
+      if (event.shiftKey || wasOpen) {
+        wasOpen = false;
+        if (isOpen()) menu.hidePopover();
+        return;
+      }
+      event.preventDefault();
+      const { clientX: x, clientY: y } = event;
+      // Where the browser fires it as the button goes down, the popover's light dismiss would
+      // close it as the button comes up, so it opens after that
+      if (isPressed)
+        window.addEventListener(
+          "pointerup",
+          () => setTimeout(() => openAt(x, y)),
+          { once: true }
+        );
+      else openAt(x, y);
+    });
+    // The keyboard's own context menu event, after focus has moved into the menu
+    menu.addEventListener("contextmenu", (event) => {
+      if (performance.now() - keyboardOpenedAt < keyboardContextMs)
+        event.preventDefault();
     });
   });
 </script>

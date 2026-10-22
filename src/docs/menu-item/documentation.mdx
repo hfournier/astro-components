@@ -1,6 +1,6 @@
 ---
 name: MenuItem
-description: An action in a Menu (`role="menuitem"`), extending HTML's `<button>` element, or `<a>` with `href`. It shows a label, with an optional icon, supporting text, badge, trailing text and trailing icon, and choosing it closes the menu.
+description: An action in a Menu (`role="menuitem"`), extending HTML's `<button>` element, or `<a>` with `href`. It shows a label, with an optional icon, supporting text, badge, trailing text and trailing icon. Choosing it closes the menu, or, with `submenu`, opens its submenu.
 category: Interactive elements
 role: pattern
 meta:
@@ -15,7 +15,7 @@ parents: [Menu, MenuGroup]
 
 ## Props
 
-MenuItem's props are MenuItemBase's, other than `role`, which it sets to `menuitem`, and the checkable items' `isChecked`, `checkedIcon`, `name` and `value`: `label` (required), `icon`, `trailingIcon`, `trailingText`, `supportingText`, `badgeLabel`, `href` and `isDisabled`. See MenuItemBase for each.
+MenuItem's props are MenuItemBase's, other than `role`, which it sets to `menuitem`, and the checkable items' `isChecked`, `checkedIcon`, `name` and `value`: `label` (required), `icon`, `trailingIcon`, `trailingText`, `supportingText`, `badgeLabel`, `href`, `isDisabled` and `submenu`. See MenuItemBase for each.
 
 ## Actions
 

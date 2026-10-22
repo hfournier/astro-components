@@ -20,6 +20,8 @@ type Props = Omit<HTMLAttributes<"button">, "role"> & {
   badgeLabel?: string | number;
   href?: string;
   isDisabled?: boolean;
+  // The id of the Menu this item opens as a submenu, in place of an action of its own
+  submenu?: string;
   // A checkbox or radio item's state; undefined for an action
   isChecked?: boolean;
   checkedIcon?: SvgIconNameTypes;
@@ -36,6 +38,7 @@ const {
   badgeLabel,
   href,
   isDisabled = false,
+  submenu,
   isChecked,
   checkedIcon = "check",
   name,
@@ -75,6 +78,8 @@ const variantContent =
     // M3 state layer, in the content color
     "before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0",
     "not-aria-disabled:hover:before:opacity-8 focus-visible:before:opacity-10 not-aria-disabled:active:before:opacity-10",
+    // M3's active item: a parent item keeps its hover layer while its submenu is open
+    "aria-expanded:before:opacity-8",
     "motion-safe:transition-colors motion-safe:duration-(--theme-duration-feedback) motion-safe:before:transition-opacity",
     // Inset, so a scrolling menu doesn't clip it
     "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-inset",
@@ -88,6 +93,10 @@ const variantContent =
   aria-describedby={describedBy}
   aria-disabled={isDisabled ? "true" : undefined}
   aria-checked={isCheckable ? String(isChecked) : undefined}
+  aria-haspopup={submenu ? "menu" : undefined}
+  aria-expanded={submenu ? "false" : undefined}
+  aria-controls={submenu}
+  data-ac-submenu={submenu}
   data-ac-menu-item={label}
   data-ac-menu-name={name}
   data-ac-menu-value={value}
@@ -163,6 +172,20 @@ const variantContent =
       <Icon
         class:list={["size-5 shrink-0", variantContent, disabledContent]}
         name={trailingIcon}
+      />
+    )
+  }
+  {
+    /* M3's cascading menu indicator, on a parent item: 24px, pointing toward its submenu */
+    submenu && (
+      <Icon
+        class:list={[
+          "size-6 shrink-0 rtl:-scale-x-100",
+          variantContent,
+          disabledContent,
+        ]}
+        name="chevron_right"
+        data-ac-menu-cascading
       />
     )
   }

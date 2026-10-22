@@ -8,6 +8,12 @@ The menu follows WAI-ARIA's menu button pattern. Each trigger has `aria-haspopup
 | A letter | | Moves to the next item whose label starts with it |
 | Escape | | Closes the menu, returning focus to the trigger |
 | Tab | | Closes the menu, moving focus on from the trigger |
+| ArrowRight (ArrowLeft right to left) | | On a parent item, opens its submenu, focusing its first item |
+| ArrowLeft (ArrowRight right to left) | | In a submenu, closes it, returning focus to its parent item |
+
+In a submenu, Escape closes only the submenu, and Tab or choosing an action closes every menu. A parent item has `aria-haspopup="menu"`, `aria-controls` and `aria-expanded`, and names its submenu.
+
+A context menu opens from the keyboard too: the Menu key or Shift+F10 on its focused element opens it, focusing its first item, and Escape returns focus to the element. Since a secondary click is hard to discover, a context menu should never be the only way to an action.
 
 The items are one Tab stop: each has `tabindex="-1"`, and the keys move focus between them. A disabled item (`aria-disabled`) can still be focused, so it's announced, but choosing it does nothing, as M3 asks. A click outside closes the menu and leaves focus where it was sent.
 

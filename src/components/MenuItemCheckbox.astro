@@ -6,7 +6,7 @@ import MenuItemBase from "./MenuItemBase.astro";
 // Choosing it toggles it and fires `change` on the menu, which stays open.
 type Props = Omit<
   ComponentProps<typeof MenuItemBase>,
-  "role" | "href" | "isChecked"
+  "role" | "href" | "isChecked" | "submenu"
 > & {
   isChecked?: boolean;
 };
