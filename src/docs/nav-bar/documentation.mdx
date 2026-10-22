@@ -31,7 +31,7 @@ slots:
 
 ## Compact and medium
 
-The bar is at least 64px high, on `surface-container`. Below the medium breakpoint (600px), its destinations are M3's vertical items: each takes an equal share of the bar's width, with its icon in a 56×32px active indicator and its label 4px below it. From medium up, they're M3's horizontal items, grouped in the middle of the bar: each has its icon and label side by side in a 40px-high indicator. The items follow the window's width rather than the bar's, since M3 bases the change on the window size class.
+The bar is at least 64px high, on `surface-container`. Below the medium breakpoint (600px), its destinations are M3's vertical items: each takes an equal share of the bar's width, with its icon in a 56×32px active indicator and its label 4px below it. From medium up, they're M3's horizontal items, grouped in the middle of the bar: each has its icon and label side by side in an indicator at least 40px high. The items follow the window's width rather than the bar's, since M3 bases the change on the window size class.
 
 Horizontal items have a fixed width, and the extra space goes to the bar's ends, as in Compose: together the items take 60% of the bar for three destinations, 70% for four and 80% for five, each an equal share. An item whose icon and label need more room grows, up to an equal share of the whole bar, and the group stays centered. Each indicator hugs its icon and label in the middle of its item, and the whole item is the target.
 

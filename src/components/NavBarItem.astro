@@ -126,33 +126,36 @@ const accessibleName = badgedName(label, badgeLabel, badgeDescription);
 
   // M3: re-selecting the current destination scrolls the page back to the top, rather than
   // reloading it. Only an item whose href is this page exactly: one that's current because this
-  // page is under it still goes to its own page. A modified click (a new tab or window) is left
-  // to the browser.
+  // page is under it still goes to its own page, and one with a #fragment jumps to it. A modified
+  // click (a new tab or window) is left to the browser. One listener on the document, so it still
+  // works for bars swapped in by Astro's ClientRouter.
   const pageOf = (url: URL | Location) => trimSlash(url.pathname) + url.search;
 
-  document
-    .querySelectorAll<HTMLAnchorElement>("a[data-ac-nav-bar-item]")
-    .forEach((link) => {
-      link.addEventListener("click", (event) => {
-        if (
-          event.button !== 0 ||
-          event.metaKey ||
-          event.ctrlKey ||
-          event.shiftKey ||
-          event.altKey
-        )
-          return;
-        const target = new URL(link.href);
-        if (
-          target.origin !== location.origin ||
-          pageOf(target) !== pageOf(location)
-        )
-          return;
-        event.preventDefault();
-        const reduceMotion = window.matchMedia(
-          "(prefers-reduced-motion: reduce)"
-        ).matches;
-        window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
-      });
-    });
+  document.addEventListener("click", (event) => {
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey ||
+      !(event.target instanceof Element)
+    )
+      return;
+    const link = event.target.closest<HTMLAnchorElement>(
+      "a[data-ac-nav-bar-item]"
+    );
+    if (!link) return;
+    const target = new URL(link.href);
+    if (
+      target.origin !== location.origin ||
+      target.hash ||
+      pageOf(target) !== pageOf(location)
+    )
+      return;
+    event.preventDefault();
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+  });
 </script>
