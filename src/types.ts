@@ -76,7 +76,9 @@ export type LayoutPropsType = {
 export type NavSubItemType = {
   href: string | URL;
   icon?: SvgIconNameTypes;
+  activeIcon?: SvgIconNameTypes;
   label: string;
+  badgeLabel?: string | number;
 };
 
 export type OverlayTransitionType = "fade" | "fade-scale" | "fade-down";

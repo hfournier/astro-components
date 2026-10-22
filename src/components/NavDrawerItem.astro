@@ -3,39 +3,70 @@ import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import type { SvgIconNameTypes } from "../svgs";
 import Icon from "./Icon.astro";
-import { isCurrentPath } from "../utils";
+import { isBadgeCount, isCurrentPath } from "../utils";
 
 // An M3 navigation drawer item, used for NavRailSubItems in a NavDrawer or an expanded NavRail.
 // Unlike NavRailItem, which M3 requires to have an icon, the icon is optional.
 type Props = HTMLAttributes<"a"> & {
   icon?: SvgIconNameTypes;
+  // M3: shown instead of `icon` on the current destination, usually its filled version, so the
+  // current destination doesn't rely on color alone
+  activeIcon?: SvgIconNameTypes;
   label: string;
+  // M3's badge label: a count as plain text at the item's end. 0 or "" shows none.
+  badgeLabel?: string | number;
 };
-const { icon, label, href, class: classList, ...attrs } = Astro.props;
+const {
+  icon,
+  activeIcon,
+  label,
+  badgeLabel,
+  href,
+  class: classList,
+  ...attrs
+} = Astro.props;
 
 // The current page's destination is its own href, or a page under it (see isCurrentPath). An
 // explicit `aria-current` passed by the consumer still wins, since `attrs` is spread after it.
 const isCurrent = isCurrentPath(Astro.url.pathname, href);
+const ariaCurrent = attrs["aria-current"] ?? (isCurrent ? "page" : undefined);
+const shownIcon = (ariaCurrent === "page" && activeIcon) || icon;
+
+// A count over 999 shows as 999+, as Badge does; the item's name keeps the full count, after its
+// label ("Inbox, 3"), as NavBarItem's does
+const hasCount = isBadgeCount(badgeLabel);
+const count = Number(badgeLabel) > 999 ? "999+" : badgeLabel;
 ---
 
 <a
   class:list={twMerge(
     // M3 drawer item in Label Large. Its content is 28px from the drawer's edges, as M3 sets it:
     // the drawer's 12px padding plus the item's 16px.
-    "relative isolate flex h-14 w-full items-center gap-3 rounded-full px-4 text-sm leading-5 font-medium tracking-[0.1px]",
+    "group/item relative isolate flex h-14 w-full items-center gap-3 rounded-full px-4 text-sm leading-5 font-medium tracking-[0.1px]",
     "text-(--theme-color-on-surface-variant) not-aria-[current=page]:hover:text-(--theme-color-on-surface) not-aria-[current=page]:focus-visible:text-(--theme-color-on-surface) not-aria-[current=page]:active:text-(--theme-color-on-surface)",
     "aria-[current=page]:bg-(--theme-color-secondary-container) aria-[current=page]:text-(--theme-color-on-secondary-container)",
-    // M3 state layer, in the content color
+    // M3 state layer, in the content color, but on-secondary-container while an inactive item is
+    // pressed, whose label stays on-surface
     "before:absolute before:inset-0 before:-z-10 before:rounded-full before:bg-current before:opacity-0",
+    "not-aria-[current=page]:active:before:bg-(--theme-color-on-secondary-container)",
     "hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10",
     "motion-safe:transition-colors motion-safe:duration-(--theme-duration-feedback) motion-safe:before:transition-opacity",
     "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
     classList
   )}
   href={href}
-  aria-current={isCurrent ? "page" : undefined}
+  aria-current={ariaCurrent}
+  aria-label={hasCount ? `${label}, ${badgeLabel}` : undefined}
   {...attrs}
 >
-  {icon && <Icon class="shrink-0" name={icon} />}
+  {shownIcon && <Icon class="shrink-0" name={shownIcon} />}
   <span class="min-w-0 truncate">{label}</span>
+  {
+    /* M3's badge label: at the item's end, 12px (the gap) after a label truncated before it */
+    hasCount && (
+      <span class="ms-auto shrink-0 text-(--theme-color-on-surface-variant) group-aria-[current=page]/item:text-(--theme-color-on-secondary-container)">
+        {count}
+      </span>
+    )
+  }
 </a>

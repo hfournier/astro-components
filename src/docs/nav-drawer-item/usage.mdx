@@ -1,10 +1,11 @@
 ---
 title: NavDrawerItem
-description: The following example shows NavDrawerItems with and without an icon, on a drawer's background. The first is marked as the current page with `aria-current`, since none of these links is this page. In a site, NavRailSubItems renders them for you.
+description: The following example shows NavDrawerItems with and without an icon, on a drawer's background. The first is marked as the current page with `aria-current`, since none of these links is this page, and shows its filled `activeIcon`; Inbox has a badge label. In a site, NavRailSubItems renders them for you.
 ---
 
 <BaseWrapper bgColor="surface-container-low" class="w-55 rounded-2xl px-3 py-3">
-  <NavDrawerItem href="#" label="Inbox" icon="inbox" aria-current="page" />
+  <NavDrawerItem href="#" label="Starred" icon="star" activeIcon="star-fill" aria-current="page" />
+  <NavDrawerItem href="#" label="Inbox" icon="inbox" badgeLabel={24} />
   <NavDrawerItem href="#" label="Sent" icon="send" />
   <NavDrawerItem href="#" label="Archive" />
 </BaseWrapper>

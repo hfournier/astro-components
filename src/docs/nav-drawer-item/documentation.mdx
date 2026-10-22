@@ -16,15 +16,27 @@ props:
     type: SvgIconNameTypes
     required: false
     description: An icon before the label, by its file name in `src/assets/svgs`. Optional, unlike a NavRailItem's, as M3's drawer items may have one or not. Without it, the label starts where the icon would.
+  - name: activeIcon
+    type: SvgIconNameTypes
+    required: false
+    description: The icon shown instead of `icon` when the item is the current page, usually the filled version of `icon` (e.g. `"home-fill"` for `"home"`), so the current destination doesn't rely on color alone, as M3 asks. Without it, the current page shows `icon`.
   - name: label
     type: string
     required: true
     description: The link's text, in M3's Label Large. A label too long for the drawer is cut short with an ellipsis.
+  - name: badgeLabel
+    type: string | number
+    required: false
+    description: M3's badge label, a count shown as plain text at the item's end, such as a number of unread items. Counts over 999 show as "999+". `0` or `""` shows none. The count is added to the link's accessible name, e.g. "Inbox, 3".
 ---
 
 ## Current page
 
-NavDrawerItem marks itself as the current page (`aria-current="page"`) when its `href` is the current page's path or a parent of it, the same way as NavRailItem. The current page's link sits in M3's active indicator, a full-width pill in `secondary-container` with `on-secondary-container` text. Other links are `on-surface-variant`, turning `on-surface` while hovered, focused or pressed. To decide which is current yourself, pass `aria-current`.
+NavDrawerItem marks itself as the current page (`aria-current="page"`) when its `href` is the current page's path or a parent of it, the same way as NavRailItem. The current page's link sits in M3's active indicator, a full-width pill in `secondary-container` with `on-secondary-container` text. With `activeIcon`, its icon also changes, to its filled version. Its label keeps the same weight, as in Compose's drawer item. Other links are `on-surface-variant`, turning `on-surface` while hovered, focused or pressed. Their state layer is in that color, except while pressed, when it's `on-secondary-container`, as M3's tokens set it. To decide which is current yourself, pass `aria-current`.
+
+## Badge label
+
+`badgeLabel` shows a count at the item's end, in Label Large: `on-surface-variant`, or `on-secondary-container` on the current page's link. It's plain text, not a Badge, as in M3's drawer. A long label is truncated before it, at least 12px away, so the count always shows in full.
 
 ## Layout
 

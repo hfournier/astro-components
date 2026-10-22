@@ -1,0 +1,75 @@
+---
+// A NavRail and a NavDrawer on their default backgrounds, which the site's own (in BaseLayout)
+// aren't. A page can have only one rail and drawer, so this page has its own layout rather than
+// BaseLayout's. The rail, labelled "Test rail", has three destinations: this page (current),
+// Components and Colors (no section). This page's section holds Overview (this page, current, with a filled active icon),
+// Inbox (a count of 3) and a label too long for a 220px drawer with a count of 1500; Components'
+// section holds Button and Badge. See src/tests/NavDrawer.spec.ts.
+import "../../styles/global.css";
+import BaseHead from "../../internal/BaseHead.astro";
+import Main from "../../components/Main.astro";
+import NavDrawer from "../../components/NavDrawer.astro";
+import NavRail from "../../components/NavRail.astro";
+import NavRailItem from "../../components/NavRailItem.astro";
+import NavRailSubItems from "../../components/NavRailSubItems.astro";
+---
+
+<html lang="en">
+  <BaseHead
+    title="NavDrawer"
+    description="A NavRail and a NavDrawer on their default backgrounds"
+  />
+  <body
+    class="grid grid-cols-1 bg-(--theme-color-surface) text-(--theme-color-on-surface) medium:grid-cols-[auto_1fr] large:grid-cols-[auto_auto_1fr]"
+  >
+    <NavRail label="Test rail" isExpandable={false}>
+      <NavRailItem
+        href="/tests/nav-drawer"
+        icon="home"
+        activeIcon="home-fill"
+        label="Home"
+      />
+      <NavRailItem href="/components" icon="code_blocks" label="Components" />
+      <NavRailItem href="/colors" icon="star" label="Colors" />
+    </NavRail>
+
+    <NavDrawer aria-label="Test section">
+      <NavRailSubItems
+        parentHref="/tests/nav-drawer"
+        subItems={[
+          {
+            href: "/tests/nav-drawer",
+            icon: "home",
+            activeIcon: "home-fill",
+            label: "Overview",
+          },
+          {
+            href: "/tests/badge",
+            icon: "inbox",
+            label: "Inbox",
+            badgeLabel: 3,
+          },
+          {
+            href: "/tests/nav-bar",
+            icon: "settings",
+            activeIcon: "settings-fill",
+            label: "Notifications, privacy and security settings",
+            badgeLabel: 1500,
+          },
+        ]}
+      />
+      <NavRailSubItems
+        parentHref="/components"
+        subItems={[
+          { href: "/components/button", label: "Button" },
+          { href: "/components/badge", label: "Badge" },
+        ]}
+      />
+    </NavDrawer>
+
+    <Main class="space-y-4 px-4 pt-28 medium:px-6 medium:pt-6">
+      <h1>NavDrawer</h1>
+      <p>The page beside the rail and the drawer.</p>
+    </Main>
+  </body>
+</html>
