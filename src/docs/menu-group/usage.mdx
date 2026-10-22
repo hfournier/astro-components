@@ -1,0 +1,15 @@
+---
+title: MenuGroup
+description: The following example shows two MenuGroups in a Menu, the second with a `label`.
+---
+
+<Button command="toggle-popover" commandfor="menu-group-usage" variant="outlined">View</Button>
+<Menu id="menu-group-usage">
+  <MenuGroup>
+    <MenuItem icon="visibility" label="Preview" />
+  </MenuGroup>
+  <MenuGroup label="Sort by">
+    <MenuItemRadio label="Name" name="sort" value="name" isChecked />
+    <MenuItemRadio label="Date" name="sort" value="date" />
+  </MenuGroup>
+</Menu>

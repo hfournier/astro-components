@@ -1,0 +1,282 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import BaseOverlay from "./BaseOverlay.astro";
+
+// An M3 Expressive vertical menu: a temporary list of actions or choices (MenuItem,
+// MenuItemCheckbox, MenuItemRadio), in MenuGroups or not, opened by any button with
+// `commandfor` set to its id and `command="toggle-popover"`. An auto popover, so it's in the top
+// layer, and a click outside or Escape closes it; the script adds the menu button pattern: the
+// triggers' ARIA, focus on open and on close, the keyboard, and what choosing an item does.
+type Props = Omit<HTMLAttributes<"div">, "id"> & {
+  // the popover's id, which its triggers' `commandfor` points at
+  id: string;
+  // M3's color: standard (surface-container-low) or vibrant (tertiary-container)
+  color?: "standard" | "vibrant";
+  // M3's layouts: "grouped" puts each MenuGroup on its own surface, 2px apart; "standard" is one
+  // surface with a divider between groups, and the one that scrolls
+  layout?: "standard" | "grouped";
+  // The menu's accessible name, only for a menu whose trigger has no label of its own to name it
+  label?: string;
+};
+const {
+  id,
+  color = "standard",
+  layout = "grouped",
+  label,
+  class: classList,
+  ...attrs
+} = Astro.props;
+
+// The checked item's colors (M3's selected item), which the items read
+const colorClasses = {
+  standard:
+    "[--ac-menu-checked:var(--theme-color-tertiary-container)] [--ac-menu-on-checked:var(--theme-color-on-tertiary-container)]",
+  vibrant:
+    "[--ac-menu-checked:var(--theme-color-tertiary)] [--ac-menu-on-checked:var(--theme-color-on-tertiary)]",
+}[color];
+
+// The menu's surface: 112-280px wide (as wide as its widest item), with 2px above and below its
+// items, at elevation 2, and 16px corners. In the standard layout it scrolls when taller than
+// the window, keeping 48px from its top and bottom (Compose's MenuVerticalMargin), with a visible
+// scrollbar, as M3 asks. In the grouped layout each MenuGroup is a surface instead, 2px apart, so
+// this one is only their column; it doesn't scroll, as M3 doesn't scroll grouped menus (and it
+// would clip the groups' shadows).
+const surfaceClasses = [
+  "flex w-max max-w-70 min-w-28 flex-col rounded-2xl py-0.5 shadow-theme-elevation-2",
+  layout === "standard"
+    ? "max-h-[calc(100dvh-6rem)] overflow-y-auto"
+    : "has-[[data-ac-menu-group]]:gap-0.5 has-[[data-ac-menu-group]]:bg-transparent has-[[data-ac-menu-group]]:py-0 has-[[data-ac-menu-group]]:shadow-none",
+];
+---
+
+{
+  /* Below its trigger, lined up with the trigger's start edge, 4px away; above it, or toward its
+     other edge, when there isn't room. Anchor insets rather than position-area, which Firefox
+     places wrongly right to left. The script anchors it to the trigger that opened it. */
+}
+<BaseOverlay
+  as="div"
+  bgColor={color === "vibrant" ? "tertiary-container" : "surface-container-low"}
+  class:list={twMerge(surfaceClasses, classList)}
+  overlayClass={[
+    "group/menu inset-auto m-0 overflow-visible p-0",
+    "top-[calc(anchor(bottom)+4px)] left-[anchor(left)] rtl:right-[anchor(right)] rtl:left-auto",
+    "[position-try-fallbacks:flip-block,flip-inline,flip-block_flip-inline]",
+    colorClasses,
+  ].join(" ")}
+  showBackdrop={false}
+  id={id}
+  popover="auto"
+  role="menu"
+  aria-label={label}
+  style={`position-anchor: --ac-menu-${id}`}
+  data-ac-menu
+  data-ac-menu-layout={layout}
+  {...attrs}
+>
+  <slot />
+</BaseOverlay>
+
+<script>
+  // M3's menu with WAI-ARIA's menu button pattern. Each trigger is a button with commandfor set
+  // to the menu's id, so the browser toggles the popover; this keeps the triggers' ARIA in step,
+  // and moves focus and handles keys as the pattern asks.
+  const typeAheadReset = 500; // ms after the last letter before type-ahead starts over
+
+  document.querySelectorAll<HTMLElement>("[data-ac-menu]").forEach((menu) => {
+    const triggers = Array.from(
+      document.querySelectorAll<HTMLButtonElement>(
+        `[commandfor="${CSS.escape(menu.id)}"]`
+      )
+    );
+    const items = () =>
+      Array.from(menu.querySelectorAll<HTMLElement>("[data-ac-menu-item]"));
+    const isOpen = () => menu.matches(":popover-open");
+    const anchorName = `--ac-menu-${menu.id}`;
+
+    // The trigger the menu belongs to now: the one that opened it last
+    let trigger = triggers[0];
+
+    const useTrigger = (button: HTMLButtonElement) => {
+      triggers.forEach((other) => (other.style.anchorName = ""));
+      button.style.anchorName = anchorName;
+      trigger = button;
+    };
+
+    // Focus an item as the menu opens without scrolling the page: the menu already sits where it
+    // fits beside its trigger. A scrolling menu shows its first or last item itself.
+    const focusItem = (index: number) => {
+      const item = items().at(index);
+      item?.focus({ preventScroll: true });
+      const list = item?.closest<HTMLElement>("[data-ac-wrapper]");
+      if (list) list.scrollTop = index === 0 ? 0 : list.scrollHeight;
+    };
+
+    triggers.forEach((button, index) => {
+      button.setAttribute("aria-haspopup", "menu");
+      button.setAttribute("aria-controls", menu.id);
+      button.setAttribute("aria-expanded", "false");
+      button.id ||= `${menu.id}-trigger${index === 0 ? "" : `-${index + 1}`}`;
+      // Each trigger anchors the menu as it's pressed, before the browser opens it
+      button.addEventListener("pointerdown", () => useTrigger(button));
+      // ArrowDown and ArrowUp open the menu on its first and last item
+      button.addEventListener("keydown", (event) => {
+        useTrigger(button);
+        if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+        event.preventDefault();
+        if (!isOpen()) menu.showPopover();
+        focusItem(event.key === "ArrowDown" ? 0 : -1);
+      });
+    });
+    if (trigger) useTrigger(trigger);
+    // Named by its trigger's label, unless it has a label of its own
+    if (!menu.hasAttribute("aria-label") && trigger)
+      menu.setAttribute("aria-labelledby", trigger.id);
+
+    // M3: focus goes to the first item as the menu opens, unless a key has already put it on one
+    menu.addEventListener("toggle", (event) => {
+      const isOpening = (event as ToggleEvent).newState === "open";
+      triggers.forEach((button) =>
+        button.setAttribute(
+          "aria-expanded",
+          String(isOpening && button === trigger)
+        )
+      );
+      if (isOpening && !menu.contains(document.activeElement)) focusItem(0);
+    });
+
+    // Closing with focus in the menu returns it to the trigger. The popover does this itself, but
+    // only to the element that had focus as it opened, and in Safari a click doesn't focus a
+    // button. A click outside has already moved focus where it was sent.
+    const close = () => {
+      if (menu.contains(document.activeElement)) trigger?.focus();
+      if (isOpen()) menu.hidePopover();
+    };
+
+    let typed = "";
+    let typedAt = 0;
+
+    menu.addEventListener("keydown", (event) => {
+      const all = items();
+      const index = all.indexOf(document.activeElement as HTMLElement);
+      const move = (to: number) => {
+        event.preventDefault();
+        all.at(to % all.length)?.focus();
+      };
+      switch (event.key) {
+        case "ArrowDown":
+          return move(index + 1);
+        case "ArrowUp":
+          return move(index - 1);
+        case "Home":
+          return move(0);
+        case "End":
+          return move(-1);
+        case "Escape":
+          event.preventDefault();
+          return close();
+        case "Tab":
+          // Focus moves on from the trigger, so the menu is one Tab stop in the page's order
+          trigger?.focus();
+          menu.hidePopover();
+          return;
+        case " ":
+          // A link doesn't activate on Space, as a button does
+          if (document.activeElement instanceof HTMLAnchorElement) {
+            event.preventDefault();
+            document.activeElement.click();
+          }
+          return;
+      }
+      // Type-ahead: the next item, after the focused one, whose label starts with the letters
+      // typed in quick succession
+      if (
+        event.key.length !== 1 ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.altKey
+      )
+        return;
+      const now = performance.now();
+      typed = (now - typedAt > typeAheadReset ? "" : typed) + event.key;
+      typedAt = now;
+      const find = (query: string, start: number) => {
+        const ordered = [...all.slice(start), ...all.slice(0, start)];
+        return ordered.find((candidate) =>
+          (candidate.dataset.acMenuItem ?? "")
+            .toLocaleLowerCase()
+            .startsWith(query.toLocaleLowerCase())
+        );
+      };
+      // A repeated letter cycles through the items starting with it; letters that match no label
+      // together start over from the last one
+      const isRepeat = [...typed].every((letter) => letter === typed[0]);
+      let match = isRepeat
+        ? find(typed[0], index + 1)
+        : find(typed, Math.max(index, 0));
+      if (!match) {
+        typed = event.key;
+        match = find(typed, index + 1);
+      }
+      if (match) {
+        event.preventDefault();
+        match.focus();
+      }
+    });
+
+    // A disabled item can be focused, but not chosen: its click goes no further, not even to its
+    // own handlers or a link's navigation
+    menu.addEventListener(
+      "click",
+      (event) => {
+        const chosen = (event.target as Element).closest<HTMLElement>(
+          "[data-ac-menu-item]"
+        );
+        if (chosen?.getAttribute("aria-disabled") !== "true") return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      },
+      { capture: true }
+    );
+
+    // Choosing an item: a checkbox toggles and the menu stays open (M3's multi-select menu); a
+    // radio checks itself, unchecks its group's others, and closes; an action closes. Checkbox
+    // and radio items fire `change` on the menu. The menu closes once the click has run every
+    // handler, unless one has moved focus out of the menu (into a dialog it opened, say), which
+    // then stays there.
+    menu.addEventListener("click", (event) => {
+      const chosen = (event.target as Element).closest<HTMLElement>(
+        "[data-ac-menu-item]"
+      );
+      if (!chosen) return;
+      const role = chosen.getAttribute("role");
+      if (role === "menuitemcheckbox" || role === "menuitemradio") {
+        const isChecked =
+          role === "menuitemradio" ||
+          chosen.getAttribute("aria-checked") !== "true";
+        if (role === "menuitemradio") {
+          const scope = chosen.closest("[role=group]") ?? menu;
+          scope
+            .querySelectorAll("[role=menuitemradio]")
+            .forEach((radio) => radio.setAttribute("aria-checked", "false"));
+        }
+        chosen.setAttribute("aria-checked", String(isChecked));
+        menu.dispatchEvent(
+          new CustomEvent("change", {
+            bubbles: true,
+            detail: {
+              name: chosen.dataset.acMenuName,
+              value: chosen.dataset.acMenuValue,
+              checked: isChecked,
+            },
+          })
+        );
+        if (role === "menuitemcheckbox") return;
+      }
+      setTimeout(() => {
+        if (isOpen()) close();
+      });
+    });
+  });
+</script>

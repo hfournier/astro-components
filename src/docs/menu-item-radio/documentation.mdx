@@ -1,0 +1,70 @@
+---
+name: MenuItemRadio
+description: A choice in a single-select Menu (`role="menuitemradio"`), extending HTML's `<button>` element. Choosing it checks it, unchecks the other radio items in its MenuGroup, and closes the menu. A checked item is highlighted and shows a check.
+category: Interactive elements
+role: pattern
+meta:
+  title: MenuItemRadio | astro-components HenriFournier.dev
+  description: A single-select choice in a Material 3 menu, which checks itself, unchecks its group's others and closes the menu.
+extends:
+  kind: element
+  tag: [button]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button
+parents: [Menu, MenuGroup]
+props:
+  - name: label
+    type: string
+    required: true
+    description: The item's visible label and accessible name.
+  - name: isChecked
+    type: boolean
+    required: false
+    default: "false"
+    description: Whether the item starts checked (`aria-checked`). Check one item per group.
+  - name: name
+    type: string
+    required: false
+    description: The setting the item belongs to, passed in the menu's `change` event, e.g. `"align"`.
+  - name: value
+    type: string
+    required: false
+    description: The item's value, passed in the menu's `change` event, e.g. `"left"`.
+  - name: checkedIcon
+    type: SvgIconNameTypes
+    required: false
+    default: '"check"'
+    description: The icon shown in place of the leading icon while the item is checked.
+  - name: icon
+    type: SvgIconNameTypes
+    required: false
+    description: A 20px leading icon, shown while the item is unchecked, as MenuItem's.
+  - name: trailingIcon
+    type: SvgIconNameTypes
+    required: false
+    description: A 20px icon at the item's end, as MenuItem's.
+  - name: trailingText
+    type: string
+    required: false
+    description: Text at the item's end, as MenuItem's.
+  - name: supportingText
+    type: string
+    required: false
+    description: A line below the label, as MenuItem's.
+  - name: badgeLabel
+    type: string | number
+    required: false
+    description: A Badge at the item's end, as MenuItem's.
+  - name: isDisabled
+    type: boolean
+    required: false
+    default: "false"
+    description: Disables the item with `aria-disabled`, as MenuItem's, so choosing it doesn't check it.
+---
+
+## Choosing it
+
+Choosing the item sets its `aria-checked` and clears the other radio items' in its MenuGroup (or in the menu, if it isn't in one), fires a `change` event on its Menu, whose `detail` is `{ name, value, checked: true }`, and closes the menu. Put each set of radio items in its own MenuGroup.
+
+## Appearance
+
+A checked item looks like a checked MenuItemCheckbox: a `tertiary-container` container with `on-tertiary-container` content (`tertiary` and `on-tertiary` in a vibrant menu), 12px corners all round, and a check in place of its leading icon.

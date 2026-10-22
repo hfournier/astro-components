@@ -1,0 +1,48 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import crypto from "node:crypto";
+import { twMerge } from "tailwind-merge";
+
+// A group of a Menu's items (role group), named by its optional label, M3's section label. In a
+// grouped menu it's a surface of its own; in a standard one, a divider separates it from the
+// group before it.
+type Props = HTMLAttributes<"div"> & {
+  label?: string;
+};
+const { label, class: classList, ...attrs } = Astro.props;
+
+const labelId = label ? `ac-menu-group-${crypto.randomUUID()}` : undefined;
+---
+
+<div
+  class:list={twMerge(
+    "flex flex-col",
+    // Grouped: a surface in the menu's color at elevation 2, 2px above and below its items, with
+    // M3's group corners: 16px at the menu's outer corners (the first group's top and the last
+    // group's bottom), 8px elsewhere
+    "group-data-[ac-menu-layout=grouped]/menu:rounded-lg group-data-[ac-menu-layout=grouped]/menu:bg-(--theme-color-wrapper-bg) group-data-[ac-menu-layout=grouped]/menu:py-0.5 group-data-[ac-menu-layout=grouped]/menu:shadow-theme-elevation-2",
+    "group-data-[ac-menu-layout=grouped]/menu:first:rounded-t-2xl group-data-[ac-menu-layout=grouped]/menu:last:rounded-b-2xl",
+    // Standard: a divider above each group but the first, inset 12px, with 2px above and below
+    // (Compose's HorizontalDividerPadding). Not an element, so it's never focused or announced.
+    "before:mx-3 before:my-0.5 before:hidden before:border-t before:border-(--theme-color-outline-variant) group-data-[ac-menu-layout=standard]/menu:not-first:before:block",
+    classList
+  )}
+  role="group"
+  aria-labelledby={labelId}
+  data-ac-menu-group
+  {...attrs}
+>
+  {
+    label && (
+      // M3's section label (Compose's DropdownMenuGroupLabel): Label Large, at least 32px high,
+      // 12px from the start and 4px from the end
+      <div
+        class="flex min-h-8 items-center ps-3 pe-1 text-sm leading-5 font-medium tracking-[0.1px] text-(--theme-color-on-bg-variant)"
+        id={labelId}
+      >
+        {label}
+      </div>
+    )
+  }
+  <slot />
+</div>

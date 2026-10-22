@@ -1,0 +1,17 @@
+---
+import type { ComponentProps } from "astro/types";
+import MenuItemBase from "../internal/MenuItemBase.astro";
+
+// A choice in a single-select Menu (role menuitemradio, as Compose's SelectableDropdownMenuItem).
+// Choosing it checks it, unchecks the other radio items in its MenuGroup (or menu), fires `change`
+// on the menu and closes it.
+type Props = Omit<
+  ComponentProps<typeof MenuItemBase>,
+  "role" | "href" | "isChecked"
+> & {
+  isChecked?: boolean;
+};
+const { isChecked = false, ...attrs } = Astro.props;
+---
+
+<MenuItemBase role="menuitemradio" isChecked={isChecked} {...attrs} />

@@ -1,0 +1,56 @@
+---
+name: MenuItem
+description: An action in a Menu (`role="menuitem"`), extending HTML's `<button>` element, or `<a>` with `href`. It shows a label, with an optional icon, supporting text, badge, trailing text and trailing icon, and choosing it closes the menu.
+category: Interactive elements
+role: pattern
+meta:
+  title: MenuItem | astro-components HenriFournier.dev
+  description: An action in a Material 3 menu, a button or link with a label, optional icons, supporting text, a badge and trailing text.
+extends:
+  kind: element
+  tag: [button, a]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button
+parents: [Menu, MenuGroup]
+props:
+  - name: label
+    type: string
+    required: true
+    description: The item's visible label, in Label Large, and its accessible name.
+  - name: icon
+    type: SvgIconNameTypes
+    required: false
+    description: A 20px leading icon, by its file name in `src/assets/svgs`. It's decorative, so the label must say it all. In a menu where some items have one, the others keep its space, so their labels line up.
+  - name: trailingIcon
+    type: SvgIconNameTypes
+    required: false
+    description: A 20px icon at the item's end, also decorative.
+  - name: trailingText
+    type: string
+    required: false
+    description: Text at the item's end, in Label Large, such as a keyboard shortcut ("Ctrl+C"). It describes the item for screen readers.
+  - name: supportingText
+    type: string
+    required: false
+    description: A line below the label, in Body Small. It describes the item for screen readers.
+  - name: badgeLabel
+    type: string | number
+    required: false
+    description: Shows a Badge at the item's end, before any trailing text or icon. Pass a count (a number over 999 shows as `999+`, and `0` hides it) or `""` for a dot. A count joins the item's accessible name, e.g. "Download, 3".
+  - name: href
+    type: string
+    required: false
+    description: Makes the item a link (`<a role="menuitem">`) to this URL, instead of a `<button>`.
+  - name: isDisabled
+    type: boolean
+    required: false
+    default: "false"
+    description: Disables the item with `aria-disabled`, so it's still focused and announced, but choosing it does nothing, as M3 asks. Its content is at 38%.
+---
+
+## Actions
+
+Give the item its action as you would a button, with a `click` handler in a script, or with `command` and `commandfor` (to open a Dialog, say). Other button or link attributes, such as `id`, are passed through. Choosing it closes the menu once the click's handlers have run, and returns focus to the trigger, unless a handler has moved focus elsewhere.
+
+## Appearance
+
+The item is at least 44px high, with 8px above and below its content, 16px at each end, and 12px between its parts. It's 4px in from the menu's sides. Its label is `on-surface` (`on-tertiary-container` in a vibrant menu), and its icons, supporting and trailing text `on-surface-variant`. Its state layer is in its label's color, at 8% while hovered and 10% while focused or pressed. Its focus ring is drawn inside it, so a scrolling menu doesn't clip it.

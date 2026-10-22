@@ -1,0 +1,17 @@
+---
+title: Vibrant, with checkbox and radio items
+description: A vibrant menu, in tertiary colors, holding a multi-select group of MenuItemCheckboxes, which stays open as they toggle, and a single-select group of MenuItemRadios, which closes once one is chosen. Checked items show a check.
+---
+
+<Button command="toggle-popover" commandfor="menu-vibrant-selection" variant="tonal">Format</Button>
+<Menu id="menu-vibrant-selection" color="vibrant">
+  <MenuGroup label="Style">
+    <MenuItemCheckbox label="Bold" name="style" value="bold" isChecked />
+    <MenuItemCheckbox label="Italic" name="style" value="italic" />
+  </MenuGroup>
+  <MenuGroup label="Align">
+    <MenuItemRadio label="Left" name="align" value="left" isChecked />
+    <MenuItemRadio label="Center" name="align" value="center" />
+    <MenuItemRadio label="Right" name="align" value="right" />
+  </MenuGroup>
+</Menu>

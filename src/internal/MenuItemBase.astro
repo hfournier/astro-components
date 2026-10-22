@@ -1,0 +1,168 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import crypto from "node:crypto";
+import { twMerge } from "tailwind-merge";
+import type { SvgIconNameTypes } from "../svgs";
+import Badge from "../components/Badge.astro";
+import Icon from "../components/Icon.astro";
+import { badgedName } from "../utils";
+
+// The markup MenuItem, MenuItemCheckbox and MenuItemRadio share: an M3 vertical menu item, with
+// its leading icon (or a check, or the icon's space), label, supporting text, badge, trailing text
+// and trailing icon. Each component sets its own role.
+type Props = Omit<HTMLAttributes<"button">, "role"> & {
+  role: "menuitem" | "menuitemcheckbox" | "menuitemradio";
+  label: string;
+  icon?: SvgIconNameTypes;
+  trailingIcon?: SvgIconNameTypes;
+  trailingText?: string;
+  supportingText?: string;
+  badgeLabel?: string | number;
+  href?: string;
+  isDisabled?: boolean;
+  // A checkbox or radio item's state; undefined for an action
+  isChecked?: boolean;
+  checkedIcon?: SvgIconNameTypes;
+  name?: string;
+  value?: string;
+};
+const {
+  role,
+  label,
+  icon,
+  trailingIcon,
+  trailingText,
+  supportingText,
+  badgeLabel,
+  href,
+  isDisabled = false,
+  isChecked,
+  checkedIcon = "check",
+  name,
+  value,
+  class: classList,
+  ...attrs
+} = Astro.props;
+
+// Either element takes these attributes; typed loosely, as TypeScript checks a union tag's
+// attributes against both elements at once
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const Tag: any = href ? "a" : "button";
+const isCheckable = isChecked !== undefined;
+const idPrefix = `ac-menu-item-${crypto.randomUUID()}`;
+const supportingId = supportingText ? `${idPrefix}-supporting` : undefined;
+const trailingId = trailingText ? `${idPrefix}-trailing` : undefined;
+const describedBy =
+  [supportingId, trailingId].filter(Boolean).join(" ") || undefined;
+
+// M3: disabled content is at 38%
+const disabledContent = "group-aria-disabled/item:opacity-38";
+// Icons, supporting and trailing text are on-surface-variant (on-tertiary-container in a vibrant
+// menu, through BaseWrapper's on-bg-variant), and the checked content color on a checked item
+const variantContent =
+  "text-(--theme-color-on-bg-variant) group-aria-checked/item:text-(--ac-menu-on-checked)";
+---
+
+<Tag
+  class:list={twMerge(
+    // 4px in from the menu's sides, at least 44px high, 8px above and below its content and 16px
+    // at each end, 12px between its parts. Label Large.
+    "group/item relative isolate mx-1 flex min-h-11 cursor-pointer items-center gap-3 px-4 py-2 text-start text-sm leading-5 font-medium tracking-[0.1px] aria-disabled:cursor-default",
+    // M3's item corners: 4px, but 12px at the group's outer corners (its first item's top and its
+    // last item's bottom), and all round on a checked item
+    "rounded-sm [&:nth-child(1_of_[data-ac-menu-item])]:rounded-t-xl [&:nth-last-child(1_of_[data-ac-menu-item])]:rounded-b-xl",
+    "aria-checked:rounded-xl aria-checked:bg-(--ac-menu-checked) aria-checked:text-(--ac-menu-on-checked) aria-disabled:aria-checked:bg-(--ac-menu-checked)/38",
+    // M3 state layer, in the content color
+    "before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0",
+    "not-aria-disabled:hover:before:opacity-8 focus-visible:before:opacity-10 not-aria-disabled:active:before:opacity-10",
+    "motion-safe:transition-colors motion-safe:duration-(--theme-duration-feedback) motion-safe:before:transition-opacity",
+    // Inset, so a scrolling menu doesn't clip it
+    "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-inset",
+    classList
+  )}
+  role={role}
+  href={href}
+  type={href ? undefined : "button"}
+  tabindex="-1"
+  aria-label={badgedName(label, badgeLabel) ?? label}
+  aria-describedby={describedBy}
+  aria-disabled={isDisabled ? "true" : undefined}
+  aria-checked={isCheckable ? String(isChecked) : undefined}
+  data-ac-menu-item={label}
+  data-ac-menu-name={name}
+  data-ac-menu-value={value}
+  {...attrs}
+>
+  {
+    /* The leading icon, or a checked item's check in its place (Compose's checkedLeadingIcon). An
+       item with neither, in a menu where others have one, keeps the icon's space (Compose's ghost
+       leading icon), so the labels line up. */
+  }
+  <span
+    class:list={[
+      "hidden size-5 shrink-0 place-items-center group-has-[[data-ac-menu-leading]_svg]/menu:grid",
+      variantContent,
+      disabledContent,
+    ]}
+    data-ac-menu-leading
+  >
+    {
+      icon && (
+        <Icon
+          class="size-5 [grid-area:1/1] group-aria-checked/item:hidden"
+          name={icon}
+          data-ac-menu-icon
+        />
+      )
+    }
+    {
+      isCheckable && (
+        <Icon
+          class="hidden size-5 [grid-area:1/1] group-aria-checked/item:block"
+          name={checkedIcon}
+          data-ac-menu-check
+        />
+      )
+    }
+  </span>
+  <span class="flex min-w-0 flex-1 flex-col">
+    <span class={disabledContent} data-ac-menu-label>{label}</span>
+    {
+      supportingText && (
+        <span
+          class:list={[
+            "text-xs leading-4 font-normal tracking-[0.4px]",
+            variantContent,
+            disabledContent,
+          ]}
+          id={supportingId}
+        >
+          {supportingText}
+        </span>
+      )
+    }
+  </span>
+  {
+    badgeLabel !== undefined && (
+      <Badge class={disabledContent} label={badgeLabel} placement="inline" />
+    )
+  }
+  {
+    trailingText && (
+      <span
+        class:list={["shrink-0", variantContent, disabledContent]}
+        id={trailingId}
+      >
+        {trailingText}
+      </span>
+    )
+  }
+  {
+    trailingIcon && (
+      <Icon
+        class:list={["size-5 shrink-0", variantContent, disabledContent]}
+        name={trailingIcon}
+      />
+    )
+  }
+</Tag>

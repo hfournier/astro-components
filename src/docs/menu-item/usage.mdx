@@ -1,0 +1,14 @@
+---
+title: MenuItem
+description: The following example shows MenuItems with only a `label`, with an icon and trailing text, with supporting text, with a badge, as a link, and disabled.
+---
+
+<Button command="toggle-popover" commandfor="menu-item-usage" variant="outlined">Actions</Button>
+<Menu id="menu-item-usage">
+  <MenuItem label="Rename" />
+  <MenuItem icon="content_copy" label="Copy" trailingText="Ctrl+C" />
+  <MenuItem icon="share" label="Share" supportingText="With people or apps" />
+  <MenuItem icon="download" label="Download" badgeLabel={3} />
+  <MenuItem icon="link" label="Open the docs" href="/components/menu" />
+  <MenuItem icon="delete" label="Delete" isDisabled />
+</Menu>
