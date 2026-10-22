@@ -26,6 +26,8 @@ description: Tests for the NavBar component
 </Section>
 
 <Section data-testid="nav-bar-long-label" class="p-4 space-y-4">
+  {/* M3 says not to write a label like this one: it stands in for a short label at a larger
+      text size, which wraps and grows the bar the same way */}
   <Heading level={2}>Long label</Heading>
   <NavBar class="static" label="Long label">
     <NavBarItem href="#" icon="home" label="Home" aria-current="page" />

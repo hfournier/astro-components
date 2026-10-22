@@ -99,8 +99,9 @@ const accessibleName = badgedName(label, badgeLabel, badgeDescription);
       />
     </span>
     {
-      /* M3: a label is never truncated. One too long for its item, or at a larger text size,
-         wraps, and the bar grows to hold it. Below medium, where the items share the bar's width,
+      /* M3: labels are one or two words on one line, but at larger text sizes they wrap, and the
+         bar grows to hold them, so the full label stays visible (M3 asks that up to 2x; this
+         never truncates). Below medium, where the items share the bar's width,
          a word too long for its item breaks; from medium up, the indicator is never narrower
          than the label's longest word, so it only breaks between words. */
     }

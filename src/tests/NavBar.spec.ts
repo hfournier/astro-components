@@ -9,7 +9,9 @@ import { box, resolvedColor } from "./support/helpers";
 // - three-destinations: Home (current, with home-fill as its active icon), Search and Settings
 //   (settings-fill as its active icon)
 // - five-destinations: Home (current), Search, Inbox, Chat and Saved
-// - long-label: Home (current), a label too long for a third of the bar, and Search
+// - long-label: Home (current), a label too long for a third of the bar, and Search. M3 says not
+//   to write such a label; it stands in for a short one at a larger text size, which wraps the
+//   same way.
 // - reselect: "This page" (/tests/nav-bar, this page), "Tests" (/tests, current as this page's
 //   parent) and "Components"
 const navNames = {

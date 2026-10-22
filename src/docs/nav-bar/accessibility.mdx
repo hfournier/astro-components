@@ -2,6 +2,6 @@ The destinations are links in a `<nav>` named by `label` ("Main"), and the curre
 
 Re-selecting the current destination scrolls the page back to the top, smoothly unless reduced motion is on, instead of reloading the page. Focus stays on the destination. That's only when its `href` is the current page exactly: a destination that's current because the page is under it still goes to its own page, and one with a `#fragment` jumps to it. A click with a modifier key, or with the middle button, opens the link as usual.
 
-A label is never truncated. At larger text sizes, labels wrap and the bar grows taller, so the full label stays visible at up to twice the default text size.
+At larger text sizes, labels wrap and the bar grows taller, keeping its padding, so the full label stays visible at up to twice the default text size, as M3 requires. M3 allows truncation beyond that; this bar never truncates a label.
 
 A badge is hidden from screen readers. Its count, or `badgeDescription` for a dot, is added to the destination's accessible name instead, e.g. "Inbox, 3". If a visible label is ambiguous on its own, give the destination a fuller accessible name with `aria-label`, e.g. "Music library" for "Library".

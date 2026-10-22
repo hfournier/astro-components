@@ -23,7 +23,7 @@ props:
   - name: label
     type: string
     required: true
-    description: The destination's name, shown below the icon below medium and beside it from medium up. Keep it to a word, or two short ones, since below medium up to five items share a phone's width; a longer one wraps rather than being cut off.
+    description: The destination's name, shown below the icon below medium and beside it from medium up. Keep it to a word, or two short ones, that fits on one line, as M3 asks, since below medium up to five items share a phone's width. It wraps rather than being cut off, so that it stays readable at larger text sizes.
   - name: badgeLabel
     type: string | number
     required: false
@@ -37,11 +37,11 @@ props:
 
 ## Compact and medium
 
-Below the medium breakpoint (600px), the item is M3's vertical navigation bar item: the icon in a 56×32px active indicator, with the label in Label Medium 4px below it. It takes an equal share of the bar's width, and a label too long for it wraps onto another line, between words where it can. From medium up, it's M3's horizontal item: the icon and the label side by side 4px apart, in an indicator at least 40px high that fits them with 16px either side, centered in an item as wide as NavBar sets (see NavBar). A label too long for the item wraps inside the indicator, which grows taller.
+Below the medium breakpoint (600px), the item is M3's vertical navigation bar item: the icon in a 56×32px active indicator, with the label in Label Medium 4px below it. It takes an equal share of the bar's width, and a label that doesn't fit it, at a larger text size, wraps onto another line, between words where it can. From medium up, it's M3's horizontal item: the icon and the label side by side 4px apart, in an indicator at least 40px high that fits them with 16px either side, centered in an item as wide as NavBar sets (see NavBar). A label that doesn't fit the item wraps inside the indicator, which grows taller, and only between words.
 
 ## Current page
 
-NavBarItem marks itself as the current destination (`aria-current="page"`) when its `href` is the current page's path or a parent of it, so `href="/components"` is also current on `/components/button`. `href="/"` is only current on the home page, or it would match every page. The current destination's indicator is in the secondary container color, with an `on-secondary-container` icon; its label is `secondary` below medium, where it's outside the indicator, and `on-secondary-container` from medium up, where it's inside it. With `activeIcon`, the current destination's icon also changes, to its filled version. To decide this yourself, pass `aria-current`.
+NavBarItem marks itself as the current destination (`aria-current="page"`) when its `href` is the current page's path or a parent of it, so `href="/components"` is also current on `/components/button`. `href="/"` is only current on the home page, or it would match every page. The current destination's indicator is in the secondary container color, with an `on-secondary-container` icon; its label is `secondary` below medium, where it's outside the indicator, and `on-secondary-container` from medium up, where it's inside it. With `activeIcon`, the current destination's icon also changes, to its filled version. Its label keeps the same weight: the flexible bar's tokens and Compose have no bold label for it (the bold one is the older baseline bar's). To decide this yourself, pass `aria-current`.
 
 Re-selecting the current destination scrolls the page back to the top instead of reloading it, when its `href` is the current page exactly (see NavBar's Accessibility).
 
