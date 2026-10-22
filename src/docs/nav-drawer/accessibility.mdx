@@ -2,6 +2,6 @@ In every mode, Tab goes from a rail item into its section's links and then on to
 
 Below large, each rail item with a section has `aria-expanded` and `aria-controls`, so screen readers announce whether its section is open. The drawer's `<nav>` is labelled "Section"; pass `aria-label` to change it.
 
-The current page's link has `aria-current="page"`, and shows its `activeIcon`, usually a filled icon, so the current destination doesn't rely on color alone. An item's badge label joins its accessible name, e.g. "Inbox, 3". If a visible label is ambiguous on its own, give the link a fuller accessible name with `aria-label`, e.g. "Recent images" for "Recents".
+The current page's link has `aria-current="page"`, and shows its `activeIcon`, usually a filled icon, so the current destination doesn't rely on color alone. An item's badge label joins its accessible name, e.g. "Inbox, 3". If a visible label is ambiguous on its own, give the link a fuller accessible name with `aria-label`, e.g. "Recent images" for "Recents". It replaces the whole name, so include the count of an item with a badge label, e.g. "Recent images, 3".
 
 On a touchscreen from medium to large, where there's no hover, tapping a rail item opens its section (or switches to it) instead of following the link, and tapping it again while its section is open goes to its page. This is decided per tap, so a mouse on a touchscreen laptop still follows the link. Below medium, the sections are in the rail.

@@ -338,7 +338,9 @@ test.describe("NavDrawer on its default background", () => {
           const { left, right } = el.getBoundingClientRect();
           return { left, right };
         });
-        expect(closed.left).toBeGreaterThanOrEqual(rail.x - 1);
+        // slid toward the rail's end side, the right, so its start edge is under the rail's
+        expect(closed.left).toBeCloseTo(rail.x, 0);
+        expect(closed.right).toBeGreaterThan(rail.x + rail.width);
       });
 
       test("the arrow key toward the drawer, ArrowLeft, opens it to the rail's left; ArrowRight goes back", async ({

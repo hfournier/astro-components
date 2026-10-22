@@ -27,7 +27,7 @@ props:
   - name: badgeLabel
     type: string | number
     required: false
-    description: M3's badge label, a count shown as plain text at the item's end, such as a number of unread items. Counts over 999 show as "999+". `0` or `""` shows none. The count is added to the link's accessible name, e.g. "Inbox, 3".
+    description: M3's badge label, a count shown as plain text at the item's end, such as a number of unread items. Counts over 999 show as "999+". `0` or `""` shows none; unlike NavRailItem's and NavBarItem's, `""` isn't a dot, since M3's drawer has none. The count is added to the link's accessible name, e.g. "Inbox, 3".
 ---
 
 ## Current page

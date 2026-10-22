@@ -3,7 +3,7 @@ import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import type { SvgIconNameTypes } from "../svgs";
 import Icon from "./Icon.astro";
-import { isBadgeCount, isCurrentPath } from "../utils";
+import { badgedName, isBadgeCount, isCurrentPath } from "../utils";
 
 // An M3 navigation drawer item, used for NavRailSubItems in a NavDrawer or an expanded NavRail.
 // Unlike NavRailItem, which M3 requires to have an icon, the icon is optional.
@@ -33,9 +33,10 @@ const ariaCurrent = attrs["aria-current"] ?? (isCurrent ? "page" : undefined);
 const shownIcon = (ariaCurrent === "page" && activeIcon) || icon;
 
 // A count over 999 shows as 999+, as Badge does; the item's name keeps the full count, after its
-// label ("Inbox, 3"), as NavBarItem's does
+// label ("Inbox, 3"), as NavBarItem's does. M3's drawer has no dot, so "" shows nothing.
 const hasCount = isBadgeCount(badgeLabel);
 const count = Number(badgeLabel) > 999 ? "999+" : badgeLabel;
+const accessibleName = hasCount ? badgedName(label, badgeLabel) : undefined;
 ---
 
 <a
@@ -56,7 +57,7 @@ const count = Number(badgeLabel) > 999 ? "999+" : badgeLabel;
   )}
   href={href}
   aria-current={ariaCurrent}
-  aria-label={hasCount ? `${label}, ${badgeLabel}` : undefined}
+  aria-label={accessibleName}
   {...attrs}
 >
   {shownIcon && <Icon class="shrink-0" name={shownIcon} />}
