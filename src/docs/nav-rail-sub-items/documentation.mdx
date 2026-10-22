@@ -22,7 +22,7 @@ props:
   - name: subItems
     type: "NavSubItemType[]"
     required: true
-    description: "The section's links, each rendered as a NavDrawerItem, with an optional icon. The current page's link is marked with `aria-current=\"page\"`. `NavSubItemType`, in `src/types.ts`, is `{ href: string | URL; icon?: SvgIconNameTypes; label: string }`."
+    description: "The section's links, each rendered as a NavDrawerItem, with an optional icon, active icon and badge label. The current page's link is marked with `aria-current=\"page\"`. `NavSubItemType`, in `src/types.ts`, is `{ href: string | URL; icon?: SvgIconNameTypes; activeIcon?: SvgIconNameTypes; label: string; badgeLabel?: string | number }`, NavDrawerItem's props."
 ---
 
 ## Where it goes

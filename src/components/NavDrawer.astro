@@ -15,12 +15,14 @@ import BaseWrapper from "./BaseWrapper.astro";
 // - medium to large: an overlay that slides out from under the rail.
 //   - Modal (default): M3's modal drawer. A scrim covers the page, which is inert until the drawer
 //     closes (the rail stays usable, so hovering another item switches sections). Opens on hover,
-//     a tap, or ArrowRight on a focused rail item; closes with Escape or a click on the scrim.
+//     a tap, or the arrow key toward it on a focused rail item; closes with Escape or a click on
+//     the scrim.
 //   - Not modal: opens on hover, a tap or keyboard focus, and closes once the pointer and focus
 //     have left the rail item and the drawer, or with Escape or a click outside.
 //   On touch, a second tap on the rail item whose section is open goes to its page.
 // In every mode, Tab goes from a rail item into its section's links and then on to the next rail
-// item, and ArrowRight/ArrowLeft move between a rail item and its section.
+// item, the arrow keys toward the drawer and back (Right and Left, swapped right to left) move
+// between a rail item and its section, and Up and Down move between the section's links.
 type BaseWrapperProps = ComponentProps<typeof BaseWrapper>;
 
 type Props = Omit<BaseWrapperProps, "as"> & {
@@ -30,7 +32,7 @@ type Props = Omit<BaseWrapperProps, "as"> & {
   width?: "narrow" | "wide";
 };
 const {
-  bgColor = "surface-container-low",
+  bgColor = "surface",
   isModal = true,
   width = "narrow",
   class: classList,
@@ -55,18 +57,26 @@ const widthClasses = {
 }
 <BaseWrapper
   class={twMerge(
-    // Below large: beside the 96px collapsed rail, full height, corner large on its end side, at
-    // elevation 1. 220-360px wide (and never wider than the viewport beside the rail). It's a rail
-    // container too, as NavRailSubItems sections only show in an expanded (rail-expanded) one.
-    "peer/nav-drawer @container/rail fixed top-0 left-24 z-20 h-dvh overflow-y-auto rounded-r-2xl border-l border-(--theme-color-outline-variant) px-3 py-5 shadow-theme-elevation-1",
+    // Below large: beside the 96px collapsed rail, on its end side (the right, or the left right to
+    // left), full height, corner large on its end side, at elevation 1. 220-360px wide (and never
+    // wider than the viewport beside the rail). The outline-variant border on its start side
+    // separates it from the rail. It's a rail container too, as NavRailSubItems sections only show
+    // in an expanded (rail-expanded) one.
+    "peer/nav-drawer @container/rail fixed start-24 top-0 z-20 h-dvh overflow-y-auto rounded-e-2xl border-s border-(--theme-color-outline-variant) px-3 py-5 shadow-theme-elevation-1",
     widthClasses,
     "w-(--ac-nav-drawer-width) min-w-55 max-w-[min(360px,calc(100vw-6rem))]",
-    // Slides out from under the rail, and back. Visible straight away when opening, so focus can
-    // move into it; still visible while it slides back when closing.
-    "invisible -translate-x-full data-open:visible data-open:translate-x-0",
+    // M3's modal drawer is on surface-container-low, and its standard drawer (large and up) on
+    // surface, unless the drawer has its own background. It's set as the wrapper's background, so
+    // focus rings and links follow it.
+    bgColor === "surface" &&
+      "max-large:[--theme-color-wrapper-bg:var(--theme-color-surface-container-low)]",
+    // Slides out from under the rail toward its end side, and back. Visible straight away when
+    // opening, so focus can move into it; still visible while it slides back when closing.
+    "invisible -translate-x-full rtl:translate-x-full data-open:visible data-open:translate-x-0",
     "motion-safe:transition-[translate,visibility] motion-safe:data-open:transition-[translate] motion-safe:duration-(--theme-duration-base)",
-    // large and up: always visible, in the layout right after the rail, keeping M3's end corners
-    "large:visible large:sticky large:left-auto large:z-auto large:translate-x-0 large:shadow-none large:transition-none",
+    // large and up: M3's standard drawer, always visible, in the layout right after the rail, at
+    // elevation 0, keeping M3's end corners
+    "large:visible large:sticky large:start-auto large:z-auto large:translate-x-0 large:shadow-none large:transition-none",
     classList
   )}
   {bgColor}
@@ -268,6 +278,12 @@ const widthClasses = {
         }, closeDelay);
       };
 
+      // The arrow key toward the drawer opens it from a rail item, and the other goes back: Right
+      // and Left, or Left and Right in a right-to-left page, where the drawer is on the rail's left
+      const isRtl = () => getComputedStyle(rail).direction === "rtl";
+      const towardDrawer = () => (isRtl() ? "ArrowLeft" : "ArrowRight");
+      const towardRail = () => (isRtl() ? "ArrowRight" : "ArrowLeft");
+
       const nextInRail = (item: HTMLElement) => {
         const focusables = Array.from(
           rail.querySelectorAll<HTMLElement>("a[href], button:not([disabled])")
@@ -315,7 +331,7 @@ const widthClasses = {
         });
         item.addEventListener("keydown", (event) => {
           if (!medium.matches) return;
-          if (event.key === "ArrowRight") {
+          if (event.key === towardDrawer()) {
             event.preventDefault();
             open(item, true);
           } else if (
@@ -339,20 +355,33 @@ const widthClasses = {
         if (closesOnLeave()) closeSoon();
       });
 
-      // Tab out of a section goes back to the rail: forward to the rail item after its opener,
-      // back to its opener. ArrowLeft goes back to the opener too.
+      // M3: Up and Down move between the shown section's links, stopping at the ends. There's no
+      // roving tabindex, so Tab still reaches each one. Tab out of a section goes back to the rail:
+      // forward to the rail item after its opener, back to its opener. The arrow key toward the
+      // rail goes back to the opener too. Those need an opener; Up and Down don't, as from large up
+      // a section's links can be reached without one.
       drawer.addEventListener("keydown", (event) => {
-        if (!opener) return;
         const sectionLinks = links();
-        const isFirst = document.activeElement === sectionLinks[0];
-        const isLast = document.activeElement === sectionLinks.at(-1);
-        if (
-          event.key === "ArrowLeft" ||
-          (event.key === "Tab" && event.shiftKey && isFirst)
+        const index = sectionLinks.indexOf(
+          document.activeElement as HTMLAnchorElement
+        );
+        if (index === -1) return;
+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+          event.preventDefault();
+          sectionLinks[index + (event.key === "ArrowDown" ? 1 : -1)]?.focus();
+        } else if (!opener) {
+          return;
+        } else if (
+          event.key === towardRail() ||
+          (event.key === "Tab" && event.shiftKey && index === 0)
         ) {
           event.preventDefault();
           opener.focus();
-        } else if (event.key === "Tab" && !event.shiftKey && isLast) {
+        } else if (
+          event.key === "Tab" &&
+          !event.shiftKey &&
+          index === sectionLinks.length - 1
+        ) {
           const next = nextInRail(opener);
           if (next) {
             event.preventDefault();

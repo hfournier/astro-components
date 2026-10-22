@@ -14,13 +14,13 @@ props:
   - name: bgColor
     type: BgColorType
     required: false
-    default: '"surface-container-low"'
-    description: The drawer's background role. The default is M3's modal drawer color, which also sets it apart from a rail on `surface`.
+    default: '"surface"'
+    description: The drawer's background role. By default it's M3's colors for each mode, `surface` for the standard drawer from large up and `surface-container-low` for the drawer below large. Any other role is used at every size, e.g. `surface-container-low` beside a rail on that color.
   - name: isModal
     type: boolean
     required: false
     default: "true"
-    description: Below large, whether the drawer is M3's modal drawer. When modal, a 32% scrim covers the page, which is inert until the drawer closes; it opens on hover, a tap, or ArrowRight on a focused rail item, and closes with Escape or a click on the scrim. When not modal, it opens on hover or keyboard focus and closes once the pointer and focus have left the rail item and the drawer, or with Escape or a click outside. It has no effect from large up, where the drawer is always visible.
+    description: Below large, whether the drawer is M3's modal drawer. When modal, a 32% scrim covers the page, which is inert until the drawer closes; it opens on hover, a tap, or the arrow key toward the drawer on a focused rail item, and closes with Escape or a click on the scrim. When not modal, it opens on hover or keyboard focus and closes once the pointer and focus have left the rail item and the drawer, or with Escape or a click outside. It has no effect from large up, where the drawer is always visible.
   - name: width
     type: '"narrow" | "wide"'
     required: false
@@ -37,8 +37,16 @@ cssProps:
     description: The drawer's width, set by `width`. Override it with a class such as `[--ac-nav-drawer-width:300px]`; it's kept within M3's 220-360px, and below large never wider than the viewport beside the rail.
 ---
 
+## M3 Expressive
+
+M3 no longer recommends the navigation drawer: it suggests an expanded navigation rail instead, which does most of what a drawer does and adapts better across window sizes. Use a NavRail with `isExpandable` for that. NavDrawer still makes sense beside a collapsed rail whose destinations have second-level destinations of their own: the rail stays compact, and the drawer shows one destination's sub-items at a time.
+
+## Standard and modal
+
+From the large breakpoint (1200px) up, the drawer is M3's standard drawer: always visible, in the layout, on `surface` at elevation 0, with an `outline-variant` border on its start side that separates it from a rail on `surface`. Below large, it's M3's modal drawer, or a drawer that isn't modal with `isModal={false}`: an overlay on `surface-container-low` at elevation 1. A drawer with its own `bgColor` keeps it in both.
+
 ## Layout
 
-Put the NavDrawer right after its NavRail (with `isExpandable={false}`), as siblings. From the large breakpoint up, the drawer takes its place in the layout, so give it a column, for example with a grid of `grid-cols-1 medium:grid-cols-[auto_1fr] large:grid-cols-[auto_auto_1fr]` on their parent. Below large it's a fixed overlay stacked under the rail, so it takes no space and slides out from under the rail's edge. Below medium the drawer isn't used: the rail is hidden until its MenuToggle opens it as a modal expanded rail (see NavRail), and the drawer moves its sections into the rail, after its destinations, where only the current page's section shows. From medium up they move back. It finds its rail and rail items by itself, matching each rail item's `href` to a section's `parentHref`, so there's nothing to wire up.
+Put the NavDrawer right after its NavRail (with `isExpandable={false}`), as siblings. From the large breakpoint up, the drawer takes its place in the layout, so give it a column, for example with a grid of `grid-cols-1 medium:grid-cols-[auto_1fr] large:grid-cols-[auto_auto_1fr]` on their parent. Below large it's a fixed overlay stacked under the rail, so it takes no space and slides out from under the rail's end edge. It's on the start side of the screen, as M3 asks: right of the rail, or left of it in a right-to-left page, with its rounded corners and border following. Below medium the drawer isn't used: the rail is hidden until its MenuToggle opens it as a modal expanded rail (see NavRail), and the drawer moves its sections into the rail, after its destinations, where only the current page's section shows. From medium up they move back. It finds its rail and rail items by itself, matching each rail item's `href` to a section's `parentHref`, so there's nothing to wire up.
 
 The drawer slides out from under the rail, so NavRail is `z-30`, the drawer `z-20` and its scrim `z-10`. Anything else on the page with a higher z-index shows above the open drawer.

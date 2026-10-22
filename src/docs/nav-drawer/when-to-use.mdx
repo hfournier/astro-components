@@ -1,0 +1,13 @@
+Use a navigation drawer beside a collapsed NavRail whose destinations have second-level destinations of their own, such as a documentation site's sections and pages.
+
+- **Order:** put the most frequent destinations at the top, and group related ones in a section.
+- **Icons:** give every item in a section an icon, or none of them, always before the label.
+- **Labels:** keep them short, since a label too long for the drawer is truncated. Never set one in a smaller type to make it fit.
+- **Dividers** separate groups of destinations (each section with a `sectionLabel` has one), never single destinations.
+- **Badge labels:** a count at an item's end, for a number of items to see there (see NavDrawerItem).
+
+### When not to use it
+
+- Never show a NavDrawer on the same screen as a NavBar.
+- For one level of destinations, use a NavRail with `isExpandable`, which M3 now recommends instead of a drawer (see M3 Expressive).
+- For related content within one page, use Tabs.

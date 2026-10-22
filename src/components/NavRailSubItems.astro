@@ -74,9 +74,5 @@ const labelId = sectionLabel
       </>
     )
   }
-  {
-    subItems.map((item) => (
-      <NavDrawerItem href={item.href} icon={item.icon} label={item.label} />
-    ))
-  }
+  {subItems.map((item) => <NavDrawerItem {...item} />)}
 </div>
