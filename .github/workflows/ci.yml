@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   checks:
-    name: Lint, format and build
+    name: Typecheck, lint, format and build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,6 +23,7 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm check
       - run: pnpm lint
       - run: pnpm format:check
       - run: pnpm build
