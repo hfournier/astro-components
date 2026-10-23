@@ -17,7 +17,7 @@ We decided:
 
 1. **axe scans in Chromium only.** axe checks the DOM, ARIA and computed colors, and those come out the same in every engine, since the markup and CSS are the same. ADR-0002 runs three engines for anchor positioning's cross-engine gaps, which are layout bugs that behavioural tests catch and axe doesn't. Firefox and WebKit still run every test, only without the scan.
 2. **A quick local run.** `pnpm test:quick` runs the Chromium project only, with its scans, and takes a spec path to narrow it further. It's the run to use while working on a component.
-3. **The full matrix runs in CI.** A GitHub Actions workflow runs lint, the format check, the build and the full suite on every pull request, one job per browser, so the three-engine run no longer has to happen on the developer's machine.
+3. **The full matrix runs in CI.** A GitHub Actions workflow runs `astro check`, lint, the format check, the build and the full suite on every pull request, one job per browser, so the three-engine run no longer has to happen on the developer's machine.
 
 ## Consequences
 

@@ -5,13 +5,10 @@ import { filledIconFor, type SvgIconNameTypes } from "../svgs";
 import { unwrapParagraph } from "../utils";
 import Icon from "./Icon.astro";
 
-// Astro's own polymorphic-component helper. Verified with a cleared `.astro` cache
-// (`rm -rf .astro && astro sync`), repeatedly, both internally and for every external consumer
-// (DialogConfirm's `command`/`commandfor`, SkipToContent's `as="a"` + `href`) - it correctly
-// rejects `href` on the default button branch, `command`/`commandfor` on `as="a"`, and invalid
-// prop values, while accepting everything valid on both branches. The toggle props (below) sit
-// outside it, as its Omit would flatten their union, and Astro reads the generics off the first
-// type in the frontmatter, so Props comes first.
+// Astro's own polymorphic-component helper. `src/tests/types/ButtonProps.astro` pins what it
+// accepts and rejects on each branch, so `astro check` catches a change. The toggle props
+// (below) sit outside it, as its Omit would flatten their union, and Astro reads the generics off
+// the first type in the frontmatter, so Props comes first.
 type Props<Tag extends Extract<HTMLTag, "a" | "button"> = "button"> =
   Polymorphic<{
     as: Tag;
