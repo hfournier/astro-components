@@ -1,0 +1,292 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import Icon from "./Icon.astro";
+
+// A native checkbox with role="switch", so it submits, resets and validates with its form, and
+// assistive tech announces it as a switch that's on or off. Every attribute but `class` goes on
+// the input (`name`, `value`, `checked`, `disabled`, `required`, `aria-*`), and `class` on the
+// label around it. The default slot is the label's text, which comes before the switch.
+type Props = Omit<HTMLAttributes<"input">, "type" | "role"> & {
+  // M3's optional icon in the handle: a check on the selected state only, or a check and an x
+  // on both states
+  icons?: "none" | "selected" | "both";
+};
+
+const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
+---
+
+<label
+  class:list={twMerge(
+    "inline-flex cursor-pointer items-center gap-4 align-middle text-base leading-6 tracking-[0.5px]",
+    // M3: a disabled label is on-surface at 38%
+    "has-disabled:cursor-default has-disabled:text-(--theme-color-on-surface)/38",
+    classList
+  )}
+  data-ac-switch
+  data-ac-switch-icons={icons}
+>
+  <slot />
+  {/* M3 touch target: 48px tall, around the 52x32 track */}
+  <span
+    class="grid h-12 w-13 shrink-0 place-items-center *:col-start-1 *:row-start-1"
+    data-ac-switch-part="target"
+  >
+    {/* the input covers the track, so the focus ring is drawn around it */}
+    <input
+      class="h-8 w-13 cursor-[inherit] appearance-none rounded-full outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)"
+      type="checkbox"
+      role="switch"
+      {...attrs}
+    />
+    <span
+      class="pointer-events-none h-8 w-13 rounded-full border-2"
+      data-ac-switch-part="track"
+    ></span>
+    <span
+      class="pointer-events-none size-10 rounded-full"
+      data-ac-switch-part="state-layer"
+    ></span>
+    <span
+      class="pointer-events-none grid place-items-center rounded-full *:col-start-1 *:row-start-1"
+      data-ac-switch-part="handle"
+    >
+      {icons !== "none" && (
+        <Icon name="check" class="size-4" data-ac-switch-icon="selected" />
+      )}
+      {icons === "both" && (
+        <Icon name="close" class="size-4" data-ac-switch-icon="unselected" />
+      )}
+    </span>
+  </span>
+</label>
+
+<style>
+  /* The handle and its state layer share a center, 16px from the track's start edge when
+     unselected and 36px when selected (Compose's offsets for every handle size): 10px either
+     side of the track's center, mirrored in right to left */
+  [data-ac-switch] {
+    --ac-switch-flip: 1;
+  }
+
+  [data-ac-switch]:dir(rtl) {
+    --ac-switch-flip: -1;
+  }
+
+  [data-ac-switch-part="state-layer"],
+  [data-ac-switch-part="handle"] {
+    translate: calc(-10px * var(--ac-switch-flip)) 0;
+  }
+
+  input:checked ~ [data-ac-switch-part="state-layer"],
+  input:checked ~ [data-ac-switch-part="handle"] {
+    translate: calc(10px * var(--ac-switch-flip)) 0;
+  }
+
+  /* Unselected, a surface-container-highest track in an outline; selected, a primary track whose
+     outline takes its color. Disabled, at M3's 12%. */
+  [data-ac-switch-part="track"] {
+    border-color: var(--theme-color-outline);
+    background-color: var(--theme-color-surface-container-highest);
+  }
+
+  input:checked ~ [data-ac-switch-part="track"] {
+    border-color: transparent;
+    background-color: var(--theme-color-primary);
+  }
+
+  input:disabled ~ [data-ac-switch-part="track"] {
+    border-color: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 12%,
+      transparent
+    );
+    background-color: color-mix(
+      in oklab,
+      var(--theme-color-surface-container-highest) 12%,
+      transparent
+    );
+  }
+
+  input:disabled:checked ~ [data-ac-switch-part="track"] {
+    border-color: transparent;
+    background-color: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 12%,
+      transparent
+    );
+  }
+
+  /* M3's handle: 16px unselected, 24px selected or holding an icon, 28px pressed */
+  [data-ac-switch-part="handle"] {
+    width: 16px;
+    height: 16px;
+    background-color: var(--theme-color-outline);
+  }
+
+  [data-ac-switch-icons="both"] [data-ac-switch-part="handle"],
+  input:checked ~ [data-ac-switch-part="handle"] {
+    width: 24px;
+    height: 24px;
+  }
+
+  [data-ac-switch]:active input:enabled ~ [data-ac-switch-part="handle"] {
+    width: 28px;
+    height: 28px;
+  }
+
+  /* Hovered, focused or pressed, the handle darkens: on-surface-variant unselected,
+     primary-container selected */
+  [data-ac-switch]:is(:hover, :active)
+    input:enabled
+    ~ [data-ac-switch-part="handle"],
+  input:focus-visible ~ [data-ac-switch-part="handle"] {
+    background-color: var(--theme-color-on-surface-variant);
+  }
+
+  input:checked ~ [data-ac-switch-part="handle"] {
+    background-color: var(--theme-color-on-primary);
+  }
+
+  [data-ac-switch]:is(:hover, :active)
+    input:enabled:checked
+    ~ [data-ac-switch-part="handle"],
+  input:focus-visible:checked ~ [data-ac-switch-part="handle"] {
+    background-color: var(--theme-color-primary-container);
+  }
+
+  input:disabled ~ [data-ac-switch-part="handle"] {
+    background-color: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 38%,
+      transparent
+    );
+  }
+
+  input:disabled:checked ~ [data-ac-switch-part="handle"] {
+    background-color: var(--theme-color-surface);
+  }
+
+  /* Each icon shows on its own state: a check in on-primary-container when selected, an x in
+     surface-container-highest when unselected */
+  [data-ac-switch-icon] {
+    opacity: 0;
+  }
+
+  [data-ac-switch-icon="selected"] {
+    color: var(--theme-color-on-primary-container);
+  }
+
+  [data-ac-switch-icon="unselected"] {
+    color: var(--theme-color-surface-container-highest);
+  }
+
+  input:checked ~ * [data-ac-switch-icon="selected"],
+  input:not(:checked) ~ * [data-ac-switch-icon="unselected"] {
+    opacity: 1;
+  }
+
+  input:disabled ~ * [data-ac-switch-icon="selected"] {
+    color: color-mix(in oklab, var(--theme-color-on-surface) 38%, transparent);
+  }
+
+  input:disabled ~ * [data-ac-switch-icon="unselected"] {
+    color: color-mix(
+      in oklab,
+      var(--theme-color-surface-container-highest) 38%,
+      transparent
+    );
+  }
+
+  /* The state layer is the label's color (on-surface outside any wrapper) unselected and primary
+     selected, at 8% hovered and 10% focused or pressed */
+  [data-ac-switch-part="state-layer"] {
+    background-color: currentColor;
+    opacity: 0;
+  }
+
+  input:checked ~ [data-ac-switch-part="state-layer"] {
+    background-color: var(--theme-color-primary);
+  }
+
+  [data-ac-switch]:hover [data-ac-switch-part="state-layer"] {
+    opacity: 0.08;
+  }
+
+  /* Focus is scoped under the label too, so it outranks hover */
+  [data-ac-switch]:active [data-ac-switch-part="state-layer"],
+  [data-ac-switch] input:focus-visible ~ [data-ac-switch-part="state-layer"] {
+    opacity: 0.1;
+  }
+
+  /* Scoped under the label to outrank its :hover and :active */
+  [data-ac-switch] input:disabled ~ [data-ac-switch-part="state-layer"] {
+    opacity: 0;
+  }
+
+  /* ADR-0018: the handle and state layer move and resize on fast spatial, so they briefly
+     overshoot, and colors and opacity change on fast effects. Pressed, the handle snaps to its
+     28px, as Compose's does, and springs back from it on release. */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-ac-switch-part="track"] {
+      transition:
+        border-color var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects),
+        background-color var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects);
+    }
+
+    [data-ac-switch-part="state-layer"] {
+      transition:
+        translate var(--theme-duration-spring-fast-spatial)
+          var(--ease-spring-fast-spatial),
+        opacity var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects),
+        background-color var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects);
+    }
+
+    [data-ac-switch-part="handle"] {
+      transition:
+        translate var(--theme-duration-spring-fast-spatial)
+          var(--ease-spring-fast-spatial),
+        width var(--theme-duration-spring-fast-spatial)
+          var(--ease-spring-fast-spatial),
+        height var(--theme-duration-spring-fast-spatial)
+          var(--ease-spring-fast-spatial),
+        background-color var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects);
+    }
+
+    [data-ac-switch]:active input:enabled ~ [data-ac-switch-part="handle"] {
+      transition:
+        translate 0s,
+        width 0s,
+        height 0s,
+        background-color var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects);
+    }
+
+    [data-ac-switch-icon] {
+      transition: opacity var(--theme-duration-spring-fast-effects)
+        var(--ease-spring-fast-effects);
+    }
+  }
+</style>
+
+<script>
+  // M3's keyboard table toggles a switch with Enter as well as Space. A native checkbox only
+  // answers Space, and in some browsers Enter would submit its form instead. One listener on the
+  // document covers switches brought in by Astro's ClientRouter too.
+  document.addEventListener("keydown", (event) => {
+    const { target } = event;
+    if (
+      event.key !== "Enter" ||
+      !(target instanceof HTMLInputElement) ||
+      !target.matches("[data-ac-switch] input")
+    )
+      return;
+    event.preventDefault();
+    if (!event.repeat) target.click();
+  });
+</script>
