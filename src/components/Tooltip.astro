@@ -96,7 +96,9 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
           // transition-discrete keeps it in place while it fades out once closed. Only the fade is
           // motion: with reduced motion, visibility still flips, so the delays are kept.
           "invisible opacity-0 data-shown:visible data-shown:opacity-100 starting:invisible! starting:opacity-0!",
-          // a small component's fade, so on fast effects, M3's speed for small components (ADR-0018)
+          // A small component's fade, so on fast effects, M3's speed for small components
+          // (ADR-0018). The timing isn't motion-safe, since with reduced motion it still times the
+          // visibility change, which isn't motion.
           "transition-[visibility,display,overlay] transition-discrete duration-(--theme-duration-spring-fast-effects) ease-spring-fast-effects motion-safe:transition-[opacity,visibility,display,overlay]",
           classList
         )}

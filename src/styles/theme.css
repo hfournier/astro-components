@@ -33,6 +33,33 @@
 @custom-variant scrollable-top (@container scroll-state(scrollable: top));
 @custom-variant scrollable-bottom (@container scroll-state(scrollable: bottom));
 
+/* M3's enter and exit pattern, the timing of an overlay (BaseOverlay, the modal sheets) entering
+   and leaving the screen: in on emphasized decelerate over medium 4, out on emphasized accelerate
+   over short 4 (ADR-0018). A transition takes the timing of the state it goes to, so the open
+   state's is the way in. Not ease-* or transition-*, so tailwind-merge never takes it for one of
+   those utilities. */
+@utility motion-enter-exit {
+  transition-duration: var(--theme-duration-short-4);
+  transition-timing-function: var(--ease-emphasized-accelerate);
+  &:is([open], :popover-open) {
+    transition-duration: var(--theme-duration-medium-4);
+    transition-timing-function: var(--ease-emphasized-decelerate);
+  }
+}
+
+/* The same for the overlay's ::backdrop (a scrim), whose open state is its element's. The
+   backdrop: variant can't express it, since it puts the open check after the pseudo-element. */
+@utility motion-enter-exit-backdrop {
+  &::backdrop {
+    transition-duration: var(--theme-duration-short-4);
+    transition-timing-function: var(--ease-emphasized-accelerate);
+  }
+  &:is([open], :popover-open)::backdrop {
+    transition-duration: var(--theme-duration-medium-4);
+    transition-timing-function: var(--ease-emphasized-decelerate);
+  }
+}
+
 @theme {
   /* M3 Expressive's motion springs, as the curves M3 publishes for the web ("Web: Convert springs
      to curves", m3.material.io/styles/motion/overview/specs), each paired with its duration

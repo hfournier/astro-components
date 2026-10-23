@@ -39,11 +39,10 @@ const sizeClasses = {
     // Every variant has the 1px border, transparent unless outlined, so switching variant
     // never shifts the layout
     "group/details overflow-hidden border",
-    "details-content:h-0 details-content:opacity-0 motion-safe:details-content:transition-[height,opacity,content-visibility] motion-safe:details-content:transition-discrete",
+    "details-content:h-0 details-content:opacity-0",
     // the content opens on M3's fast spatial spring and fades on fast effects, as all component
-    // motion (ADR-0018); content-visibility is discrete
-    "motion-safe:details-content:duration-[var(--theme-duration-spring-fast-spatial),var(--theme-duration-spring-fast-effects),var(--theme-duration-spring-fast-spatial)]",
-    "motion-safe:details-content:ease-[var(--ease-spring-fast-spatial),var(--ease-spring-fast-effects),var(--ease-spring-fast-spatial)]",
+    // motion (ADR-0018); content-visibility is discrete, kept until the content has closed
+    "motion-safe:details-content:[transition:height_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial),opacity_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects),content-visibility_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial)_allow-discrete]",
     "details-content:starting:h-0 details-content:starting:opacity-0",
     "open:details-content:h-auto open:details-content:opacity-100",
     variant === "outlined"

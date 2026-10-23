@@ -14,7 +14,7 @@ We decided:
 4. **Easing and duration only for transitions,** where something enters or leaves the screen. M3 lists dialogs, menus and sheets under its enter and exit pattern. It lists tooltips there too, but a tooltip is a small component, and M3's speed table puts small components on the fast springs, so its fade is on fast effects.
    - BaseOverlay (and so Dialog, Popover and Menu), the modal sheets and their scrims enter on emphasized decelerate over 400ms and leave on emphasized accelerate over 200ms. These are M3's suggested pairs, and its bottom sheet example uses them.
    - Tab panels swap the same way.
-   - CSS takes a transition's timing from the state it moves to, so the open state carries the way in and the closed one the way out.
+   - CSS takes a transition's timing from the state it moves to, so the open state carries the way in and the closed one the way out. The pattern is defined once, as the `motion-enter-exit` and `motion-enter-exit-backdrop` utilities in `theme.css`. A tab panel has no open state, so Tab keys the same timing on its `hidden` attribute.
    - M3's modal drawer "enters and exits temporarily with Emphasized easing". Emphasized has no CSS form ("The Standard set is also a fallback for platforms that don't support Emphasized easing, like iOS and Web"). So the modal NavDrawer, the modal NavRail and their scrims use standard over 300ms.
    - These keep curves rather than springs: an overshooting curve would pull a sheet or drawer off the edge it's anchored to, leaving a gap.
 5. **M3's names replace ADR-0006's roles.**
@@ -26,6 +26,8 @@ We decided:
 7. **Reduced motion is unchanged.** `motion-safe:` gates the utilities, as ADR-0003 and ADR-0006 require.
 
 ## Consequences
+
+- A component that gives each property its own timing writes the `transition` shorthand (`[transition:color_…,border-radius_…]`), so each property sits beside its timing. The shorthand resets `transition-delay`, so a delay goes inside it, as FabMenuItem's stagger does.
 
 - ADR-0006's tokens are removed. New components pick a spring or, when they enter or leave the screen, an easing pair, by M3's rules above. They don't pick a duration step.
 - The spatial curves overshoot. A Details panel or a NavRail's width briefly passes its final size, as M3's springs do.

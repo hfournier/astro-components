@@ -74,10 +74,10 @@ const placementClasses = isModal
 // over a 32% scrim that fades in and out
 const modalClasses = isModal && [
   "translate-y-full open:translate-y-0 motion-safe:starting:open:translate-y-full",
-  // M3: a sheet enters on emphasized decelerate and leaves on emphasized accelerate (ADR-0018)
-  "motion-safe:transition-[display,overlay,translate] motion-safe:transition-discrete motion-safe:duration-(--theme-duration-short-4) motion-safe:ease-emphasized-accelerate motion-safe:open:duration-(--theme-duration-medium-4) motion-safe:open:ease-emphasized-decelerate",
+  // M3: a sheet enters and leaves on its enter and exit pattern, as its scrim (ADR-0018)
+  "motion-safe:transition-[display,overlay,translate] motion-safe:transition-discrete motion-safe:motion-enter-exit",
   "backdrop:bg-(--theme-color-scrim)/32 backdrop:opacity-0 open:backdrop:opacity-100 motion-safe:starting:open:backdrop:opacity-0",
-  "motion-safe:backdrop:transition-[display,opacity,overlay] motion-safe:backdrop:transition-discrete motion-safe:backdrop:duration-(--theme-duration-short-4) motion-safe:backdrop:ease-emphasized-accelerate motion-safe:open:backdrop:duration-(--theme-duration-medium-4) motion-safe:open:backdrop:ease-emphasized-decelerate",
+  "motion-safe:backdrop:transition-[display,opacity,overlay] motion-safe:backdrop:transition-discrete motion-safe:motion-enter-exit-backdrop",
 ];
 
 // A standard sheet's drag handle collapses and expands it. A modal sheet's closes it, until the
