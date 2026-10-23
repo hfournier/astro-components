@@ -1,6 +1,6 @@
 ---
 name: FabMenu
-description: A Material 3 FAB menu, extending HTML's `<div>` element. A FAB opens a stack of 2 to 6 related actions (FabMenuItems) floating above it, and turns into a close button while they're open. It replaces speed dials and stacks of small FABs.
+description: A Material 3 FAB menu, extending HTML's `<div>` element. A FAB opens a stack of 2 to 6 related actions (FabMenuItems) floating above it, and turns into a close button while they're open. It replaces speed dials and stacks of small FABs. In large windows, it follows M3's web guidance instead, and the FAB opens a Menu of the same items.
 category: Forms
 role: pattern
 meta:
@@ -18,7 +18,7 @@ props:
   - name: icon
     type: SvgIconNameTypes
     required: true
-    description: The FAB's icon while the menu is closed, by its file name in `src/assets/svgs`. While it's open, the FAB shows a 20px close icon instead.
+    description: The FAB's icon while the menu is closed, by its file name in `src/assets/svgs`. While it's open, below large windows, the FAB shows a 20px close icon instead.
   - name: label
     type: string
     required: true
@@ -32,12 +32,12 @@ props:
     type: '"primary" | "secondary" | "tertiary"'
     required: false
     default: '"primary"'
-    description: M3's color set for the whole menu. The closed FAB and the items use the container role (e.g. `primary-container`), and the close button the main role (e.g. `primary`). Pick the set that matches the FAB's color style elsewhere in the app, such as `primary` for a primary or primary-container FAB.
+    description: M3's color set for the whole menu. The closed FAB and the items use the container role (e.g. `primary-container`), and the close button the main role (e.g. `primary`). Pick the set that matches the FAB's color style elsewhere in the app, such as `primary` for a primary or primary-container FAB. In large windows, only the FAB takes it, and the Menu has M3's standard menu colors.
   - name: align
     type: '"end" | "start"'
     required: false
     default: '"end"'
-    description: Which edge of the FAB the items line up with. M3 puts the FAB and its menu at the end (trailing) edge of the window, so `"end"` is the one to use unless the FAB has to sit at the start. Right to left, both mirror, so `"end"` is the left edge and each item's icon follows its label.
+    description: Which edge of the FAB the items, or in large windows the Menu, line up with. M3 puts the FAB and its menu at the end (trailing) edge of the window, so `"end"` is the one to use unless the FAB has to sit at the start. Right to left, both mirror, so `"end"` is the left edge and each item's icon follows its label.
 slots:
   - name: default
     description: The menu's actions, two to six of them, as M3 specifies, each a direct child. Any other number, or any other content, throws an error when the page renders.
@@ -58,6 +58,13 @@ The items are a popover, so they're drawn in the top layer: no ancestor's `overf
 
 When the window is too short for all the items, such as a phone in landscape, the list scrolls, as M3 specifies. It stays clear of the close button and 16px from the top of the window, with the top items showing first. It has no scrollbar: the cut-off item shows there's more, and moving focus to an item scrolls it into view.
 
-## On the web
+## Large windows
 
-M3's guidelines say that on the web a FAB menu uses a menu component, and Google's Material Web library doesn't implement M3 Expressive. FabMenu brings the Expressive FAB menu to the web as Jetpack Compose builds it, at every window size.
+M3's guidelines say that "on web, the FAB menu uses a menu component for an experience that's consistent with other desktop apps", and picture it in a large window beside the Expressive FAB menu on a compact one. So FabMenu switches at the large window size class (1200px):
+
+- **Below 1200px** (compact, medium and expanded windows), it's M3 Expressive's FAB menu, as Jetpack Compose builds it, and as described above. Google's Material Web library doesn't implement M3 Expressive.
+- **From 1200px**, the FAB opens a [Menu](/components/menu) of the same items, each a MenuItem with the FabMenuItem's icon and label. As M3's web specs say, it "inherits its states and specs from the baseline menu component": the vertical Menu, which M3 recommends for new designs. It opens 4px from the FAB, above it when the FAB is at the bottom of the window, lined up with the FAB's `align` edge, and keeps 48px from the window's edges. The FAB stays as it is while the menu is open, with the pressed state layer, rather than turning into a close button.
+
+You write the items once. Choosing a MenuItem clicks its FabMenuItem, so the item's own `click` handlers and `command` run in either window. A `disabled` FabMenuItem is a disabled MenuItem. Only one form is shown, and exposed to assistive tech, at a time, and resizing across 1200px closes whichever is open.
+
+In large windows, M3 increases the FAB's margins from 16px to 24px, and recommends a larger FAB (see Placement).

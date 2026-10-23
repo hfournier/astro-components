@@ -7,7 +7,8 @@ import Button from "./Button.astro";
 // One action in a FabMenu. M3's item metrics are its medium button's, which is Button's md, round
 // size (56px high, 24px side padding, a 24px leading icon 8px from the label, Title Medium); the
 // item adds the menu's color set (custom properties FabMenu sets), elevation 3, and the marker
-// FabMenu counts its items by and closes on.
+// FabMenu counts its items by and closes on, carrying the label and icon for the MenuItem FabMenu
+// shows in their place in large windows.
 type Props = Omit<HTMLAttributes<"button">, "slot"> & {
   icon: SvgIconNameTypes;
   label: string;
@@ -37,7 +38,8 @@ const { icon, label, class: classList, ...attrs } = Astro.props;
     "motion-safe:delay-[calc((sibling-index()_-_0.5)_/_sibling-count()_*_var(--ac-fab-menu-stagger-span))] motion-safe:group-open/fab-menu-items:delay-[calc((sibling-count()_-_sibling-index()_+_0.5)_/_sibling-count()_*_var(--ac-fab-menu-stagger-span))]",
     classList
   )}
-  data-ac-fab-menu-item
+  data-ac-fab-menu-item={label}
+  data-ac-fab-menu-item-icon={icon}
   {...attrs}
 >
   {label}

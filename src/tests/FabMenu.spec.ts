@@ -29,7 +29,7 @@ const fab = (page: Page, caseId: FabMenuCaseId) =>
 const item = (page: Page, caseId: FabMenuCaseId, name: string) =>
   menuCase(page, caseId).getByRole("button", { name, exact: true });
 const items = (page: Page, caseId: FabMenuCaseId) =>
-  menuCase(page, caseId).locator("[popover]");
+  menuCase(page, caseId).locator("[data-ac-fab-menu] > [popover]");
 
 const color = (target: Locator, property: "background-color" | "color") =>
   target.evaluate(
@@ -58,8 +58,11 @@ const open = async (page: Page, caseId: FabMenuCaseId) => {
   await settled(page);
 };
 
+// Below the large window size class, where FabMenu is M3 Expressive's FAB menu (FabMenuLarge.spec.ts
+// covers the menu it opens from 1200px)
 test.describe("FabMenu", () => {
   test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 720 });
     await page.goto("/tests/fab-menu");
   });
 

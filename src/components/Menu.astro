@@ -89,6 +89,9 @@ const surfaceClasses = [
     "group/menu inset-auto m-0 mb-12 overflow-visible p-0 [--ac-menu-max-height:calc(100dvh-6rem)]",
     "top-[calc(anchor(bottom)+4px)] left-[anchor(left)] rtl:right-[anchor(right)] rtl:left-auto",
     "[position-try-fallbacks:flip-block,flip-inline,flip-block_flip-inline]",
+    // Lined up with its trigger's end edge instead, for a FabMenu's `align="end"`
+    "data-[ac-menu-align=end]:right-[anchor(right)] data-[ac-menu-align=end]:left-auto",
+    "rtl:data-[ac-menu-align=end]:left-[anchor(left)] rtl:data-[ac-menu-align=end]:right-auto",
     // A context menu: at the pointer, or the target's top start corner, with no gap
     "data-[ac-menu-placement=point]:top-[anchor(bottom)]",
     // A submenu: 4px past its parent menu's end edge, level with its parent item; past the
