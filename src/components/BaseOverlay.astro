@@ -44,11 +44,12 @@ const randomId = crypto.randomUUID();
 <Tag
   class:list={twMerge(
     "m-auto overscroll-contain bg-transparent outline-none",
-    "motion-safe:transition-discrete motion-safe:duration-(--theme-duration-overlay) motion-safe:ease-theme-overlay",
+    // M3's enter and exit pattern (ADR-0018), for the overlay and its scrim
+    "motion-safe:transition-discrete motion-safe:motion-enter-exit",
     showBackdrop &&
       "backdrop:bg-(--theme-color-scrim)/32 backdrop:opacity-0 open:backdrop:opacity-100 motion-safe:starting:open:backdrop:opacity-0",
     showBackdrop &&
-      "motion-safe:backdrop:transition-[display,opacity,overlay] motion-safe:backdrop:transition-discrete motion-safe:backdrop:duration-(--theme-duration-overlay) motion-safe:backdrop:ease-theme-overlay",
+      "motion-safe:motion-enter-exit-backdrop motion-safe:backdrop:transition-[display,opacity,overlay] motion-safe:backdrop:transition-discrete",
     showBlur && "backdrop:backdrop-blur-xs",
     showBlur && showBackdrop && "backdrop:bg-(--theme-color-scrim)/16",
     transitionClasses,

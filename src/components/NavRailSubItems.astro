@@ -47,8 +47,9 @@ const labelId = sectionLabel
   class:list={twMerge(
     "hidden rail-expanded:block",
     // When a NavDrawer swaps sections, it fades this out (data-fading) and in (data-swapped-in,
-    // from display: none). Not on page load, where it's just shown.
-    "data-fading:opacity-0 motion-safe:transition-opacity motion-safe:duration-(--theme-duration-fast) starting:data-swapped-in:opacity-0",
+    // from display: none), on default effects, M3's speed for the content of a navigation rail
+    // (ADR-0018). Not on page load, where it's just shown.
+    "data-fading:opacity-0 motion-safe:transition-opacity motion-safe:duration-(--theme-duration-spring-default-effects) motion-safe:ease-spring-default-effects starting:data-swapped-in:opacity-0",
     classList
   )}
   hidden={!isCurrentSection}

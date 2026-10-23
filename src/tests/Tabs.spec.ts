@@ -53,7 +53,7 @@ async function indicatorRect(
 }
 
 // The indicator is CSS anchor-positioned to the selected tab - to its content span on primary tabs
-// (M3's content-width indicator) - and its move is animated (--theme-duration-overlay), so poll
+// (M3's content-width indicator) - and its move is animated (on M3's fast spatial spring), so poll
 // until it settles onto the target's box rather than reading mid-transition.
 async function waitForIndicatorToTrack(
   page: Page,

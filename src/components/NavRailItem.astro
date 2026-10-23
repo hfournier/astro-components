@@ -58,7 +58,7 @@ const accessibleName = badgedName(label, badgeLabel, badgeDescription);
     // expanded state layer, on the whole indicator (collapsed, it's on the icon's indicator below)
     "before:absolute before:inset-0 before:-z-10 before:hidden before:rounded-full before:bg-(--theme-color-on-secondary-container) before:opacity-0 rail-expanded:before:block",
     "hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10",
-    "motion-safe:transition-colors motion-safe:duration-(--theme-duration-feedback) motion-safe:before:transition-opacity",
+    "motion-safe:transition-colors motion-safe:before:transition-opacity",
     // the focus ring goes around the whole item, icon and label
     "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
     classList
@@ -76,7 +76,7 @@ const accessibleName = badgedName(label, badgeLabel, badgeDescription);
       // M3 state layer, on the indicator only, in on-secondary-container for active and inactive items
       "before:absolute before:inset-0 before:-z-10 before:rounded-full before:bg-(--theme-color-on-secondary-container) before:opacity-0",
       "group-hover/item:before:opacity-8 group-focus-visible/item:before:opacity-10 group-active/item:before:opacity-10",
-      "motion-safe:transition-colors motion-safe:duration-(--theme-duration-feedback) motion-safe:before:transition-opacity",
+      "motion-safe:transition-colors motion-safe:before:transition-opacity",
       // expanded, the item is the indicator, so this is just the icon. ! because the
       // group-aria-[current=page] background above is more specific.
       "rail-expanded:size-auto rail-expanded:bg-transparent! rail-expanded:before:hidden",

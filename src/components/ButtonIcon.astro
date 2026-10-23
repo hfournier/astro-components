@@ -165,7 +165,9 @@ const variantClasses = {
     // M3 touch target: at least 48x48, centered on the button, for every size and width
     "after:absolute after:top-1/2 after:left-1/2 after:size-12 after:min-h-full after:min-w-full after:-translate-1/2",
     "disabled:cursor-default disabled:text-(--theme-color-on-surface)/38",
-    "motion-safe:transition-[color,background-color,border-color,border-radius] motion-safe:duration-(--theme-duration-feedback)",
+    // M3's icon button tokens put the corner morph (pressed, and the selected shape) on the fast
+    // spatial spring; colors are on fast effects (ADR-0018)
+    "motion-safe:[transition:color_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects),background-color_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects),border-color_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects),border-radius_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial)]",
     "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
     borderClasses,
     variantClasses,

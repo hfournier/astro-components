@@ -39,7 +39,10 @@ const sizeClasses = {
     // Every variant has the 1px border, transparent unless outlined, so switching variant
     // never shifts the layout
     "group/details overflow-hidden border",
-    "details-content:h-0 details-content:opacity-0 motion-safe:details-content:transition-[height,opacity,content-visibility] motion-safe:details-content:transition-discrete motion-safe:details-content:duration-(--theme-duration-overlay)",
+    "details-content:h-0 details-content:opacity-0",
+    // the content opens on M3's fast spatial spring and fades on fast effects, as all component
+    // motion (ADR-0018); content-visibility is discrete, kept until the content has closed
+    "motion-safe:details-content:[transition:height_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial),opacity_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects),content-visibility_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial)_allow-discrete]",
     "details-content:starting:h-0 details-content:starting:opacity-0",
     "open:details-content:h-auto open:details-content:opacity-100",
     variant === "outlined"
@@ -55,7 +58,7 @@ const sizeClasses = {
       // inside the card's 1px border, its 12px corners leave an 11px curve for the state layer
       variant === "outlined" && "rounded-[11px]",
       // M3 state layer, in the label color
-      "before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0 hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10 motion-safe:before:transition-opacity motion-safe:before:duration-(--theme-duration-feedback)",
+      "before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0 hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10 motion-safe:before:transition-opacity",
       // inset, so the card's overflow-hidden doesn't clip it
       "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-inset",
       sizeClasses
@@ -66,7 +69,7 @@ const sizeClasses = {
     <Icon
       class:list={[
         "shrink-0",
-        "group-open/details:rotate-180 motion-safe:transition-[rotate] motion-safe:duration-(--theme-duration-overlay)",
+        "group-open/details:rotate-180 motion-safe:transition-[rotate] motion-safe:duration-(--theme-duration-spring-fast-spatial) motion-safe:ease-spring-fast-spatial",
       ]}
       data-ac-details-chevron="true"
       name="keyboard_arrow_down"

@@ -73,7 +73,7 @@ const { align, isScrollable, randomId, tabs, variant } = Astro.props;
               variant === "primary"
                 ? "aria-selected:after:bottom-1"
                 : "aria-selected:after:bottom-0.75",
-              "aria-selected:cursor-default motion-safe:transition-colors motion-safe:duration-(--theme-duration-feedback) motion-safe:before:transition-opacity"
+              "aria-selected:cursor-default motion-safe:transition-colors motion-safe:before:transition-opacity"
             )}
             id={`tab-${randomId}-${index + 1}`}
             type="button"
@@ -148,7 +148,8 @@ const { align, isScrollable, randomId, tabs, variant } = Astro.props;
       // M3: primary 3px high, at least 24px long, 3px top corners; secondary 2px, square
       variant === "primary" ? "h-0.75 min-w-6 rounded-t-[3px]" : "h-0.5",
       "bg-(--theme-color-primary)",
-      "motion-safe:transition-[left,right] motion-safe:duration-(--theme-duration-overlay)",
+      // the indicator moves on M3's fast spatial spring, as all component motion (ADR-0018)
+      "motion-safe:transition-[left,right] motion-safe:duration-(--theme-duration-spring-fast-spatial) motion-safe:ease-spring-fast-spatial",
     ]}
     data-ac-tab-indicator
   >

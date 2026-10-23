@@ -187,10 +187,8 @@ const fabBaseClasses = [
       // Open, it's M3's close button: 56px, fully round, on the color set's main role
       "group-has-open/fab-menu:size-14 group-has-open/fab-menu:rounded-[28px] group-has-open/fab-menu:bg-(--ac-fab-menu-close) group-has-open/fab-menu:text-(--ac-fab-menu-on-close)",
       // The morph (size, corners, colors) on M3's fast spatial spring, as Compose's toggle FAB;
-      // the hover elevation keeps Fab's feedback timing. One duration and easing per property.
-      "motion-safe:transition-[width,height,border-radius,background-color,color,box-shadow] motion-safe:before:transition-opacity",
-      "motion-safe:duration-[var(--theme-duration-spring-fast-spatial),var(--theme-duration-spring-fast-spatial),var(--theme-duration-spring-fast-spatial),var(--theme-duration-spring-fast-spatial),var(--theme-duration-spring-fast-spatial),var(--theme-duration-feedback)]",
-      "motion-safe:ease-[var(--ease-spring-fast-spatial),var(--ease-spring-fast-spatial),var(--ease-spring-fast-spatial),var(--ease-spring-fast-spatial),var(--ease-spring-fast-spatial),var(--default-transition-timing-function)]",
+      // the hover elevation is on fast effects, as Fab's
+      "motion-safe:[transition:width_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial),height_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial),border-radius_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial),background-color_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial),color_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial),box-shadow_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects)] motion-safe:before:transition-opacity",
     ]}
     style={`anchor-name: ${anchorName}`}
     type="button"
@@ -224,7 +222,7 @@ const fabBaseClasses = [
       "hidden large:grid",
       fabBaseClasses,
       "aria-expanded:before:opacity-10",
-      "motion-safe:transition-[box-shadow] motion-safe:duration-(--theme-duration-feedback) motion-safe:before:transition-opacity",
+      "motion-safe:transition-[box-shadow] motion-safe:duration-(--theme-duration-spring-fast-effects) motion-safe:ease-spring-fast-effects motion-safe:before:transition-opacity",
     ]}
     type="button"
     commandfor={menuId}

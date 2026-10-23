@@ -100,7 +100,7 @@ const stateClasses = isExtended
 // M3's fast effects spring while its width changes on the fast spatial one.
 const labelClasses = twMerge(
   "overflow-hidden",
-  "motion-safe:transition-[width,opacity] motion-safe:duration-[var(--theme-duration-spring-fast-spatial),var(--theme-duration-spring-fast-effects)] motion-safe:ease-[var(--ease-spring-fast-spatial),var(--ease-spring-fast-effects)]",
+  "motion-safe:[transition:width_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial),opacity_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects)]",
   isExtended
     ? "w-auto rail-collapsed:w-0 rail-collapsed:opacity-0 group-data-collapsed/fab:w-0 group-data-collapsed/fab:opacity-0"
     : "w-0 opacity-0 rail-expanded:w-auto rail-expanded:opacity-100"
@@ -126,10 +126,9 @@ const tooltipOffClasses = isExtended
     // M3 state layer, in the icon's color
     "relative isolate before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0",
     "hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10",
-    // The padding and gap change with the label's width, on the same spring
-    "motion-safe:transition-[box-shadow,padding,gap] motion-safe:before:transition-opacity",
-    "motion-safe:duration-[var(--theme-duration-feedback),var(--theme-duration-spring-fast-spatial),var(--theme-duration-spring-fast-spatial)]",
-    "motion-safe:ease-[var(--default-transition-timing-function),var(--ease-spring-fast-spatial),var(--ease-spring-fast-spatial)]",
+    // The padding and gap change with the label's width, on the same spring; the elevation on
+    // fast effects (ADR-0018)
+    "motion-safe:[transition:box-shadow_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects),padding_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial),gap_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial)] motion-safe:before:transition-opacity",
     "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
     colorClasses,
     sizeClasses,

@@ -96,7 +96,10 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
           // transition-discrete keeps it in place while it fades out once closed. Only the fade is
           // motion: with reduced motion, visibility still flips, so the delays are kept.
           "invisible opacity-0 data-shown:visible data-shown:opacity-100 starting:invisible! starting:opacity-0!",
-          "transition-[visibility,display,overlay] transition-discrete duration-(--theme-duration-feedback) motion-safe:transition-[opacity,visibility,display,overlay]",
+          // A small component's fade, so on fast effects, M3's speed for small components
+          // (ADR-0018). The timing isn't motion-safe, since with reduced motion it still times the
+          // visibility change, which isn't motion.
+          "transition-[visibility,display,overlay] transition-discrete duration-(--theme-duration-spring-fast-effects) ease-spring-fast-effects motion-safe:transition-[opacity,visibility,display,overlay]",
           classList
         )}
         style={`position-anchor: ${anchorName}`}
@@ -120,7 +123,7 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
         // bridges the 4px gap, so the pointer can move onto the tooltip without it closing
         "before:absolute before:-inset-1 before:-z-10",
         // its show and hide delays are in the script, so with reduced motion it just appears
-        "opacity-0 open:opacity-100 motion-safe:transition-[opacity,display,overlay] motion-safe:transition-discrete motion-safe:duration-(--theme-duration-feedback) motion-safe:starting:open:opacity-0",
+        "opacity-0 open:opacity-100 motion-safe:transition-[opacity,display,overlay] motion-safe:transition-discrete motion-safe:duration-(--theme-duration-spring-fast-effects) motion-safe:ease-spring-fast-effects motion-safe:starting:open:opacity-0",
         classList
       )}
       style={`position-anchor: ${anchorName}`}
