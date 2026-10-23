@@ -1,0 +1,20 @@
+---
+title: Submenus
+description: Parent items open submenus beside the menu, on a click, the arrow key toward them, or hovering. The menu holding focus or the pointer has 16px corners, and the other 8px.
+---
+
+<Button command="toggle-popover" commandfor="menu-submenus" variant="outlined">File</Button>
+<Menu id="menu-submenus">
+  <MenuItem icon="add" label="New" />
+  <MenuItem label="Open recent" submenu="menu-submenus-recent" />
+  <MenuItem icon="share" label="Share" submenu="menu-submenus-share" />
+  <MenuItem label="Close" />
+</Menu>
+<Menu id="menu-submenus-recent">
+  <MenuItem label="Report.pdf" />
+  <MenuItem label="Notes.txt" />
+</Menu>
+<Menu id="menu-submenus-share">
+  <MenuItem icon="mail" label="Email" />
+  <MenuItem icon="link" label="Copy link" />
+</Menu>

@@ -1,6 +1,6 @@
 ---
 name: Menu
-description: A Material 3 Expressive vertical menu, extending HTML's `<div>` element as an auto popover. It holds a temporary list of actions or choices (MenuItem, MenuItemCheckbox, MenuItemRadio), in MenuGroups or not, opened by a button with `commandfor` set to its `id`.
+description: A Material 3 Expressive vertical menu, extending HTML's `<div>` element as an auto popover. It holds a temporary list of actions or choices (MenuItem, MenuItemCheckbox, MenuItemRadio), in MenuGroups or not, opened by a button with `commandfor` set to its `id`, as a submenu of a MenuItem, or as an element's context menu.
 category: Interactive elements
 role: pattern
 meta:
@@ -28,7 +28,16 @@ props:
   - name: label
     type: string
     required: false
-    description: The menu's accessible name. Without it, the menu is named by its trigger, which suits a trigger whose label says what the menu holds. Pass one when it doesn't.
+    description: The menu's accessible name. Without it, the menu is named by its trigger, which suits a trigger whose label says what the menu holds. Pass one when it doesn't, and always for a context menu.
+  - name: isContextMenu
+    type: boolean
+    required: false
+    default: "false"
+    description: Makes the menu M3's context menu for the element `for` names, opened by a secondary click, a long press, or the Menu key or Shift+F10, in place of the browser's own menu.
+  - name: for
+    type: string
+    required: false
+    description: The id of the element a context menu belongs to. Only used with `isContextMenu`.
 slots:
   - name: default
     description: The menu's items, MenuItem, MenuItemCheckbox or MenuItemRadio, either directly or in MenuGroups.
@@ -48,6 +57,42 @@ The menu is in the top layer, in front of everything else. It opens below its tr
 The menu is 112px to 280px wide, as wide as its widest item, at elevation 2. In the grouped layout, each MenuGroup is a surface with M3's group corners: 16px at the menu's outer corners, 8px between groups. In the standard layout, the menu is one surface with 16px corners, and a divider, inset 12px, separates its groups. A menu without MenuGroups is one surface in either layout.
 
 The menu opens and closes with a short fade, or none with reduced motion.
+
+## Submenus
+
+A MenuItem with `submenu` set to another Menu's `id` opens that menu as a submenu, in place of an action of its own. It shows M3's cascading indicator, a 24px chevron pointing toward the submenu, and has `aria-haspopup="menu"`, `aria-controls` and `aria-expanded`. Put the submenu's Menu anywhere on the page, such as after its parent's. The submenu is named by its parent item.
+
+```astro
+<Menu id="file-menu">
+  <MenuItem label="New" />
+  <MenuItem label="Open recent" submenu="recent-menu" />
+</Menu>
+<Menu id="recent-menu">
+  <MenuItem label="Report.pdf" />
+</Menu>
+```
+
+- **Opening:** a click, Enter, Space or the arrow key toward it (ArrowRight, or ArrowLeft right to left) opens the submenu and focuses its first item. Hovering the parent item opens it after 200ms, leaving focus where it is.
+- **Closing:** the arrow key back toward the parent, or Escape, closes the submenu and returns focus to its parent item. Hovering another item in the parent menu closes it after 300ms, which reaching the submenu cancels, so the pointer can cross other items on the way. Choosing an action in it, Tab, or a click outside closes every menu, and an action returns focus to the first menu's trigger.
+- **Placement:** 4px past the parent menu's end edge, level with the parent item, so it never overlaps its parent. When there isn't room, it opens past the parent's start edge, then upward, level with the parent item's bottom.
+- **Shape:** while a submenu is open, the menu holding focus or the pointer has 16px corners and the others 8px, as M3's active and inactive shapes, morphing on M3's fast spatial spring (none with reduced motion). The parent item keeps an 8% state layer while its submenu is open.
+
+The submenu is a popover nested in its parent's, shown with its parent item as its `source`, so its parent stays open beneath it, and a click outside closes them both.
+
+Submenus are for medium windows and up, where there's room beside the parent menu, as M3 advises. In a compact window, the submenu still opens, past whichever edge has room, but may cover its parent; there, prefer a flatter menu or a SheetBottom.
+
+## Context menus
+
+With `isContextMenu` and `for` set to an element's id, the menu is that element's context menu. A secondary click (a right-click, or a two-finger tap on a trackpad) or a long press on the element opens it at the pointer, in place of the browser's menu. The Menu key or Shift+F10, with the element focused, opens it at the element's top start corner. Either way it focuses its first item, and it stays in the window: near the window's end edge, it opens toward the start from the pointer, and near the bottom, upward. Closing it returns focus to the element, if it can take focus. Give the element `tabindex="0"`, if it has no other way to be focused, so keyboard users can reach the menu.
+
+```astro
+<div id="photo" tabindex="0">…</div>
+<Menu id="photo-menu" isContextMenu for="photo" label="Photo actions">
+  <MenuItem label="Copy image" />
+</Menu>
+```
+
+Shift + right-click, or a second right-click while the menu is open, shows the browser's own menu, so copy, inspect and the like stay reachable. A right-click anywhere else shows the browser's menu as usual. Give a context menu a `label`, as it has no trigger to name it.
 
 ## Choosing an item
 

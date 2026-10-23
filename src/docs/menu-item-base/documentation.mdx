@@ -49,6 +49,10 @@ props:
     required: false
     default: "false"
     description: Disables the item with `aria-disabled`, so it's still focused and announced, but choosing it does nothing, as M3 asks. Its content is at 38%.
+  - name: submenu
+    type: string
+    required: false
+    description: The id of a Menu this item opens as a submenu, in place of an action of its own. The item shows M3's cascading indicator, a 24px chevron pointing toward the submenu, and gets `aria-haspopup="menu"`, `aria-controls` and `aria-expanded`. MenuItem only.
   - name: isChecked
     type: boolean
     required: false
@@ -70,4 +74,4 @@ props:
 
 ## Layout
 
-From the start: the leading icon (or, on a checked item, the check, or else the icon's empty space when other items in the menu have an icon or a check), the label with its supporting text below it, the trailing text, the badge, and the trailing icon. See MenuItem for its sizes and colors.
+From the start: the leading icon (or, on a checked item, the check, or else the icon's empty space when other items in the menu have an icon or a check), the label with its supporting text below it, the trailing text, the badge, the trailing icon, and on a parent item, the cascading indicator. See MenuItem for its sizes and colors.

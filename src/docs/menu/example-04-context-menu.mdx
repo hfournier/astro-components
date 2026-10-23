@@ -1,0 +1,13 @@
+---
+title: Context menu
+description: Right-click the box, or focus it and press the Menu key or Shift+F10, to open its context menu. Shift + right-click shows the browser's own menu.
+---
+
+<div id="menu-context-target" tabindex="0" class="grid h-32 w-64 place-items-center rounded-xl border border-(--theme-color-outline-variant) text-sm">
+  Photo
+</div>
+<Menu id="menu-context" isContextMenu for="menu-context-target" label="Photo actions">
+  <MenuItem icon="content_copy" label="Copy image" />
+  <MenuItem icon="download" label="Save image" />
+  <MenuItem icon="delete" label="Delete" />
+</Menu>

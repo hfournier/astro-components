@@ -78,3 +78,39 @@ description: Tests for the Menu, MenuGroup, MenuItem, MenuItemCheckbox and MenuI
     </MenuGroup>
   </Menu>
 </Section>
+
+<Section data-testid="menu-submenus" class="p-4 space-y-4">
+  <Heading level={2}>Submenus</Heading>
+  <Button command="toggle-popover" commandfor="file-menu" variant="outlined">File</Button>
+  <Menu id="file-menu">
+    <MenuGroup>
+      <MenuItem icon="add" label="New" />
+      <MenuItem label="Open recent" submenu="recent-menu" />
+      <MenuItem icon="share" label="Share" submenu="share-menu" />
+    </MenuGroup>
+    <MenuGroup>
+      <MenuItem label="Close" />
+    </MenuGroup>
+  </Menu>
+  <Menu id="recent-menu">
+    <MenuItem label="Report.pdf" />
+    <MenuItem label="Notes.txt" />
+  </Menu>
+  <Menu id="share-menu">
+    <MenuItem label="Email" />
+    <MenuItem label="Copy link" />
+  </Menu>
+</Section>
+
+<Section data-testid="menu-context" class="p-4 space-y-4">
+  <Heading level={2}>Context menu</Heading>
+  <div id="context-target" tabindex="0" class="grid h-32 w-64 place-items-center rounded-xl border border-(--theme-color-outline-variant)">
+    Photo
+  </div>
+  <Menu id="context-menu" isContextMenu for="context-target" label="Photo actions">
+    <MenuItem icon="content_copy" label="Copy image" />
+    <MenuItem icon="download" label="Save image" />
+    <MenuItem icon="delete" label="Delete" />
+  </Menu>
+  <p id="context-elsewhere">Elsewhere</p>
+</Section>

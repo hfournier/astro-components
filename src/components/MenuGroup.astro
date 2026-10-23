@@ -22,6 +22,10 @@ const labelId = label ? `ac-menu-group-${crypto.randomUUID()}` : undefined;
     // group's bottom), 8px elsewhere
     "group-data-[ac-menu-layout=grouped]/menu:rounded-lg group-data-[ac-menu-layout=grouped]/menu:bg-(--theme-color-wrapper-bg) group-data-[ac-menu-layout=grouped]/menu:py-0.5 group-data-[ac-menu-layout=grouped]/menu:shadow-theme-elevation-2",
     "group-data-[ac-menu-layout=grouped]/menu:first:rounded-t-2xl group-data-[ac-menu-layout=grouped]/menu:last:rounded-b-2xl",
+    // M3's inactive menu, with a submenu holding focus or the pointer: 8px at its outer corners
+    // too, morphing on the fast spatial spring
+    "group-data-[ac-menu-layout=grouped]/menu:group-data-[ac-menu-inactive]/menu:first:rounded-t-lg group-data-[ac-menu-layout=grouped]/menu:group-data-[ac-menu-inactive]/menu:last:rounded-b-lg",
+    "motion-safe:transition-[border-radius] motion-safe:duration-(--theme-duration-spring-fast-spatial) motion-safe:ease-spring-fast-spatial",
     // Standard: a divider above each group but the first, inset 12px, with 2px above and below
     // (Compose's HorizontalDividerPadding). Not an element, so it's never focused or announced.
     "before:mx-3 before:my-0.5 before:hidden before:border-t before:border-(--theme-color-outline-variant) group-data-[ac-menu-layout=standard]/menu:not-first:before:block",
