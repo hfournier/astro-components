@@ -1,0 +1,12 @@
+Switch is a native `<input type="checkbox">` with `role="switch"`, so assistive tech announces its label, its role as a switch and whether it's on or off. The label is a `<label>` around the input, so clicking it toggles the switch too.
+
+Keyboard interaction follows M3:
+
+- **Tab** moves focus to the switch.
+- **Space** or **Enter** toggles it. Space is the browser's own; Switch adds Enter, as M3's keyboard table asks, so Enter never submits the switch's form.
+
+Name every switch. Its label usually is one, and it should say what the switch controls, since assistive tech reads it followed by the role. When the visible text is ambiguous, such as "Photo album", give a fuller name with `aria-label` ("Photo album access"), or better, make the visible text clearer. A switch without visible text needs `aria-label` or `aria-labelledby`.
+
+The handle's icons are decoration and hidden from assistive tech: the switch's own state is what it announces. Pick `icons` that match on and off, the check and x M3 recommends, never icons with other meanings.
+
+Every switch has a 48px-tall touch target around its 52px track, as M3 asks. Don't shrink it to make a layout denser. Focused from the keyboard, it shows the theme focus ring around the track.

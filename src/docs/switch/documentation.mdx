@@ -1,0 +1,42 @@
+---
+name: Switch
+description: A Material 3 switch, extending HTML's `<input type="checkbox">` element with `role="switch"`, inside a `<label>` that holds its text. It turns a single setting on or off, with M3's track, a handle that slides across and grows when selected or pressed, and an optional icon in the handle. Being a native input, it submits, resets and validates with its form.
+category: Forms
+role: pattern
+meta:
+  title: Switch | astro-components HenriFournier.dev
+  description: A Material 3 switch on a native checkbox, with a sliding handle that grows on M3's springs and optional check and x icons.
+extends:
+  kind: element
+  tag: [input]
+mdn: https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Roles/switch_role
+props:
+  - name: icons
+    type: '"none" | "selected" | "both"'
+    required: false
+    default: '"none"'
+    description: M3's optional icon in the handle. `selected` shows a check when the switch is on; `both` also shows an x when it's off, which grows the unselected handle from 16px to 24px to hold it. The icons are decoration, hidden from assistive tech.
+slots:
+  - name: default
+    description: The label's text, in M3's Body Large and the background's on-color (`on-surface` outside any wrapper), placed before the switch. Describe what the switch turns on. Clicking it toggles the switch. Leave it empty only when the switch is named another way, with `aria-label` or `aria-labelledby`.
+    kind: any
+---
+
+## Attributes
+
+Every attribute except `class` goes on the `<input>`: `name`, `value`, `checked`, `disabled`, `required`, `form`, `aria-*` and the rest. `class` goes on the `<label>` around it, so it can place and space the whole control. Listen for the input's `change` event to react to a change, and apply it at once: M3's switches take effect without a save step. In a form, a switch that's on submits its `value` (`on` by default), and one that's off submits nothing.
+
+## States
+
+- **Unselected:** a `surface-container-highest` track in a 2px `outline`, with a 16px `outline` handle at its start. Hovered, focused or pressed, the handle darkens to `on-surface-variant`.
+- **Selected** (`checked`): a `primary` track with a 24px `on-primary` handle at its end. Hovered, focused or pressed, the handle turns `primary-container`.
+- **Pressed:** the handle grows to 28px in place.
+- **Disabled** (`disabled`): the track at 12% (`on-surface` when selected), the handle in `on-surface` at 38% when unselected and `surface` when selected, and the label at 38%.
+
+With `icons`, the check is `primary` and the x `surface-container-highest`, as on M3's Specs page. Hovered, focused or pressed, the check turns `on-primary-container`, the on-color of the `primary-container` handle. Here Switch departs from M3, which keeps it `primary`: in a scheme whose `primary-container` is close to `primary` in tone, such as this theme's Fidelity, a `primary` check would all but vanish.
+
+The state layer is a 40px circle centered on the handle, at 8% when hovered and 10% when focused or pressed. It's the label's color (`on-surface` outside any wrapper) when unselected and `primary` when selected.
+
+## Motion
+
+The handle slides and resizes on the fast spatial spring, so it briefly overshoots, and the colors and icons change on fast effects (ADR-0018). Pressed, the handle snaps to its 28px, as Compose's does, and springs from there to its new place on release. Under reduced motion, every state changes at once.

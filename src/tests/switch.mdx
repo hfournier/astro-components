@@ -1,0 +1,63 @@
+---
+title: Switch
+description: Tests for the Switch component
+---
+
+<Heading level={1}>Switch Tests</Heading>
+
+<Section data-testid="switch-states" class="p-4 space-y-4">
+  <Heading level={2}>States</Heading>
+  <div class="flex flex-col items-start">
+    <Switch>Wi-Fi</Switch>
+    <Switch checked>Bluetooth</Switch>
+  </div>
+</Section>
+
+<Section data-testid="switch-icons" class="p-4 space-y-4">
+  <Heading level={2}>Icons</Heading>
+  <div class="flex flex-col items-start">
+    <Switch icons="selected">Selected only, unselected</Switch>
+    <Switch icons="selected" checked>Selected only, selected</Switch>
+    <Switch icons="both">Both, unselected</Switch>
+    <Switch icons="both" checked>Both, selected</Switch>
+  </div>
+</Section>
+
+<Section data-testid="switch-disabled" class="p-4 space-y-4">
+  <Heading level={2}>Disabled</Heading>
+  <div class="flex flex-col items-start">
+    <Switch disabled>Without icons</Switch>
+    <Switch disabled icons="both">Unselected</Switch>
+    <Switch disabled icons="both" checked>Selected</Switch>
+  </div>
+</Section>
+
+<Section data-testid="switch-no-label" class="p-4 space-y-4">
+  <Heading level={2}>Without a visible label</Heading>
+  <Switch aria-label="Airplane mode" />
+</Section>
+
+<Section data-testid="switch-form" class="p-4 space-y-4">
+  <Heading level={2}>In a form</Heading>
+  <form class="space-y-2" onsubmit="event.preventDefault()">
+    <div class="flex flex-col items-start">
+      <Switch name="sync" value="on" checked>Sync</Switch>
+      <Switch name="terms" required>Accept terms</Switch>
+    </div>
+    <Button type="submit">Submit</Button>
+    <Button type="reset" variant="outlined">Reset</Button>
+  </form>
+</Section>
+
+<Section data-testid="switch-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <div class="flex flex-col items-start">
+    <Switch>Unselected</Switch>
+    <Switch checked>Selected</Switch>
+  </div>
+</Section>
+
+<Section data-testid="switch-on-secondary-container" bgColor="secondary-container" class="p-4 space-y-4 rounded-xl">
+  <Heading level={2}>On secondary container</Heading>
+  <Switch>Unselected</Switch>
+</Section>

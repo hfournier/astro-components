@@ -41,6 +41,7 @@ export { default as Section } from "./components/Section.astro";
 export { default as SheetBottom } from "./components/SheetBottom.astro";
 export { default as SheetSide } from "./components/SheetSide.astro";
 export { default as SkipToContent } from "./components/SkipToContent.astro";
+export { default as Switch } from "./components/Switch.astro";
 export { default as Tab } from "./components/Tab.astro";
 export { default as Tabs } from "./components/Tabs.astro";
 export { default as Tooltip } from "./components/Tooltip.astro";
