@@ -33,7 +33,7 @@ Every attribute except `class` goes on the `<input>`: `name`, `value`, `checked`
 - **Pressed:** the handle grows to 28px in place.
 - **Disabled** (`disabled`): the track at 12% (`on-surface` when selected), the handle in `on-surface` at 38% when unselected and `surface` when selected, and the label at 38%.
 
-With `icons`, the check is `primary` and the x `surface-container-highest`. The check follows M3's Specs page; Compose still colors it `on-primary-container`.
+With `icons`, the check is `primary` and the x `surface-container-highest`, as on M3's Specs page. Hovered, focused or pressed, the check turns `on-primary-container`, the on-color of the `primary-container` handle. Here Switch departs from M3, which keeps it `primary`: in a scheme whose `primary-container` is close to `primary` in tone, such as this theme's Fidelity, a `primary` check would all but vanish.
 
 The state layer is a 40px circle centered on the handle, at 8% when hovered and 10% when focused or pressed. It's the label's color (`on-surface` outside any wrapper) when unselected and `primary` when selected.
 

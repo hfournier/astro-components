@@ -339,6 +339,26 @@ test.describe("Switch", () => {
     );
   });
 
+  // A departure from M3, whose check stays primary: on the primary-container handle it would
+  // all but vanish in this theme
+  test("hovered or focused, the check takes the handle's on-color, on-primary-container", async ({
+    page,
+  }) => {
+    const on = toggle(page, "icons", "Both, selected");
+    const check = icon(on, "selected");
+    const onContainer = await colorRole(page, "on-primary-container");
+
+    await on.hover();
+    await expect(check).toHaveCSS("color", onContainer);
+    await page.mouse.move(0, 0);
+    await expect(check).toHaveCSS("color", await colorRole(page, "primary"));
+
+    await toggle(page, "icons", "Both, unselected").focus();
+    await page.keyboard.press("Tab");
+    await expect(on).toBeFocused();
+    await expect(check).toHaveCSS("color", onContainer);
+  });
+
   test("focused: a 10% state layer, the darker handle and the focus ring", async ({
     page,
   }) => {

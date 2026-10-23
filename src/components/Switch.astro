@@ -168,14 +168,25 @@ const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
 
   /* Each icon shows on its own state: a check in primary when selected, an x in
      surface-container-highest when unselected. The check follows M3's Specs page, which maps
-     md.comp.switch.selected.icon.color to primary in every state; Compose's SwitchTokens still
-     give on-primary-container. */
+     md.comp.switch.selected.icon.color to primary (Compose's SwitchTokens still give
+     on-primary-container). */
   [data-ac-switch-icon] {
     opacity: 0;
   }
 
   [data-ac-switch-icon="selected"] {
     color: var(--theme-color-primary);
+  }
+
+  /* Hovered, focused or pressed, the check is on-primary-container, the on-color of the
+     primary-container handle. M3 keeps it primary, but in a scheme whose primary-container is
+     close to primary in tone (this theme's Fidelity), that leaves the check at under 2:1. */
+  [data-ac-switch]:is(:hover, :active)
+    input:enabled:checked
+    ~ *
+    [data-ac-switch-icon="selected"],
+  input:focus-visible:checked ~ * [data-ac-switch-icon="selected"] {
+    color: var(--theme-color-on-primary-container);
   }
 
   [data-ac-switch-icon="unselected"] {
@@ -269,8 +280,11 @@ const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
     }
 
     [data-ac-switch-icon] {
-      transition: opacity var(--theme-duration-spring-fast-effects)
-        var(--ease-spring-fast-effects);
+      transition:
+        opacity var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects),
+        color var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects);
     }
   }
 </style>
