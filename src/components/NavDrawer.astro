@@ -60,7 +60,7 @@ const widthClasses = {
     // wider than the viewport beside the rail). The outline-variant border on its start side
     // separates it from the rail. It's a rail container too, as NavRailSubItems sections only show
     // in an expanded (rail-expanded) one.
-    "peer/nav-drawer @container/rail fixed start-24 top-0 z-20 h-dvh overflow-y-auto rounded-e-2xl border-s border-(--theme-color-outline-variant) px-3 py-5 shadow-theme-elevation-1",
+    "peer/nav-drawer @container/rail fixed inset-s-24 top-0 z-20 h-dvh overflow-y-auto rounded-e-2xl border-s border-(--theme-color-outline-variant) px-3 py-5 shadow-theme-elevation-1",
     widthClasses,
     "w-(--ac-nav-drawer-width) min-w-55 max-w-[min(360px,calc(100vw-6rem))]",
     // M3's modal drawer is on surface-container-low, and its standard drawer (large and up) on
@@ -76,7 +76,7 @@ const widthClasses = {
     "motion-safe:transition-[translate,visibility] motion-safe:data-open:transition-[translate] motion-safe:duration-(--theme-duration-medium-2) motion-safe:ease-standard",
     // large and up: M3's standard drawer, always visible, in the layout right after the rail, at
     // elevation 0, keeping M3's end corners
-    "large:visible large:sticky large:start-auto large:z-auto large:translate-x-0 large:shadow-none large:transition-none",
+    "large:visible large:sticky large:inset-s-auto large:z-auto large:translate-x-0 large:shadow-none large:transition-none",
     classList
   )}
   {bgColor}

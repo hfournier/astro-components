@@ -54,7 +54,7 @@ const accessibleName = badgedName(label, badgeLabel, badgeDescription);
     "rail-expanded:aria-[current=page]:bg-(--theme-color-secondary-container) rail-expanded:aria-[current=page]:text-(--theme-color-on-secondary-container)",
     // M3: the expanded item's target spans the rail, though its indicator hugs its content. The
     // ::after reaches the end of the row: the rail's width less its 20px side padding (see NavRail).
-    "after:absolute after:inset-y-0 after:start-0 after:hidden after:w-[calc(100cqw-2.5rem)] rail-expanded:after:block",
+    "after:absolute after:inset-y-0 after:inset-s-0 after:hidden after:w-[calc(100cqw-2.5rem)] rail-expanded:after:block",
     // expanded state layer, on the whole indicator (collapsed, it's on the icon's indicator below)
     "before:absolute before:inset-0 before:-z-10 before:hidden before:rounded-full before:bg-(--theme-color-on-secondary-container) before:opacity-0 rail-expanded:before:block",
     "hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10",
