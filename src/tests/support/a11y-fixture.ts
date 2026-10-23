@@ -4,7 +4,8 @@ import type { Result } from "axe-core";
 
 /**
  * Shared fixture (ADR-0002): every test built on this `test` gets an axe-core
- * scan of the page after the test body runs, opt-out rather than opt-in.
+ * scan of the page after the test body runs, opt-out rather than opt-in. The
+ * scan runs in the Chromium project only (ADR-0019).
  * Call `test.use({ skipA11yCheck: true })` in a describe block to opt out.
  *
  * It also turns off the site's smooth scrolling (global.css). Firefox and
@@ -17,7 +18,7 @@ import type { Result } from "axe-core";
 export const test = base.extend<{ skipA11yCheck: boolean }>({
   skipA11yCheck: [false, { option: true }],
 
-  page: async ({ page, skipA11yCheck }, use) => {
+  page: async ({ page, skipA11yCheck }, use, testInfo) => {
     await page.addInitScript(() => {
       const instantScroll = () =>
         document.documentElement.style.setProperty(
@@ -31,7 +32,9 @@ export const test = base.extend<{ skipA11yCheck: boolean }>({
 
     await use(page);
 
-    if (skipA11yCheck) return;
+    // Scanned in Chromium only (ADR-0019): axe checks the DOM, ARIA and computed colors, which
+    // come out the same in every engine, and the scan was most of each run's time
+    if (skipA11yCheck || testInfo.project.name !== "chromium") return;
 
     // Scan the settled page: mid-transition (e.g. a dialog still fading in) axe measures
     // half-blended colors and reports contrast failures that never exist at rest. Infinite
