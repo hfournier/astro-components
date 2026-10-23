@@ -328,7 +328,10 @@ test.describe("RadioButton", () => {
     expect(
       await form.evaluate((el: HTMLFormElement) => el.checkValidity())
     ).toBe(false);
-    await radio(page, "form", "Invoice").check();
+    // from the keyboard: Firefox's validation bubble can cover the radios below, and swallow a
+    // click on them
+    await page.keyboard.press("Space");
+    await expect(radio(page, "form", "Card")).toBeChecked();
     expect(
       await form.evaluate((el: HTMLFormElement) => el.checkValidity())
     ).toBe(true);

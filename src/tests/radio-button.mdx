@@ -66,6 +66,8 @@ description: Tests for the RadioButton component
 
 <Section data-testid="radio-button-on-secondary-container" bgColor="secondary-container" class="p-4 space-y-4 rounded-xl">
   <Heading level={2}>On secondary container</Heading>
-  <RadioButton name="colored" value="1">Unselected</RadioButton>
-  <RadioButton name="colored" value="2" checked>Selected</RadioButton>
+  <div class="flex items-center gap-4">
+    <RadioButton name="colored" value="1">Unselected</RadioButton>
+    <RadioButton name="colored" value="2" checked>Selected</RadioButton>
+  </div>
 </Section>
