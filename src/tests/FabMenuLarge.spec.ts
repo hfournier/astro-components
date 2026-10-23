@@ -184,4 +184,28 @@ test.describe("FabMenu in a large window", () => {
     await expect(menu(page)).toBeHidden();
     await page.keyboard.press("Escape");
   });
+
+  test("resizing while open moves focus from the menu to the FAB now shown", async ({
+    page,
+  }) => {
+    await fab(page, "no-props").focus();
+    await page.keyboard.press("Enter");
+    await expect(menuItem(page, "Email")).toBeFocused();
+    await page.setViewportSize({ width: 1199, height: 900 });
+    await expect(menu(page)).toBeHidden();
+    await expect(fab(page, "no-props")).toBeFocused();
+  });
+
+  test("resizing to 1200px while closed, the FAB opens the menu, and only one FAB is exposed", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1199, height: 900 });
+    await page.setViewportSize({ width: 1200, height: 900 });
+    await expect(
+      menuCase(page, "no-props").getByRole("button", { name: "Create" })
+    ).toHaveCount(1);
+    await fab(page, "no-props").click();
+    await expect(menu(page)).toBeVisible();
+    await page.keyboard.press("Escape");
+  });
 });

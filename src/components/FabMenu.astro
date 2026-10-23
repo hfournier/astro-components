@@ -81,7 +81,7 @@ for (const node of parse(slot).children as Node[]) {
     );
   }
   menuItems.push({
-    label: node.attributes["data-ac-fab-menu-item"],
+    label: node.attributes["data-ac-fab-menu-item-label"],
     icon: node.attributes["data-ac-fab-menu-item-icon"],
     isDisabled: node.attributes.disabled !== undefined,
   });
@@ -265,40 +265,44 @@ const fabBaseClasses = [
   >
     <Fragment set:html={slot} />
   </div>
-</div>
 
-{
-  /* In large windows: the items as a Menu, lined up with the FAB's `align` edge (see Menu). Each
-     MenuItem stands in for its FabMenuItem, which it clicks, so the item's own handlers and
-     command run. */
-}
-<Menu id={menuId} data-ac-menu-align={align} data-ac-fab-menu-for={id}>
   {
-    menuItems.map((item, index) => (
-      <MenuItem
-        label={item.label}
-        icon={item.icon}
-        isDisabled={item.isDisabled}
-        data-ac-fab-menu-item-index={index}
-      />
-    ))
+    /* In large windows: the items as a Menu, lined up with the FAB's `align` edge (see Menu). Each
+       MenuItem stands in for its FabMenuItem, which it clicks, so the item's own handlers and
+       command run. Only the label, icon and disabled state carry over. */
   }
-</Menu>
+  <Menu id={menuId} data-ac-menu-align={align}>
+    {
+      menuItems.map((item, index) => (
+        <MenuItem
+          label={item.label}
+          icon={item.icon}
+          isDisabled={item.isDisabled}
+          data-ac-fab-menu-item-index={index}
+        />
+      ))
+    }
+  </Menu>
+</div>
 
 <script>
   document
     .querySelectorAll<HTMLElement>("[data-ac-fab-menu]")
     .forEach((menu) => {
-      const popover = menu.querySelector<HTMLElement>(":scope > [popover]")!;
-      const toggle = menu.querySelector<HTMLButtonElement>(
-        `:scope > [commandfor="${CSS.escape(popover.id)}"]`
+      const popover = menu.querySelector<HTMLElement>(
+        ":scope > [popover]:not([data-ac-menu])"
       )!;
+      const largeMenu = menu.querySelector<HTMLElement>(
+        ":scope > [data-ac-menu]"
+      )!;
+      const fabFor = (target: HTMLElement) =>
+        menu.querySelector<HTMLButtonElement>(
+          `:scope > [commandfor="${CSS.escape(target.id)}"]`
+        )!;
+      const toggle = fabFor(popover);
       const items = Array.from(
         popover.querySelectorAll<HTMLButtonElement>("[data-ac-fab-menu-item]")
       );
-      const largeMenu = document.querySelector<HTMLElement>(
-        `[data-ac-fab-menu-for="${CSS.escape(popover.id)}"]`
-      )!;
 
       // In large windows, choosing a MenuItem clicks its FabMenuItem, running the item's own
       // handlers and command; the Menu then closes itself
@@ -310,10 +314,14 @@ const fabBaseClasses = [
       });
 
       // Crossing the large window size class swaps one FAB for the other, so whichever menu is
-      // open closes, its FAB being gone
-      matchMedia("(width >= 75rem)").addEventListener("change", () => {
+      // open closes, its FAB being gone, and focus in either moves to the FAB now shown. The
+      // width repeats theme.css's --breakpoint-large (ADR-0014).
+      const large = matchMedia("(width >= 75rem)");
+      large.addEventListener("change", () => {
+        const hadFocus = menu.contains(document.activeElement);
         if (popover.matches(":popover-open")) popover.hidePopover();
         if (largeMenu.matches(":popover-open")) largeMenu.hidePopover();
+        if (hadFocus) fabFor(large.matches ? largeMenu : popover).focus();
       });
 
       // Closing with focus in the menu returns it to the FAB. The popover does this itself, but

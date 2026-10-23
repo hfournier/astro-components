@@ -38,7 +38,8 @@ const { icon, label, class: classList, ...attrs } = Astro.props;
     "motion-safe:delay-[calc((sibling-index()_-_0.5)_/_sibling-count()_*_var(--ac-fab-menu-stagger-span))] motion-safe:group-open/fab-menu-items:delay-[calc((sibling-count()_-_sibling-index()_+_0.5)_/_sibling-count()_*_var(--ac-fab-menu-stagger-span))]",
     classList
   )}
-  data-ac-fab-menu-item={label}
+  data-ac-fab-menu-item
+  data-ac-fab-menu-item-label={label}
   data-ac-fab-menu-item-icon={icon}
   {...attrs}
 >
