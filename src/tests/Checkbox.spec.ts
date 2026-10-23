@@ -24,14 +24,17 @@ const checkbox = (page: Page, caseId: CheckboxCaseId, name: string) =>
     .getByTestId(`checkbox-${caseId}`)
     .getByRole("checkbox", { name, exact: true });
 
+// The <label> around the input
+const label = (input: Locator) => input.locator("xpath=ancestor::label[1]");
+
 // The parts M3's anatomy names (container, icon), plus the state layer and the 48px target
 const part = (
   input: Locator,
   name: "target" | "state-layer" | "container" | "icon"
-) =>
-  input
-    .locator("xpath=ancestor::label[1]")
-    .locator(`[data-ac-checkbox-part="${name}"]`);
+) => label(input).locator(`[data-ac-checkbox-part="${name}"]`);
+
+// The mark's two strokes
+const markLines = (input: Locator) => part(input, "icon").locator("line");
 
 const style = (target: Locator, property: string) =>
   target.evaluate(
@@ -39,7 +42,7 @@ const style = (target: Locator, property: string) =>
     property
   );
 
-const role = (page: Page, name: string) =>
+const colorRole = (page: Page, name: string) =>
   resolvedColor(page, `var(--theme-color-${name})`);
 
 const disabledRole = (page: Page, name: string) =>
@@ -50,14 +53,12 @@ const disabledRole = (page: Page, name: string) =>
 
 // The mark's two strokes: their rotation in degrees, read off the computed transform matrix
 const legAngles = (input: Locator) =>
-  part(input, "icon")
-    .locator("line")
-    .evaluateAll((lines) =>
-      lines.map((line) => {
-        const { a, b } = new DOMMatrix(getComputedStyle(line).transform);
-        return Math.round((Math.atan2(b, a) * 180) / Math.PI);
-      })
-    );
+  markLines(input).evaluateAll((lines) =>
+    lines.map((line) => {
+      const { a, b } = new DOMMatrix(getComputedStyle(line).transform);
+      return Math.round((Math.atan2(b, a) * 180) / Math.PI);
+    })
+  );
 
 test.describe("Checkbox", () => {
   test.beforeEach(async ({ page }) => {
@@ -151,7 +152,7 @@ test.describe("Checkbox", () => {
     );
     await expect(unselected).toHaveCSS(
       "border-top-color",
-      await role(page, "on-surface-variant")
+      await colorRole(page, "on-surface-variant")
     );
     await expect(unselected).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
 
@@ -159,14 +160,17 @@ test.describe("Checkbox", () => {
       const input = checkbox(page, "states", name);
       await expect(part(input, "container")).toHaveCSS(
         "background-color",
-        await role(page, "primary")
+        await colorRole(page, "primary")
       );
       await expect(part(input, "container")).toHaveCSS(
         "border-top-color",
-        await role(page, "primary")
+        await colorRole(page, "primary")
       );
-      for (const line of await part(input, "icon").locator("line").all()) {
-        await expect(line).toHaveCSS("stroke", await role(page, "on-primary"));
+      for (const line of await markLines(input).all()) {
+        await expect(line).toHaveCSS(
+          "stroke",
+          await colorRole(page, "on-primary")
+        );
       }
     }
   });
@@ -211,17 +215,20 @@ test.describe("Checkbox", () => {
     );
     await expect(part(unselected, "container")).toHaveCSS(
       "border-top-color",
-      await role(page, "error")
+      await colorRole(page, "error")
     );
 
     for (const name of ["Selected", "Indeterminate"]) {
       const input = checkbox(page, "error", name);
       await expect(part(input, "container")).toHaveCSS(
         "background-color",
-        await role(page, "error")
+        await colorRole(page, "error")
       );
-      for (const line of await part(input, "icon").locator("line").all()) {
-        await expect(line).toHaveCSS("stroke", await role(page, "on-error"));
+      for (const line of await markLines(input).all()) {
+        await expect(line).toHaveCSS(
+          "stroke",
+          await colorRole(page, "on-error")
+        );
       }
     }
 
@@ -229,7 +236,7 @@ test.describe("Checkbox", () => {
     await unselected.hover();
     await expect(part(unselected, "state-layer")).toHaveCSS(
       "background-color",
-      await role(page, "error")
+      await colorRole(page, "error")
     );
   });
 
@@ -243,7 +250,7 @@ test.describe("Checkbox", () => {
       "border-top-color",
       await disabledRole(page, "on-surface")
     );
-    await expect(unselected.locator("xpath=ancestor::label[1]")).toHaveCSS(
+    await expect(label(unselected)).toHaveCSS(
       "color",
       await disabledRole(page, "on-surface")
     );
@@ -254,8 +261,11 @@ test.describe("Checkbox", () => {
         "background-color",
         await disabledRole(page, "on-surface")
       );
-      for (const line of await part(input, "icon").locator("line").all()) {
-        await expect(line).toHaveCSS("stroke", await role(page, "surface"));
+      for (const line of await markLines(input).all()) {
+        await expect(line).toHaveCSS(
+          "stroke",
+          await colorRole(page, "surface")
+        );
       }
     }
 
@@ -279,19 +289,19 @@ test.describe("Checkbox", () => {
     await expect(part(unselected, "state-layer")).toHaveCSS("opacity", "0.08");
     await expect(part(unselected, "state-layer")).toHaveCSS(
       "background-color",
-      await role(page, "on-surface")
+      await colorRole(page, "on-surface")
     );
     // hovered, the outline darkens to on-surface
     await expect(part(unselected, "container")).toHaveCSS(
       "border-top-color",
-      await role(page, "on-surface")
+      await colorRole(page, "on-surface")
     );
 
     await selected.hover();
     await expect(part(selected, "state-layer")).toHaveCSS("opacity", "0.08");
     await expect(part(selected, "state-layer")).toHaveCSS(
       "background-color",
-      await role(page, "primary")
+      await colorRole(page, "primary")
     );
 
     await page.mouse.move(0, 0);
@@ -317,7 +327,7 @@ test.describe("Checkbox", () => {
       await expect(part(input, "state-layer")).toHaveCSS("opacity", "0.1");
       await expect(part(input, "state-layer")).toHaveCSS(
         "background-color",
-        await role(page, color)
+        await colorRole(page, color)
       );
       await page.mouse.up();
     });
@@ -347,12 +357,12 @@ test.describe("Checkbox", () => {
     await page.mouse.move(0, 0);
     await expect(part(terms, "container")).toHaveCSS(
       "border-top-color",
-      await role(page, "error")
+      await colorRole(page, "error")
     );
     await terms.check();
     await expect(part(terms, "container")).toHaveCSS(
       "background-color",
-      await role(page, "primary")
+      await colorRole(page, "primary")
     );
   });
 
@@ -361,9 +371,9 @@ test.describe("Checkbox", () => {
   }) => {
     const input = checkbox(page, "rtl", "Selected");
     const target = await box(part(input, "target"));
-    const label = await textBox(input.locator("xpath=ancestor::label[1]"));
+    const text = await textBox(label(input));
 
-    expect(label.x + label.width).toBeLessThanOrEqual(target.x + 0.5);
+    expect(text.x + text.width).toBeLessThanOrEqual(target.x + 0.5);
   });
 
   test("on a colored background, the outline and label follow the background's on-color", async ({
@@ -373,7 +383,7 @@ test.describe("Checkbox", () => {
     const input = checkbox(page, "on-secondary-container", "Unselected");
     await expect(part(input, "container")).toHaveCSS(
       "border-top-color",
-      await role(page, "on-secondary-container")
+      await colorRole(page, "on-secondary-container")
     );
   });
 
@@ -387,7 +397,7 @@ test.describe("Checkbox", () => {
           /^0s(, 0s)*$/
         );
       }
-      for (const line of await part(input, "icon").locator("line").all()) {
+      for (const line of await markLines(input).all()) {
         expect(await style(line, "transition-duration")).toMatch(/^0s(, 0s)*$/);
       }
     });

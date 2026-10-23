@@ -258,10 +258,15 @@ const {
 </style>
 
 <script>
-  // HTML has no indeterminate attribute, only the property
-  for (const input of document.querySelectorAll<HTMLInputElement>(
-    "input[data-ac-checkbox-indeterminate]"
-  )) {
-    input.indeterminate = true;
-  }
+  // HTML has no indeterminate attribute, only the property. Set again after each swap, for
+  // checkboxes brought in by Astro's ClientRouter
+  const setIndeterminate = () => {
+    for (const input of document.querySelectorAll<HTMLInputElement>(
+      "input[data-ac-checkbox-indeterminate]"
+    )) {
+      input.indeterminate = true;
+    }
+  };
+  setIndeterminate();
+  document.addEventListener("astro:after-swap", setIndeterminate);
 </script>
