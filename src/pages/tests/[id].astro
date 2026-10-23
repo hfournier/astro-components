@@ -24,9 +24,7 @@ const { Content } = await render(test);
   description={test.data.description}
   classListHtml="scroll-pt-15 large:scroll-pt-0"
 >
-  <Main
-    class="mx-auto max-w-dvw space-y-10 px-4 medium:max-w-[calc(100dvw-96px)] medium:px-6 expanded:max-w-[calc(75ch+4rem)] expanded:px-8"
-  >
+  <Main class="mx-auto max-w-dvw space-y-10 px-4 medium:max-w-[calc(100dvw-96px)] medium:px-6 expanded:max-w-[calc(75ch+4rem)] expanded:px-8">
     <Content components={{ ...mdxComponents }} />
   </Main>
 </BaseLayout>

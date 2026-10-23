@@ -124,55 +124,51 @@ const closeAttrs = isModal
   data-ac-sheet-side={isModal ? "modal" : "standard"}
   {...attrs}
 >
-  {
-    /* Only the content scrolls; the actions stay below it, under a divider. The headline is M3
+  {/* Only the content scrolls; the actions stay below it, under a divider. The headline is M3
        Title Large. A BaseWrapper, so a modal sheet's focus rings and links follow its own
        surface, not the page it was placed in. role="none" on the header and footer: in a modal
        sheet outside <main> and any sectioning element, they'd otherwise be the page's banner and
-       contentinfo landmarks while it's open. */
-  }
+       contentinfo landmarks while it's open. */}
   <BaseWrapper
     {bgColor}
     class:list={["flex h-full flex-col overflow-hidden", shapeClasses]}
   >
-    {
-      hasHeader && (
-        <Header
-          bgColor="transparent"
-          role="none"
-          class:list={[
-            "flex shrink-0 items-center gap-3 pe-6 pt-6 pb-4",
-            // M3: 16px at the start with a back button, 24px without
-            showBack ? "ps-4" : "ps-6",
-          ]}
-        >
-          {showBack && (
-            <ButtonIcon
-              class="rtl:[&>svg]:-scale-x-100"
-              icon="arrow_back"
-              label={backLabel}
-              data-ac-sheet-side-back
-            />
-          )}
-          {headline && (
-            <h2
-              class="min-w-0 flex-1 text-[1.375rem] leading-7 font-normal tracking-normal text-(--theme-color-on-bg-variant)"
-              id={headlineId}
-            >
-              {headline}
-            </h2>
-          )}
-          {showCloseX && (
-            <ButtonIcon
-              class="ms-auto -me-2"
-              icon="close"
-              label={closeLabel}
-              {...closeAttrs}
-            />
-          )}
-        </Header>
-      )
-    }
+    {hasHeader && (
+      <Header
+        bgColor="transparent"
+        role="none"
+        class:list={[
+          "flex shrink-0 items-center gap-3 pe-6 pt-6 pb-4",
+          // M3: 16px at the start with a back button, 24px without
+          showBack ? "ps-4" : "ps-6",
+        ]}
+      >
+        {showBack && (
+          <ButtonIcon
+            class="rtl:[&>svg]:-scale-x-100"
+            icon="arrow_back"
+            label={backLabel}
+            data-ac-sheet-side-back
+          />
+        )}
+        {headline && (
+          <h2
+            class="min-w-0 flex-1 text-[1.375rem] leading-7 font-normal tracking-normal text-(--theme-color-on-bg-variant)"
+            id={headlineId}
+          >
+            {headline}
+          </h2>
+        )}
+        {showCloseX && (
+          <ButtonIcon
+            class="ms-auto -me-2"
+            icon="close"
+            label={closeLabel}
+            {...closeAttrs}
+          />
+        )}
+      </Header>
+    )}
     <div
       class:list={[
         // M3: side sheets never scroll sideways
@@ -182,17 +178,15 @@ const closeAttrs = isModal
     >
       <slot />
     </div>
-    {
-      hasActions && (
-        <Footer
-          bgColor="transparent"
-          role="none"
-          class="flex min-h-18 shrink-0 items-center justify-start gap-2 border-t border-(--theme-color-outline-variant) px-6 pt-4 pb-6"
-        >
-          <slot name="actions" />
-        </Footer>
-      )
-    }
+    {hasActions && (
+      <Footer
+        bgColor="transparent"
+        role="none"
+        class="flex min-h-18 shrink-0 items-center justify-start gap-2 border-t border-(--theme-color-outline-variant) px-6 pt-4 pb-6"
+      >
+        <slot name="actions" />
+      </Footer>
+    )}
   </BaseWrapper>
 </Tag>
 

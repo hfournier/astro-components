@@ -15,52 +15,48 @@ type Props = {
 const { headings, isDocked = false } = Astro.props;
 ---
 
-{
-  /* M3's supporting pane: from large up, a standard side sheet docked to the window's end edge;
+{/* M3's supporting pane: from large up, a standard side sheet docked to the window's end edge;
      below large, a modal side sheet behind a button that stays at the top of the page. Each nav is
-     relative, so the menu's current-section indicator scrolls with its links. */
-}
-{
-  isDocked ? (
-    // 256px, M3's sheet width, unless there's room beside the article at its full 75ch (plus its
-    // 4rem padding and <main>'s 1rem): then it grows to fit its longest heading, up to M3's 400px.
-    // 100cqw is the page column, BaseLayout's size container.
+     relative, so the menu's current-section indicator scrolls with its links. */}
+{isDocked ? (
+  // 256px, M3's sheet width, unless there's room beside the article at its full 75ch (plus its
+  // 4rem padding and <main>'s 1rem): then it grows to fit its longest heading, up to M3's 400px.
+  // 100cqw is the page column, BaseLayout's size container.
+  <SheetSide
+    class="hidden w-fit max-w-[clamp(var(--ac-sheet-side-width),100cqw-75ch-5rem,400px)] min-w-(--ac-sheet-side-width) large:block"
+    headline="On this page"
+    showCloseX={false}
+  >
+    <nav class="relative" aria-label="Table of contents">
+      <TableOfContentsMenu {headings} />
+    </nav>
+  </SheetSide>
+) : (
+  <>
+    <div class="sticky top-5 right-5 justify-self-end large:hidden">
+      <ButtonIcon
+        icon="more_vert"
+        size="md"
+        variant="outlined"
+        command="show-modal"
+        commandfor="table-of-contents"
+        aria-haspopup="dialog"
+        label="Show table of contents"
+      />
+    </div>
+
     <SheetSide
-      class="hidden w-fit max-w-[clamp(var(--ac-sheet-side-width),100cqw-75ch-5rem,400px)] min-w-(--ac-sheet-side-width) large:block"
+      class="large:hidden"
+      id="table-of-contents"
       headline="On this page"
-      showCloseX={false}
+      isModal
     >
       <nav class="relative" aria-label="Table of contents">
         <TableOfContentsMenu {headings} />
       </nav>
     </SheetSide>
-  ) : (
-    <>
-      <div class="sticky top-5 right-5 justify-self-end large:hidden">
-        <ButtonIcon
-          icon="more_vert"
-          size="md"
-          variant="outlined"
-          command="show-modal"
-          commandfor="table-of-contents"
-          aria-haspopup="dialog"
-          label="Show table of contents"
-        />
-      </div>
-
-      <SheetSide
-        class="large:hidden"
-        id="table-of-contents"
-        headline="On this page"
-        isModal
-      >
-        <nav class="relative" aria-label="Table of contents">
-          <TableOfContentsMenu {headings} />
-        </nav>
-      </SheetSide>
-    </>
-  )
-}
+  </>
+)}
 
 <script>
   const toc = document.getElementById("table-of-contents");

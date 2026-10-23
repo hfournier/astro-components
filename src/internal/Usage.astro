@@ -28,32 +28,30 @@ const codeProps = {
 ---
 
 <Section class="space-y-8">
-  <Heading id={headingId} level={2}>Usage</Heading>
+  <Heading id={headingId} level={2}>
+    Usage
+  </Heading>
 
   <MarkdownParagraphs text={usage.data.description} />
 
-  {
-    /* One CodePreview per combination: Astro counts a slot as filled even when the expression
+  {/* One CodePreview per combination: Astro counts a slot as filled even when the expression
        inside it renders nothing, so toggling the code or preview inside one CodePreview left an
-       empty "Preview" box on code-only usages. */
-  }
-  {
-    usage.data.show !== "none" &&
-      (showCode && showPreview ? (
+       empty "Preview" box on code-only usages. */}
+  {usage.data.show !== "none" &&
+    (showCode && showPreview ? (
+      <CodePreview>
+        <Code {...codeProps} slot="code" />
+        <Content components={{ ...mdxComponents }} slot="preview" />
+      </CodePreview>
+    ) : showCode ? (
+      <CodePreview>
+        <Code {...codeProps} slot="code" />
+      </CodePreview>
+    ) : (
+      showPreview && (
         <CodePreview>
-          <Code {...codeProps} slot="code" />
           <Content components={{ ...mdxComponents }} slot="preview" />
         </CodePreview>
-      ) : showCode ? (
-        <CodePreview>
-          <Code {...codeProps} slot="code" />
-        </CodePreview>
-      ) : (
-        showPreview && (
-          <CodePreview>
-            <Content components={{ ...mdxComponents }} slot="preview" />
-          </CodePreview>
-        )
-      ))
-  }
+      )
+    ))}
 </Section>

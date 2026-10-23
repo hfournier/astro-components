@@ -5,11 +5,9 @@ const hasCodeSlot = Astro.slots.has("code");
 const hasPreviewSlot = Astro.slots.has("preview");
 ---
 
-{
-  /* No tabindex on the scroll wrappers: Shiki's <pre> is already keyboard-focusable for
+{/* No tabindex on the scroll wrappers: Shiki's <pre> is already keyboard-focusable for
      scrolling code, and browsers make an overflowing preview focusable on their own. Extra
-     tab stops here only slowed keyboard users down on the way to the preview's controls. */
-}
+     tab stops here only slowed keyboard users down on the way to the preview's controls. */}
 <div
   class:list={[
     // minmax(0,1fr): the column stays the page's width rather than growing to fit wide code or a
@@ -18,32 +16,28 @@ const hasPreviewSlot = Astro.slots.has("preview");
   ]}
   data-testid="code-preview"
 >
-  {
-    hasCodeSlot && (
-      <div class="overflow-x-auto">
-        <slot name="code" />
-      </div>
-    )
-  }
+  {hasCodeSlot && (
+    <div class="overflow-x-auto">
+      <slot name="code" />
+    </div>
+  )}
 
-  {
-    hasPreviewSlot && (
+  {hasPreviewSlot && (
+    <BaseWrapper
+      as="figure"
+      bgColor="surface-container-low"
+      class:list={[
+        "flex flex-col gap-1 p-4",
+        hasCodeSlot && "border-t border-(--theme-color-outline-variant)",
+      ]}
+    >
+      <figcaption class="text-sm font-semibold">Preview</figcaption>
       <BaseWrapper
-        as="figure"
-        bgColor="surface-container-low"
-        class:list={[
-          "flex flex-col gap-1 p-4",
-          hasCodeSlot && "border-t border-(--theme-color-outline-variant)",
-        ]}
+        bgColor="surface-container-lowest"
+        class="overflow-x-auto border border-(--theme-color-outline-variant) p-4"
       >
-        <figcaption class="text-sm font-semibold">Preview</figcaption>
-        <BaseWrapper
-          bgColor="surface-container-lowest"
-          class="overflow-x-auto border border-(--theme-color-outline-variant) p-4"
-        >
-          <slot name="preview" />
-        </BaseWrapper>
+        <slot name="preview" />
       </BaseWrapper>
-    )
-  }
+    </BaseWrapper>
+  )}
 </div>

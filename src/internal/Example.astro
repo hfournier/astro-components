@@ -17,26 +17,26 @@ const { Content } = await render(example);
 ---
 
 <div class="space-y-8">
-  <Heading id={headingId} level={3}>{example.data.title}</Heading>
+  <Heading id={headingId} level={3}>
+    {example.data.title}
+  </Heading>
 
   <MarkdownParagraphs text={example.data.description} />
 
   <CodePreview>
-    {
-      example.body && (
-        <Code
-          class="bg-(--theme-color-surface-container-lowest)! p-4"
-          code={example.body}
-          lang="jsx"
-          themes={{
-            light: "github-light-default",
-            dark: "github-dark-default",
-          }}
-          defaultColor="light-dark()"
-          slot="code"
-        />
-      )
-    }
+    {example.body && (
+      <Code
+        class="bg-(--theme-color-surface-container-lowest)! p-4"
+        code={example.body}
+        lang="jsx"
+        themes={{
+          light: "github-light-default",
+          dark: "github-dark-default",
+        }}
+        defaultColor="light-dark()"
+        slot="code"
+      />
+    )}
 
     <Content components={{ ...mdxComponents }} slot="preview" />
   </CodePreview>

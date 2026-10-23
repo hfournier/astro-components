@@ -36,17 +36,15 @@ const labelId = label ? `ac-menu-group-${crypto.randomUUID()}` : undefined;
   data-ac-menu-group
   {...attrs}
 >
-  {
-    label && (
-      // M3's section label (Compose's DropdownMenuGroupLabel): Label Large, at least 32px high,
-      // 12px from the start and 4px from the end
-      <div
-        class="flex min-h-8 items-center ps-3 pe-1 text-sm leading-5 font-medium tracking-[0.1px] text-(--theme-color-on-bg-variant)"
-        id={labelId}
-      >
-        {label}
-      </div>
-    )
-  }
+  {label && (
+    // M3's section label (Compose's DropdownMenuGroupLabel): Label Large, at least 32px high,
+    // 12px from the start and 4px from the end
+    <div
+      class="flex min-h-8 items-center ps-3 pe-1 text-sm leading-5 font-medium tracking-[0.1px] text-(--theme-color-on-bg-variant)"
+      id={labelId}
+    >
+      {label}
+    </div>
+  )}
   <slot />
 </div>

@@ -110,12 +110,10 @@ const heightClasses = hasHalfHeight
   data-ac-sheet-bottom={isModal ? "modal" : "standard"}
   {...attrs}
 >
-  {
-    /* Its height follows its content, up to its height cap. Only the content scrolls. A
+  {/* Its height follows its content, up to its height cap. Only the content scrolls. A
        BaseWrapper, so a modal sheet's focus rings and links follow its own surface, not the page
        it was placed in. role="none" on the header: in a modal sheet outside <main> and any
-       sectioning element, it'd otherwise be the page's banner landmark while it's open. */
-  }
+       sectioning element, it'd otherwise be the page's banner landmark while it's open. */}
   <BaseWrapper
     {bgColor}
     class:list={[

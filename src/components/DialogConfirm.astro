@@ -14,12 +14,10 @@ type Props = DialogProps & {
 const { id, buttonDismiss, buttonConfirm, ...attrs } = Astro.props;
 ---
 
-{
-  /* M3: a dialog with two actions pairs a dismissing action with a confirming one, confirm
+{/* M3: a dialog with two actions pairs a dismissing action with a confirming one, confirm
      last. Dismiss is autofocused so a reflexive Enter never confirms, and uses request-close
      so it fires `cancel` the same way Escape does. Dialog wires aria-labelledby to the
-     headline itself. */
-}
+     headline itself. */}
 <Dialog {id} role="alertdialog" aria-describedby={`${id}-content`} {...attrs}>
   <slot />
 

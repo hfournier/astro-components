@@ -49,8 +49,7 @@ const expandedWidthClasses = {
 }[expandedWidth];
 ---
 
-{
-  /* The rail is a size container: only its width depends on whether it's expanded, and the inner
+{/* The rail is a size container: only its width depends on whether it's expanded, and the inner
      div, NavRailItem and Fab restyle themselves from that width (the rail-expanded and
      rail-collapsed variants in theme.css: wider than 160px, between M3's
      collapsed and expanded widths). A container's width can't depend on its content, so the
@@ -58,8 +57,7 @@ const expandedWidthClasses = {
 
      Below medium it's a modal overlay, off the start edge until its MenuToggle, which stays in place
      over the page, slides it in. Open while data-open is set (by the script); closed, it's invisible
-     (all but the toggle), so it can't be focused or reached by assistive tech. */
-}
+     (all but the toggle), so it can't be focused or reached by assistive tech. */}
 <BaseWrapper
   class:list={twMerge(
     // M3 collapsed rail. No padding here: the container query measures the
@@ -107,18 +105,14 @@ const expandedWidthClasses = {
       "rail-expanded:items-start rail-expanded:px-5",
     ]}
   >
-    {
-      /* An expandable rail's toggle expands and collapses it from medium up. Every rail has one
+    {/* An expandable rail's toggle expands and collapses it from medium up. Every rail has one
          below medium, where it opens and closes the modal rail: fixed where it sits in the open
          rail, and visible while the rest of the rail isn't, so it stays in place over the page
          whether the rail is open or not. It's filled with the rail's background, so it's readable
          over whatever is behind it while the rail is closed, and blends into the rail when it's
-         open. The div keeps its place in the rail. */
-    }
+         open. The div keeps its place in the rail. */}
     <div class:list={["size-14 shrink-0", !isExpandable && "medium:hidden"]}>
-      <MenuToggle
-        class="max-medium:visible max-medium:fixed max-medium:start-5 max-medium:top-5 max-medium:z-10 max-medium:bg-(--theme-color-wrapper-bg)"
-      />
+      <MenuToggle class="max-medium:visible max-medium:fixed max-medium:start-5 max-medium:top-5 max-medium:z-10 max-medium:bg-(--theme-color-wrapper-bg)" />
       <script is:inline>
         // M3: a rail can be expanded by default on larger windows, so an expandable one starts
         // expanded from large up. Set before the rail is first painted, so it doesn't show
@@ -136,9 +130,7 @@ const expandedWidthClasses = {
 
     <slot name="fab" />
 
-    {
-      /* No gap between destinations when expanded, where each item is its own indicator */
-    }
+    {/* No gap between destinations when expanded, where each item is its own indicator */}
     <nav
       class:list={[
         "mt-10 flex w-full flex-col gap-1 rail-expanded:gap-0",
@@ -162,8 +154,7 @@ const expandedWidthClasses = {
   ]}
   aria-hidden="true"
   data-ac-nav-rail-scrim
->
-</div>
+></div>
 
 <script>
   // Below medium the rail's MenuToggle opens it as a modal: the rest of the page is inert under a

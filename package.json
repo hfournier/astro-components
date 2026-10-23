@@ -23,7 +23,7 @@
     "github-slugger": "^2.0.0",
     "marked": "^18.0.14",
     "prettier": "^3.9.9",
-    "prettier-plugin-astro": "^0.14.1",
+    "prettier-plugin-astro": "^1.0.1",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "shiki": "4.4.3",
     "tailwind-merge": "^3.7.0",

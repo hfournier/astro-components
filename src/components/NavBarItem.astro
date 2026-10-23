@@ -98,28 +98,22 @@ const accessibleName = badgedName(label, badgeLabel, badgeDescription);
         style={hasBadge ? `anchor-name: ${badgeAnchorName}` : undefined}
       />
     </span>
-    {
-      /* M3: labels are one or two words on one line, but at larger text sizes they wrap, and the
+    {/* M3: labels are one or two words on one line, but at larger text sizes they wrap, and the
          bar grows to hold them, so the full label stays visible (M3 asks that up to 2x; this
          never truncates). Below medium, where the items share the bar's width,
          a word too long for its item breaks; from medium up, the indicator is never narrower
-         than the label's longest word, so it only breaks between words. */
-    }
-    <span class="max-w-full text-balance wrap-anywhere medium:wrap-break-word"
-      >{label}</span
-    >
+         than the label's longest word, so it only breaks between words. */}
+    <span class="max-w-full text-balance wrap-anywhere medium:wrap-break-word">
+      {label}
+    </span>
   </span>
-  {
-    /* M3: the badge overlaps the icon's top-end corner in vertical and horizontal items alike */
-  }
-  {
-    hasBadge && (
-      <Badge
-        label={badgeLabel}
-        style={`--ac-anchorname-badge: ${badgeAnchorName}`}
-      />
-    )
-  }
+  {/* M3: the badge overlaps the icon's top-end corner in vertical and horizontal items alike */}
+  {hasBadge && (
+    <Badge
+      label={badgeLabel}
+      style={`--ac-anchorname-badge: ${badgeAnchorName}`}
+    />
+  )}
 </a>
 
 <script>

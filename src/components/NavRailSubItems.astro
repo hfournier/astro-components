@@ -38,11 +38,9 @@ const labelId = sectionLabel
   : undefined;
 ---
 
-{
-  /* Every section renders, and only the current one shows (the hidden attribute wins over any
+{/* Every section renders, and only the current one shows (the hidden attribute wins over any
      display class): an expanded NavRail shows it, and a NavDrawer shows it or, while a rail item is
-     hovered or focused, swaps in that item's section, matched by data-ac-nav-section. */
-}
+     hovered or focused, swaps in that item's section, matched by data-ac-nav-section. */}
 <div
   class:list={twMerge(
     "hidden rail-expanded:block",
@@ -59,21 +57,21 @@ const labelId = sectionLabel
   data-ac-nav-section-current={isCurrentSection ? "" : undefined}
   {...attrs}
 >
-  {
-    sectionLabel && (
-      <>
-        <Divider />
-        {/* M3's drawer headline is Title Small, the same type as the items' Label Large, so
+  {sectionLabel && (
+    <>
+      <Divider />
+      {/* M3's drawer headline is Title Small, the same type as the items' Label Large, so
             beside items without icons it looked like one more link. Label Medium, smaller and
             wider-spaced, reads as a caption over the group. Lined up with the items' content. */}
-        <div
-          class="px-4 pt-3 pb-1 text-xs leading-4 font-medium tracking-[0.5px] text-(--theme-color-on-surface-variant)"
-          id={labelId}
-        >
-          {sectionLabel}
-        </div>
-      </>
-    )
-  }
-  {subItems.map((item) => <NavDrawerItem {...item} />)}
+      <div
+        class="px-4 pt-3 pb-1 text-xs leading-4 font-medium tracking-[0.5px] text-(--theme-color-on-surface-variant)"
+        id={labelId}
+      >
+        {sectionLabel}
+      </div>
+    </>
+  )}
+  {subItems.map((item) => (
+    <NavDrawerItem {...item} />
+  ))}
 </div>

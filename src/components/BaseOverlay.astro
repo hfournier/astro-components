@@ -59,11 +59,9 @@ const randomId = crypto.randomUUID();
   style={`--ac-anchorname-overlay: --anchorname-${randomId}-overlay`}
   {...attrs}
 >
-  {
-    /* The panel is a BaseWrapper so it resets the per-background custom properties (focus-ring,
+  {/* The panel is a BaseWrapper so it resets the per-background custom properties (focus-ring,
        ring offset, link colors) to its own surface - an overlay inherits them from wherever it
-       sits in the DOM, not from what it's drawn over. */
-  }
+       sits in the DOM, not from what it's drawn over. */}
   <BaseWrapper
     {bgColor}
     class:list={["[anchor-name:var(--ac-anchorname-overlay)]", classList]}
