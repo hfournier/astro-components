@@ -16,6 +16,10 @@ Default canonical vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `
 
 Single-context: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
 
+### Material 3 reference
+
+`docs/m3-documentation-links.md` lists every page on m3.material.io. Check it for the page that settles a design or implementation question. The pages render client-side, so read them with Playwright rather than a plain fetch, including image alt text, which often carries guidance the prose doesn't.
+
 ## Package manager
 
 This repo uses `pnpm`. Use `pnpm <script>` (e.g. `pnpm test`, `pnpm dev`) and `pnpm dlx` in place of `npm run` / `npx`.
