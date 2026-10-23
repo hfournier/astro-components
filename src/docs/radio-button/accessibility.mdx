@@ -1,0 +1,13 @@
+RadioButton is a native `<input type="radio">`, so assistive tech announces its role, its label, whether it's checked and its position in the group. The label is a `<label>` around the input, so clicking it selects the radio button too.
+
+Keyboard interaction is the browser's own:
+
+- **Tab** moves focus into the group at the selected radio button, or at the first one (the last, with Shift+Tab) if none is selected. Tab again leaves the group.
+- **Arrow keys** move focus and the selection to the previous or next radio button. Chromium and Firefox wrap from the last to the first; Safari stops at the ends.
+- **Space** selects the focused radio button.
+
+Name every group, with a `<fieldset>` and `<legend>` or with `role="radiogroup"` and `aria-labelledby`, so assistive tech announces the group's title as people enter it. Name every radio button too. Its label usually is one; one without visible text needs `aria-label` or `aria-labelledby`.
+
+Once an option is chosen, a group can't be cleared. To let people opt out, add an option such as "None" or a separate way to clear the selection.
+
+Every radio button has a 48×48px touch target, as M3 asks. Don't shrink it to make a layout denser. Focused from the keyboard, it shows the theme focus ring around its state layer.

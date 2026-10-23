@@ -1,0 +1,159 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+
+// A native radio button, so radios that share a `name` form a group: choosing one clears the
+// others, the arrow keys move the selection, and the chosen `value` submits with the form.
+// Every attribute but `class` goes on the input (`name`, `value`, `checked`, `disabled`,
+// `required`, `aria-*`), and `class` on the label around it. The default slot is the label's
+// text.
+type Props = Omit<HTMLAttributes<"input">, "type">;
+
+const { class: classList, ...attrs }: Props = Astro.props;
+---
+
+<label
+  class:list={twMerge(
+    "inline-flex cursor-pointer items-center align-middle text-base leading-6 tracking-[0.5px]",
+    // M3: a disabled label is on-surface at 38%, like the radio button
+    "has-disabled:cursor-default has-disabled:text-(--theme-color-on-surface)/38",
+    classList
+  )}
+  data-ac-radio-button
+>
+  {/* M3 touch target: 48x48, around the 40px state layer and the 20px icon */}
+  <span
+    class="relative grid size-12 shrink-0 place-items-center"
+    data-ac-radio-button-part="target"
+  >
+    <input
+      class="absolute size-10 cursor-[inherit] appearance-none rounded-full outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)"
+      type="radio"
+      {...attrs}
+    />
+    <span
+      class="pointer-events-none absolute size-10 rounded-full"
+      data-ac-radio-button-part="state-layer"
+    ></span>
+    {/* Compose draws a 2px ring with a 10px dot inside it */}
+    <span
+      class="pointer-events-none relative grid size-5 place-items-center rounded-full border-2"
+      data-ac-radio-button-part="icon"
+    >
+      <span
+        class="size-2.5 rounded-full"
+        data-ac-radio-button-part="dot"
+      ></span>
+    </span>
+  </span>
+  <slot />
+</label>
+
+<style>
+  /* Unselected, the ring is on-bg-variant at rest and the label's color (on-surface outside any
+     wrapper) when hovered, focused or pressed. Selected, the ring and dot are primary. */
+  [data-ac-radio-button-part="state-layer"] {
+    background-color: currentColor;
+    opacity: 0;
+  }
+
+  [data-ac-radio-button]:hover [data-ac-radio-button-part="state-layer"] {
+    opacity: 0.08;
+  }
+
+  [data-ac-radio-button]:active [data-ac-radio-button-part="state-layer"],
+  input:focus-visible ~ [data-ac-radio-button-part="state-layer"] {
+    opacity: 0.1;
+  }
+
+  input:checked ~ [data-ac-radio-button-part="state-layer"] {
+    background-color: var(--theme-color-primary);
+  }
+
+  /* M3: pressed, the state layer takes the color of the state it's about to become. A selected
+     radio stays selected, but its tokens still press in on-surface. */
+  [data-ac-radio-button]:active
+    input:not(:checked)
+    ~ [data-ac-radio-button-part="state-layer"] {
+    background-color: var(--theme-color-primary);
+  }
+
+  [data-ac-radio-button]:active
+    input:checked
+    ~ [data-ac-radio-button-part="state-layer"] {
+    background-color: currentColor;
+  }
+
+  /* Scoped under the label to outrank its :hover and :active */
+  [data-ac-radio-button]
+    input:disabled
+    ~ [data-ac-radio-button-part="state-layer"] {
+    opacity: 0;
+  }
+
+  [data-ac-radio-button-part="icon"] {
+    border-color: var(--theme-color-on-bg-variant);
+  }
+
+  [data-ac-radio-button]:is(:hover, :active)
+    input:enabled:not(:checked)
+    ~ [data-ac-radio-button-part="icon"],
+  input:focus-visible:not(:checked) ~ [data-ac-radio-button-part="icon"] {
+    border-color: currentColor;
+  }
+
+  input:checked ~ [data-ac-radio-button-part="icon"] {
+    border-color: var(--theme-color-primary);
+  }
+
+  /* The dot grows from the ring's center */
+  [data-ac-radio-button-part="dot"] {
+    background-color: var(--theme-color-primary);
+    transform: scale(0);
+  }
+
+  input:checked ~ * [data-ac-radio-button-part="dot"] {
+    transform: none;
+  }
+
+  input:disabled ~ [data-ac-radio-button-part="icon"] {
+    border-color: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 38%,
+      transparent
+    );
+  }
+
+  input:disabled ~ * [data-ac-radio-button-part="dot"] {
+    background-color: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 38%,
+      transparent
+    );
+  }
+
+  /* Compose's timing: the dot grows and shrinks on fast spatial, and the colors change on
+     default effects. The state layer fades on fast effects, as everywhere. */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-ac-radio-button-part="state-layer"] {
+      transition:
+        opacity var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects),
+        background-color var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects);
+    }
+
+    [data-ac-radio-button-part="icon"] {
+      transition: border-color var(--theme-duration-spring-default-effects)
+        var(--ease-spring-default-effects);
+    }
+
+    [data-ac-radio-button-part="dot"] {
+      transition:
+        transform var(--theme-duration-spring-fast-spatial)
+          var(--ease-spring-fast-spatial),
+        background-color var(--theme-duration-spring-default-effects)
+          var(--ease-spring-default-effects);
+    }
+  }
+</style>

@@ -1,0 +1,71 @@
+---
+title: Radio button
+description: Tests for the RadioButton component
+---
+
+<Heading level={1}>Radio Button Tests</Heading>
+
+<Section data-testid="radio-button-states" class="p-4 space-y-4">
+  <Heading level={2}>States</Heading>
+  <fieldset class="flex flex-col items-start">
+    <legend>Ringtone</legend>
+    <RadioButton name="ringtone" value="beacon">Beacon</RadioButton>
+    <RadioButton name="ringtone" value="chimes" checked>Chimes</RadioButton>
+    <RadioButton name="ringtone" value="circuit">Circuit</RadioButton>
+  </fieldset>
+</Section>
+
+<Section data-testid="radio-button-none-selected" class="p-4 space-y-4">
+  <Heading level={2}>None selected</Heading>
+  <Button>Before</Button>
+  <div role="radiogroup" aria-labelledby="radio-button-sort-label" class="flex flex-col items-start">
+    <span id="radio-button-sort-label">Sort by</span>
+    <RadioButton name="sort" value="relevance">Relevance</RadioButton>
+    <RadioButton name="sort" value="newest">Newest</RadioButton>
+    <RadioButton name="sort" value="price">Price</RadioButton>
+  </div>
+  <Button>After</Button>
+</Section>
+
+<Section data-testid="radio-button-disabled" class="p-4 space-y-4">
+  <Heading level={2}>Disabled</Heading>
+  <fieldset class="flex flex-col items-start">
+    <legend>Size</legend>
+    <RadioButton name="size" value="small" disabled>Unselected</RadioButton>
+    <RadioButton name="size" value="large" disabled checked>Selected</RadioButton>
+  </fieldset>
+</Section>
+
+<Section data-testid="radio-button-no-label" class="p-4 space-y-4">
+  <Heading level={2}>Without a visible label</Heading>
+  <RadioButton name="row" value="1" aria-label="Choose row 1" />
+</Section>
+
+<Section data-testid="radio-button-form" class="p-4 space-y-4">
+  <Heading level={2}>In a form</Heading>
+  <form class="space-y-2" onsubmit="event.preventDefault()">
+    <fieldset class="flex flex-col items-start">
+      <legend>Delivery</legend>
+      <RadioButton name="delivery" value="standard" checked>Standard</RadioButton>
+      <RadioButton name="delivery" value="express">Express</RadioButton>
+    </fieldset>
+    <fieldset class="flex flex-col items-start">
+      <legend>Payment</legend>
+      <RadioButton name="payment" value="card" required>Card</RadioButton>
+      <RadioButton name="payment" value="invoice" required>Invoice</RadioButton>
+    </fieldset>
+    <Button type="submit">Submit</Button>
+    <Button type="reset" variant="outlined">Reset</Button>
+  </form>
+</Section>
+
+<Section data-testid="radio-button-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <RadioButton name="rtl" value="1" checked>Selected</RadioButton>
+</Section>
+
+<Section data-testid="radio-button-on-secondary-container" bgColor="secondary-container" class="p-4 space-y-4 rounded-xl">
+  <Heading level={2}>On secondary container</Heading>
+  <RadioButton name="colored" value="1">Unselected</RadioButton>
+  <RadioButton name="colored" value="2" checked>Selected</RadioButton>
+</Section>
