@@ -1,0 +1,7 @@
+Checkbox is a native `<input type="checkbox">`, so assistive tech announces its role, its label and whether it's checked, and an indeterminate one as mixed (partly checked). Tab moves focus to it and Space toggles it. The label is a `<label>` around the input, so clicking it toggles the checkbox too.
+
+Give every checkbox a name. Its label usually is one. A checkbox without visible text, such as one selecting a table row, needs `aria-label` or `aria-labelledby`.
+
+Mark an error with `aria-invalid="true"`, which both shows the error colors and announces the checkbox as invalid. Color alone doesn't say what's wrong, so also show a message and link it with `aria-describedby`. A `required` checkbox shows the error colors on its own once the person has tried to submit its form unchecked (`:user-invalid`).
+
+Every checkbox has a 48×48px touch target, as M3 asks. Don't shrink it to make a layout denser. Focused from the keyboard, it shows the theme focus ring around its state layer.

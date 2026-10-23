@@ -1,0 +1,45 @@
+---
+name: Checkbox
+description: A Material 3 checkbox, extending HTML's `<input type="checkbox">` element, inside a `<label>` that holds its text. It has M3's unselected, selected and indeterminate states, each with an error version, and the 48px touch target and state layer of M3's selection controls. Being a native input, it submits, resets and validates with its form.
+category: Forms
+role: pattern
+meta:
+  title: Checkbox | astro-components HenriFournier.dev
+  description: A Material 3 checkbox on a native input, with selected, unselected, indeterminate and error states and an animated check.
+extends:
+  kind: element
+  tag: [input]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/checkbox
+props:
+  - name: isIndeterminate
+    type: boolean
+    required: false
+    default: "false"
+    description: Starts the checkbox indeterminate, M3's third state, shown with a dash. HTML has no attribute for it, so a script sets the input's `indeterminate` property on load. After that, read or set the property yourself. Choosing an indeterminate checkbox clears it and toggles `checked`, so leave `checked` off and it becomes selected, as M3 asks.
+slots:
+  - name: default
+    description: The label's text, in M3's Body Large and the background's on-color (`on-surface` outside any wrapper). Clicking it toggles the checkbox. Leave it empty only when the checkbox is named another way, with `aria-label` or `aria-labelledby`.
+    kind: any
+---
+
+## Attributes
+
+Every attribute except `class` goes on the `<input>`: `name`, `value`, `checked`, `disabled`, `required`, `form`, `aria-*` and the rest. `class` goes on the `<label>` around it, so it can place and space the whole control. Listen for the input's `change` event to react to a change.
+
+## States
+
+- **Unselected:** a 2px outline in `on-surface-variant` (the background's variant on-color inside a BaseWrapper). Hovered, focused or pressed, it darkens to the label's color.
+- **Selected** (`checked`): a `primary` container with an `on-primary` check.
+- **Indeterminate** (`isIndeterminate`): the same container with a dash, for a parent checkbox whose children are only partly selected.
+- **Error:** the same three states in `error`, with an `on-error` mark. See Accessibility.
+- **Disabled** (`disabled`): the outline, or the container, in `on-surface` at 38% with a `surface` mark, and the label at 38%.
+
+The state layer is a 40px circle, at 8% when hovered and 10% when focused or pressed. It's the label's color (`on-surface` outside any wrapper) when unselected and `primary` when selected. While pressed it takes the other color, the one the checkbox is about to become.
+
+## Motion
+
+As in Compose, the mark draws in from its leading end and morphs between check and dash on the default spatial spring, and the container colors in on default effects. Unselecting, the colors fade out on fast effects and the mark snaps away after 100ms. Compose puts the mark on the default springs rather than the fast ones M3 uses for most small components, and Checkbox follows it (ADR-0018). Under reduced motion, every state changes at once.
+
+## Parent checkboxes
+
+A checkbox can select or clear a group of others. The parent is selected when every child is, unselected when none is, and indeterminate when only some are. Choosing an indeterminate parent selects every child. Checkbox doesn't wire this up for you: listen for `change` on the children to set the parent's `checked` and `indeterminate`, and on the parent to set the children's `checked`. Put the group in a `<fieldset>` with a `<legend>`, or name it with `role="group"` and `aria-labelledby`.

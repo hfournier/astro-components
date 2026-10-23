@@ -1,0 +1,13 @@
+---
+title: Checkbox error
+description: Set `aria-invalid="true"` to show the error state, and link a message that says what's wrong with `aria-describedby`.
+---
+
+<div class="space-y-1">
+  <div class="flex flex-wrap items-center gap-4">
+    <Checkbox aria-invalid="true" aria-describedby="checkbox-example-error">Unselected</Checkbox>
+    <Checkbox aria-invalid="true" aria-describedby="checkbox-example-error" checked>Selected</Checkbox>
+    <Checkbox aria-invalid="true" aria-describedby="checkbox-example-error" isIndeterminate>Indeterminate</Checkbox>
+  </div>
+  <p id="checkbox-example-error" class="text-sm text-(--theme-color-error)">Choose at least one option</p>
+</div>
