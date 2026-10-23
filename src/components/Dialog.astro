@@ -141,8 +141,9 @@ const { icon, headline, label, id, class: classList, ...attrs } = Astro.props;
     opacity: 0;
 
     @media (prefers-reduced-motion: no-preference) {
-      transition: opacity var(--theme-duration-overlay)
-        var(--ease-theme-overlay);
+      /* fast effects, as all component opacity changes (ADR-0018) */
+      transition: opacity var(--theme-duration-spring-fast-effects)
+        var(--ease-spring-fast-effects);
     }
   }
 

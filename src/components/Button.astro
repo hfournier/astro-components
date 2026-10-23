@@ -200,7 +200,11 @@ const selectedIcon =
     // M3 touch target: at least 48px high, centered on the button, for every size
     "after:absolute after:inset-x-0 after:top-1/2 after:h-12 after:min-h-full after:-translate-y-1/2",
     "disabled:cursor-default disabled:text-(--theme-color-on-surface)/38",
-    "motion-safe:transition-[color,background-color,border-color,border-radius,box-shadow] motion-safe:duration-(--theme-duration-feedback)",
+    // M3's button tokens put the corner morph on the fast spatial spring; colors and the shadow
+    // are on fast effects (ADR-0018). One duration and easing per property.
+    "motion-safe:transition-[color,background-color,border-color,border-radius,box-shadow]",
+    "motion-safe:duration-[var(--theme-duration-spring-fast-effects),var(--theme-duration-spring-fast-effects),var(--theme-duration-spring-fast-effects),var(--theme-duration-spring-fast-spatial),var(--theme-duration-spring-fast-effects)]",
+    "motion-safe:ease-[var(--ease-spring-fast-effects),var(--ease-spring-fast-effects),var(--ease-spring-fast-effects),var(--ease-spring-fast-spatial),var(--ease-spring-fast-effects)]",
     "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
     showFullwidth ? "min-w-full" : "max-w-fit",
     borderClasses,

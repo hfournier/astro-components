@@ -13,7 +13,7 @@ A token that a whole derived scale is computed from via `calc()` (or an equivale
 _Avoid_: root token, primary token (ambiguous with the `primary` color role)
 
 **Role token**:
-A token named for the situation it's used in (`--theme-duration-overlay`, `--ease-theme-overlay`) rather than its literal step (`--theme-duration-base`, `--ease-out`), defined via `var()` onto a value-layer token of the same property. Lets a component author pick by intent instead of by magnitude. Distinct from a [[Base token]]: a base token is what a scale derives *from*, a role token is a second name layered *on top of* an already-derived scale.
+A token named for the situation it's used in (`--theme-color-link-text`, `--theme-color-focus-ring-on-bg`) rather than the value it points at (`--theme-color-primary`, `--theme-color-secondary`), defined via `var()` onto a value-layer token of the same property. Lets a component author pick by intent instead of by magnitude. Distinct from a [[Base token]]: a base token is what a scale derives *from*, a role token is a second name layered *on top of* an already-derived scale.
 _Avoid_: semantic token, alias (too generic — every token is technically a CSS alias)
 
 **Theme**:

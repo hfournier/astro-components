@@ -71,9 +71,11 @@ const widthClasses = {
     bgColor === "surface" &&
       "max-large:[--theme-color-wrapper-bg:var(--theme-color-surface-container-low)]",
     // Slides out from under the rail toward its end side, and back. Visible straight away when
-    // opening, so focus can move into it; still visible while it slides back when closing.
+    // opening, so focus can move into it; still visible while it slides back when closing. M3's
+    // drawer enters and exits temporarily on emphasized easing, which on the web falls back to
+    // standard (ADR-0018).
     "invisible -translate-x-full rtl:translate-x-full data-open:visible data-open:translate-x-0",
-    "motion-safe:transition-[translate,visibility] motion-safe:data-open:transition-[translate] motion-safe:duration-(--theme-duration-base)",
+    "motion-safe:transition-[translate,visibility] motion-safe:data-open:transition-[translate] motion-safe:duration-(--theme-duration-medium-2) motion-safe:ease-standard",
     // large and up: M3's standard drawer, always visible, in the layout right after the rail, at
     // elevation 0, keeping M3's end corners
     "large:visible large:sticky large:start-auto large:z-auto large:translate-x-0 large:shadow-none large:transition-none",
@@ -104,7 +106,7 @@ const widthClasses = {
       class:list={[
         "invisible fixed inset-0 z-10 bg-(--theme-color-scrim)/32 opacity-0",
         "peer-data-open/nav-drawer:visible peer-data-open/nav-drawer:opacity-100",
-        "motion-safe:transition-[opacity,visibility] motion-safe:duration-(--theme-duration-base) large:hidden",
+        "motion-safe:transition-[opacity,visibility] motion-safe:duration-(--theme-duration-medium-2) motion-safe:ease-standard large:hidden",
       ]}
       aria-hidden="true"
       data-ac-nav-drawer-scrim

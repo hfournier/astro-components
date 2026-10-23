@@ -53,7 +53,7 @@ const { headings, class: classList, ...attrs } = Astro.props;
           "hidden supports-[selector(:target-current)]:block",
           "pointer-events-none absolute inset-0 rounded-full border border-(--theme-color-outline-variant)",
           "top-[anchor(top)] right-[anchor(right)] bottom-[anchor(bottom)] left-[anchor(left)] [position-anchor:--ac-anchorname-toc-selected]",
-          "motion-safe:transition-[top,bottom,left,right] motion-safe:duration-(--theme-duration-base)",
+          "motion-safe:transition-[top,bottom,left,right] motion-safe:duration-(--theme-duration-spring-fast-spatial) motion-safe:ease-spring-fast-spatial",
         ]}
         aria-hidden="true"
       />

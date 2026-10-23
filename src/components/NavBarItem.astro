@@ -74,7 +74,7 @@ const accessibleName = badgedName(label, badgeLabel, badgeDescription);
       // state layer on the whole indicator from medium up (below it, it's on the icon's indicator)
       "before:absolute before:inset-0 before:-z-10 before:hidden before:rounded-full before:bg-(--theme-color-on-secondary-container) before:opacity-0 medium:before:block",
       "group-hover/item:before:opacity-8 group-focus-visible/item:before:opacity-10 group-active/item:before:opacity-10",
-      "motion-safe:transition-colors motion-safe:duration-(--theme-duration-feedback) motion-safe:before:transition-opacity",
+      "motion-safe:transition-colors motion-safe:duration-(--theme-duration-spring-fast-effects) motion-safe:ease-spring-fast-effects motion-safe:before:transition-opacity",
       // The focus ring goes around the item's content, icon and label, rather than the whole
       // item, which is the bar's full height below medium
       "group-focus-visible/item:ring-3 group-focus-visible/item:ring-(--theme-color-focus-ring-on-bg) group-focus-visible/item:ring-offset-2 group-focus-visible/item:ring-offset-(--theme-color-wrapper-bg)",
@@ -87,7 +87,7 @@ const accessibleName = badgedName(label, badgeLabel, badgeDescription);
         // M3 state layer, on the indicator only, in on-secondary-container for active and inactive items
         "before:absolute before:inset-0 before:-z-10 before:rounded-full before:bg-(--theme-color-on-secondary-container) before:opacity-0",
         "group-hover/item:before:opacity-8 group-focus-visible/item:before:opacity-10 group-active/item:before:opacity-10",
-        "motion-safe:transition-colors motion-safe:duration-(--theme-duration-feedback) motion-safe:before:transition-opacity",
+        "motion-safe:transition-colors motion-safe:duration-(--theme-duration-spring-fast-effects) motion-safe:ease-spring-fast-effects motion-safe:before:transition-opacity",
         // From medium up, the span above is the indicator, so this is just the icon. ! because
         // the group-aria-[current=page] background above is more specific.
         "medium:size-auto medium:bg-transparent! medium:before:hidden",

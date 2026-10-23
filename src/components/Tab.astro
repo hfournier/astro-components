@@ -23,11 +23,11 @@ const {
 } = Astro.props;
 
 const transitionClasses = {
-  fade: "motion-safe:transition-[display,opacity] motion-safe:transition-discrete motion-safe:duration-(--theme-duration-content-swap) motion-safe:starting:opacity-0",
+  fade: "motion-safe:transition-[display,opacity] motion-safe:transition-discrete motion-safe:duration-(--theme-duration-medium-4) motion-safe:ease-emphasized-decelerate motion-safe:[[hidden]]:duration-(--theme-duration-short-4) motion-safe:[[hidden]]:ease-emphasized-accelerate motion-safe:starting:opacity-0",
   "fade-up":
-    "motion-safe:transition-[display,opacity,translate] motion-safe:transition-discrete motion-safe:duration-(--theme-duration-content-swap) motion-safe:starting:translate-y-full motion-safe:starting:opacity-0",
+    "motion-safe:transition-[display,opacity,translate] motion-safe:transition-discrete motion-safe:duration-(--theme-duration-medium-4) motion-safe:ease-emphasized-decelerate motion-safe:[[hidden]]:duration-(--theme-duration-short-4) motion-safe:[[hidden]]:ease-emphasized-accelerate motion-safe:starting:translate-y-full motion-safe:starting:opacity-0",
   "slide-left":
-    "motion-safe:transition-[display,opacity,translate] motion-safe:transition-discrete motion-safe:duration-(--theme-duration-content-swap) motion-safe:starting:translate-x-full motion-safe:starting:opacity-0",
+    "motion-safe:transition-[display,opacity,translate] motion-safe:transition-discrete motion-safe:duration-(--theme-duration-medium-4) motion-safe:ease-emphasized-decelerate motion-safe:[[hidden]]:duration-(--theme-duration-short-4) motion-safe:[[hidden]]:ease-emphasized-accelerate motion-safe:starting:translate-x-full motion-safe:starting:opacity-0",
 }[transition];
 ---
 

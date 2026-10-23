@@ -81,12 +81,15 @@ const expandedWidthClasses = {
     "max-medium:w-(--ac-nav-rail-expanded-width) max-medium:max-w-90 max-medium:min-w-55",
     "max-medium:invisible max-medium:fixed max-medium:start-[calc(-1*clamp(220px,var(--ac-nav-rail-expanded-width),360px)-1rem)] max-medium:h-dvh max-medium:rounded-e-2xl max-medium:shadow-theme-elevation-2",
     "max-medium:data-open:visible max-medium:data-open:start-0",
-    "max-medium:motion-safe:transition-[inset-inline-start,visibility] max-medium:motion-safe:duration-(--theme-duration-base) max-medium:motion-safe:data-open:transition-[inset-inline-start]",
+    // M3's modal rail enters and exits temporarily on emphasized easing, which on the web falls
+    // back to standard (ADR-0018)
+    "max-medium:motion-safe:transition-[inset-inline-start,visibility] max-medium:motion-safe:duration-(--theme-duration-medium-2) max-medium:motion-safe:ease-standard max-medium:motion-safe:data-open:transition-[inset-inline-start]",
     // From medium up, an expandable rail expands while its MenuToggle is expanded, to its expanded
     // width, kept within M3's 220-360px. The script expands the toggle from large up by default.
     isExpandable && [
       "has-[[data-ac-menu-toggle][aria-expanded=true]]:w-(--ac-nav-rail-expanded-width) has-[[data-ac-menu-toggle][aria-expanded=true]]:max-w-90 has-[[data-ac-menu-toggle][aria-expanded=true]]:min-w-55",
-      "medium:motion-safe:transition-[width,min-width] medium:motion-safe:duration-(--theme-duration-base)",
+      // on default spatial, M3's spring for an expanding navigation rail (ADR-0018)
+      "medium:motion-safe:transition-[width,min-width] medium:motion-safe:duration-(--theme-duration-spring-default-spatial) medium:motion-safe:ease-spring-default-spatial",
     ],
     classList
   )}
@@ -155,7 +158,7 @@ const expandedWidthClasses = {
   class:list={[
     "invisible fixed inset-0 z-10 bg-(--theme-color-scrim)/32 opacity-0",
     "peer-data-open/nav-rail:visible peer-data-open/nav-rail:opacity-100",
-    "motion-safe:transition-[opacity,visibility] motion-safe:duration-(--theme-duration-base) medium:hidden",
+    "motion-safe:transition-[opacity,visibility] motion-safe:duration-(--theme-duration-medium-2) motion-safe:ease-standard medium:hidden",
   ]}
   aria-hidden="true"
   data-ac-nav-rail-scrim

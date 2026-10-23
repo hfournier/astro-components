@@ -126,10 +126,11 @@ const tooltipOffClasses = isExtended
     // M3 state layer, in the icon's color
     "relative isolate before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0",
     "hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10",
-    // The padding and gap change with the label's width, on the same spring
+    // The padding and gap change with the label's width, on the same spring; the elevation on
+    // fast effects (ADR-0018)
     "motion-safe:transition-[box-shadow,padding,gap] motion-safe:before:transition-opacity",
-    "motion-safe:duration-[var(--theme-duration-feedback),var(--theme-duration-spring-fast-spatial),var(--theme-duration-spring-fast-spatial)]",
-    "motion-safe:ease-[var(--default-transition-timing-function),var(--ease-spring-fast-spatial),var(--ease-spring-fast-spatial)]",
+    "motion-safe:duration-[var(--theme-duration-spring-fast-effects),var(--theme-duration-spring-fast-spatial),var(--theme-duration-spring-fast-spatial)]",
+    "motion-safe:ease-[var(--ease-spring-fast-effects),var(--ease-spring-fast-spatial),var(--ease-spring-fast-spatial)]",
     "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
     colorClasses,
     sizeClasses,

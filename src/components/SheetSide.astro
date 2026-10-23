@@ -90,9 +90,10 @@ const modalClasses = isModal && [
     end: "translate-x-[calc(100%+1rem)] rtl:-translate-x-[calc(100%+1rem)] motion-safe:starting:open:translate-x-[calc(100%+1rem)] motion-safe:rtl:starting:open:-translate-x-[calc(100%+1rem)]",
   }[edge],
   "open:translate-x-0 rtl:open:translate-x-0",
-  "motion-safe:transition-[display,overlay,translate] motion-safe:transition-discrete motion-safe:duration-(--theme-duration-base)",
+  // M3: a sheet enters on emphasized decelerate and leaves on emphasized accelerate (ADR-0018)
+  "motion-safe:transition-[display,overlay,translate] motion-safe:transition-discrete motion-safe:duration-(--theme-duration-short-4) motion-safe:ease-emphasized-accelerate motion-safe:open:duration-(--theme-duration-medium-4) motion-safe:open:ease-emphasized-decelerate",
   "backdrop:bg-(--theme-color-scrim)/32 backdrop:opacity-0 open:backdrop:opacity-100 motion-safe:starting:open:backdrop:opacity-0",
-  "motion-safe:backdrop:transition-[display,opacity,overlay] motion-safe:backdrop:transition-discrete motion-safe:backdrop:duration-(--theme-duration-base)",
+  "motion-safe:backdrop:transition-[display,opacity,overlay] motion-safe:backdrop:transition-discrete motion-safe:backdrop:duration-(--theme-duration-short-4) motion-safe:backdrop:ease-emphasized-accelerate motion-safe:open:backdrop:duration-(--theme-duration-medium-4) motion-safe:open:backdrop:ease-emphasized-decelerate",
 ];
 
 // Detached, it's rounded all round (M3 corner large). Docked, a modal sheet rounds its inner

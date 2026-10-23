@@ -44,11 +44,14 @@ const randomId = crypto.randomUUID();
 <Tag
   class:list={twMerge(
     "m-auto overscroll-contain bg-transparent outline-none",
-    "motion-safe:transition-discrete motion-safe:duration-(--theme-duration-overlay) motion-safe:ease-theme-overlay",
+    // M3's enter and exit pattern: in on emphasized decelerate, out on emphasized accelerate, at
+    // the durations M3 pairs with them (ADR-0018). A transition takes the timing of the state it
+    // goes to, so the open state's is the way in.
+    "motion-safe:transition-discrete motion-safe:duration-(--theme-duration-short-4) motion-safe:ease-emphasized-accelerate motion-safe:open:duration-(--theme-duration-medium-4) motion-safe:open:ease-emphasized-decelerate",
     showBackdrop &&
       "backdrop:bg-(--theme-color-scrim)/32 backdrop:opacity-0 open:backdrop:opacity-100 motion-safe:starting:open:backdrop:opacity-0",
     showBackdrop &&
-      "motion-safe:backdrop:transition-[display,opacity,overlay] motion-safe:backdrop:transition-discrete motion-safe:backdrop:duration-(--theme-duration-overlay) motion-safe:backdrop:ease-theme-overlay",
+      "motion-safe:backdrop:transition-[display,opacity,overlay] motion-safe:backdrop:transition-discrete motion-safe:backdrop:duration-(--theme-duration-short-4) motion-safe:backdrop:ease-emphasized-accelerate motion-safe:open:backdrop:duration-(--theme-duration-medium-4) motion-safe:open:backdrop:ease-emphasized-decelerate",
     showBlur && "backdrop:backdrop-blur-xs",
     showBlur && showBackdrop && "backdrop:bg-(--theme-color-scrim)/16",
     transitionClasses,

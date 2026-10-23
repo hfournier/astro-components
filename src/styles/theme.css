@@ -34,15 +34,28 @@
 @custom-variant scrollable-bottom (@container scroll-state(scrollable: bottom));
 
 @theme {
-  /* easing: Tailwind's native namespace, role layer on top (ADR-0006) */
-  --ease-theme-overlay: var(--ease-out);
-
   /* M3 Expressive's motion springs, as the curves M3 publishes for the web ("Web: Convert springs
      to curves", m3.material.io/styles/motion/overview/specs), each paired with its duration
-     below (ADR-0016). Spatial springs move things (size, position, shape) and overshoot; effects
-     springs change color and opacity and don't. */
+     below (ADR-0016, ADR-0018). Spatial springs move things (size, position, shape) and
+     overshoot; effects springs change color and opacity and don't. Component motion is on the
+     fast ones; the default ones are for motion that covers part of the screen. */
   --ease-spring-fast-spatial: cubic-bezier(0.42, 1.67, 0.21, 0.9);
   --ease-spring-fast-effects: cubic-bezier(0.31, 0.94, 0.34, 1);
+  --ease-spring-default-spatial: cubic-bezier(0.38, 1.21, 0.22, 1);
+  --ease-spring-default-effects: cubic-bezier(0.34, 0.8, 0.34, 1);
+
+  /* M3's easing, for transitions only: an overlay entering (emphasized decelerate) or leaving
+     (emphasized accelerate) the screen, and standard, M3's web fallback for emphasized
+     (m3.material.io/styles/motion/easing-and-duration, ADR-0018) */
+  --ease-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --ease-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* A transition that names no timing, such as a state layer's fade, is on fast effects: M3
+     drives all component motion with fast spatial and fast effects, and these are color and
+     opacity changes (ADR-0018) */
+  --default-transition-duration: var(--theme-duration-spring-fast-effects);
+  --default-transition-timing-function: var(--ease-spring-fast-effects);
 
   /* box-shadow: M3 elevation levels, tinted with the generated shadow role */
   --shadow-theme-elevation-1:
@@ -61,18 +74,19 @@
 }
 
 :root {
-  /* duration: no Tailwind namespace, hand-rolled literal steps (ADR-0006) */
-  --theme-duration-fast: 150ms;
-  --theme-duration-base: 300ms;
-  --theme-duration-slow: 500ms;
-
-  --theme-duration-feedback: var(--theme-duration-fast);
-  --theme-duration-overlay: var(--theme-duration-base);
-  --theme-duration-content-swap: var(--theme-duration-slow);
-
-  /* the duration M3 pairs with each --ease-spring-* curve (ADR-0016) */
+  /* the duration M3 pairs with each --ease-spring-* curve (ADR-0016). Durations have no
+     Tailwind namespace. */
   --theme-duration-spring-fast-spatial: 350ms;
   --theme-duration-spring-fast-effects: 150ms;
+  --theme-duration-spring-default-spatial: 500ms;
+  --theme-duration-spring-default-effects: 200ms;
+
+  /* M3's durations, named as its tokens, for the easing above: M3 pairs emphasized decelerate
+     with medium 4 to enter, emphasized accelerate with short 4 to leave, and standard with
+     medium 2 (ADR-0018) */
+  --theme-duration-short-4: 200ms;
+  --theme-duration-medium-2: 300ms;
+  --theme-duration-medium-4: 400ms;
 
   /* Component color roles on M3 color roles, for content outside any BaseWrapper. BaseWrapper
      (and BaseOverlay's panel, which is one) overrides each per background. */
