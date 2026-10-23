@@ -47,18 +47,15 @@ type ToggleProps =
     };
 
 // Two-read `Astro.props`, per Astro's own documented pattern for polymorphic components: the
-// first read grabs `as` untyped so it keeps behaving as the real `"button" | "a"` union for
-// branching below. Typed straight off the single `: Props` read instead, `Tag` narrows to the
-// literal `"button"` (Props' default) - which compiles fine today but hard-errors (ts(2367),
-// "types have no overlap") the moment any future logic needs to check `Tag === "a"`.
+// first read grabs `as` untyped, so `<Tag>` below doesn't check its attributes against <a> and
+// <button> at once (`type` is a free-form MIME hint on one and an enum on the other).
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const { as: Tag = "button" }: any = Astro.props;
+// Typed as either tag: plain `Props` is `Props<"button">`, its default, which rejects
+// `Astro.props` (#225)
 const {
-  // Destructured only to keep it out of `attrs` below (Polymorphic's `Props` keeps `as` as a
-  // real field) - already captured, untyped, as `Tag` above; re-declaring it here would collide
-  // with that const. Left un-cast: casting `attrs`'s type doesn't remove the key at runtime,
-  // and `as` is always genuinely present whenever a consumer passes it (e.g. SkipToContent's
-  // `as="a"`), so it would otherwise render as a literal `as="a"` attribute on the real element.
+  // Destructured only to keep it out of `attrs`, which would otherwise render it as a literal
+  // `as="a"` attribute on the real element; `Tag` above already holds it
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   as: _as,
   icon,
@@ -72,7 +69,7 @@ const {
   class: classList,
   type,
   ...attrs
-}: Props = Astro.props;
+}: Props<"a" | "button"> = Astro.props;
 
 // `type="button"` only makes sense - and only defaults - on a real <button>; an <a>'s `type`
 // attribute (rarely used) is a MIME-type hint, not a click-behavior enum, so it's left alone.

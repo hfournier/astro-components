@@ -1,0 +1,33 @@
+---
+// Type fixture, never rendered: `astro check` fails if a valid use stops compiling, or if an
+// invalid one (each marked @ts-expect-error) starts compiling (#225)
+import Button from "../../components/Button.astro";
+---
+
+<Button>Default button</Button>
+<Button as="a" href="/">
+  Link
+</Button>
+<Button command="show-modal" commandfor="dialog">
+  Opens a dialog
+</Button>
+<Button isToggle isSelected icon="favorite">
+  Toggle
+</Button>
+
+{/* @ts-expect-error A button takes no href */}
+<Button href="/">Button with href</Button>
+{/* @ts-expect-error A link takes no command */}
+<Button as="a" href="/" command="close" commandfor="dialog">
+  Link with command
+</Button>
+{/* @ts-expect-error A link can't be a toggle */}
+<Button as="a" href="/" isToggle>
+  Toggle link
+</Button>
+{/* @ts-expect-error A text button can't be a toggle */}
+<Button isToggle variant="text">
+  Text toggle
+</Button>
+{/* @ts-expect-error Not one of Button's sizes */}
+<Button size="huge">Huge</Button>
