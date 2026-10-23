@@ -89,25 +89,21 @@ const accessibleName = badgedName(label, badgeLabel, badgeDescription);
   </span>
   <span>
     {label}
-    {
-      hasBadge && (
-        // M3: expanded, a badge, count or dot, follows the label rather than covering the icon
-        // (see Badge for its inline alignment); collapsed, it's on the icon below
-        <Badge
-          class="ms-1 rail-collapsed:hidden"
-          label={badgeLabel}
-          placement="inline"
-        />
-      )
-    }
-  </span>
-  {
-    hasBadge && (
+    {hasBadge && (
+      // M3: expanded, a badge, count or dot, follows the label rather than covering the icon
+      // (see Badge for its inline alignment); collapsed, it's on the icon below
       <Badge
-        class="rail-expanded:hidden"
+        class="ms-1 rail-collapsed:hidden"
         label={badgeLabel}
-        style={`--ac-anchorname-badge: ${badgeAnchorName}`}
+        placement="inline"
       />
-    )
-  }
+    )}
+  </span>
+  {hasBadge && (
+    <Badge
+      class="rail-expanded:hidden"
+      label={badgeLabel}
+      style={`--ac-anchorname-badge: ${badgeAnchorName}`}
+    />
+  )}
 </a>

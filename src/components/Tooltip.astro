@@ -69,93 +69,89 @@ const text = unwrapParagraph(await Astro.slots.render("default"));
 const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
 ---
 
-{
-  variant === "plain" ? (
-    <>
-      <span
-        class="pointer-events-none absolute inset-(--ac-tooltip-anchor-inset,0px)"
-        style={`anchor-name: ${anchorName}`}
-        aria-hidden="true"
-      />
-      <span
-        class:list={twMerge(
-          // M3 plain tooltip: Body Small, corner extra small, 4px from its element. Next to plain
-          // text, M3 leaves 8px: pass `mb-2` (`mt-2` below). It flips to the other side or shifts
-          // sideways to stay in the viewport. A popover, so it sits in the top layer, above
-          // anything its element's stacking context would put it under.
-          "inset-auto m-0 min-h-6 w-max max-w-50 min-w-10 overflow-visible rounded-sm border-0 px-2 py-1",
-          "bg-(--theme-color-inverse-surface) text-center text-xs leading-4 font-normal tracking-[0.4px] text-(--theme-color-inverse-on-surface)",
-          placement === "above"
-            ? "mb-1 [position-area:top] [position-try-fallbacks:top_span-left,top_span-right,flip-block]"
-            : "mt-1 [position-area:bottom] [position-try-fallbacks:bottom_span-left,bottom_span-right,flip-block]",
-          // bridges the 4px gap, so the pointer can move onto the tooltip without it hiding (WCAG
-          // 1.4.13). It covers every side, since a fallback can flip the tooltip to the other one.
-          "before:absolute before:-inset-1",
-          // The script opens the popover and sets data-shown once the tooltip should show, after
-          // its delays. The starting style lets it fade in from display: none, and
-          // transition-discrete keeps it in place while it fades out once closed. Only the fade is
-          // motion: with reduced motion, visibility still flips, so the delays are kept.
-          "invisible opacity-0 data-shown:visible data-shown:opacity-100 starting:invisible! starting:opacity-0!",
-          // A small component's fade, so on fast effects, M3's speed for small components
-          // (ADR-0018). The timing isn't motion-safe, since with reduced motion it still times the
-          // visibility change, which isn't motion.
-          "transition-[visibility,display,overlay] transition-discrete duration-(--theme-duration-spring-fast-effects) ease-spring-fast-effects motion-safe:transition-[opacity,visibility,display,overlay]",
-          classList
-        )}
-        style={`position-anchor: ${anchorName}`}
-        popover="manual"
-        aria-hidden="true"
-        data-ac-tooltip
-        {...attrs}
-      >
-        <Fragment set:html={text} />
-      </span>
-    </>
-  ) : (
-    <BaseWrapper
-      bgColor="surface-container"
-      class={twMerge(
-        // M3 rich tooltip: corner medium, centered below its element, as M3 allows on desktop. A
-        // popover, so it sits in the top layer.
-        "inset-auto m-0 mt-1 min-h-6 w-max max-w-80 min-w-10 overflow-visible rounded-xl border-0 px-4 pt-3 pb-2 text-left shadow-theme-elevation-2",
-        "text-(--theme-color-on-surface-variant)",
-        "[position-area:bottom] [position-try-fallbacks:bottom_span-left,bottom_span-right,flip-block]",
-        // bridges the 4px gap, so the pointer can move onto the tooltip without it closing
-        "before:absolute before:-inset-1 before:-z-10",
-        // its show and hide delays are in the script, so with reduced motion it just appears
-        "opacity-0 open:opacity-100 motion-safe:transition-[opacity,display,overlay] motion-safe:transition-discrete motion-safe:duration-(--theme-duration-spring-fast-effects) motion-safe:ease-spring-fast-effects motion-safe:starting:open:opacity-0",
+{variant === "plain" ? (
+  <>
+    <span
+      class="pointer-events-none absolute inset-(--ac-tooltip-anchor-inset,0px)"
+      style={`anchor-name: ${anchorName}`}
+      aria-hidden="true"
+    />
+    <span
+      class:list={twMerge(
+        // M3 plain tooltip: Body Small, corner extra small, 4px from its element. Next to plain
+        // text, M3 leaves 8px: pass `mb-2` (`mt-2` below). It flips to the other side or shifts
+        // sideways to stay in the viewport. A popover, so it sits in the top layer, above
+        // anything its element's stacking context would put it under.
+        "inset-auto m-0 min-h-6 w-max max-w-50 min-w-10 overflow-visible rounded-sm border-0 px-2 py-1",
+        "bg-(--theme-color-inverse-surface) text-center text-xs leading-4 font-normal tracking-[0.4px] text-(--theme-color-inverse-on-surface)",
+        placement === "above"
+          ? "mb-1 [position-area:top] [position-try-fallbacks:top_span-left,top_span-right,flip-block]"
+          : "mt-1 [position-area:bottom] [position-try-fallbacks:bottom_span-left,bottom_span-right,flip-block]",
+        // bridges the 4px gap, so the pointer can move onto the tooltip without it hiding (WCAG
+        // 1.4.13). It covers every side, since a fallback can flip the tooltip to the other one.
+        "before:absolute before:-inset-1",
+        // The script opens the popover and sets data-shown once the tooltip should show, after
+        // its delays. The starting style lets it fade in from display: none, and
+        // transition-discrete keeps it in place while it fades out once closed. Only the fade is
+        // motion: with reduced motion, visibility still flips, so the delays are kept.
+        "invisible opacity-0 data-shown:visible data-shown:opacity-100 starting:invisible! starting:opacity-0!",
+        // A small component's fade, so on fast effects, M3's speed for small components
+        // (ADR-0018). The timing isn't motion-safe, since with reduced motion it still times the
+        // visibility change, which isn't motion.
+        "transition-[visibility,display,overlay] transition-discrete duration-(--theme-duration-spring-fast-effects) ease-spring-fast-effects motion-safe:transition-[opacity,visibility,display,overlay]",
         classList
       )}
       style={`position-anchor: ${anchorName}`}
-      popover={isPersistent ? "auto" : "manual"}
-      role="tooltip"
-      data-ac-tooltip-rich={triggerId}
-      data-ac-tooltip-persistent={isPersistent ? "" : undefined}
-      data-ac-anchor-name={anchorName}
+      popover="manual"
+      aria-hidden="true"
+      data-ac-tooltip
       {...attrs}
     >
-      <div id={descriptionId}>
-        {subhead && (
-          <p class="text-sm leading-5 font-medium tracking-[0.1px]">
-            {subhead}
-          </p>
-        )}
-        {/* M3 Body Medium */}
-        <div class:list={[textPadding, "text-sm leading-5 tracking-[0.25px]"]}>
-          <Fragment set:html={text} />
-        </div>
-      </div>
-      {hasActions && (
-        <div
-          class="flex min-h-9 flex-wrap items-center gap-2"
-          data-ac-tooltip-actions
-        >
-          <slot name="actions" />
-        </div>
+      <Fragment set:html={text} />
+    </span>
+  </>
+) : (
+  <BaseWrapper
+    bgColor="surface-container"
+    class={twMerge(
+      // M3 rich tooltip: corner medium, centered below its element, as M3 allows on desktop. A
+      // popover, so it sits in the top layer.
+      "inset-auto m-0 mt-1 min-h-6 w-max max-w-80 min-w-10 overflow-visible rounded-xl border-0 px-4 pt-3 pb-2 text-left shadow-theme-elevation-2",
+      "text-(--theme-color-on-surface-variant)",
+      "[position-area:bottom] [position-try-fallbacks:bottom_span-left,bottom_span-right,flip-block]",
+      // bridges the 4px gap, so the pointer can move onto the tooltip without it closing
+      "before:absolute before:-inset-1 before:-z-10",
+      // its show and hide delays are in the script, so with reduced motion it just appears
+      "opacity-0 open:opacity-100 motion-safe:transition-[opacity,display,overlay] motion-safe:transition-discrete motion-safe:duration-(--theme-duration-spring-fast-effects) motion-safe:ease-spring-fast-effects motion-safe:starting:open:opacity-0",
+      classList
+    )}
+    style={`position-anchor: ${anchorName}`}
+    popover={isPersistent ? "auto" : "manual"}
+    role="tooltip"
+    data-ac-tooltip-rich={triggerId}
+    data-ac-tooltip-persistent={isPersistent ? "" : undefined}
+    data-ac-anchor-name={anchorName}
+    {...attrs}
+  >
+    <div id={descriptionId}>
+      {subhead && (
+        <p class="text-sm leading-5 font-medium tracking-[0.1px]">{subhead}</p>
       )}
-    </BaseWrapper>
-  )
-}
+      {/* M3 Body Medium */}
+      <div class:list={[textPadding, "text-sm leading-5 tracking-[0.25px]"]}>
+        <Fragment set:html={text} />
+      </div>
+    </div>
+    {hasActions && (
+      <div
+        class="flex min-h-9 flex-wrap items-center gap-2"
+        data-ac-tooltip-actions
+      >
+        <slot name="actions" />
+      </div>
+    )}
+  </BaseWrapper>
+)}
 
 <script>
   const hoverDelay = 500; // M3: a tooltip shows this long into a hover, or a touch

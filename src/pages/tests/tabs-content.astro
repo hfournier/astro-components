@@ -31,14 +31,12 @@ const outcomes = await Promise.all(
   <Main class="mx-auto max-w-[75ch] px-4">
     <h1>Tabs content</h1>
     <dl>
-      {
-        contents.map((content, index) => (
-          <>
-            <dt>{content}</dt>
-            <dd data-testid={`tabs-content-${content}`}>{outcomes[index]}</dd>
-          </>
-        ))
-      }
+      {contents.map((content, index) => (
+        <>
+          <dt>{content}</dt>
+          <dd data-testid={`tabs-content-${content}`}>{outcomes[index]}</dd>
+        </>
+      ))}
     </dl>
   </Main>
 </BaseLayout>

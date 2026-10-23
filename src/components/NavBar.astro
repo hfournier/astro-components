@@ -34,13 +34,11 @@ const groupShare = 30 + 10 * itemCount;
 const itemWidths = `--ac-nav-bar-item-width: calc(${groupShare}% / ${itemCount}); --ac-nav-bar-item-max-width: calc(100% / ${itemCount})`;
 ---
 
-{
-  /* M3 flexible navigation bar, fixed to the bottom of the viewport, above the
+{/* M3 flexible navigation bar, fixed to the bottom of the viewport, above the
      device's bottom safe area. Its destinations follow the window size, not the bar's own width:
      below medium they're vertical items sharing the bar's width equally, and from medium up
      they're horizontal items grouped in the middle (NavBarItem restyles itself with medium:).
-     It's at least 64px high, and grows when a label wraps or the text is larger. */
-}
+     It's at least 64px high, and grows when a label wraps or the text is larger. */}
 <BaseWrapper
   class:list={twMerge(
     "fixed inset-x-0 bottom-0 z-30 box-content pb-[env(safe-area-inset-bottom)]",

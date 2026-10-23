@@ -73,18 +73,16 @@ const testItems = tests.map((test) => ({
           { href: "/colors", label: "Colors" },
         ]}
       />
-      {
-        componentsByCategory.map((group) => (
-          <NavRailSubItems
-            parentHref="/components"
-            sectionLabel={group.category}
-            subItems={group.components.map((component) => ({
-              href: `/components/${component.id.replace("/documentation", "")}`,
-              label: component.data.name,
-            }))}
-          />
-        ))
-      }
+      {componentsByCategory.map((group) => (
+        <NavRailSubItems
+          parentHref="/components"
+          sectionLabel={group.category}
+          subItems={group.components.map((component) => ({
+            href: `/components/${component.id.replace("/documentation", "")}`,
+            label: component.data.name,
+          }))}
+        />
+      ))}
 
       <NavRailSubItems parentHref="/tests" subItems={testItems} />
     </NavDrawer>
@@ -103,40 +101,38 @@ const testItems = tests.map((test) => ({
         bgColor="primary-container"
       >
         <div class="font-semibold">
-          <Link class="no-underline hover:underline" href="/"
-            >astro-components</Link
-          >
+          <Link class="no-underline hover:underline" href="/">
+            astro-components
+          </Link>
         </div>
         <div class="flex items-center gap-2">
           <Link
             href="https://github.com/hfournier/astro-components"
             aria-label="GitHub"
-            target="_blank"><Icon name="github" /></Link
+            target="_blank"
           >
+            <Icon name="github" />
+          </Link>
         </div>
       </Header>
 
       <slot />
 
-      {
-        /* A page's side sheet (see SheetSide), from large up: beside the page's <main>, below the
+      {/* A page's side sheet (see SheetSide), from large up: beside the page's <main>, below the
            header, docked to the window's end edge. The wrapper fills only the sheet's grid row, so
-           a sticky sheet stops at the end of <main> rather than sliding over the footer. */
-      }
-      {
-        Astro.slots.has("sheet") && (
-          <div class="hidden large:block">
-            <slot name="sheet" />
-          </div>
-        )
-      }
+           a sticky sheet stops at the end of <main> rather than sliding over the footer. */}
+      {Astro.slots.has("sheet") && (
+        <div class="hidden large:block">
+          <slot name="sheet" />
+        </div>
+      )}
 
       <Footer
         class="col-span-full p-4 text-center"
         bgColor="secondary-container"
       >
-        copyright &copy; {new Date().getFullYear()}
-        {" "}astro-components. All rights reserved.
+        copyright &copy; {new Date().getFullYear()} astro-components. All rights
+        reserved.
       </Footer>
     </div>
   </body>

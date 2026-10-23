@@ -183,29 +183,27 @@ const variantClasses = {
   data-ac-icon-toggle={isToggle ? "aria-pressed" : undefined}
   {...attrs}
 >
-  {
-    selectedIcon ? (
-      <>
-        {/* swapped by CSS, so the icon follows aria-pressed/aria-expanded however they change */}
-        <Icon
-          class:list={[
-            iconSizeClasses,
-            "group-aria-expanded/icon-button:hidden group-aria-pressed/icon-button:hidden",
-          ]}
-          name={icon}
-        />
-        <Icon
-          class:list={[
-            iconSizeClasses,
-            "hidden group-aria-expanded/icon-button:block group-aria-pressed/icon-button:block",
-          ]}
-          name={selectedIcon}
-        />
-      </>
-    ) : (
-      <Icon class:list={[iconSizeClasses]} name={icon} />
-    )
-  }
+  {selectedIcon ? (
+    <>
+      {/* swapped by CSS, so the icon follows aria-pressed/aria-expanded however they change */}
+      <Icon
+        class:list={[
+          iconSizeClasses,
+          "group-aria-expanded/icon-button:hidden group-aria-pressed/icon-button:hidden",
+        ]}
+        name={icon}
+      />
+      <Icon
+        class:list={[
+          iconSizeClasses,
+          "hidden group-aria-expanded/icon-button:block group-aria-pressed/icon-button:block",
+        ]}
+        name={selectedIcon}
+      />
+    </>
+  ) : (
+    <Icon class:list={[iconSizeClasses]} name={icon} />
+  )}
   {showTooltip && <Tooltip>{label}</Tooltip>}
 </button>
 

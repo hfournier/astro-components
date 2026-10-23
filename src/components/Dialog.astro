@@ -31,39 +31,33 @@ const { icon, headline, label, id, class: classList, ...attrs } = Astro.props;
   data-ac-dialog
   {...attrs}
 >
-  {
-    /* role="none" on the header and footer: outside <main> and any sectioning element, they'd
-       otherwise be the page's banner and contentinfo landmarks while the dialog is open. */
-  }
-  {
-    (headline || icon) && (
-      <Header
-        bgColor="transparent"
-        role="none"
-        class:list={["pb-4", icon && "flex flex-col items-center gap-4"]}
-      >
-        {icon && <Icon class="fill-(--theme-color-secondary)" name={icon} />}
-        {headline && (
-          <h2
-            class:list={[
-              "text-2xl text-(--theme-color-on-surface)",
-              icon && "text-center",
-            ]}
-            id={`${id}-headline`}
-          >
-            {headline}
-          </h2>
-        )}
-      </Header>
-    )
-  }
+  {/* role="none" on the header and footer: outside <main> and any sectioning element, they'd
+       otherwise be the page's banner and contentinfo landmarks while the dialog is open. */}
+  {(headline || icon) && (
+    <Header
+      bgColor="transparent"
+      role="none"
+      class:list={["pb-4", icon && "flex flex-col items-center gap-4"]}
+    >
+      {icon && <Icon class="fill-(--theme-color-secondary)" name={icon} />}
+      {headline && (
+        <h2
+          class:list={[
+            "text-2xl text-(--theme-color-on-surface)",
+            icon && "text-center",
+          ]}
+          id={`${id}-headline`}
+        >
+          {headline}
+        </h2>
+      )}
+    </Header>
+  )}
 
-  {
-    /* Only the content scrolls; the headline and actions stay put. It bleeds to the dialog's
+  {/* Only the content scrolls; the headline and actions stay put. It bleeds to the dialog's
        edges (-mx-6 px-6) so the dividers span the full width, per M3. Browsers make a scrolling
        region keyboard-focusable, so it gets the theme focus ring rather than the UA outline.
-       Text is M3 supporting text: Body Medium in on-surface-variant. */
-  }
+       Text is M3 supporting text: Body Medium in on-surface-variant. */}
   <div
     class:list={[
       "scroll-content -mx-6 min-h-0 flex-1 overflow-y-auto px-6",
@@ -77,22 +71,18 @@ const { icon, headline, label, id, class: classList, ...attrs } = Astro.props;
     <div class="divider divider-bottom" aria-hidden="true"></div>
   </div>
 
-  {
-    /* M3 stacks actions too long for one row, confirm above dismiss. Dismiss comes first in the
+  {/* M3 stacks actions too long for one row, confirm above dismiss. Dismiss comes first in the
        DOM, so wrapping in reverse puts confirm on the top line, both at the end, and keeps the
-       Tab order dismiss, then confirm. */
-  }
-  {
-    Astro.slots.has("actions") && (
-      <Footer
-        bgColor="transparent"
-        class="flex flex-wrap-reverse items-center justify-end gap-2 pt-6"
-        role="none"
-      >
-        <slot name="actions" />
-      </Footer>
-    )
-  }
+       Tab order dismiss, then confirm. */}
+  {Astro.slots.has("actions") && (
+    <Footer
+      bgColor="transparent"
+      class="flex flex-wrap-reverse items-center justify-end gap-2 pt-6"
+      role="none"
+    >
+      <slot name="actions" />
+    </Footer>
+  )}
 </BaseOverlay>
 
 <script>

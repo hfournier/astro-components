@@ -213,10 +213,8 @@ const fabBaseClasses = [
     <span class="sr-only">{label}</span>
   </button>
 
-  {
-    /* In large windows: the FAB opening the Menu. As M3's menu guidelines ask of a trigger, it
-       stays as it is while the menu is open, with the pressed state layer. */
-  }
+  {/* In large windows: the FAB opening the Menu. As M3's menu guidelines ask of a trigger, it
+       stays as it is while the menu is open, with the pressed state layer. */}
   <button
     class:list={[
       "hidden large:grid",
@@ -232,8 +230,7 @@ const fabBaseClasses = [
     <span class="sr-only">{label}</span>
   </button>
 
-  {
-    /* No surface of its own (so not BaseOverlay): only the items' containers show. Closed, it
+  {/* No surface of its own (so not BaseOverlay): only the items' containers show. Closed, it
        stays rendered (transition-discrete) until the last item has finished closing.
 
        It's as tall as its items, up to the space above the FAB, which the script keeps in
@@ -243,8 +240,7 @@ const fabBaseClasses = [
        as M3 specifies, and never covers the close button. No scrollbar, as in Compose: the
        cut-off item shows it scrolls, and focus scrolls each item into view. It keeps room for
        one item, so a FAB scrolled to the top of the window still shows its menu, running off
-       the top. */
-  }
+       the top. */}
   <div
     class:list={[
       "group/fab-menu-items inset-auto m-0 flex-col gap-1 border-0 bg-transparent px-4 pt-4 pb-2 open:flex",
@@ -264,22 +260,18 @@ const fabBaseClasses = [
     <Fragment set:html={slot} />
   </div>
 
-  {
-    /* In large windows: the items as a Menu, lined up with the FAB's `align` edge (see Menu). Each
+  {/* In large windows: the items as a Menu, lined up with the FAB's `align` edge (see Menu). Each
        MenuItem stands in for its FabMenuItem, which it clicks, so the item's own handlers and
-       command run. Only the label, icon and disabled state carry over. */
-  }
+       command run. Only the label, icon and disabled state carry over. */}
   <Menu id={menuId} data-ac-menu-align={align}>
-    {
-      menuItems.map((item, index) => (
-        <MenuItem
-          label={item.label}
-          icon={item.icon}
-          isDisabled={item.isDisabled}
-          data-ac-fab-menu-item-index={index}
-        />
-      ))
-    }
+    {menuItems.map((item, index) => (
+      <MenuItem
+        label={item.label}
+        icon={item.icon}
+        isDisabled={item.isDisabled}
+        data-ac-fab-menu-item-index={index}
+      />
+    ))}
   </Menu>
 </div>
 

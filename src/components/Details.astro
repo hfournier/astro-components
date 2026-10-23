@@ -29,11 +29,9 @@ const sizeClasses = {
 }[size];
 ---
 
-{
-  /*  M3 has no disclosure component: the summary follows M3's one-line list item, with the gap
+{/*  M3 has no disclosure component: the summary follows M3's one-line list item, with the gap
      of an M3 button with an icon; the outlined variant wraps it in an outlined card. Colors
-     inherit the surrounding text color, so it works on any BaseWrapper background. */
-}
+     inherit the surrounding text color, so it works on any BaseWrapper background. */}
 <details
   class:list={twMerge(
     // Every variant has the 1px border, transparent unless outlined, so switching variant
@@ -75,11 +73,9 @@ const sizeClasses = {
       name="keyboard_arrow_down"
     />
   </summary>
-  {
-    /* Content lines up with the summary's leading edge (its icon, when it has one). Its spacing
+  {/* Content lines up with the summary's leading edge (its icon, when it has one). Its spacing
      lives here, not on the summary or ::details-content, so it collapses with the content when
-     closed. */
-  }
+     closed. */}
   <div class:list={["px-4", variant === "outlined" && "pb-4"]}>
     <slot />
   </div>

@@ -17,29 +17,29 @@ import SheetSide from "../../components/SheetSide.astro";
 >
   <Main class="mx-auto max-w-[75ch] space-y-4 px-4">
     <h1>Overlay landmarks</h1>
-    <Button command="show-modal" commandfor="landmarks-dialog"
-      >Open dialog</Button
-    >
-    <Button command="show-modal" commandfor="landmarks-sheet-side"
-      >Open side sheet</Button
-    >
-    <Button command="show-modal" commandfor="landmarks-sheet-bottom"
-      >Open bottom sheet</Button
-    >
+    <Button command="show-modal" commandfor="landmarks-dialog">
+      Open dialog
+    </Button>
+    <Button command="show-modal" commandfor="landmarks-sheet-side">
+      Open side sheet
+    </Button>
+    <Button command="show-modal" commandfor="landmarks-sheet-bottom">
+      Open bottom sheet
+    </Button>
   </Main>
 
   <Dialog id="landmarks-dialog" headline="Dialog headline">
     <p>The dialog's content.</p>
-    <Button slot="actions" command="close" commandfor="landmarks-dialog"
-      >Done</Button
-    >
+    <Button slot="actions" command="close" commandfor="landmarks-dialog">
+      Done
+    </Button>
   </Dialog>
 
   <SheetSide id="landmarks-sheet-side" headline="Side sheet headline" isModal>
     <p>The sheet's content.</p>
-    <Button slot="actions" command="close" commandfor="landmarks-sheet-side"
-      >Save</Button
-    >
+    <Button slot="actions" command="close" commandfor="landmarks-sheet-side">
+      Save
+    </Button>
   </SheetSide>
 
   <SheetBottom id="landmarks-sheet-bottom" aria-label="Bottom sheet" isModal>

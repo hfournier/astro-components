@@ -34,24 +34,22 @@ const {
 >
   <slot />
 
-  {
-    showCloseX && (
-      <button
-        class:list={[
-          "grid size-11 cursor-pointer place-items-center rounded-full border border-(--theme-color-outline-variant) bg-inherit expanded:size-11 large:size-12",
-          "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
-          "fixed top-[calc(anchor(top)-1rem)] right-[calc(anchor(right)-1rem)] expanded:top-[calc(anchor(top)-1.125rem)] expanded:right-[calc(anchor(right)-1.125rem)] large:top-[calc(anchor(top)-1.25rem)] large:right-[calc(anchor(right)-1.25rem)]",
-          "[position-anchor:var(--ac-anchorname-overlay)]",
-          // M3 icon-button hover: an 8% state layer in the icon's color, so it works on any surface.
-          "before:absolute before:inset-0 before:rounded-full before:bg-current before:opacity-0 hover:before:opacity-8 motion-safe:before:transition-opacity",
-        ]}
-        type="button"
-        commandfor={id}
-        command="hide-popover"
-        aria-label="Close"
-      >
-        <Icon class="size-4" name="close" />
-      </button>
-    )
-  }
+  {showCloseX && (
+    <button
+      class:list={[
+        "grid size-11 cursor-pointer place-items-center rounded-full border border-(--theme-color-outline-variant) bg-inherit expanded:size-11 large:size-12",
+        "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
+        "fixed top-[calc(anchor(top)-1rem)] right-[calc(anchor(right)-1rem)] expanded:top-[calc(anchor(top)-1.125rem)] expanded:right-[calc(anchor(right)-1.125rem)] large:top-[calc(anchor(top)-1.25rem)] large:right-[calc(anchor(right)-1.25rem)]",
+        "[position-anchor:var(--ac-anchorname-overlay)]",
+        // M3 icon-button hover: an 8% state layer in the icon's color, so it works on any surface.
+        "before:absolute before:inset-0 before:rounded-full before:bg-current before:opacity-0 hover:before:opacity-8 motion-safe:before:transition-opacity",
+      ]}
+      type="button"
+      commandfor={id}
+      command="hide-popover"
+      aria-label="Close"
+    >
+      <Icon class="size-4" name="close" />
+    </button>
+  )}
 </BaseOverlay>

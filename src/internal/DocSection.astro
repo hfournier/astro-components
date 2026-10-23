@@ -15,10 +15,8 @@ const { headingId, title, entry } = Astro.props;
 const { Content } = await render(entry);
 ---
 
-{
-  /* The same heading and spacing as the documentation.mdx body's own sections, which these
-     sections were split out of: the body's elements are spaced by the article's space-y-8. */
-}
+{/* The same heading and spacing as the documentation.mdx body's own sections, which these
+     sections were split out of: the body's elements are spaced by the article's space-y-8. */}
 <Section class="space-y-8">
   <H2 id={headingId}>{title}</H2>
 

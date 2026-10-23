@@ -31,37 +31,33 @@ const Tag = `h${level}` as const;
 const text = unwrapParagraph(await Astro.slots.render("default"));
 ---
 
-{
-  /* No text color of its own: M3 headings use the "on" color of the surface they sit on, which
+{/* No text color of its own: M3 headings use the "on" color of the surface they sit on, which
      BaseWrapper (or the body) sets, so headings inherit it. The anchor icon also shows on
-     keyboard focus, not just hover, so the tab stop is never invisible. */
-}
-{
-  id ? (
-    <div class="group/heading flex items-center gap-2">
-      <Tag class:list={twMerge(headingClasses, classList)} {id} {...attrs}>
-        <Fragment set:html={text} />
-      </Tag>
-
-      <a
-        class:list={twMerge(
-          // A link, so it takes the per-background link color and focus ring (see BaseWrapper).
-          "rounded-xs text-(--theme-color-link-text)",
-          "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
-          headingClasses
-        )}
-        href={`#${id}`}
-        aria-labelledby={id}
-      >
-        <Icon
-          name="link"
-          class="size-[0.7em] origin-center -rotate-45 opacity-0 group-focus-within/heading:opacity-100 group-hover/heading:opacity-100 motion-safe:transition-opacity"
-        />
-      </a>
-    </div>
-  ) : (
+     keyboard focus, not just hover, so the tab stop is never invisible. */}
+{id ? (
+  <div class="group/heading flex items-center gap-2">
     <Tag class:list={twMerge(headingClasses, classList)} {id} {...attrs}>
       <Fragment set:html={text} />
     </Tag>
-  )
-}
+
+    <a
+      class:list={twMerge(
+        // A link, so it takes the per-background link color and focus ring (see BaseWrapper).
+        "rounded-xs text-(--theme-color-link-text)",
+        "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
+        headingClasses
+      )}
+      href={`#${id}`}
+      aria-labelledby={id}
+    >
+      <Icon
+        name="link"
+        class="size-[0.7em] origin-center -rotate-45 opacity-0 group-focus-within/heading:opacity-100 group-hover/heading:opacity-100 motion-safe:transition-opacity"
+      />
+    </a>
+  </div>
+) : (
+  <Tag class:list={twMerge(headingClasses, classList)} {id} {...attrs}>
+    <Fragment set:html={text} />
+  </Tag>
+)}

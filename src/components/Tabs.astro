@@ -100,7 +100,9 @@ if (tabs.length === 0) {
   <TabList {align} {isScrollable} {tabs} {randomId} {variant} />
 
   <TabPanels>
-    {tabContents.map((content) => <Fragment set:html={content} />)}
+    {tabContents.map((content) => (
+      <Fragment set:html={content} />
+    ))}
   </TabPanels>
 </BaseWrapper>
 

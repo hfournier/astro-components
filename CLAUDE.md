@@ -26,6 +26,8 @@ This repo uses `pnpm`. Use `pnpm <script>` (e.g. `pnpm test`, `pnpm dev`) and `p
 
 ## Running the test suite
 
+While working on a component, run `pnpm test:quick <spec path>`: Chromium only, with the axe scan. The full three-browser suite takes about 9 minutes (the quick run about 3) and runs in CI on every pull request (ADR-0019), so run it locally only before opening a PR that touches cross-browser behaviour (layout, anchor positioning, popovers, dialogs).
+
 Astro 7 auto-detects an AI-agent shell and silently runs `astro dev`/`pnpm dev` as a detached background daemon instead of a normal foreground process. This breaks Playwright's `webServer` process tracking (`pnpm test` fails with `Error: Process from config.webServer exited early`), especially after a manual `astro dev` invocation left a daemon registered. If `pnpm test` fails with that error:
 
 1. `pnpm dlx astro dev stop` to clear any registered daemon.

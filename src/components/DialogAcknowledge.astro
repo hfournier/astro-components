@@ -13,10 +13,8 @@ type Props = DialogProps & {
 const { id, buttonAcknowledge, ...attrs } = Astro.props;
 ---
 
-{
-  /* M3: a dialog with a single action must make it an acknowledgement. It's autofocused so
-     Enter dismisses the dialog. Dialog wires aria-labelledby to the headline itself. */
-}
+{/* M3: a dialog with a single action must make it an acknowledgement. It's autofocused so
+     Enter dismisses the dialog. Dialog wires aria-labelledby to the headline itself. */}
 <Dialog {id} role="alertdialog" aria-describedby={`${id}-content`} {...attrs}>
   <slot />
 

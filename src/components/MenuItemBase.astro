@@ -102,11 +102,9 @@ const variantContent =
   data-ac-menu-value={value}
   {...attrs}
 >
-  {
-    /* The leading icon, or a checked item's check in its place (Compose's checkedLeadingIcon). An
+  {/* The leading icon, or a checked item's check in its place (Compose's checkedLeadingIcon). An
        item with neither, in a menu where others have one, keeps the icon's space (Compose's ghost
-       leading icon), so the labels line up. */
-  }
+       leading icon), so the labels line up. */}
   <span
     class:list={[
       "hidden size-5 shrink-0 place-items-center group-has-[[data-ac-menu-leading]_svg]/menu:grid",
@@ -115,66 +113,58 @@ const variantContent =
     ]}
     data-ac-menu-leading
   >
-    {
-      icon && (
-        <Icon
-          class="size-5 [grid-area:1/1] group-aria-checked/item:hidden"
-          name={icon}
-          data-ac-menu-icon
-        />
-      )
-    }
-    {
-      isCheckable && (
-        <Icon
-          class="hidden size-5 [grid-area:1/1] group-aria-checked/item:block"
-          name={checkedIcon}
-          data-ac-menu-check
-        />
-      )
-    }
+    {icon && (
+      <Icon
+        class="size-5 [grid-area:1/1] group-aria-checked/item:hidden"
+        name={icon}
+        data-ac-menu-icon
+      />
+    )}
+    {isCheckable && (
+      <Icon
+        class="hidden size-5 [grid-area:1/1] group-aria-checked/item:block"
+        name={checkedIcon}
+        data-ac-menu-check
+      />
+    )}
   </span>
   <span class="flex min-w-0 flex-1 flex-col">
-    <span class={disabledContent} data-ac-menu-label>{label}</span>
-    {
-      supportingText && (
-        <span
-          class:list={[
-            "text-xs leading-4 font-normal tracking-[0.4px]",
-            variantContent,
-            disabledContent,
-          ]}
-          id={supportingId}
-        >
-          {supportingText}
-        </span>
-      )
-    }
-  </span>
-  {
-    trailingText && (
+    <span class={disabledContent} data-ac-menu-label>
+      {label}
+    </span>
+    {supportingText && (
       <span
-        class:list={["shrink-0", variantContent, disabledContent]}
-        id={trailingId}
+        class:list={[
+          "text-xs leading-4 font-normal tracking-[0.4px]",
+          variantContent,
+          disabledContent,
+        ]}
+        id={supportingId}
       >
-        {trailingText}
+        {supportingText}
       </span>
-    )
-  }
+    )}
+  </span>
+  {trailingText && (
+    <span
+      class:list={["shrink-0", variantContent, disabledContent]}
+      id={trailingId}
+    >
+      {trailingText}
+    </span>
+  )}
   {
     /* M3: at the item's end, before any trailing icon */
     badgeLabel !== undefined && (
       <Badge class={disabledContent} label={badgeLabel} placement="inline" />
     )
   }
-  {
-    trailingIcon && (
-      <Icon
-        class:list={["size-5 shrink-0", variantContent, disabledContent]}
-        name={trailingIcon}
-      />
-    )
-  }
+  {trailingIcon && (
+    <Icon
+      class:list={["size-5 shrink-0", variantContent, disabledContent]}
+      name={trailingIcon}
+    />
+  )}
   {
     /* M3's cascading menu indicator, on a parent item: 24px, pointing toward its submenu */
     submenu && (

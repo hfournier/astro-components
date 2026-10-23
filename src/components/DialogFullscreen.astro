@@ -81,11 +81,9 @@ const confirmProps = {
   data-ac-dialog-fullscreen
   {...attrs}
 >
-  {
-    /* role="none" on the header and footer: outside <main> and any sectioning element, they'd
+  {/* role="none" on the header and footer: outside <main> and any sectioning element, they'd
        otherwise be the page's banner and contentinfo landmarks while the dialog is open. Both
-       are sticky in the scrolling panel, filled with its color, so content scrolls under them. */
-  }
+       are sticky in the scrolling panel, filled with its color, so content scrolls under them. */}
   <Header
     bgColor="transparent"
     role="none"
@@ -107,21 +105,19 @@ const confirmProps = {
       command="request-close"
       commandfor={id}
     />
-    {
-      headline && (
-        <h2
-          class:list={[
-            "min-w-0 flex-1 font-normal text-(--theme-color-on-surface)",
-            // Compact: Title Large, on one line. Medium and up: Headline Small, as Dialog.
-            "max-medium:truncate max-medium:text-[22px] max-medium:leading-7",
-            "medium:text-2xl medium:leading-8",
-          ]}
-          id={`${id}-headline`}
-        >
-          {headline}
-        </h2>
-      )
-    }
+    {headline && (
+      <h2
+        class:list={[
+          "min-w-0 flex-1 font-normal text-(--theme-color-on-surface)",
+          // Compact: Title Large, on one line. Medium and up: Headline Small, as Dialog.
+          "max-medium:truncate max-medium:text-[22px] max-medium:leading-7",
+          "medium:text-2xl medium:leading-8",
+        ]}
+        id={`${id}-headline`}
+      >
+        {headline}
+      </h2>
+    )}
     <Button
       class="ms-auto medium:hidden"
       id={buttonConfirm.id && `${buttonConfirm.id}-header`}
@@ -143,33 +139,27 @@ const confirmProps = {
     <slot />
   </div>
 
-  {
-    /* The actions slot, after the content in the DOM and so in the Tab order at every width. In a
+  {/* The actions slot, after the content in the DOM and so in the Tab order at every width. In a
        compact window it's M3's bottom action bar, pinned to the bottom, at elevation 2 while
        content is scrolled under it. From medium up, M3 allows a basic dialog only a dismissing and
-       a confirming action, so it's the end of the content instead, scrolling with it. */
-  }
-  {
-    hasActions && (
-      <div
-        class:list={[
-          "flex flex-wrap items-center gap-2",
-          "max-medium:sticky max-medium:bottom-0 max-medium:z-1 max-medium:mt-auto max-medium:h-14 max-medium:shrink-0 max-medium:justify-end max-medium:bg-(--theme-color-wrapper-bg) max-medium:px-3",
-          "motion-safe:transition-[box-shadow] motion-safe:duration-(--theme-duration-spring-fast-effects) motion-safe:ease-spring-fast-effects",
-          "max-medium:scrollable-bottom:shadow-theme-elevation-2",
-          "medium:px-6 medium:pt-4",
-        ]}
-      >
-        <slot name="actions" />
-      </div>
-    )
-  }
+       a confirming action, so it's the end of the content instead, scrolling with it. */}
+  {hasActions && (
+    <div
+      class:list={[
+        "flex flex-wrap items-center gap-2",
+        "max-medium:sticky max-medium:bottom-0 max-medium:z-1 max-medium:mt-auto max-medium:h-14 max-medium:shrink-0 max-medium:justify-end max-medium:bg-(--theme-color-wrapper-bg) max-medium:px-3",
+        "motion-safe:transition-[box-shadow] motion-safe:duration-(--theme-duration-spring-fast-effects) motion-safe:ease-spring-fast-effects",
+        "max-medium:scrollable-bottom:shadow-theme-elevation-2",
+        "medium:px-6 medium:pt-4",
+      ]}
+    >
+      <slot name="actions" />
+    </div>
+  )}
 
-  {
-    /* From medium up, the dismissing and then the confirming action, as DialogConfirm, stacking
+  {/* From medium up, the dismissing and then the confirming action, as DialogConfirm, stacking
       confirm above dismiss when they don't fit, as Dialog does. A compact window has them in the
-      header instead. */
-  }
+      header instead. */}
   <Footer
     bgColor="transparent"
     role="none"

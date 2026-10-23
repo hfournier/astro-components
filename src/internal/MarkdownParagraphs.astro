@@ -16,4 +16,6 @@ const paragraphs = text
   .filter(Boolean);
 ---
 
-{paragraphs.map((paragraph) => <P set:html={marked.parseInline(paragraph)} />)}
+{paragraphs.map((paragraph) => (
+  <P set:html={marked.parseInline(paragraph)} />
+))}

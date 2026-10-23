@@ -222,16 +222,15 @@ const sharedLabels: Record<string, string> = {
   title="astro-components HenriFournier.dev"
   description="astro-components is a library of accessible, Material 3 styled Astro + Tailwind components you copy into your own project. Getting started: requirements, theme setup and which files to copy."
 >
-  <Main
-    class="mx-auto max-w-dvw space-y-10 px-4 medium:max-w-[calc(100dvw-96px)] medium:px-6 expanded:max-w-[calc(75ch+4rem)] expanded:px-8"
-  >
+  <Main class="mx-auto max-w-dvw space-y-10 px-4 medium:max-w-[calc(100dvw-96px)] medium:px-6 expanded:max-w-[calc(75ch+4rem)] expanded:px-8">
     <section class="space-y-2">
       <Heading level={1}>astro-components</Heading>
       <P>
         A library of accessible Astro + Tailwind components styled after{" "}
-        <Link href="https://m3.material.io" target="_blank" rel="noreferrer"
-          >Material 3</Link
-        >: buttons, dialogs, tabs, badges, themed page sections and more. Each
+        <Link href="https://m3.material.io" target="_blank" rel="noreferrer">
+          Material 3
+        </Link>
+        : buttons, dialogs, tabs, badges, themed page sections and more. Each
         one is documented with its usage, properties, slots and live examples,
         and tested with axe-core for WCAG 2.2 AA in Chromium, Firefox and
         WebKit.
@@ -244,19 +243,25 @@ const sharedLabels: Record<string, string> = {
     </section>
 
     <section class="space-y-2" aria-labelledby="requirements">
-      <Heading level={2} id="requirements">Requirements</Heading>
+      <Heading level={2} id="requirements">
+        Requirements
+      </Heading>
       <Ul>
         <Li>
-          <Link href="https://astro.build" target="_blank" rel="noreferrer"
-            >Astro</Link
-          > 7 or later.
+          <Link href="https://astro.build" target="_blank" rel="noreferrer">
+            Astro
+          </Link>{" "}
+          7 or later.
         </Li>
         <Li>
           <Link
             href="https://tailwindcss.com/docs/installation/framework-guides/astro"
             target="_blank"
-            rel="noreferrer">Tailwind CSS 4</Link
-          >, set up with the <code>@tailwindcss/vite</code> plugin.
+            rel="noreferrer"
+          >
+            Tailwind CSS 4
+          </Link>
+          , set up with the <code>@tailwindcss/vite</code> plugin.
         </Li>
         <Li>
           <code>tailwind-merge</code>, which every component uses so that a
@@ -277,13 +282,16 @@ const sharedLabels: Record<string, string> = {
         The components rely on recent web platform features: the Popover API,
         invoker commands (<code>command</code>/<code>commandfor</code>) to open
         and close dialogs and popovers without JavaScript, CSS anchor
-        positioning for Badge and Tooltip, and <code>light-dark()</code> for dark
-        mode. Check support for your audience's browsers before relying on them.
+        positioning for Badge and Tooltip, and <code>light-dark()</code> for
+        dark mode. Check support for your audience's browsers before relying on
+        them.
       </P>
     </section>
 
     <section class="space-y-2" aria-labelledby="setup">
-      <Heading level={2} id="setup">Set up the theme</Heading>
+      <Heading level={2} id="setup">
+        Set up the theme
+      </Heading>
       <Ol>
         <Li>
           Copy <code>src/styles/colors.css</code> and
@@ -291,15 +299,16 @@ const sharedLabels: Record<string, string> = {
           <Link
             href="https://github.com/hfournier/astro-components"
             target="_blank"
-            rel="noreferrer">repository</Link
-          > into your project's styles folder.
+            rel="noreferrer"
+          >
+            repository
+          </Link>{" "}
+          into your project's styles folder.
           <code>colors.css</code> holds the Material 3 color roles;
-          <code>theme.css</code> holds motion, elevation and the colors components
-          use for links and focus rings.
+          <code>theme.css</code> holds motion, elevation and the colors
+          components use for links and focus rings.
         </Li>
-        <Li>
-          Import both into your global stylesheet, right after Tailwind:
-        </Li>
+        <Li>Import both into your global stylesheet, right after Tailwind:</Li>
       </Ol>
       <Code
         code={globalCss}
@@ -324,13 +333,15 @@ const sharedLabels: Record<string, string> = {
     </section>
 
     <section class="space-y-2" aria-labelledby="colors">
-      <Heading level={2} id="colors">Use your own colors</Heading>
+      <Heading level={2} id="colors">
+        Use your own colors
+      </Heading>
       <P>
-        The colors in <code>colors.css</code> are generated, not hand-written. Open
-        the <Link href="/colors">theme generator</Link>, pick a source color
-        (your brand color) and a scheme variant, then copy the generated CSS
-        over your <code>colors.css</code>. Every color role gets a light and a
-        dark value, and the page switches between them with the operating
+        The colors in <code>colors.css</code> are generated, not hand-written.
+        Open the <Link href="/colors">theme generator</Link>, pick a source
+        color (your brand color) and a scheme variant, then copy the generated
+        CSS over your <code>colors.css</code>. Every color role gets a light and
+        a dark value, and the page switches between them with the operating
         system's color scheme. Because Material 3 picks each role's tone, text
         stays readable on its background for any source color.
       </P>
@@ -339,13 +350,15 @@ const sharedLabels: Record<string, string> = {
         <code>--theme-color-primary</code>. For your own content, each key
         color's tonal palette is also available as Tailwind colors, from
         <code>bg-theme-primary-10</code> (lightest) to
-        <code>bg-theme-primary-950</code> (darkest). Palette steps don't change in
-        dark mode, and you're responsible for their contrast.
+        <code>bg-theme-primary-950</code> (darkest). Palette steps don't change
+        in dark mode, and you're responsible for their contrast.
       </P>
     </section>
 
     <section class="space-y-2" aria-labelledby="copy">
-      <Heading level={2} id="copy">Copy the components you need</Heading>
+      <Heading level={2} id="copy">
+        Copy the components you need
+      </Heading>
       <P>
         Copy each component's <code>.astro</code> file from
         <code>src/components/</code> into your project's
@@ -355,23 +368,28 @@ const sharedLabels: Record<string, string> = {
       </P>
       <Ul>
         <Li>
-          <strong><code>src/types.ts</code></strong>: shared prop types. It also
-          holds types for this documentation site that import from
+          <strong>
+            <code>src/types.ts</code>
+          </strong>
+          : shared prop types. It also holds types for this documentation site
+          that import from
           <code>astro:content</code> (<code>PropWithHeadingType</code>,
           <code>SlotWithHeadingType</code>); delete those two and that import.
         </Li>
         <Li>
-          <strong><code>src/utils.ts</code></strong>: shared helpers, such as
-          matching the current page for navigation items, and unwrapping the
-          paragraph MDX adds around text written on its own line inside a
-          component.
+          <strong>
+            <code>src/utils.ts</code>
+          </strong>
+          : shared helpers, such as matching the current page for navigation
+          items, and unwrapping the paragraph MDX adds around text written on
+          its own line inside a component.
         </Li>
         <Li>
-          <strong>icons</strong>: <code>src/svgs/</code> (the icon names and loader)
-          and <code>src/assets/svgs/</code> (the icon files). Keep
-          <code>src/assets/svgs/</code> at that path, because the loader looks for
-          icons there. To add an icon, drop its SVG in that folder and add its name
-          to <code>src/svgs/icon-names.ts</code>.
+          <strong>icons</strong>: <code>src/svgs/</code> (the icon names and
+          loader) and <code>src/assets/svgs/</code> (the icon files). Keep
+          <code>src/assets/svgs/</code> at that path, because the loader looks
+          for icons there. To add an icon, drop its SVG in that folder and add
+          its name to <code>src/svgs/icon-names.ts</code>.
         </Li>
       </Ul>
 
@@ -383,46 +401,50 @@ const sharedLabels: Record<string, string> = {
           </caption>
           <thead>
             <tr class="border-b border-(--theme-color-outline-variant)">
-              <th scope="col" class="pr-4 pl-2 font-medium">Component</th>
-              <th scope="col" class="pr-4 pl-2 font-medium"
-                >Also copy these components</th
-              >
-              <th scope="col" class="py-2 font-medium">Shared files</th>
+              <th scope="col" class="pr-4 pl-2 font-medium">
+                Component
+              </th>
+              <th scope="col" class="pr-4 pl-2 font-medium">
+                Also copy these components
+              </th>
+              <th scope="col" class="py-2 font-medium">
+                Shared files
+              </th>
             </tr>
           </thead>
           <tbody>
-            {
-              components.map(({ name, id, needs, shared }) => (
-                <tr class="border-b border-(--theme-color-outline-variant) align-top">
-                  <th scope="row" class="pr-4 pl-2 font-normal">
-                    <Link href={`/components/${id}`}>{name}</Link>
-                  </th>
-                  <td class="pr-4 pl-2">
-                    {needs.length > 0
-                      ? needs.map((need) => (
-                          <code class="mr-1 inline-block">{need}</code>
-                        ))
-                      : "None"}
-                  </td>
-                  <td class="py-2">
-                    {shared.length > 0
-                      ? shared.map((item) => (
-                          <code class="mr-1 inline-block">
-                            {sharedLabels[item]}
-                          </code>
-                        ))
-                      : "None"}
-                  </td>
-                </tr>
-              ))
-            }
+            {components.map(({ name, id, needs, shared }) => (
+              <tr class="border-b border-(--theme-color-outline-variant) align-top">
+                <th scope="row" class="pr-4 pl-2 font-normal">
+                  <Link href={`/components/${id}`}>{name}</Link>
+                </th>
+                <td class="pr-4 pl-2">
+                  {needs.length > 0
+                    ? needs.map((need) => (
+                        <code class="mr-1 inline-block">{need}</code>
+                      ))
+                    : "None"}
+                </td>
+                <td class="py-2">
+                  {shared.length > 0
+                    ? shared.map((item) => (
+                        <code class="mr-1 inline-block">
+                          {sharedLabels[item]}
+                        </code>
+                      ))
+                    : "None"}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
     </section>
 
     <section class="space-y-2" aria-labelledby="use">
-      <Heading level={2} id="use">Use them</Heading>
+      <Heading level={2} id="use">
+        Use them
+      </Heading>
       <P>
         Import a component and use it like any other Astro component. This
         button opens a confirmation dialog through invoker commands, with no
@@ -444,16 +466,18 @@ const sharedLabels: Record<string, string> = {
     </section>
 
     <section class="space-y-2" aria-labelledby="accessibility">
-      <Heading level={2} id="accessibility">Accessibility</Heading>
+      <Heading level={2} id="accessibility">
+        Accessibility
+      </Heading>
       <P>
         Components use native elements (<code>&lt;button&gt;</code>,
         <code>&lt;dialog&gt;</code>, <code>&lt;details&gt;</code>, popovers) so
         keyboard and screen-reader behavior comes from the browser. Motion only
         plays when the user hasn't asked for reduced motion. To keep text, links
         and focus rings readable, put content on a background with Section,
-        Header, Footer or Aside and their <code>bgColor</code> prop, rather than a
-        raw background class: the wrapper also switches the text, link and focus-ring
-        colors to ones that contrast with that background.
+        Header, Footer or Aside and their <code>bgColor</code> prop, rather than
+        a raw background class: the wrapper also switches the text, link and
+        focus-ring colors to ones that contrast with that background.
       </P>
     </section>
   </Main>

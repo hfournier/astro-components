@@ -219,30 +219,28 @@ const selectedIcon =
   data-ac-button-toggle={isToggleButton ? "" : undefined}
   {...attrs}
 >
-  {
-    icon &&
-      (selectedIcon ? (
-        <>
-          {/* swapped by CSS, so the icon follows aria-pressed however it changes */}
-          <Icon
-            class:list={[
-              iconSizeClasses,
-              "shrink-0 group-aria-pressed/button:hidden",
-            ]}
-            name={icon}
-          />
-          <Icon
-            class:list={[
-              iconSizeClasses,
-              "hidden shrink-0 group-aria-pressed/button:block",
-            ]}
-            name={selectedIcon}
-          />
-        </>
-      ) : (
-        <Icon class:list={[iconSizeClasses, "shrink-0"]} name={icon} />
-      ))
-  }
+  {icon &&
+    (selectedIcon ? (
+      <>
+        {/* swapped by CSS, so the icon follows aria-pressed however it changes */}
+        <Icon
+          class:list={[
+            iconSizeClasses,
+            "shrink-0 group-aria-pressed/button:hidden",
+          ]}
+          name={icon}
+        />
+        <Icon
+          class:list={[
+            iconSizeClasses,
+            "hidden shrink-0 group-aria-pressed/button:block",
+          ]}
+          name={selectedIcon}
+        />
+      </>
+    ) : (
+      <Icon class:list={[iconSizeClasses, "shrink-0"]} name={icon} />
+    ))}
   <Fragment set:html={label} />
 </Tag>
 

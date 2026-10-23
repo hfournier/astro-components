@@ -73,13 +73,11 @@ const surfaceClasses = [
 ];
 ---
 
-{
-  /* Below its trigger, lined up with the trigger's start edge, 4px away; above it, or toward its
+{/* Below its trigger, lined up with the trigger's start edge, 4px away; above it, or toward its
      other edge, when there isn't room, keeping 48px from the window's edge (its far margin,
      which flip-block moves to its top). Anchor insets rather than position-area, which Firefox
      places wrongly right to left. The script anchors it to the trigger that opened it, and sets
-     data-ac-menu-placement for a submenu or a context menu. */
-}
+     data-ac-menu-placement for a submenu or a context menu. */}
 <BaseOverlay
   as="div"
   bgColor={colors.bgColor}

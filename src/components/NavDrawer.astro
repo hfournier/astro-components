@@ -50,11 +50,9 @@ const widthClasses = {
 }[width];
 ---
 
-{
-  /* Below large the drawer is a fixed overlay stacked under the rail (NavRail is z-30), so it slides
+{/* Below large the drawer is a fixed overlay stacked under the rail (NavRail is z-30), so it slides
      out from under the rail's edge, and its scrim sits under both. Open while data-open is set
-     (by the script); closed, it's invisible, so it can't be focused or reached by assistive tech. */
-}
+     (by the script); closed, it's invisible, so it can't be focused or reached by assistive tech. */}
 <BaseWrapper
   class={twMerge(
     // Below large: beside the 96px collapsed rail, on its end side (the right, or the left right to
@@ -87,10 +85,8 @@ const widthClasses = {
   data-ac-nav-drawer-modal={isModal ? "" : undefined}
   {...attrs}
 >
-  {
-    /* The Divider above a section separates it from the rail's destinations in an expanded rail;
-      the drawer has none, so the first section it shows drops its Divider */
-  }
+  {/* The Divider above a section separates it from the rail's destinations in an expanded rail;
+      the drawer has none, so the first section it shows drops its Divider */}
   <nav
     class="[&>[data-ac-nav-section]:nth-child(1_of_[data-ac-nav-section]:not([hidden]))>hr]:hidden"
     aria-label={ariaLabel}
@@ -99,20 +95,18 @@ const widthClasses = {
   </nav>
 </BaseWrapper>
 
-{
-  isModal && (
-    // M3 modal drawer scrim: 32% scrim over the page, under the drawer and the rail
-    <div
-      class:list={[
-        "invisible fixed inset-0 z-10 bg-(--theme-color-scrim)/32 opacity-0",
-        "peer-data-open/nav-drawer:visible peer-data-open/nav-drawer:opacity-100",
-        "motion-safe:transition-[opacity,visibility] motion-safe:duration-(--theme-duration-medium-2) motion-safe:ease-standard large:hidden",
-      ]}
-      aria-hidden="true"
-      data-ac-nav-drawer-scrim
-    />
-  )
-}
+{isModal && (
+  // M3 modal drawer scrim: 32% scrim over the page, under the drawer and the rail
+  <div
+    class:list={[
+      "invisible fixed inset-0 z-10 bg-(--theme-color-scrim)/32 opacity-0",
+      "peer-data-open/nav-drawer:visible peer-data-open/nav-drawer:opacity-100",
+      "motion-safe:transition-[opacity,visibility] motion-safe:duration-(--theme-duration-medium-2) motion-safe:ease-standard large:hidden",
+    ]}
+    aria-hidden="true"
+    data-ac-nav-drawer-scrim
+  />
+)}
 
 <script>
   import { trimSlash } from "../utils";

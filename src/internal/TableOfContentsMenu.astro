@@ -12,51 +12,49 @@ type Props = HTMLAttributes<"ul"> & {
 const { headings, class: classList, ...attrs } = Astro.props;
 ---
 
-{
-  headings && headings.length > 0 && (
-    <>
-      <ul
-        class:list={twMerge("[scroll-target-group:auto]", classList)}
-        {...attrs}
-      >
-        {headings.map((heading) => (
-          <li>
-            {heading.level === 1 ? (
-              <Heading class="text-lg" level={2}>
-                {heading.text}
-              </Heading>
-            ) : (
-              <Button
-                as="a"
-                variant="text"
-                showFullwidth={true}
-                size="sm"
-                class:list={[
-                  "justify-start [&:target-current]:[anchor-name:--ac-anchorname-toc-selected]",
-                  heading.level === 2 && "pl-4",
-                  heading.level === 3 && "pl-8",
-                ]}
-                href={`#${heading.id}`}
-              >
-                {heading.text}
-              </Button>
-            )}
-          </li>
-        ))}
-      </ul>
+{headings && headings.length > 0 && (
+  <>
+    <ul
+      class:list={twMerge("[scroll-target-group:auto]", classList)}
+      {...attrs}
+    >
+      {headings.map((heading) => (
+        <li>
+          {heading.level === 1 ? (
+            <Heading class="text-lg" level={2}>
+              {heading.text}
+            </Heading>
+          ) : (
+            <Button
+              as="a"
+              variant="text"
+              showFullwidth={true}
+              size="sm"
+              class:list={[
+                "justify-start [&:target-current]:[anchor-name:--ac-anchorname-toc-selected]",
+                heading.level === 2 && "pl-4",
+                heading.level === 3 && "pl-8",
+              ]}
+              href={`#${heading.id}`}
+            >
+              {heading.text}
+            </Button>
+          )}
+        </li>
+      ))}
+    </ul>
 
-      <div
-        class:list={[
-          // The current-section indicator is a progressive enhancement: only Chromium supports
-          // :target-current, so elsewhere no link gets the anchor name, and the indicator stays
-          // hidden rather than falling back to inset-0 around the whole menu
-          "hidden supports-[selector(:target-current)]:block",
-          "pointer-events-none absolute inset-0 rounded-full border border-(--theme-color-outline-variant)",
-          "top-[anchor(top)] right-[anchor(right)] bottom-[anchor(bottom)] left-[anchor(left)] [position-anchor:--ac-anchorname-toc-selected]",
-          "motion-safe:transition-[top,bottom,left,right] motion-safe:duration-(--theme-duration-spring-fast-spatial) motion-safe:ease-spring-fast-spatial",
-        ]}
-        aria-hidden="true"
-      />
-    </>
-  )
-}
+    <div
+      class:list={[
+        // The current-section indicator is a progressive enhancement: only Chromium supports
+        // :target-current, so elsewhere no link gets the anchor name, and the indicator stays
+        // hidden rather than falling back to inset-0 around the whole menu
+        "hidden supports-[selector(:target-current)]:block",
+        "pointer-events-none absolute inset-0 rounded-full border border-(--theme-color-outline-variant)",
+        "top-[anchor(top)] right-[anchor(right)] bottom-[anchor(bottom)] left-[anchor(left)] [position-anchor:--ac-anchorname-toc-selected]",
+        "motion-safe:transition-[top,bottom,left,right] motion-safe:duration-(--theme-duration-spring-fast-spatial) motion-safe:ease-spring-fast-spatial",
+      ]}
+      aria-hidden="true"
+    />
+  </>
+)}
