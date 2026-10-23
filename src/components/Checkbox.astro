@@ -1,0 +1,267 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+
+// A native checkbox, so it submits, resets and validates with its form. Every attribute but
+// `class` goes on the input (`name`, `value`, `checked`, `disabled`, `required`, `aria-*`), and
+// `class` on the label around it. The default slot is the label's text.
+type Props = Omit<HTMLAttributes<"input">, "type"> & {
+  // Starts the checkbox indeterminate (M3's third state). HTML has no attribute for it, so a
+  // script sets the input's `indeterminate` property
+  isIndeterminate?: boolean;
+};
+
+const {
+  isIndeterminate = false,
+  class: classList,
+  ...attrs
+}: Props = Astro.props;
+---
+
+<label
+  class:list={twMerge(
+    "inline-flex cursor-pointer items-center align-middle text-base leading-6 tracking-[0.5px]",
+    // M3: a disabled label is on-surface at 38%, like the checkbox
+    "has-disabled:cursor-default has-disabled:text-(--theme-color-on-surface)/38",
+    classList
+  )}
+  data-ac-checkbox
+>
+  {/* M3 touch target: 48x48, around the 40px state layer and the 18px container */}
+  <span
+    class="relative grid size-12 shrink-0 place-items-center"
+    data-ac-checkbox-part="target"
+  >
+    <input
+      class="absolute size-10 cursor-[inherit] appearance-none rounded-full outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)"
+      type="checkbox"
+      data-ac-checkbox-indeterminate={isIndeterminate ? "" : undefined}
+      {...attrs}
+    />
+    <span
+      class="pointer-events-none absolute size-10 rounded-full"
+      data-ac-checkbox-part="state-layer"
+    ></span>
+    <span
+      class="pointer-events-none relative size-4.5 rounded-xs border-2"
+      data-ac-checkbox-part="container"
+    >
+      {/* the check's two strokes, drawn from the 18px container's corner: they turn flat into
+          the indeterminate dash, as Compose draws them */}
+      <svg
+        class="absolute -inset-0.5 size-4.5 overflow-visible"
+        viewBox="0 0 18 18"
+        aria-hidden="true"
+        data-ac-checkbox-part="icon"
+      >
+        <line class="short" x2="18"></line>
+        <line class="long" x2="18"></line>
+      </svg>
+    </span>
+  </span>
+  <slot />
+</label>
+
+<style>
+  /* The roles each state draws from, swapped whole for the error state (M3's error tokens are
+     the same states in error and on-error). Unselected, the outline is on-bg-variant at rest and
+     the label's color (on-surface outside any wrapper) when hovered, focused or pressed. */
+  [data-ac-checkbox] {
+    --ac-checkbox-accent: var(--theme-color-primary);
+    --ac-checkbox-on-accent: var(--theme-color-on-primary);
+    --ac-checkbox-outline: var(--theme-color-on-bg-variant);
+    --ac-checkbox-outline-active: currentColor;
+    --ac-checkbox-layer: currentColor;
+  }
+
+  /* An error is set by aria-invalid, which also announces it, or by the browser's own
+     validation, once the person has interacted with the form */
+  [data-ac-checkbox]:has(input:is([aria-invalid="true"], :user-invalid)) {
+    --ac-checkbox-accent: var(--theme-color-error);
+    --ac-checkbox-on-accent: var(--theme-color-on-error);
+    --ac-checkbox-outline: var(--theme-color-error);
+    --ac-checkbox-outline-active: var(--theme-color-error);
+    --ac-checkbox-layer: var(--theme-color-error);
+  }
+
+  [data-ac-checkbox-part="state-layer"] {
+    background-color: var(--ac-checkbox-layer);
+    opacity: 0;
+  }
+
+  [data-ac-checkbox]:hover [data-ac-checkbox-part="state-layer"] {
+    opacity: 0.08;
+  }
+
+  [data-ac-checkbox]:active [data-ac-checkbox-part="state-layer"],
+  input:focus-visible ~ [data-ac-checkbox-part="state-layer"] {
+    opacity: 0.1;
+  }
+
+  input:is(:checked, :indeterminate) ~ [data-ac-checkbox-part="state-layer"] {
+    background-color: var(--ac-checkbox-accent);
+  }
+
+  /* M3: pressed, the state layer takes the color of the state it's about to become */
+  [data-ac-checkbox]:active
+    input:not(:checked, :indeterminate)
+    ~ [data-ac-checkbox-part="state-layer"] {
+    background-color: var(--ac-checkbox-accent);
+  }
+
+  [data-ac-checkbox]:active
+    input:is(:checked, :indeterminate)
+    ~ [data-ac-checkbox-part="state-layer"] {
+    background-color: var(--ac-checkbox-layer);
+  }
+
+  input:disabled ~ [data-ac-checkbox-part="state-layer"] {
+    display: none;
+  }
+
+  [data-ac-checkbox-part="container"] {
+    border-color: var(--ac-checkbox-outline);
+    background-color: transparent;
+  }
+
+  [data-ac-checkbox]:is(:hover, :active)
+    input:enabled:not(:checked, :indeterminate)
+    ~ [data-ac-checkbox-part="container"],
+  input:focus-visible:not(:checked, :indeterminate)
+    ~ [data-ac-checkbox-part="container"] {
+    border-color: var(--ac-checkbox-outline-active);
+  }
+
+  /* Selected, the outline takes the container's color, so the box is filled edge to edge */
+  input:is(:checked, :indeterminate) ~ [data-ac-checkbox-part="container"] {
+    border-color: var(--ac-checkbox-accent);
+    background-color: var(--ac-checkbox-accent);
+  }
+
+  input:disabled ~ [data-ac-checkbox-part="container"] {
+    border-color: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 38%,
+      transparent
+    );
+  }
+
+  /* The background already reaches under the border, so a translucent border would darken
+     the edge */
+  input:disabled:is(:checked, :indeterminate)
+    ~ [data-ac-checkbox-part="container"] {
+    border-color: transparent;
+    background-color: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 38%,
+      transparent
+    );
+  }
+
+  /* The mark is revealed from its leading end, as Compose draws it, and hidden when unselected */
+  [data-ac-checkbox-part="icon"] {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  input:is(:checked, :indeterminate) ~ * [data-ac-checkbox-part="icon"] {
+    clip-path: inset(0);
+  }
+
+  /* Each stroke is a dash along a line from its start point, rotated into place. Compose's
+     check runs through (0.25, 0.5), (0.4, 0.65) and (0.75, 0.3) of the container, and its dash
+     through (0.25, 0.5) and (0.75, 0.5), both 2px wide with square caps. */
+  line {
+    stroke: transparent;
+    stroke-width: 2px;
+    stroke-linecap: square;
+    transform-origin: 0 0;
+  }
+
+  input:is(:checked, :indeterminate) ~ * line {
+    stroke: var(--ac-checkbox-on-accent);
+  }
+
+  input:disabled ~ * line {
+    stroke: var(--theme-color-surface);
+  }
+
+  .short {
+    transform: translate(4.5px, 9px) rotate(45deg);
+    stroke-dasharray: 3.818px 20px;
+  }
+
+  .long {
+    transform: translate(7.2px, 11.7px) rotate(-45deg);
+    stroke-dasharray: 8.91px 20px;
+  }
+
+  input:indeterminate ~ * .short {
+    transform: translate(4.5px, 9px) rotate(0deg);
+    stroke-dasharray: 4.5px 20px;
+  }
+
+  input:indeterminate ~ * .long {
+    transform: translate(9px, 9px) rotate(0deg);
+    stroke-dasharray: 4.5px 20px;
+  }
+
+  /* Compose's timing. The state layer fades on fast effects. Selecting, the container colors
+     in on default effects and the mark draws (and morphs between check and dash) on default
+     spatial. Unselecting, the colors fade out on fast effects and the mark snaps away after
+     100ms. A transition's timing is the state it moves to's. */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-ac-checkbox-part="state-layer"] {
+      transition:
+        opacity var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects),
+        background-color var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects);
+    }
+
+    [data-ac-checkbox-part="container"],
+    line {
+      transition:
+        border-color var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects),
+        background-color var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects),
+        stroke var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects),
+        transform 0s 100ms,
+        stroke-dasharray 0s 100ms;
+    }
+
+    [data-ac-checkbox-part="icon"] {
+      transition: clip-path 0s 100ms;
+    }
+
+    input:is(:checked, :indeterminate) ~ [data-ac-checkbox-part="container"],
+    input:is(:checked, :indeterminate) ~ * line {
+      transition:
+        border-color var(--theme-duration-spring-default-effects)
+          var(--ease-spring-default-effects),
+        background-color var(--theme-duration-spring-default-effects)
+          var(--ease-spring-default-effects),
+        stroke var(--theme-duration-spring-default-effects)
+          var(--ease-spring-default-effects),
+        transform var(--theme-duration-spring-default-spatial)
+          var(--ease-spring-default-spatial),
+        stroke-dasharray var(--theme-duration-spring-default-spatial)
+          var(--ease-spring-default-spatial);
+    }
+
+    input:is(:checked, :indeterminate) ~ * [data-ac-checkbox-part="icon"] {
+      transition: clip-path var(--theme-duration-spring-default-spatial)
+        var(--ease-spring-default-spatial);
+    }
+  }
+</style>
+
+<script>
+  // HTML has no indeterminate attribute, only the property
+  for (const input of document.querySelectorAll<HTMLInputElement>(
+    "input[data-ac-checkbox-indeterminate]"
+  )) {
+    input.indeterminate = true;
+  }
+</script>

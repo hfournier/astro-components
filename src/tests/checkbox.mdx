@@ -1,0 +1,66 @@
+---
+title: Checkbox
+description: Tests for the Checkbox component
+---
+
+<Heading level={1}>Checkbox Tests</Heading>
+
+<Section data-testid="checkbox-states" class="p-4 space-y-4">
+  <Heading level={2}>States</Heading>
+  <div class="flex flex-wrap items-center gap-4">
+    <Checkbox name="states" value="unselected">Unselected</Checkbox>
+    <Checkbox name="states" value="selected" checked>Selected</Checkbox>
+    <Checkbox name="states" value="indeterminate" isIndeterminate>Indeterminate</Checkbox>
+  </div>
+</Section>
+
+<Section data-testid="checkbox-error" class="p-4 space-y-4">
+  <Heading level={2}>Error</Heading>
+  <div class="flex flex-wrap items-center gap-4">
+    <Checkbox aria-invalid="true" aria-describedby="checkbox-error-message">Unselected</Checkbox>
+    <Checkbox aria-invalid="true" aria-describedby="checkbox-error-message" checked>Selected</Checkbox>
+    <Checkbox aria-invalid="true" aria-describedby="checkbox-error-message" isIndeterminate>Indeterminate</Checkbox>
+  </div>
+  <p id="checkbox-error-message">Choose at least one option</p>
+</Section>
+
+<Section data-testid="checkbox-disabled" class="p-4 space-y-4">
+  <Heading level={2}>Disabled</Heading>
+  <div class="flex flex-wrap items-center gap-4">
+    <Checkbox disabled>Unselected</Checkbox>
+    <Checkbox disabled checked>Selected</Checkbox>
+    <Checkbox disabled isIndeterminate>Indeterminate</Checkbox>
+  </div>
+</Section>
+
+<Section data-testid="checkbox-no-label" class="p-4 space-y-4">
+  <Heading level={2}>Without a visible label</Heading>
+  <Checkbox aria-label="Select row" />
+</Section>
+
+<Section data-testid="checkbox-form" class="p-4 space-y-4">
+  <Heading level={2}>In a form</Heading>
+  <form class="space-y-2" onsubmit="event.preventDefault()">
+    <div class="flex flex-wrap items-center gap-4">
+      <Checkbox name="toppings" value="cheese" checked>Cheese</Checkbox>
+      <Checkbox name="toppings" value="tomato">Tomato</Checkbox>
+      <Checkbox name="toppings" value="onion" checked>Onion</Checkbox>
+      <Checkbox name="terms" required>I accept the terms</Checkbox>
+    </div>
+    <Button type="submit">Submit</Button>
+    <Button type="reset" variant="outlined">Reset</Button>
+  </form>
+</Section>
+
+<Section data-testid="checkbox-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <Checkbox checked>Selected</Checkbox>
+</Section>
+
+<Section data-testid="checkbox-on-secondary-container" bgColor="secondary-container" class="p-4 space-y-4 rounded-xl">
+  <Heading level={2}>On secondary container</Heading>
+  <div class="flex flex-wrap items-center gap-4">
+    <Checkbox>Unselected</Checkbox>
+    <Checkbox checked>Selected</Checkbox>
+  </div>
+</Section>
