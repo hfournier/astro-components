@@ -77,8 +77,8 @@ const expandedWidthClasses = {
     bgColor === "surface" &&
       "max-medium:[--theme-color-wrapper-bg:var(--theme-color-surface-container)]",
     "max-medium:w-(--ac-nav-rail-expanded-width) max-medium:max-w-90 max-medium:min-w-55",
-    "max-medium:invisible max-medium:fixed max-medium:start-[calc(-1*clamp(220px,var(--ac-nav-rail-expanded-width),360px)-1rem)] max-medium:h-dvh max-medium:rounded-e-2xl max-medium:shadow-theme-elevation-2",
-    "max-medium:data-open:visible max-medium:data-open:start-0",
+    "max-medium:invisible max-medium:fixed max-medium:inset-s-[calc(-1*clamp(220px,var(--ac-nav-rail-expanded-width),360px)-1rem)] max-medium:h-dvh max-medium:rounded-e-2xl max-medium:shadow-theme-elevation-2",
+    "max-medium:data-open:visible max-medium:data-open:inset-s-0",
     // M3's modal rail enters and exits temporarily on emphasized easing, which on the web falls
     // back to standard (ADR-0018)
     "max-medium:motion-safe:transition-[inset-inline-start,visibility] max-medium:motion-safe:duration-(--theme-duration-medium-2) max-medium:motion-safe:ease-standard max-medium:motion-safe:data-open:transition-[inset-inline-start]",
@@ -112,7 +112,7 @@ const expandedWidthClasses = {
          over whatever is behind it while the rail is closed, and blends into the rail when it's
          open. The div keeps its place in the rail. */}
     <div class:list={["size-14 shrink-0", !isExpandable && "medium:hidden"]}>
-      <MenuToggle class="max-medium:visible max-medium:fixed max-medium:start-5 max-medium:top-5 max-medium:z-10 max-medium:bg-(--theme-color-wrapper-bg)" />
+      <MenuToggle class="max-medium:visible max-medium:fixed max-medium:inset-s-5 max-medium:top-5 max-medium:z-10 max-medium:bg-(--theme-color-wrapper-bg)" />
       <script is:inline>
         // M3: a rail can be expanded by default on larger windows, so an expandable one starts
         // expanded from large up. Set before the rail is first painted, so it doesn't show

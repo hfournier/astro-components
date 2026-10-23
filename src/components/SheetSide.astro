@@ -71,8 +71,8 @@ const placementClasses = isModal
       "fixed m-0 max-h-none max-w-none overflow-visible bg-transparent p-0 outline-none",
       isDetached ? "inset-y-4 h-auto" : "inset-y-0 h-dvh",
       {
-        start: isDetached ? "start-4 end-auto" : "start-0 end-auto",
-        end: isDetached ? "end-4 start-auto" : "end-0 start-auto",
+        start: isDetached ? "inset-s-4 inset-e-auto" : "inset-s-0 inset-e-auto",
+        end: isDetached ? "inset-e-4 inset-s-auto" : "inset-e-0 inset-s-auto",
       }[edge],
     ]
   : [
