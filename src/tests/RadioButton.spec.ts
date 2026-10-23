@@ -102,14 +102,19 @@ test.describe("RadioButton", () => {
     await expect(radio(page, "states", "Circuit")).toBeFocused();
     await expect(radio(page, "states", "Circuit")).toBeChecked();
 
-    // The arrow keys are the browser's own, and WebKit's stop at the ends of the group
-    if (browserName === "webkit") return;
-    await page.keyboard.press("ArrowDown");
-    await expect(radio(page, "states", "Beacon")).toBeFocused();
-    await expect(radio(page, "states", "Beacon")).toBeChecked();
+    // The arrow keys are the browser's own, and Playwright's WebKit stops at the ends of the
+    // group instead of wrapping
+    if (browserName !== "webkit") {
+      await page.keyboard.press("ArrowDown");
+      await expect(radio(page, "states", "Beacon")).toBeFocused();
+      await expect(radio(page, "states", "Beacon")).toBeChecked();
+      await page.keyboard.press("ArrowUp");
+      await expect(radio(page, "states", "Circuit")).toBeChecked();
+    }
 
     await page.keyboard.press("ArrowUp");
-    await expect(radio(page, "states", "Circuit")).toBeChecked();
+    await expect(chimes).toBeFocused();
+    await expect(chimes).toBeChecked();
   });
 
   test("with none selected, Tab focuses the first and Space selects it", async ({
@@ -125,6 +130,20 @@ test.describe("RadioButton", () => {
 
     await page.keyboard.press("Space");
     await expect(relevance).toBeChecked();
+  });
+
+  // On a fresh page: Chromium returns to whichever radio last had focus
+  test("with none selected, Shift+Tab focuses the last", async ({
+    page,
+    browserName,
+  }) => {
+    await section(page, "none-selected")
+      .getByRole("button", { name: "After" })
+      .focus();
+    await page.keyboard.press("Shift+Tab");
+    // Firefox focuses the first, as it does for Tab
+    const name = browserName === "firefox" ? "Relevance" : "Price";
+    await expect(radio(page, "none-selected", name)).toBeFocused();
   });
 
   test("matches M3's measurements: 20px icon, 10px dot, 40px state layer, 48px target", async ({
@@ -262,6 +281,11 @@ test.describe("RadioButton", () => {
     await expect(selected).toBeFocused();
     await expect(part(selected, "state-layer")).toHaveCSS("opacity", "0.1");
     await expectFocusRing(selected);
+
+    // focused and hovered, focus's 10% wins
+    await selected.hover();
+    await settled(page);
+    expect(await style(part(selected, "state-layer"), "opacity")).toBe("0.1");
   });
 
   // One press per test, as in Checkbox.spec.ts: in Firefox, after a press on a label, the next
@@ -335,17 +359,33 @@ test.describe("RadioButton", () => {
     );
   });
 
-  test("the dot grows and shrinks on fast spatial", async ({ page }) => {
-    const dot = part(radio(page, "states", "Chimes"), "dot");
-    const properties = (await style(dot, "transition-property")).split(", ");
-    const durations = (await style(dot, "transition-duration")).split(", ");
-    const fastSpatial = await style(
-      page.locator("html"),
-      "--theme-duration-spring-fast-spatial"
-    );
+  // Compose's timing: the dot on fast spatial, the ring's and dot's colors on default effects
+  test("the dot grows on fast spatial; the colors change on default effects", async ({
+    page,
+  }) => {
+    const input = radio(page, "states", "Chimes");
+    const duration = async (target: Locator, property: string) => {
+      const properties = (await style(target, "transition-property")).split(
+        ", "
+      );
+      const durations = (await style(target, "transition-duration")).split(
+        ", "
+      );
+      return parseFloat(durations[properties.indexOf(property)]) * 1000;
+    };
+    const token = async (name: string) =>
+      parseFloat(
+        await style(page.locator("html"), `--theme-duration-spring-${name}`)
+      );
 
-    expect(parseFloat(durations[properties.indexOf("transform")]) * 1000).toBe(
-      parseFloat(fastSpatial)
+    expect(await duration(part(input, "dot"), "transform")).toBe(
+      await token("fast-spatial")
+    );
+    expect(await duration(part(input, "dot"), "background-color")).toBe(
+      await token("default-effects")
+    );
+    expect(await duration(part(input, "icon"), "border-color")).toBe(
+      await token("default-effects")
     );
   });
 

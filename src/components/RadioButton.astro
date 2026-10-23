@@ -51,7 +51,16 @@ const { class: classList, ...attrs }: Props = Astro.props;
 
 <style>
   /* Unselected, the ring is on-bg-variant at rest and the label's color (on-surface outside any
-     wrapper) when hovered, focused or pressed. Selected, the ring and dot are primary. */
+     wrapper) when hovered, focused or pressed. Selected, the ring and dot are primary. Disabled,
+     both are on-surface at 38%. */
+  [data-ac-radio-button] {
+    --ac-radio-button-disabled: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 38%,
+      transparent
+    );
+  }
+
   [data-ac-radio-button-part="state-layer"] {
     background-color: currentColor;
     opacity: 0;
@@ -61,8 +70,11 @@ const { class: classList, ...attrs }: Props = Astro.props;
     opacity: 0.08;
   }
 
+  /* Focus is scoped under the label too, so it outranks hover */
   [data-ac-radio-button]:active [data-ac-radio-button-part="state-layer"],
-  input:focus-visible ~ [data-ac-radio-button-part="state-layer"] {
+  [data-ac-radio-button]
+    input:focus-visible
+    ~ [data-ac-radio-button-part="state-layer"] {
     opacity: 0.1;
   }
 
@@ -117,19 +129,11 @@ const { class: classList, ...attrs }: Props = Astro.props;
   }
 
   input:disabled ~ [data-ac-radio-button-part="icon"] {
-    border-color: color-mix(
-      in oklab,
-      var(--theme-color-on-surface) 38%,
-      transparent
-    );
+    border-color: var(--ac-radio-button-disabled);
   }
 
   input:disabled ~ * [data-ac-radio-button-part="dot"] {
-    background-color: color-mix(
-      in oklab,
-      var(--theme-color-on-surface) 38%,
-      transparent
-    );
+    background-color: var(--ac-radio-button-disabled);
   }
 
   /* Compose's timing: the dot grows and shrinks on fast spatial, and the colors change on

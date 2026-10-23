@@ -311,6 +311,11 @@ test.describe("Checkbox", () => {
     await expect(selected).toBeFocused();
     await expect(part(selected, "state-layer")).toHaveCSS("opacity", "0.1");
     await expectFocusRing(selected);
+
+    // focused and hovered, focus's 10% wins
+    await selected.hover();
+    await settled(page);
+    expect(await style(part(selected, "state-layer"), "opacity")).toBe("0.1");
   });
 
   // One press per test: in Firefox, after a press on a label, the next press elsewhere doesn't

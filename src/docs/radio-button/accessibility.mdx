@@ -2,8 +2,8 @@ RadioButton is a native `<input type="radio">`, so assistive tech announces its 
 
 Keyboard interaction is the browser's own:
 
-- **Tab** moves focus into the group at the selected radio button, or at the first one (the last, with Shift+Tab) if none is selected. Tab again leaves the group.
-- **Arrow keys** move focus and the selection to the previous or next radio button. Chromium and Firefox wrap from the last to the first; Safari stops at the ends.
+- **Tab** moves focus into the group at the selected radio button, or at the first one if none is selected. With Shift+Tab and none selected, Chromium and WebKit focus the last one, and Firefox the first. Tab again leaves the group.
+- **Arrow keys** move focus and the selection to the previous or next radio button. Chromium and Firefox wrap from the last to the first; WebKit stops at the ends (as tested in Playwright's WebKit, not Safari itself).
 - **Space** selects the focused radio button.
 
 Name every group, with a `<fieldset>` and `<legend>` or with `role="radiogroup"` and `aria-labelledby`, so assistive tech announces the group's title as people enter it. Name every radio button too. Its label usually is one; one without visible text needs `aria-label` or `aria-labelledby`.

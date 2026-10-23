@@ -93,8 +93,11 @@ const {
     opacity: 0.08;
   }
 
+  /* Focus is scoped under the label too, so it outranks hover */
   [data-ac-checkbox]:active [data-ac-checkbox-part="state-layer"],
-  input:focus-visible ~ [data-ac-checkbox-part="state-layer"] {
+  [data-ac-checkbox]
+    input:focus-visible
+    ~ [data-ac-checkbox-part="state-layer"] {
     opacity: 0.1;
   }
 
