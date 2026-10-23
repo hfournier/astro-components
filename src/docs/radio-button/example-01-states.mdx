@@ -1,0 +1,17 @@
+---
+title: RadioButton states
+description: Set `checked` to start a radio button selected, and `disabled` to disable it.
+---
+
+<div class="flex flex-wrap gap-8">
+  <fieldset class="flex flex-col items-start">
+    <legend>Enabled</legend>
+    <RadioButton name="example-states-enabled" value="unselected">Unselected</RadioButton>
+    <RadioButton name="example-states-enabled" value="selected" checked>Selected</RadioButton>
+  </fieldset>
+  <fieldset class="flex flex-col items-start">
+    <legend>Disabled</legend>
+    <RadioButton name="example-states-disabled" value="unselected" disabled>Unselected</RadioButton>
+    <RadioButton name="example-states-disabled" value="selected" disabled checked>Selected</RadioButton>
+  </fieldset>
+</div>

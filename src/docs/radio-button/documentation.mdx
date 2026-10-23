@@ -1,0 +1,37 @@
+---
+name: RadioButton
+description: A Material 3 radio button, extending HTML's `<input type="radio">` element, inside a `<label>` that holds its text. Radio buttons that share a `name` form a group, in which only one can be selected. Each has M3's selected and unselected states, and the 48px touch target and state layer of M3's selection controls. Being a native input, it submits, resets and validates with its form.
+category: Forms
+role: pattern
+meta:
+  title: RadioButton | astro-components HenriFournier.dev
+  description: A Material 3 radio button on a native input, grouped by name, with an animated dot and M3's state layer.
+extends:
+  kind: element
+  tag: [input]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/radio
+slots:
+  - name: default
+    description: The label's text, in M3's Body Large and the background's on-color (`on-surface` outside any wrapper). It stays that color whether the radio button is selected or not. Clicking it selects the radio button. Leave it empty only when the radio button is named another way, with `aria-label` or `aria-labelledby`.
+    kind: any
+---
+
+## Attributes
+
+Every attribute except `class` goes on the `<input>`: `name`, `value`, `checked`, `disabled`, `required`, `form`, `aria-*` and the rest. `class` goes on the `<label>` around it, so it can place and space the whole control. Listen for the input's `change` event to react to a change.
+
+## Groups
+
+Give every radio button in a group the same `name`. Choosing one clears the others, and the form submits the chosen one's `value`. Put the group in a `<fieldset>` with a `<legend>` that names it, or in an element with `role="radiogroup"` and `aria-labelledby`. M3 stacks the options vertically: give the group `flex flex-col items-start`.
+
+## States
+
+- **Unselected:** a 2px ring in `on-surface-variant` (the background's variant on-color inside a BaseWrapper). Hovered, focused or pressed, it darkens to the label's color.
+- **Selected** (`checked`): a `primary` ring with a 10px `primary` dot.
+- **Disabled** (`disabled`): the ring and dot in `on-surface` at 38%, and the label at 38%.
+
+The state layer is a 40px circle, at 8% when hovered and 10% when focused or pressed. It's the label's color (`on-surface` outside any wrapper) when unselected and `primary` when selected. While pressed it takes the other color, as M3's tokens give it.
+
+## Motion
+
+As in Compose, the dot grows from the center and shrinks back on the fast spatial spring, so it briefly overshoots its size, and the ring and dot change color on default effects. Compose puts the colors on default effects rather than the fast effects M3 uses for most small components, and RadioButton follows it (ADR-0018). Under reduced motion, every state changes at once.
