@@ -28,6 +28,8 @@ An item is always a `<button>`, never a link: a FAB menu holds actions. Give it 
 
 Choosing an item closes the menu once the item's own handlers have run, and returns focus to the FAB, unless the action has moved focus elsewhere, such as into a dialog it opened.
 
+In large windows (1200px and up), FabMenu shows a Menu in place of its items, with a MenuItem for each, with the item's icon and label. Choosing the MenuItem clicks the FabMenuItem, so its handlers and `command` run the same, and a `disabled` item is disabled there too. Give the item its `id` and handlers as usual: they stay on the FabMenuItem.
+
 ## Appearance
 
 An item has Button's `lg` round size, which is M3's medium button, as M3 specifies (56px high, 24px padding at each end, 8px between its icon and its Title Medium label), at elevation 3, on the menu's container color. It has no `color` of its own: FabMenu's `color` sets every item's.

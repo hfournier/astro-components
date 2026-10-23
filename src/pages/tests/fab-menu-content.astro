@@ -23,7 +23,7 @@ const outcomes = await Promise.all(
       const html = await container.renderToString(FabMenuContent, {
         props: { content },
       });
-      const itemCount = html.match(/data-ac-fab-menu-item/g)?.length ?? 0;
+      const itemCount = html.match(/data-ac-fab-menu-item=/g)?.length ?? 0;
       return `rendered ${itemCount} items`;
     } catch (error) {
       return (error as Error).message;

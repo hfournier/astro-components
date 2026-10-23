@@ -12,11 +12,18 @@ import crypto from "node:crypto";
 import { twMerge } from "tailwind-merge";
 import type { SvgIconNameTypes } from "../svgs";
 import Icon from "./Icon.astro";
+import Menu from "./Menu.astro";
+import MenuItem from "./MenuItem.astro";
 
 // An M3 FAB menu: a FAB that opens a stack of 2-6 FabMenuItems above it and becomes their close
 // button while they're open. The items are an auto popover the FAB toggles, which gives the FAB's
 // expanded state, Escape, light dismiss, focus return and the top layer without script; the
 // script closes the menu once an item is chosen, and moves Down from the FAB to the first item.
+//
+// From the large window size class up, it follows M3's web guidance instead: "On web, the FAB menu
+// uses a menu component", which "inherits its states and specs from the baseline menu component".
+// A second FAB, the same but for the morph, opens a Menu of the same items, 4px away; CSS shows
+// one FAB or the other, so assistive tech only ever meets one.
 type Props = Omit<HTMLAttributes<"div">, "id"> & {
   // the items' popover id, which the FAB toggles
   id: string;
@@ -50,7 +57,12 @@ const slot = Astro.slots.has("default")
 const isItem = (node: Node) =>
   node.type === ELEMENT_NODE &&
   node.attributes["data-ac-fab-menu-item"] !== undefined;
-let itemCount = 0;
+// What the Menu shows for each item in large windows: its label and icon, and whether it's disabled
+const menuItems: {
+  label: string;
+  icon: SvgIconNameTypes;
+  isDisabled: boolean;
+}[] = [];
 for (const node of parse(slot).children as Node[]) {
   if (node.type === COMMENT_NODE) continue;
   if (node.type === ELEMENT_NODE && node.name === "script") continue;
@@ -68,13 +80,18 @@ for (const node of parse(slot).children as Node[]) {
       `FabMenu: found ${found}, but only FabMenuItem components can go in FabMenu, each as a direct child (not wrapped in another element or component).`
     );
   }
-  itemCount++;
+  menuItems.push({
+    label: node.attributes["data-ac-fab-menu-item-label"],
+    icon: node.attributes["data-ac-fab-menu-item-icon"],
+    isDisabled: node.attributes.disabled !== undefined,
+  });
 }
-if (itemCount < 2 || itemCount > 6) {
+if (menuItems.length < 2 || menuItems.length > 6) {
   throw new Error(
-    `FabMenu: expected 2 to 6 FabMenuItems, as M3 specifies, but found ${itemCount}.`
+    `FabMenu: expected 2 to 6 FabMenuItems, as M3 specifies, but found ${menuItems.length}.`
   );
 }
+const menuId = `${id}-menu`;
 
 const anchorName = `--anchorname-${crypto.randomUUID()}-fab-menu`;
 
@@ -137,6 +154,19 @@ const alignClasses = {
 // Compose drives the whole morph, icon included, from one fast spatial spring.
 const iconClasses =
   "[grid-area:1/1] motion-safe:transition-[opacity,rotate] motion-safe:duration-(--theme-duration-spring-fast-spatial) motion-safe:ease-spring-fast-spatial";
+
+// The FAB, in both forms
+const fabBaseClasses = [
+  "cursor-pointer place-items-center [grid-area:1/1]",
+  "bg-(--ac-fab-menu-container) text-(--ac-fab-menu-on-container)",
+  // M3: elevation level 3 at rest, focused and pressed; level 4 on hover
+  "shadow-theme-elevation-3 hover:shadow-theme-elevation-4 active:shadow-theme-elevation-3",
+  // M3 state layer, in the icon's color
+  "relative isolate before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0",
+  "hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10",
+  "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
+  fabClasses,
+];
 ---
 
 <div
@@ -152,15 +182,8 @@ const iconClasses =
 >
   <button
     class:list={[
-      "grid cursor-pointer place-items-center",
-      "bg-(--ac-fab-menu-container) text-(--ac-fab-menu-on-container)",
-      // M3: elevation level 3 at rest, focused and pressed; level 4 on hover
-      "shadow-theme-elevation-3 hover:shadow-theme-elevation-4 active:shadow-theme-elevation-3",
-      // M3 state layer, in the icon's color
-      "relative isolate before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0",
-      "hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10",
-      "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
-      fabClasses,
+      "grid large:hidden",
+      fabBaseClasses,
       // Open, it's M3's close button: 56px, fully round, on the color set's main role
       "group-has-open/fab-menu:size-14 group-has-open/fab-menu:rounded-[28px] group-has-open/fab-menu:bg-(--ac-fab-menu-close) group-has-open/fab-menu:text-(--ac-fab-menu-on-close)",
       // The morph (size, corners, colors) on M3's fast spatial spring, as Compose's toggle FAB;
@@ -189,6 +212,25 @@ const iconClasses =
       ]}
       name="close"
     />
+    <span class="sr-only">{label}</span>
+  </button>
+
+  {
+    /* In large windows: the FAB opening the Menu. As M3's menu guidelines ask of a trigger, it
+       stays as it is while the menu is open, with the pressed state layer. */
+  }
+  <button
+    class:list={[
+      "hidden large:grid",
+      fabBaseClasses,
+      "aria-expanded:before:opacity-10",
+      "motion-safe:transition-[box-shadow] motion-safe:duration-(--theme-duration-feedback) motion-safe:before:transition-opacity",
+    ]}
+    type="button"
+    commandfor={menuId}
+    command="toggle-popover"
+  >
+    <Icon class={iconSizeClasses} name={icon} />
     <span class="sr-only">{label}</span>
   </button>
 
@@ -223,19 +265,64 @@ const iconClasses =
   >
     <Fragment set:html={slot} />
   </div>
+
+  {
+    /* In large windows: the items as a Menu, lined up with the FAB's `align` edge (see Menu). Each
+       MenuItem stands in for its FabMenuItem, which it clicks, so the item's own handlers and
+       command run. Only the label, icon and disabled state carry over. */
+  }
+  <Menu id={menuId} data-ac-menu-align={align}>
+    {
+      menuItems.map((item, index) => (
+        <MenuItem
+          label={item.label}
+          icon={item.icon}
+          isDisabled={item.isDisabled}
+          data-ac-fab-menu-item-index={index}
+        />
+      ))
+    }
+  </Menu>
 </div>
 
 <script>
   document
     .querySelectorAll<HTMLElement>("[data-ac-fab-menu]")
     .forEach((menu) => {
-      const toggle = menu.querySelector<HTMLButtonElement>(
-        ":scope > [commandfor]"
+      const popover = menu.querySelector<HTMLElement>(
+        ":scope > [popover]:not([data-ac-menu])"
       )!;
-      const popover = menu.querySelector<HTMLElement>(":scope > [popover]")!;
+      const largeMenu = menu.querySelector<HTMLElement>(
+        ":scope > [data-ac-menu]"
+      )!;
+      const fabFor = (target: HTMLElement) =>
+        menu.querySelector<HTMLButtonElement>(
+          `:scope > [commandfor="${CSS.escape(target.id)}"]`
+        )!;
+      const toggle = fabFor(popover);
       const items = Array.from(
         popover.querySelectorAll<HTMLButtonElement>("[data-ac-fab-menu-item]")
       );
+
+      // In large windows, choosing a MenuItem clicks its FabMenuItem, running the item's own
+      // handlers and command; the Menu then closes itself
+      largeMenu.addEventListener("click", (event) => {
+        const chosen = (event.target as Element).closest<HTMLElement>(
+          "[data-ac-fab-menu-item-index]"
+        );
+        if (chosen) items[Number(chosen.dataset.acFabMenuItemIndex)]?.click();
+      });
+
+      // Crossing the large window size class swaps one FAB for the other, so whichever menu is
+      // open closes, its FAB being gone, and focus in either moves to the FAB now shown. The
+      // width repeats theme.css's --breakpoint-large (ADR-0014).
+      const large = matchMedia("(width >= 75rem)");
+      large.addEventListener("change", () => {
+        const hadFocus = menu.contains(document.activeElement);
+        if (popover.matches(":popover-open")) popover.hidePopover();
+        if (largeMenu.matches(":popover-open")) largeMenu.hidePopover();
+        if (hadFocus) fabFor(large.matches ? largeMenu : popover).focus();
+      });
 
       // Closing with focus in the menu returns it to the FAB. The popover does this itself, but
       // only to the element that had focus when it opened, and in Safari a click doesn't focus

@@ -1,3 +1,7 @@
 The FAB is a disclosure button: it's announced as expanded or collapsed, and its name stays `label` while it's open. Opening the menu leaves focus on the FAB, now the close button, as M3 specifies. The items follow it in the DOM, so Tab (or Down) from the open FAB moves to the top item, then down through the rest. Space or Enter activates the focused button. Closed, the items are hidden from everyone.
 
 The menu closes, returning focus to the FAB, on Escape, a click outside it, the FAB again, or choosing an item (after the item's own handlers have run).
+
+### In large windows
+
+From 1200px, as M3's web guidance has it, "a FAB menu is a combination of a FAB and a menu component", and follows the guidelines for both. The FAB is a menu button (`aria-haspopup="menu"`, `aria-controls` and `aria-expanded`), and the items are a [Menu](/components/menu), named by the FAB's `label`, with its keyboard: opening moves focus to the first item (or the last, with Up on the FAB), Up and Down move between items, Home and End go to the ends, typing a letter jumps to an item, Escape closes it and returns focus to the FAB, and Tab closes it and moves on. The items are one Tab stop.

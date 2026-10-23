@@ -29,7 +29,9 @@ const fab = (page: Page, caseId: FabMenuCaseId) =>
 const item = (page: Page, caseId: FabMenuCaseId, name: string) =>
   menuCase(page, caseId).getByRole("button", { name, exact: true });
 const items = (page: Page, caseId: FabMenuCaseId) =>
-  menuCase(page, caseId).locator("[popover]");
+  menuCase(page, caseId).locator(
+    "[data-ac-fab-menu] > [popover]:not([data-ac-menu])"
+  );
 
 const color = (target: Locator, property: "background-color" | "color") =>
   target.evaluate(
@@ -58,8 +60,11 @@ const open = async (page: Page, caseId: FabMenuCaseId) => {
   await settled(page);
 };
 
+// Below the large window size class, where FabMenu is M3 Expressive's FAB menu (FabMenuLarge.spec.ts
+// covers the menu it opens from 1200px)
 test.describe("FabMenu", () => {
   test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 720 });
     await page.goto("/tests/fab-menu");
   });
 
@@ -102,6 +107,17 @@ test.describe("FabMenu", () => {
     await expect.poll(expanded).toBe(true);
     await page.keyboard.press("Escape");
     await expect.poll(expanded).toBe(false);
+  });
+
+  test("the large window's FAB and Menu stay hidden from assistive tech", async ({
+    page,
+  }) => {
+    await expect(
+      menuCase(page, "no-props").getByRole("button", { name: "Create" })
+    ).toHaveCount(1);
+    await open(page, "no-props");
+    await expect(page.getByRole("menu")).toHaveCount(0);
+    await page.keyboard.press("Escape");
   });
 
   test("Tab from the open FAB goes through the items, top first", async ({

@@ -101,3 +101,21 @@ Each FabMenu sits in a tall Section so its items have room to open above it.
     </FabMenu>
   </div>
 </Section>
+
+<Section data-testid="fab-menu-commands" class="p-4 space-y-4">
+  <Heading level={2}>Item commands and a disabled item</Heading>
+  <div class="flex h-64 items-end justify-end">
+    <FabMenu id="commands-menu" icon="add" label="Create">
+      <FabMenuItem
+        icon="chat"
+        label="Note"
+        commandfor="commands-note"
+        command="show-popover"
+      />
+      <FabMenuItem icon="mail" label="Email" disabled />
+    </FabMenu>
+  </div>
+  <div id="commands-note" popover>
+    Note opened
+  </div>
+</Section>

@@ -11,7 +11,7 @@ We decided:
 
 ## Consequences
 
-- NavDrawer and NavRail repeat the `medium` and `large` widths in their `matchMedia()` calls (NavRail twice for `large`: in its module script and in the inline script that expands it before first paint), so changing a breakpoint in `theme.css` means changing those too.
+- NavDrawer and NavRail repeat the `medium` and `large` widths in their `matchMedia()` calls (NavRail twice for `large`: in its module script and in the inline script that expands it before first paint), and FabMenu repeats `large` in its own, so changing a breakpoint in `theme.css` means changing those too.
 - A project that imports `theme.css` gets these breakpoints for its whole app, not just these components, and loses Tailwind's `sm`-`2xl`.
 - Between 1024px and 1199px, pages now get the collapsed rail and overlay drawer instead of the standard drawer, and the docs site's table of contents is a menu rather than a column. From 1200px to 1279px it's a column where it used to be a menu.
 - Prettier's Tailwind plugin reads `src/styles/global.css` (`tailwindStylesheet`), so it sorts the new variants as breakpoints rather than as unknown classes.
