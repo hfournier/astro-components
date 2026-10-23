@@ -166,14 +166,16 @@ const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
     background-color: var(--theme-color-surface);
   }
 
-  /* Each icon shows on its own state: a check in on-primary-container when selected, an x in
-     surface-container-highest when unselected */
+  /* Each icon shows on its own state: a check in primary when selected, an x in
+     surface-container-highest when unselected. The check follows M3's Specs page, which maps
+     md.comp.switch.selected.icon.color to primary in every state; Compose's SwitchTokens still
+     give on-primary-container. */
   [data-ac-switch-icon] {
     opacity: 0;
   }
 
   [data-ac-switch-icon="selected"] {
-    color: var(--theme-color-on-primary-container);
+    color: var(--theme-color-primary);
   }
 
   [data-ac-switch-icon="unselected"] {

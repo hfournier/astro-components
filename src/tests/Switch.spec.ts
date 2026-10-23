@@ -235,7 +235,7 @@ test.describe("Switch", () => {
     );
     await expect(icon(on, "selected")).toHaveCSS(
       "color",
-      await colorRole(page, "on-primary-container")
+      await colorRole(page, "primary")
     );
 
     // the label stays on-surface, selected or not
