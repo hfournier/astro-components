@@ -12,7 +12,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "playwright test"
+    "test": "playwright test",
+    "test:quick": "playwright test --project=chromium"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "^0.4.3",

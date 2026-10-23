@@ -1,5 +1,7 @@
 # Test framework & accessibility tooling choice
 
+> **Superseded in part by ADR-0019**: the fixture's axe scan runs in the Chromium project only, and the full three-browser suite runs in CI. Everything else below still stands.
+
 No test framework exists yet, and this library's components depend on the native `<dialog>` element, the Popover API, and CSS anchor positioning — none of which jsdom supports (confirmed architectural gaps: [jsdom#3721](https://github.com/jsdom/jsdom/issues/3721), [jsdom#3294](https://github.com/jsdom/jsdom/issues/3294), and no layout engine at all for anchor positioning), so testing requires a real browser. Anchor positioning also has genuine cross-engine gaps (partial Firefox/Safari support), so the suite needs to catch cross-browser breakage, not just prove markup renders in one engine.
 
 We chose **Playwright**, running against Chromium + Firefox + WebKit, over Vitest browser mode — the deciding factor is `@axe-core/playwright`, maintained by Deque (axe-core's own authors), versus Vitest browser mode's thinner community axe wrappers. Given accessibility is this project's top priority, we didn't trade tooling maturity there for a marginally better DX elsewhere.
