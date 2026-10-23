@@ -291,6 +291,17 @@ test.describe("Switch", () => {
       await roleAt(page, "on-surface", 38)
     );
 
+    // without icons, the disabled unselected handle keeps its 16px
+    const bare = toggle(page, "disabled", "Without icons");
+    expect(await handleGeometry(bare)).toMatchObject({
+      width: 16,
+      fromStart: 16,
+    });
+    await expect(part(bare, "handle")).toHaveCSS(
+      "background-color",
+      await roleAt(page, "on-surface", 38)
+    );
+
     await section(page, "disabled")
       .getByText("Unselected", { exact: true })
       .click({ force: true });

@@ -67,6 +67,17 @@ const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
      side of the track's center, mirrored in right to left */
   [data-ac-switch] {
     --ac-switch-flip: 1;
+    /* M3's disabled on-surface: 12% for the track and its outline, 38% for the handle and icon */
+    --ac-switch-disabled-track: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 12%,
+      transparent
+    );
+    --ac-switch-disabled: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 38%,
+      transparent
+    );
   }
 
   [data-ac-switch]:dir(rtl) {
@@ -96,11 +107,7 @@ const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
   }
 
   input:disabled ~ [data-ac-switch-part="track"] {
-    border-color: color-mix(
-      in oklab,
-      var(--theme-color-on-surface) 12%,
-      transparent
-    );
+    border-color: var(--ac-switch-disabled-track);
     background-color: color-mix(
       in oklab,
       var(--theme-color-surface-container-highest) 12%,
@@ -110,11 +117,7 @@ const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
 
   input:disabled:checked ~ [data-ac-switch-part="track"] {
     border-color: transparent;
-    background-color: color-mix(
-      in oklab,
-      var(--theme-color-on-surface) 12%,
-      transparent
-    );
+    background-color: var(--ac-switch-disabled-track);
   }
 
   /* M3's handle: 16px unselected, 24px selected or holding an icon, 28px pressed */
@@ -156,11 +159,7 @@ const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
   }
 
   input:disabled ~ [data-ac-switch-part="handle"] {
-    background-color: color-mix(
-      in oklab,
-      var(--theme-color-on-surface) 38%,
-      transparent
-    );
+    background-color: var(--ac-switch-disabled);
   }
 
   input:disabled:checked ~ [data-ac-switch-part="handle"] {
@@ -187,7 +186,7 @@ const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
   }
 
   input:disabled ~ * [data-ac-switch-icon="selected"] {
-    color: color-mix(in oklab, var(--theme-color-on-surface) 38%, transparent);
+    color: var(--ac-switch-disabled);
   }
 
   input:disabled ~ * [data-ac-switch-icon="unselected"] {
