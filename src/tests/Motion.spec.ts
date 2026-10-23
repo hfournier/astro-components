@@ -60,15 +60,6 @@ test.describe("motion", () => {
     expect(defined).toEqual([]);
   });
 
-  test("an unspecified transition, such as Heading's anchor icon, runs on fast effects", async ({
-    page,
-  }) => {
-    await page.goto("/components/button");
-    await expectTransitions(page.locator("main a[href^='#'] svg").first(), {
-      opacity: FAST_EFFECTS,
-    });
-  });
-
   test("Button: colors and shadow on fast effects, corners on fast spatial, its state layer on fast effects", async ({
     page,
   }) => {
@@ -84,7 +75,25 @@ test.describe("motion", () => {
       "box-shadow": FAST_EFFECTS,
       "border-radius": FAST_SPATIAL,
     });
+    // the state layer names no timing, so it shows Tailwind's default is fast effects
     await expectTransitions(button, { opacity: FAST_EFFECTS }, "::before");
+  });
+
+  test("with reduced motion, the default timing doesn't bring transitions back", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/tests/button");
+    const button = page
+      .getByTestId("button-no-props")
+      .getByRole("button")
+      .first();
+    await expect(button).toHaveCSS("transition-duration", "0s");
+    expect(
+      await button.evaluate(
+        (el) => getComputedStyle(el, "::before").transitionDuration
+      )
+    ).toBe("0s");
   });
 
   test("ButtonIcon: colors on fast effects, corners on fast spatial", async ({
@@ -150,10 +159,11 @@ test.describe("motion", () => {
     page,
   }) => {
     await page.goto("/tests/dialog");
-    const dialog = page.locator("#basic-dialog");
+    const dialogCase = page.getByTestId("dialog-basic");
+    const dialog = dialogCase.locator("#basic-dialog");
     await expectTransitions(dialog, { opacity: EXIT, translate: EXIT });
 
-    await page.getByTestId("dialog-basic").getByRole("button").first().click();
+    await dialogCase.getByRole("button", { name: "Open Dialog" }).click();
     await expect(dialog).toBeVisible();
     await expectTransitions(dialog, { opacity: ENTER, translate: ENTER });
     await expectTransitions(dialog, { opacity: ENTER }, "::backdrop");
