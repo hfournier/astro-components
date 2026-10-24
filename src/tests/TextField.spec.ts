@@ -677,6 +677,7 @@ test.describe("TextField", () => {
   test("text area: a fixed height of `rows` lines that scrolls", async ({
     page,
   }) => {
+    await settled(page);
     for (const variant of ["Filled", "Outlined"]) {
       const input = field(page, "text-area", variant);
       await expect(input).toHaveJSProperty("tagName", "TEXTAREA");

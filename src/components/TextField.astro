@@ -14,9 +14,13 @@ type Props = (
         "email" | "number" | "password" | "search" | "tel" | "text" | "url";
       rows?: never;
     })
-  | (HTMLAttributes<"textarea"> & { type: "textarea" })
+  | (Omit<HTMLAttributes<"textarea">, "rows"> & {
+      type: "textarea";
+      rows?: number;
+    })
 ) & {
   variant?: "filled" | "outlined";
+  maxlength?: number;
 };
 
 const {
@@ -35,7 +39,7 @@ const {
 // A multi-line field is a textarea. Without `rows`, it starts one line tall and grows with its
 // content; with `rows`, it's M3's text area, that many lines tall, and scrolls.
 const isMultiLine = type === "textarea";
-const isTextArea = isMultiLine && rows != null;
+const hasFixedRows = isMultiLine && rows != null;
 
 const label = Astro.slots.has("default")
   ? unwrapParagraph(await Astro.slots.render("default")).trim()
@@ -157,8 +161,8 @@ const controlAttrs = {
           class={controlClass}
           {...controlAttrs}
           rows={rows ?? 1}
-          style={isTextArea ? `--ac-text-field-rows: ${rows}` : undefined}
-          data-ac-text-field-grows={isTextArea ? undefined : ""}
+          style={hasFixedRows ? `--ac-text-field-rows: ${rows}` : undefined}
+          data-ac-text-field-grows={hasFixedRows ? undefined : ""}
           {...attrs}
           set:text={value}
         ></textarea>
