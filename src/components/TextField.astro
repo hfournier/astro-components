@@ -79,8 +79,14 @@ const ariaDescribedBy =
     .filter(Boolean)
     .join(" ") || undefined;
 
-const controlClass =
-  "min-w-0 flex-1 bg-transparent p-0 outline-none disabled:cursor-default";
+// The placeholder fades in on slow effects as the field is focused, and out on fast effects
+const controlClass = [
+  "min-w-0 flex-1 bg-transparent p-0 text-(--ac-text-field-input) caret-(--ac-text-field-accent) outline-none disabled:cursor-default",
+  "placeholder:text-(--ac-text-field-icon) placeholder:opacity-100 motion-safe:placeholder:transition-opacity",
+  "motion-safe:focus:placeholder:duration-(--theme-duration-spring-slow-effects) motion-safe:focus:placeholder:ease-spring-slow-effects",
+  // While the label rests in the field, it takes the placeholder's place
+  label && "not-focus:placeholder:opacity-0",
+];
 const controlAttrs = {
   id,
   placeholder: placeholder ?? (label ? " " : undefined),
@@ -103,41 +109,54 @@ const controlAttrs = {
 >
   <div
     class:list={[
-      "relative flex cursor-text",
+      "relative flex cursor-text motion-safe:transition-colors",
       isMultiLine ? "min-h-14" : "h-14",
-      variant === "filled" ? "rounded-t-sm" : "rounded-sm",
+      variant === "filled"
+        ? // The filled container is its own surface: a ButtonIcon in it, and its focus ring,
+          // take the surface's colors whatever the background around the field
+          "rounded-t-sm bg-(--theme-color-surface-container-highest) [--theme-color-focus-ring-on-bg:var(--theme-color-secondary)] [--theme-color-on-bg-variant:var(--theme-color-on-surface-variant)] [--theme-color-wrapper-bg:var(--theme-color-surface-container-highest)]"
+        : "rounded-sm",
     ]}
     data-ac-text-field-part="container"
   >
     {variant === "filled" ? (
       <>
         <span
-          class="pointer-events-none absolute inset-0 rounded-[inherit]"
+          class="pointer-events-none absolute inset-0 rounded-[inherit] bg-(--theme-color-on-surface) opacity-0 motion-safe:transition-opacity"
           data-ac-text-field-part="state-layer"
         />
         <span
-          class="pointer-events-none absolute inset-x-0 bottom-0"
+          class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-(--ac-text-field-indicator)"
           data-ac-text-field-part="active-indicator"
         />
       </>
     ) : (
       // The outline is a fieldset so that its legend, a hidden copy of the label, cuts the gap
-      // the floated label sits in, whatever the label's width
+      // the floated label sits in, whatever the label's width. The legend starts 12px in, so
+      // the label it copies starts at the field's 16px padding.
       <fieldset
-        class="pointer-events-none absolute inset-x-0 bottom-0 m-0 min-w-0 rounded-[inherit]"
+        class:list={[
+          "pointer-events-none absolute inset-x-0 bottom-0 m-0 min-w-0 rounded-[inherit] border-(length:--ac-text-field-outline-width) border-(--ac-text-field-indicator) px-[calc(12px-var(--ac-text-field-outline-width))] [--ac-text-field-outline-width:1px]",
+          // A fieldset centers its top border on the legend, which is 16px tall, the floated
+          // label's line. Raised by 8px less half the border, the border's top edge stays on
+          // the container's.
+          label
+            ? "top-[calc(var(--ac-text-field-outline-width)/2-8px)]"
+            : "top-0",
+        ]}
         aria-hidden="true"
         data-ac-text-field-part="outline"
       >
         {label && (
-          <legend>
-            <span set:html={labelText} />
+          <legend class="invisible block h-4 w-auto max-w-[0.01px] overflow-hidden p-0 text-xs leading-4 tracking-[0.4px] whitespace-nowrap motion-safe:transition-[max-width] motion-safe:duration-(--theme-duration-spring-fast-spatial) motion-safe:ease-spring-fast-spatial">
+            <span class="px-1" set:html={labelText} />
           </legend>
         )}
       </fieldset>
     )}
     {hasLeadingIcon && (
       <span
-        class="relative grid w-12 shrink-0 place-items-center"
+        class="relative grid w-12 shrink-0 place-items-center text-(--ac-text-field-icon) motion-safe:transition-colors"
         data-ac-text-field-part="leading-icon"
       >
         <slot name="leading-icon" />
@@ -152,7 +171,11 @@ const controlAttrs = {
       ]}
     >
       {prefixId && (
-        <span id={prefixId} class="me-0.5" data-ac-text-field-part="prefix">
+        <span
+          id={prefixId}
+          class="me-0.5 text-(--ac-text-field-icon) motion-safe:transition-opacity"
+          data-ac-text-field-part="prefix"
+        >
           <slot name="prefix" />
         </span>
       )}
@@ -176,7 +199,12 @@ const controlAttrs = {
         ></textarea>
       ) : (
         <input
-          class:list={[controlClass, "h-6"]}
+          class:list={[
+            controlClass,
+            "h-6",
+            // M3 uses a trailing icon to clear a field, rather than the browser's own button
+            "[&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none",
+          ]}
           {...controlAttrs}
           type={type}
           value={value}
@@ -184,14 +212,22 @@ const controlAttrs = {
         />
       )}
       {suffixId && (
-        <span id={suffixId} class="ms-0.5" data-ac-text-field-part="suffix">
+        <span
+          id={suffixId}
+          class="ms-0.5 text-(--ac-text-field-icon) motion-safe:transition-opacity"
+          data-ac-text-field-part="suffix"
+        >
           <slot name="suffix" />
         </span>
       )}
     </div>
     {label && (
       <label
-        class="pointer-events-none absolute top-4 truncate"
+        class:list={[
+          "pointer-events-none absolute top-4 truncate text-(--ac-text-field-label)",
+          hasLeadingIcon ? "inset-s-13" : "inset-s-4",
+          hasTrailingIcon ? "inset-e-13" : "inset-e-4",
+        ]}
         for={id}
         data-ac-text-field-part="label"
         set:html={labelText}
@@ -199,7 +235,7 @@ const controlAttrs = {
     )}
     {hasTrailingIcon && (
       <span
-        class="relative grid w-12 shrink-0 place-items-center"
+        class="relative grid w-12 shrink-0 place-items-center text-(--ac-text-field-trailing) motion-safe:transition-colors [--theme-color-on-bg-variant:var(--ac-text-field-trailing)]"
         data-ac-text-field-part="trailing-icon"
       >
         <slot name="trailing-icon" />
@@ -211,7 +247,7 @@ const controlAttrs = {
       {supportingId && (
         <div
           id={supportingId}
-          class="min-w-0 pt-1"
+          class="min-w-0 pt-1 text-(--ac-text-field-supporting) motion-safe:transition-colors"
           role={isError ? "alert" : undefined}
           data-ac-text-field-part="supporting-text"
         >
@@ -221,7 +257,7 @@ const controlAttrs = {
       {counterId && (
         <div
           id={counterId}
-          class="ms-auto shrink-0 pt-1"
+          class="ms-auto shrink-0 pt-1 text-(--ac-text-field-supporting) motion-safe:transition-colors"
           data-ac-text-field-part="counter"
         >
           <span class="sr-only">Character count, </span>
@@ -270,110 +306,6 @@ const controlAttrs = {
     --ac-text-field-label-hover: var(--theme-color-on-error-container);
     --ac-text-field-trailing: var(--theme-color-error);
     --ac-text-field-trailing-hover: var(--theme-color-on-error-container);
-  }
-
-  /* The filled container is its own surface: a ButtonIcon in it, and its focus ring, take the
-     surface's colors whatever the background around the field */
-  [data-ac-text-field="filled"] [data-ac-text-field-part="container"] {
-    --theme-color-on-bg-variant: var(--theme-color-on-surface-variant);
-    --theme-color-focus-ring-on-bg: var(--theme-color-secondary);
-    --theme-color-wrapper-bg: var(--theme-color-surface-container-highest);
-    background-color: var(--theme-color-surface-container-highest);
-  }
-
-  [data-ac-text-field-part="state-layer"] {
-    background-color: var(--theme-color-on-surface);
-    opacity: 0;
-  }
-
-  [data-ac-text-field-part="active-indicator"] {
-    height: 1px;
-    background-color: var(--ac-text-field-indicator);
-  }
-
-  [data-ac-text-field-part="outline"] {
-    --ac-text-field-outline-width: 1px;
-    border: var(--ac-text-field-outline-width) solid
-      var(--ac-text-field-indicator);
-    /* the legend starts 12px in, so the label it copies starts at the field's 16px padding */
-    padding: 0 calc(12px - var(--ac-text-field-outline-width));
-    top: 0;
-  }
-
-  /* A fieldset centers its top border on the legend, which is 16px tall, the floated label's
-     line. Raised by 8px less half the border, the border's top edge stays on the container's. */
-  [data-ac-text-field][data-ac-text-field-labelled]
-    [data-ac-text-field-part="outline"] {
-    top: calc(var(--ac-text-field-outline-width) / 2 - 8px);
-  }
-
-  legend {
-    display: block;
-    width: auto;
-    max-width: 0.01px;
-    height: 16px;
-    padding: 0;
-    overflow: hidden;
-    font-size: 12px;
-    line-height: 16px;
-    letter-spacing: 0.4px;
-    white-space: nowrap;
-    visibility: hidden;
-  }
-
-  legend > span {
-    padding-inline: 4px;
-  }
-
-  [data-ac-text-field-part="label"] {
-    inset-inline-start: 16px;
-    inset-inline-end: 16px;
-    color: var(--ac-text-field-label);
-  }
-
-  [data-ac-text-field][data-ac-text-field-leading]
-    [data-ac-text-field-part="label"] {
-    inset-inline-start: 52px;
-  }
-
-  [data-ac-text-field][data-ac-text-field-trailing]
-    [data-ac-text-field-part="label"] {
-    inset-inline-end: 52px;
-  }
-
-  [data-ac-text-field-part="leading-icon"] {
-    color: var(--ac-text-field-icon);
-  }
-
-  [data-ac-text-field-part="trailing-icon"] {
-    --theme-color-on-bg-variant: var(--ac-text-field-trailing);
-    color: var(--ac-text-field-trailing);
-  }
-
-  [data-ac-text-field-part="prefix"],
-  [data-ac-text-field-part="suffix"] {
-    color: var(--ac-text-field-icon);
-  }
-
-  [data-ac-text-field-part="supporting-text"],
-  [data-ac-text-field-part="counter"] {
-    color: var(--ac-text-field-supporting);
-  }
-
-  :is(input, textarea) {
-    color: var(--ac-text-field-input);
-    caret-color: var(--ac-text-field-accent);
-  }
-
-  :is(input, textarea)::placeholder {
-    color: var(--ac-text-field-icon);
-    opacity: 1;
-  }
-
-  /* M3 uses a trailing icon to clear a field, rather than the browser's own button */
-  input::-webkit-search-cancel-button,
-  input::-webkit-search-decoration {
-    appearance: none;
   }
 
   /* Hovered, unless focused: a focused field keeps its focused colors under the pointer */
@@ -440,6 +372,7 @@ const controlAttrs = {
   [data-ac-text-field]:has(
       :is(input, textarea):is(:focus, :not(:placeholder-shown), :autofill)
     )
+    [data-ac-text-field-part="outline"]
     legend {
     max-width: 100%;
   }
@@ -459,8 +392,8 @@ const controlAttrs = {
     inset-inline-start: 16px;
   }
 
-  /* While the label rests in the field, it takes the placeholder's place, and the prefix and
-     suffix wait for it to float, as in Compose */
+  /* While the label rests in the field, the prefix and suffix wait for it to float, as in
+     Compose */
   [data-ac-text-field][data-ac-text-field-labelled]:not(
       :has(:is(input, textarea):is(:focus, :not(:placeholder-shown), :autofill))
     )
@@ -468,11 +401,6 @@ const controlAttrs = {
       [data-ac-text-field-part="prefix"],
       [data-ac-text-field-part="suffix"]
     ) {
-    opacity: 0;
-  }
-
-  [data-ac-text-field][data-ac-text-field-labelled]
-    :is(input, textarea):not(:focus)::placeholder {
     opacity: 0;
   }
 
@@ -513,36 +441,10 @@ const controlAttrs = {
     );
   }
 
-  /* Compose's timing, which M3's Specs page doesn't give: the label moves and resizes, and the
-     indicator and outline thicken, on fast spatial. Colors, the state layer, the prefix and
-     suffix fade on fast effects. The placeholder fades in on slow effects, as the field is
-     focused, and out on fast effects. A transition's timing is the state it moves to's. */
+  /* Compose's timing, which M3's Specs page doesn't give, for the parts that mix two springs:
+     the label moves and resizes, and the indicator and outline thicken, on fast spatial, while
+     their colors change on fast effects. The parts on one spring have it in their classes. */
   @media (prefers-reduced-motion: no-preference) {
-    [data-ac-text-field-part="state-layer"],
-    [data-ac-text-field-part="prefix"],
-    [data-ac-text-field-part="suffix"],
-    :is(input, textarea)::placeholder {
-      transition: opacity var(--theme-duration-spring-fast-effects)
-        var(--ease-spring-fast-effects);
-    }
-
-    :is(input, textarea):focus::placeholder {
-      transition: opacity var(--theme-duration-spring-slow-effects)
-        var(--ease-spring-slow-effects);
-    }
-
-    [data-ac-text-field-part="container"],
-    [data-ac-text-field-part="leading-icon"],
-    [data-ac-text-field-part="trailing-icon"],
-    [data-ac-text-field-part="supporting-text"],
-    [data-ac-text-field-part="counter"] {
-      transition:
-        color var(--theme-duration-spring-fast-effects)
-          var(--ease-spring-fast-effects),
-        background-color var(--theme-duration-spring-fast-effects)
-          var(--ease-spring-fast-effects);
-    }
-
     [data-ac-text-field-part="active-indicator"] {
       transition:
         background-color var(--theme-duration-spring-fast-effects)
@@ -561,11 +463,6 @@ const controlAttrs = {
           var(--ease-spring-fast-spatial),
         top var(--theme-duration-spring-fast-spatial)
           var(--ease-spring-fast-spatial);
-    }
-
-    legend {
-      transition: max-width var(--theme-duration-spring-fast-spatial)
-        var(--ease-spring-fast-spatial);
     }
 
     [data-ac-text-field-part="label"] {
