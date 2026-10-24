@@ -1,0 +1,19 @@
+---
+title: Supporting text and errors
+description: Put supporting text in the `supporting-text` slot. For an error, set `aria-invalid="true"` and swap in the error text, which TextField makes an alert; a trailing error icon gives a second cue beyond color.
+---
+
+<div class="flex flex-wrap items-start gap-4">
+  <TextField name="username" required>
+    Username
+
+    <span slot="supporting-text">*Required</span>
+  </TextField>
+  <TextField variant="outlined" name="zip" value="9410" aria-invalid="true">
+    ZIP code
+
+    <Icon slot="trailing-icon" name="error" label="Error" />
+
+    <span slot="supporting-text">Enter all five digits</span>
+  </TextField>
+</div>

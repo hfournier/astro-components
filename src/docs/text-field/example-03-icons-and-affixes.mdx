@@ -1,0 +1,24 @@
+---
+title: Icons, prefix and suffix
+description: Put an Icon in the `leading-icon` slot, an Icon or a ButtonIcon in `trailing-icon`, and text in `prefix` or `suffix`. A symbol needs a spoken name, given here with visually hidden text.
+---
+
+<div class="flex flex-wrap items-start gap-4">
+  <TextField type="search" name="q" value="Lisbon">
+    Search
+
+    <Icon slot="leading-icon" name="search" />
+
+    <ButtonIcon slot="trailing-icon" icon="cancel" label="Clear search" />
+  </TextField>
+  <TextField variant="outlined" type="number" name="price">
+    Price
+
+    <span slot="prefix"><span aria-hidden="true">€</span><span class="sr-only">Euro</span></span>
+  </TextField>
+  <TextField variant="outlined" name="email">
+    Email
+
+    <span slot="suffix">@gmail.com</span>
+  </TextField>
+</div>

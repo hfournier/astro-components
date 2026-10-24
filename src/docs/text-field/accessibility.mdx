@@ -1,0 +1,13 @@
+TextField is a native `<input>`, so assistive tech announces its label, its role (a textbox, or a search box or spin button for those types), its value and whether it's required or invalid. Tab moves focus to it, and to a trailing ButtonIcon after it, as M3's keyboard table asks.
+
+Name every field. Its label is a `<label>` for the input, and M3 asks for a label on every text field. A field without one, whose purpose an adjacent heading or text shows, needs `aria-label` or `aria-labelledby`. A `required` field's label ends with an asterisk, which the name includes, as M3 asks. Explain the asterisk once, in supporting text or a note at the start of the form.
+
+The supporting text, prefix and suffix describe the input, through `aria-describedby`, so assistive tech reads them after its name. Add your own `aria-describedby` and its ids are read after them. Give a symbol prefix or suffix a spoken name, such as "Euro" for "€": hide the symbol with `aria-hidden="true"` and put the name in visually hidden text (`class="sr-only"`).
+
+Mark an error with `aria-invalid="true"`, which both shows the error colors and announces the field as invalid, and swap the supporting text for error text that says how to fix it. A `required` field, or one whose value doesn't match its type or `pattern`, is in the error state on its own once the person has interacted with it or tried to submit its form (`:user-invalid`). While the field is in error, its supporting text has the `alert` role, as M3 asks, so the error text is announced as it appears, and the role is removed once the error is fixed. Set `aria-invalid` first and then swap in the error text, so it arrives in the alert. Don't add `aria-live` as well: an alert is already an assertive live region, and `aria-live="polite"` would quiet it. An error icon in the trailing slot, named "Error", gives a second cue beyond color, as M3 strongly recommends.
+
+Name an interactive trailing icon by what it does, such as "Clear search" or, for a password, "Show password" and "Hide password".
+
+Focused, the field shows M3's focus indicator: a `primary` indicator or outline 3px thick, and a `primary` label (`error` in the error state). The container is 56px tall, above M3's 48px minimum target, and a press anywhere in it focuses the input.
+
+A disabled field's text is at 38%, below text contrast, as WCAG allows for an inactive component. TextField marks the whole field `aria-disabled` while its input is disabled, so accessibility checkers know its supporting text is part of one. It follows the input's `disabled` as a script changes it.

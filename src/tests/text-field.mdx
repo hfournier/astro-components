@@ -1,0 +1,184 @@
+---
+title: TextField
+description: Tests for the TextField component
+---
+
+<Heading level={1}>TextField Tests</Heading>
+
+<Section data-testid="text-field-filled" class="p-4 space-y-4">
+  <Heading level={2}>Filled</Heading>
+  <div class="flex flex-wrap items-start gap-4">
+    <TextField>Empty</TextField>
+    <TextField value="Paris">Populated</TextField>
+    <TextField placeholder="you@example.com">With placeholder</TextField>
+  </div>
+</Section>
+
+<Section data-testid="text-field-outlined" class="p-4 space-y-4">
+  <Heading level={2}>Outlined</Heading>
+  <div class="flex flex-wrap items-start gap-4">
+    <TextField variant="outlined">Empty</TextField>
+    <TextField variant="outlined" value="Paris">Populated</TextField>
+    <TextField variant="outlined" placeholder="you@example.com">With placeholder</TextField>
+  </div>
+</Section>
+
+<Section data-testid="text-field-supporting-text" class="p-4 space-y-4">
+  <Heading level={2}>Supporting text</Heading>
+  <div class="flex flex-wrap items-start gap-4">
+    <TextField>
+      Filled
+
+      <span slot="supporting-text">Filled supporting text</span>
+    </TextField>
+    <TextField variant="outlined">
+      Outlined
+
+      <span slot="supporting-text">Outlined supporting text</span>
+    </TextField>
+  </div>
+</Section>
+
+<Section data-testid="text-field-error" class="p-4 space-y-4">
+  <Heading level={2}>Error</Heading>
+  <div class="flex flex-wrap items-start gap-4">
+    <TextField aria-invalid="true" value="12">
+      Filled
+
+      <Icon slot="trailing-icon" name="error" label="Error" />
+
+      <span slot="supporting-text">Filled error text</span>
+    </TextField>
+    <TextField variant="outlined" aria-invalid="true" value="12">
+      Outlined
+
+      <Icon slot="trailing-icon" name="error" label="Error" />
+
+      <span slot="supporting-text">Outlined error text</span>
+    </TextField>
+  </div>
+</Section>
+
+<Section data-testid="text-field-icons" class="p-4 space-y-4">
+  <Heading level={2}>Icons</Heading>
+  <div class="flex flex-wrap items-start gap-4">
+    <TextField type="search" value="Lisbon">
+      Filled
+
+      <Icon slot="leading-icon" name="search" />
+
+      <ButtonIcon slot="trailing-icon" icon="cancel" label="Clear filled" />
+    </TextField>
+    <TextField variant="outlined" type="search" value="Lisbon">
+      Outlined
+
+      <Icon slot="leading-icon" name="search" />
+
+      <ButtonIcon slot="trailing-icon" icon="cancel" label="Clear outlined" />
+    </TextField>
+    <TextField type="search">
+      Filled empty
+
+      <Icon slot="leading-icon" name="search" />
+    </TextField>
+    <TextField variant="outlined" type="search">
+      Outlined empty
+
+      <Icon slot="leading-icon" name="search" />
+    </TextField>
+  </div>
+</Section>
+
+<Section data-testid="text-field-prefix-suffix" class="p-4 space-y-4">
+  <Heading level={2}>Prefix and suffix</Heading>
+  <div class="flex flex-wrap items-start gap-4">
+    <TextField type="number" name="price">
+      Filled price
+
+      <span slot="prefix"><span aria-hidden="true">€</span><span class="sr-only">Euro</span></span>
+    </TextField>
+    <TextField variant="outlined" name="email" value="ada">
+      Outlined email
+
+      <span slot="suffix">@gmail.com</span>
+    </TextField>
+  </div>
+</Section>
+
+<Section data-testid="text-field-disabled" class="p-4 space-y-4">
+  <Heading level={2}>Disabled</Heading>
+  <div class="flex flex-wrap items-start gap-4">
+    <TextField disabled value="Paris">
+      Filled
+
+      <Icon slot="leading-icon" name="search" />
+
+      <span slot="supporting-text">Filled disabled supporting text</span>
+    </TextField>
+    <TextField variant="outlined" disabled value="Paris">
+      Outlined
+
+      <Icon slot="leading-icon" name="search" />
+
+      <span slot="supporting-text">Outlined disabled supporting text</span>
+    </TextField>
+  </div>
+</Section>
+
+<Section data-testid="text-field-no-label" class="p-4 space-y-4">
+  <Heading level={2}>Without a label</Heading>
+  <div class="flex flex-wrap items-start gap-4">
+    <TextField aria-label="Search filled" placeholder="Search" />
+    <TextField variant="outlined" aria-label="Search outlined" placeholder="Search" />
+  </div>
+</Section>
+
+<Section data-testid="text-field-form" class="p-4 space-y-4">
+  <Heading level={2}>In a form</Heading>
+  <form class="space-y-4" onsubmit="event.preventDefault()">
+    <div class="flex flex-wrap items-start gap-4">
+      <TextField name="city" value="Paris">City</TextField>
+      <TextField variant="outlined" name="username" required>
+        Username
+
+        <span slot="supporting-text">Required</span>
+      </TextField>
+    </div>
+    <Button type="submit">Submit</Button>
+    <Button type="reset" variant="outlined">Reset</Button>
+  </form>
+</Section>
+
+<Section data-testid="text-field-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <div class="flex flex-wrap items-start gap-4">
+    <TextField value="Paris">
+      Filled
+
+      <Icon slot="leading-icon" name="search" />
+
+      <span slot="supporting-text">Filled supporting text</span>
+    </TextField>
+    <TextField variant="outlined" value="Paris">
+      Outlined
+
+      <Icon slot="leading-icon" name="search" />
+    </TextField>
+  </div>
+</Section>
+
+<Section data-testid="text-field-on-secondary-container" bgColor="secondary-container" class="p-4 space-y-4 rounded-xl">
+  <Heading level={2}>On secondary container</Heading>
+  <div class="flex flex-wrap items-start gap-4">
+    <TextField value="Paris">
+      Filled
+
+      <span slot="supporting-text">Filled supporting text</span>
+    </TextField>
+    <TextField variant="outlined" value="Paris">
+      Outlined
+
+      <span slot="supporting-text">Outlined supporting text</span>
+    </TextField>
+  </div>
+</Section>
