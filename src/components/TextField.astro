@@ -158,7 +158,15 @@ const controlAttrs = {
       )}
       {isMultiLine ? (
         <textarea
-          class={controlClass}
+          class:list={[
+            controlClass,
+            // No resize handle. It grows a line at a time with its content, or as a text area
+            // is `rows` lines tall, Body Large's 24px each, and scrolls.
+            "resize-none",
+            hasFixedRows
+              ? "h-[calc(var(--ac-text-field-rows)*24px)]"
+              : "min-h-6 overflow-y-hidden field-sizing-content",
+          ]}
           {...controlAttrs}
           rows={rows ?? 1}
           style={hasFixedRows ? `--ac-text-field-rows: ${rows}` : undefined}
@@ -168,8 +176,8 @@ const controlAttrs = {
         ></textarea>
       ) : (
         <input
-          {...controlAttrs}
           class:list={[controlClass, "h-6"]}
+          {...controlAttrs}
           type={type}
           value={value}
           {...attrs}
@@ -360,22 +368,6 @@ const controlAttrs = {
   :is(input, textarea)::placeholder {
     color: var(--ac-text-field-icon);
     opacity: 1;
-  }
-
-  /* A multi-line field has no resize handle. It grows a line at a time with its content, or
-     as a text area is `rows` lines tall, Body Large's 24px each, and scrolls. */
-  textarea {
-    resize: none;
-  }
-
-  textarea[data-ac-text-field-grows] {
-    field-sizing: content;
-    min-height: 24px;
-    overflow-y: hidden;
-  }
-
-  textarea:not([data-ac-text-field-grows]) {
-    height: calc(var(--ac-text-field-rows) * 24px);
   }
 
   /* M3 uses a trailing icon to clear a field, rather than the browser's own button */
