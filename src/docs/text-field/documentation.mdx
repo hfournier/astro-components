@@ -76,4 +76,4 @@ Both variants keep these roles on any background, as M3's Specs page maps them, 
 
 ## Motion
 
-M3's Specs page gives no timing, so TextField follows Compose: the label moves and resizes, the outline's gap opens, and the indicator or outline thickens on the fast spatial spring. Colors, the state layer, the prefix and the suffix fade on fast effects (ADR-0018). A growing multi-line field changes height at once, as Compose's does. The placeholder fades in on slow effects as the field is focused, and out on fast effects. Under reduced motion, every state changes at once.
+M3's Specs page gives no timing, so TextField follows Compose: the label moves and resizes, the outline's gap opens, and the indicator or outline thickens on the fast spatial spring. Colors, the state layer, the prefix and the suffix fade on fast effects (ADR-0018). A growing multi-line field changes height on fast spatial as well, where Compose changes it at once, so its size moves on the spring M3 gives size changes. The placeholder fades in on slow effects as the field is focused, and out on fast effects. Under reduced motion, every state changes at once.

@@ -264,6 +264,12 @@ const controlAttrs = {
           <span data-ac-text-field-count>{count}</span>/{limit}
         </div>
       )}
+      {counterId && (
+        // Says so when the value goes past the counter's limit. Outside the counter, so the
+        // input's description doesn't include it, and rendered empty, so it's in place before
+        // anything is announced.
+        <span class="sr-only" role="alert" data-ac-text-field-announcement />
+      )}
     </div>
   )}
 </div>
@@ -503,12 +509,35 @@ const controlAttrs = {
   // The inputs whose validity message is the counter's, so a message of the page's own stays
   const overLimit = new WeakSet<Element>();
 
-  // Where field-sizing isn't supported, a growing multi-line field takes its content's height
+  // A growing multi-line field takes its content's height, through field-sizing or, where
+  // that isn't supported, set here. The change moves on the fast spatial spring, unless motion
+  // is reduced. CSS can't transition it, since both heights are the content's, so it's animated
+  // from the height the field last had (or has now, partway through an animation).
   const sizesItself = CSS.supports("field-sizing", "content");
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  const heights = new WeakMap<Element, number>();
   const grow = (input: HTMLInputElement | HTMLTextAreaElement) => {
-    if (sizesItself || !input.hasAttribute("data-ac-text-field-grows")) return;
-    input.style.height = "auto";
-    input.style.height = `${input.scrollHeight}px`;
+    if (!input.hasAttribute("data-ac-text-field-grows")) return;
+    const running = input.getAnimations();
+    const from = running.length
+      ? input.getBoundingClientRect().height
+      : heights.get(input);
+    for (const animation of running) animation.cancel();
+    if (!sizesItself) {
+      input.style.height = "auto";
+      input.style.height = `${input.scrollHeight}px`;
+    }
+    const to = input.getBoundingClientRect().height;
+    heights.set(input, to);
+    // a hidden field has no height to move from or to
+    if (!from || !to || from === to || reducedMotion.matches) return;
+    const root = getComputedStyle(document.documentElement);
+    input.animate([{ height: `${from}px` }, { height: `${to}px` }], {
+      duration: parseFloat(
+        root.getPropertyValue("--theme-duration-spring-fast-spatial")
+      ),
+      easing: root.getPropertyValue("--ease-spring-fast-spatial").trim(),
+    });
   };
 
   // Keeps each field in step with its input: the counter's count, and the input's validity past
@@ -527,14 +556,23 @@ const controlAttrs = {
     const limit = Number(input.dataset.acTextFieldLimit);
     const count = field.querySelector("[data-ac-text-field-count]");
     const isOverLimit = count !== null && input.value.length > limit;
+    const wasOverLimit = field.hasAttribute("data-ac-text-field-over-limit");
+    const message = `Use ${limit} characters or fewer`;
     if (count) count.textContent = String(input.value.length);
     field.toggleAttribute("data-ac-text-field-over-limit", isOverLimit);
     if (isOverLimit) {
-      input.setCustomValidity(`Use ${limit} characters or fewer`);
+      input.setCustomValidity(message);
       overLimit.add(input);
     } else if (overLimit.delete(input)) {
       input.setCustomValidity("");
     }
+    // Announced as the value goes past the limit, not on each keystroke after, nor for a value
+    // already past it when the page loads
+    const announcement = field.querySelector(
+      "[data-ac-text-field-announcement]"
+    );
+    if (announcement && isOverLimit !== wasOverLimit)
+      announcement.textContent = isOverLimit ? message : "";
 
     const supporting = field.querySelector(
       "[data-ac-text-field-part='supporting-text']"

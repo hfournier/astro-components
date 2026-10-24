@@ -77,6 +77,27 @@ const focusByKeyboard = async (page: Page, input: Locator) => {
   await settled(page);
 };
 
+// The height animations running on a textarea, with their timing and keyframes
+const heightAnimations = (input: Locator) =>
+  input.evaluate((el) =>
+    el.getAnimations().map((animation) => {
+      const effect = animation.effect as KeyframeEffect;
+      const timing = effect.getTiming();
+      return {
+        duration: timing.duration,
+        easing: timing.easing,
+        heights: effect.getKeyframes().map((frame) => frame.height),
+      };
+    })
+  );
+
+const rootProperty = (page: Page, name: string) =>
+  page.evaluate(
+    (n) =>
+      getComputedStyle(document.documentElement).getPropertyValue(n).trim(),
+    name
+  );
+
 // Where the label's text starts, and its line box, relative to the container
 const labelOffset = async (input: Locator) => {
   const container = await box(part(input, "container"));
@@ -674,6 +695,25 @@ test.describe("TextField", () => {
     expect(icon.y + 12 - iconContainer.y).toBeCloseTo(40, 1);
   });
 
+  test("multi-line: the height changes on the fast spatial spring", async ({
+    page,
+  }) => {
+    await settled(page);
+    const input = field(page, "multi-line", "Outlined empty");
+    await input.fill("One\nTwo");
+    expect(await heightAnimations(input)).toEqual([
+      {
+        duration: parseFloat(
+          await rootProperty(page, "--theme-duration-spring-fast-spatial")
+        ),
+        easing: await rootProperty(page, "--ease-spring-fast-spatial"),
+        heights: ["24px", "48px"],
+      },
+    ]);
+    await settled(page);
+    expect((await box(input)).height).toBeCloseTo(48, 1);
+  });
+
   test("text area: a fixed height of `rows` lines that scrolls", async ({
     page,
   }) => {
@@ -752,10 +792,14 @@ test.describe("TextField", () => {
   }) => {
     await settled(page);
     const input = field(page, "counter", "Outlined");
+    // going past the limit is announced, as an alert
+    const announcement = root(input).getByRole("alert");
+    await expect(announcement).toHaveText("");
     await input.focus();
     await page.keyboard.type("Eleven char");
     await expect(input).toHaveValue("Eleven char");
     await expect(part(input, "counter")).toHaveText(/11\/10$/);
+    await expect(announcement).toHaveText("Use 10 characters or fewer");
     await page.mouse.move(0, 0);
     await settled(page);
     await expect(part(input, "counter")).toHaveCSS(
@@ -773,6 +817,7 @@ test.describe("TextField", () => {
 
     await page.keyboard.press("Backspace");
     await expect(part(input, "counter")).toHaveText(/10\/10$/);
+    await expect(announcement).toHaveText("");
     await settled(page);
     await expect(part(input, "counter")).toHaveCSS(
       "color",
@@ -910,6 +955,13 @@ test.describe("TextField", () => {
           );
         }
       }
+    });
+
+    test("a growing field changes height at once", async ({ page }) => {
+      const input = field(page, "multi-line", "Outlined empty");
+      await input.fill("One\nTwo");
+      expect(await heightAnimations(input)).toEqual([]);
+      expect((await box(input)).height).toBeCloseTo(48, 1);
     });
   });
 });
