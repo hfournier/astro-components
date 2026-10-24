@@ -1,14 +1,14 @@
 ---
 name: TextField
-description: A Material 3 text field, extending HTML's `<input>` element, in M3's filled or outlined container. It has M3's floating label, optional leading and trailing icons, prefix and suffix text, and supporting text that becomes error text in the error state. Being a native input, it submits, resets and validates with its form.
+description: A Material 3 text field, extending HTML's `<input>` element, or `<textarea>` for a multi-line field, in M3's filled or outlined container. It has M3's floating label, optional leading and trailing icons, prefix and suffix text, supporting text that becomes error text in the error state, and a character counter. Being a native input, it submits, resets and validates with its form.
 category: Forms
 role: pattern
 meta:
   title: TextField | astro-components HenriFournier.dev
-  description: A Material 3 filled or outlined text field on a native input, with a floating label, icons, prefix and suffix, supporting text and an error state.
+  description: A Material 3 filled or outlined text field on a native input or textarea, with a floating label, icons, affixes, supporting text and a character counter.
 extends:
   kind: element
-  tag: [input]
+  tag: [input, textarea]
 mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/text
 props:
   - name: variant
@@ -17,10 +17,18 @@ props:
     default: '"filled"'
     description: M3's two text fields. `filled` has a `surface-container-highest` container with rounded top corners and an active indicator along its bottom edge. `outlined` has a transparent container in a rounded outline, with the floated label sitting in a gap in the outline.
   - name: type
-    type: '"text" | "email" | "number" | "password" | "search" | "tel" | "url"'
+    type: '"text" | "email" | "number" | "password" | "search" | "tel" | "url" | "textarea"'
     required: false
     default: '"text"'
-    description: The input's type, limited to the single-line text types. Each keeps its native behavior, such as an email keyboard on mobile or a number's validation. The browser's own clear button on a search field is hidden, since M3 clears a field with a trailing icon.
+    description: The input's type, one of the single-line text types, or `textarea` for a multi-line field. Each single-line type keeps its native behavior, such as an email keyboard on mobile or a number's validation. The browser's own clear button on a search field is hidden, since M3 clears a field with a trailing icon.
+  - name: rows
+    type: number
+    required: false
+    description: For `type="textarea"` only. Without it, the field starts one line tall and grows a line at a time with its text, as M3's multi-line field does. With it, the field is M3's text area, that many lines tall, and scrolls once its text is longer. M3 recommends a text area over a growing field on the web.
+  - name: maxlength
+    type: number
+    required: false
+    description: Shows M3's character counter, the length of the value and this limit (`5/20`), at the end of the supporting text line. Unlike the native attribute, it doesn't stop people typing past the limit. Past it, the counter and the field turn to the error colors, and the input is invalid, so its form won't submit.
 slots:
   - name: default
     description: The label's text, which names the input. It rests in the field in M3's Body Large while the field is empty, and floats above the text in Body Small when the field is focused or has a value. Keep it short, so it isn't truncated. Leave it empty only when the field is named another way, with `aria-label` or `aria-labelledby`.
@@ -45,7 +53,9 @@ slots:
 
 ## Attributes
 
-Every attribute except `class` goes on the `<input>`: `name`, `value`, `placeholder`, `required`, `disabled`, `readonly`, `pattern`, `maxlength`, `autocomplete`, `aria-*` and the rest. `class` goes on the element around the whole field, so it can place and size it. A field is 280px wide by default, Compose's minimum; set a width with `class`, such as `w-full`. Listen for the input's `input` or `change` event to react to a change.
+Every attribute except `class` and `maxlength` goes on the `<input>`, or the `<textarea>`: `name`, `value`, `placeholder`, `required`, `disabled`, `readonly`, `pattern`, `minlength`, `autocomplete`, `aria-*` and the rest. A textarea's `value` becomes its text. `class` goes on the element around the whole field, so it can place and size it. A field is 280px wide by default, Compose's minimum; set a width with `class`, such as `w-full`. Listen for the input's `input` or `change` event to react to a change.
+
+`maxlength` is TextField's own soft limit, for its character counter (see the prop). The counter follows the person's typing and a form's reset. After setting the value from a script, dispatch an `input` event on the input so the counter follows it too. Past the limit, the input's validation message is "Use 20 characters or fewer" (with its limit), which the browser shows when the form is submitted.
 
 A `placeholder` shows only while the field is focused and empty, since the resting label takes its place. Without a label, it always shows.
 
@@ -53,10 +63,12 @@ In MDX, leave a blank line between the label's text and each slotted element, or
 
 ## States
 
+- **Multi-line:** a growing field is 56px tall for one line and grows by Body Large's 24px a line; a text area is `rows` lines tall. The label rests on the first line, and the icons stay vertically centered, as M3's Specs page aligns them.
 - **Enabled:** filled, a `surface-container-highest` container with a 1px `on-surface-variant` indicator. Outlined, a 1px `outline` outline. The label is `on-surface-variant` and the input text `on-surface`.
 - **Hovered:** the indicator or outline turns `on-surface`, and the filled container shows an `on-surface` state layer at 8%. The outlined label turns `on-surface`.
 - **Focused:** the filled indicator and the outline thicken to 3px `primary`, as M3's Specs page draws them, and the label turns `primary`. The caret is `primary`.
-- **Error** (`aria-invalid="true"`, or the browser's own validation once the person has interacted): the indicator or outline, label, caret, trailing icon and supporting text turn `error`, and hovered, the indicator, label and trailing icon turn `on-error-container`. See Accessibility.
+- **Error** (`aria-invalid="true"`, or the browser's own validation once the person has interacted): the indicator or outline, label, caret, trailing icon, supporting text and counter turn `error`, and hovered, the indicator, label and trailing icon turn `on-error-container`. See Accessibility.
+- **Past the counter's limit:** the error state's colors, the counter's included, while the value is longer than `maxlength`.
 - **Disabled** (`disabled`): everything in `on-surface` at 38%, the filled container at 4% and the outline at 12%.
 - **Read-only** (`readonly`): styled as an enabled field, as M3 asks. Say it's read-only in its label or supporting text.
 
@@ -64,4 +76,4 @@ Both variants keep these roles on any background, as M3's Specs page maps them, 
 
 ## Motion
 
-M3's Specs page gives no timing, so TextField follows Compose: the label moves and resizes, the outline's gap opens, and the indicator or outline thickens on the fast spatial spring. Colors, the state layer, the prefix and the suffix fade on fast effects (ADR-0018). The placeholder fades in on slow effects as the field is focused, and out on fast effects. Under reduced motion, every state changes at once.
+M3's Specs page gives no timing, so TextField follows Compose: the label moves and resizes, the outline's gap opens, and the indicator or outline thickens on the fast spatial spring. Colors, the state layer, the prefix and the suffix fade on fast effects. A growing multi-line field changes height at once, as Compose's does (ADR-0018). The placeholder fades in on slow effects as the field is focused, and out on fast effects. Under reduced motion, every state changes at once.

@@ -14,6 +14,10 @@ type TextFieldCaseId =
   | "disabled"
   | "no-label"
   | "form"
+  | "multi-line"
+  | "text-area"
+  | "counter"
+  | "counter-form"
   | "rtl"
   | "on-secondary-container";
 
@@ -48,6 +52,7 @@ const part = (
     | "prefix"
     | "suffix"
     | "supporting-text"
+    | "counter"
 ) => root(input).locator(`[data-ac-text-field-part="${name}"]`);
 
 const style = (target: Locator, property: string) =>
@@ -616,6 +621,218 @@ test.describe("TextField", () => {
     await expect(part(username, "supporting-text")).not.toHaveAttribute("role");
   });
 
+  test("multi-line: a native textarea that starts one line tall and grows with its content", async ({
+    page,
+  }) => {
+    await settled(page);
+    for (const variant of ["Filled", "Outlined"]) {
+      const empty = field(page, "multi-line", `${variant} empty`);
+      await expect(empty).toHaveJSProperty("tagName", "TEXTAREA");
+      await expect(empty).toHaveValue("");
+      const container = part(empty, "container");
+      expect((await box(container)).height).toBeCloseTo(56, 1);
+      // the label rests on the first line, as in a single-line field
+      const resting = await labelOffset(empty);
+      expect(resting.top + resting.height / 2).toBeCloseTo(28, 0);
+
+      // three lines: filled, 24px above for the label and 8px below; outlined, 16px each side
+      const populated = field(page, "multi-line", variant);
+      await expect(populated).toHaveValue(
+        "First line\nSecond line\nThird line"
+      );
+      expect((await box(part(populated, "container"))).height).toBeCloseTo(
+        104,
+        1
+      );
+      expect((await box(populated)).height).toBeCloseTo(72, 1);
+      await expect(populated).toHaveCSS("resize", "none");
+
+      await empty.fill("One\nTwo");
+      await expect
+        .poll(async () => (await box(container)).height)
+        .toBeCloseTo(80, 1);
+      await empty.fill("");
+      await expect
+        .poll(async () => (await box(container)).height)
+        .toBeCloseTo(56, 1);
+    }
+
+    // the outline grows with the container
+    const outlined = field(page, "multi-line", "Outlined");
+    const container = await box(part(outlined, "container"));
+    const outline = await box(part(outlined, "outline"));
+    expect(outline.y + outline.height).toBeCloseTo(
+      container.y + container.height,
+      0
+    );
+
+    // M3: icons stay vertically centered
+    const withIcon = field(page, "multi-line", "Filled with icon");
+    const iconContainer = await box(part(withIcon, "container"));
+    const icon = await box(part(withIcon, "leading-icon").locator("svg"));
+    expect(iconContainer.height).toBeCloseTo(80, 1);
+    expect(icon.y + 12 - iconContainer.y).toBeCloseTo(40, 1);
+  });
+
+  test("text area: a fixed height of `rows` lines that scrolls", async ({
+    page,
+  }) => {
+    for (const variant of ["Filled", "Outlined"]) {
+      const input = field(page, "text-area", variant);
+      await expect(input).toHaveJSProperty("tagName", "TEXTAREA");
+      const container = part(input, "container");
+      expect((await box(container)).height).toBeCloseTo(104, 1);
+      expect((await box(input)).height).toBeCloseTo(72, 1);
+      await input.fill("1\n2\n3\n4\n5\n6");
+      expect((await box(container)).height).toBeCloseTo(104, 1);
+      expect(
+        await input.evaluate((el) => el.scrollHeight > el.clientHeight)
+      ).toBe(true);
+    }
+
+    const overflowing = field(page, "text-area", "Filled overflowing");
+    expect((await box(part(overflowing, "container"))).height).toBeCloseTo(
+      80,
+      1
+    );
+    expect(
+      await overflowing.evaluate((el) => el.scrollHeight > el.clientHeight)
+    ).toBe(true);
+  });
+
+  test("character counter: count/limit in Body Small at the supporting text's end, describing the input as M3 names it", async ({
+    page,
+  }) => {
+    await settled(page);
+    const input = field(page, "counter", "Filled");
+    const counter = part(input, "counter");
+    await expect(counter).toHaveText(/5\/20$/);
+    await expect(input).toHaveAccessibleDescription(
+      "Filled supporting text Character count, 5/20"
+    );
+    await expect(counter).toHaveCSS("font-size", "12px");
+    await expect(counter).toHaveCSS("line-height", "16px");
+    await expect(counter).toHaveCSS("padding-top", "4px");
+    await expect(counter).toHaveCSS(
+      "color",
+      await colorRole(page, "on-surface-variant")
+    );
+    const container = await box(part(input, "container"));
+    const count = await box(counter);
+    expect(container.x + container.width - (count.x + count.width)).toBeCloseTo(
+      16,
+      1
+    );
+    expect(count.y).toBeCloseTo(container.y + container.height, 1);
+    // M3: 16px between the supporting text and the counter, at least
+    const supporting = await box(part(input, "supporting-text"));
+    expect(count.x - (supporting.x + supporting.width)).toBeGreaterThanOrEqual(
+      16 - 0.5
+    );
+
+    // it updates as people type
+    await input.fill("Lisbon");
+    await expect(counter).toHaveText(/6\/20$/);
+
+    // without supporting text, the counter still sits at the end
+    const outlined = field(page, "counter", "Outlined");
+    await expect(outlined).toHaveAccessibleDescription("Character count, 0/10");
+    const outlinedContainer = await box(part(outlined, "container"));
+    const outlinedCount = await box(part(outlined, "counter"));
+    expect(
+      outlinedContainer.x +
+        outlinedContainer.width -
+        (outlinedCount.x + outlinedCount.width)
+    ).toBeCloseTo(16, 1);
+  });
+
+  test("character counter: people can type past the limit, which turns the counter and the field error", async ({
+    page,
+  }) => {
+    await settled(page);
+    const input = field(page, "counter", "Outlined");
+    await input.focus();
+    await page.keyboard.type("Eleven char");
+    await expect(input).toHaveValue("Eleven char");
+    await expect(part(input, "counter")).toHaveText(/11\/10$/);
+    await page.mouse.move(0, 0);
+    await settled(page);
+    await expect(part(input, "counter")).toHaveCSS(
+      "color",
+      await colorRole(page, "error")
+    );
+    await expect(part(input, "outline")).toHaveCSS(
+      "border-top-color",
+      await colorRole(page, "error")
+    );
+    await expect(part(input, "label")).toHaveCSS(
+      "color",
+      await colorRole(page, "error")
+    );
+
+    await page.keyboard.press("Backspace");
+    await expect(part(input, "counter")).toHaveText(/10\/10$/);
+    await settled(page);
+    await expect(part(input, "counter")).toHaveCSS(
+      "color",
+      await colorRole(page, "on-surface-variant")
+    );
+    await expect(part(input, "outline")).toHaveCSS(
+      "border-top-color",
+      await colorRole(page, "primary")
+    );
+
+    // a value over the limit from the start is in error, its supporting text an alert
+    const over = field(page, "counter", "Filled over");
+    await expect(part(over, "counter")).toHaveText(/12\/10$/);
+    await expect(part(over, "counter")).toHaveCSS(
+      "color",
+      await colorRole(page, "error")
+    );
+    await expect(part(over, "active-indicator")).toHaveCSS(
+      "background-color",
+      await colorRole(page, "error")
+    );
+    await expect(part(over, "supporting-text")).toHaveRole("alert");
+    await over.fill("Ten chars");
+    await expect(part(over, "supporting-text")).not.toHaveAttribute("role");
+  });
+
+  test("character counter: disabled, on-surface at 38%", async ({ page }) => {
+    await settled(page);
+    await expect(part(field(page, "counter", "Disabled"), "counter")).toHaveCSS(
+      "color",
+      await mixedRole(page, "on-surface", 38)
+    );
+  });
+
+  test("character counter in a form: past the limit blocks submission, and reset restores the count", async ({
+    page,
+  }) => {
+    const form = page.getByTestId("text-field-counter-form").locator("form");
+    const input = field(page, "counter-form", "Bio");
+    // the limit is TextField's own, not the native maxlength that stops typing
+    await expect(input).not.toHaveAttribute("maxlength");
+    await expect(part(input, "counter")).toHaveText(/5\/10$/);
+
+    await input.fill("Far too long");
+    expect(
+      await form.evaluate((el: HTMLFormElement) => el.checkValidity())
+    ).toBe(false);
+    await input.fill("Fine");
+    expect(
+      await form.evaluate((el: HTMLFormElement) => el.checkValidity())
+    ).toBe(true);
+
+    await input.fill("Far too long");
+    await form.getByRole("button", { name: "Reset" }).click();
+    await expect(input).toHaveValue("Short");
+    await expect(part(input, "counter")).toHaveText(/5\/10$/);
+    expect(
+      await form.evaluate((el: HTMLFormElement) => el.checkValidity())
+    ).toBe(true);
+  });
+
   test("mirrors right to left: the leading icon, label and supporting text start at the right", async ({
     page,
   }) => {
@@ -642,6 +859,12 @@ test.describe("TextField", () => {
       16,
       0
     );
+
+    // the counter ends 16px from the field's (left-hand) end
+    const counted = field(page, "rtl", "Counter");
+    const counter = await box(part(counted, "counter"));
+    const counterContainer = await box(part(counted, "container"));
+    expect(counter.x - counterContainer.x).toBeCloseTo(16, 1);
   });
 
   test("on a colored background, both variants keep M3's roles", async ({

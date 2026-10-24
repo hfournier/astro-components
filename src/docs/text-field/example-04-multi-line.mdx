@@ -1,0 +1,11 @@
+---
+title: Multi-line fields and text areas
+description: Set `type="textarea"` for a multi-line field. Without `rows`, it starts one line tall and grows with its text. With `rows`, it's M3's text area, a fixed number of lines tall, that scrolls, which M3 recommends over a growing field on the web.
+---
+
+<div class="flex flex-wrap items-start gap-4">
+  <TextField type="textarea" name="address">Address</TextField>
+  <TextField type="textarea" variant="outlined" rows={4} name="message">
+    Message
+  </TextField>
+</div>

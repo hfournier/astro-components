@@ -1,0 +1,15 @@
+---
+title: Character counter
+description: Set `maxlength` to show M3's character counter at the end of the supporting text line. People can type past the limit, and the field then turns to the error colors and won't submit until they've shortened it.
+---
+
+<div class="flex flex-wrap items-start gap-4">
+  <TextField name="nickname" maxlength={20}>
+    Nickname
+
+    <span slot="supporting-text">Shown on your profile</span>
+  </TextField>
+  <TextField type="textarea" variant="outlined" rows={3} name="bio" maxlength={160}>
+    Bio
+  </TextField>
+</div>

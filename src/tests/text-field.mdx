@@ -149,6 +149,57 @@ description: Tests for the TextField component
   </form>
 </Section>
 
+<Section data-testid="text-field-multi-line" class="p-4 space-y-4">
+  <Heading level={2}>Multi-line</Heading>
+  <div class="flex flex-wrap items-start gap-4">
+    <TextField type="textarea">Filled empty</TextField>
+    <TextField type="textarea" value={"First line\nSecond line\nThird line"}>Filled</TextField>
+    <TextField type="textarea" variant="outlined">Outlined empty</TextField>
+    <TextField type="textarea" variant="outlined" value={"First line\nSecond line\nThird line"}>Outlined</TextField>
+    <TextField type="textarea" value={"First line\nSecond line"}>
+      Filled with icon
+
+      <Icon slot="leading-icon" name="search" />
+    </TextField>
+  </div>
+</Section>
+
+<Section data-testid="text-field-text-area" class="p-4 space-y-4">
+  <Heading level={2}>Text area</Heading>
+  <div class="flex flex-wrap items-start gap-4">
+    <TextField type="textarea" rows={3}>Filled</TextField>
+    <TextField type="textarea" rows={3} variant="outlined">Outlined</TextField>
+    <TextField type="textarea" rows={2} value={"One\nTwo\nThree\nFour\nFive"}>Filled overflowing</TextField>
+  </div>
+</Section>
+
+<Section data-testid="text-field-counter" class="p-4 space-y-4">
+  <Heading level={2}>Character counter</Heading>
+  <div class="flex flex-wrap items-start gap-4">
+    <TextField maxlength={20} value="Paris">
+      Filled
+
+      <span slot="supporting-text">Filled supporting text</span>
+    </TextField>
+    <TextField variant="outlined" maxlength={10}>Outlined</TextField>
+    <TextField type="textarea" maxlength={10} value="Twelve chars">
+      Filled over
+
+      <span slot="supporting-text">Filled over supporting text</span>
+    </TextField>
+    <TextField disabled maxlength={20} value="Paris">Disabled</TextField>
+  </div>
+</Section>
+
+<Section data-testid="text-field-counter-form" class="p-4 space-y-4">
+  <Heading level={2}>Character counter in a form</Heading>
+  <form class="space-y-4" onsubmit="event.preventDefault()">
+    <TextField type="textarea" variant="outlined" name="bio" maxlength={10} value="Short">Bio</TextField>
+    <Button type="submit">Submit</Button>
+    <Button type="reset" variant="outlined">Reset</Button>
+  </form>
+</Section>
+
 <Section data-testid="text-field-rtl" class="p-4 space-y-4" dir="rtl">
   <Heading level={2}>Right to left</Heading>
   <div class="flex flex-wrap items-start gap-4">
@@ -163,6 +214,11 @@ description: Tests for the TextField component
       Outlined
 
       <Icon slot="leading-icon" name="search" />
+    </TextField>
+    <TextField maxlength={20} value="Paris">
+      Counter
+
+      <span slot="supporting-text">Counter supporting text</span>
     </TextField>
   </div>
 </Section>
