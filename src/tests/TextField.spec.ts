@@ -260,7 +260,7 @@ test.describe("TextField", () => {
     );
   });
 
-  test("outlined: a 1px outline; hovered, on-surface; focused, 2px primary with a primary label", async ({
+  test("outlined: a 1px outline; hovered, on-surface; focused, 3px primary with a primary label", async ({
     page,
   }) => {
     await settled(page);
@@ -288,7 +288,7 @@ test.describe("TextField", () => {
     );
 
     await focusByKeyboard(page, input);
-    await expect(outline).toHaveCSS("border-top-width", "2px");
+    await expect(outline).toHaveCSS("border-top-width", "3px");
     await expect(outline).toHaveCSS(
       "border-top-color",
       await colorRole(page, "primary")
@@ -611,28 +611,30 @@ test.describe("TextField", () => {
     );
   });
 
-  test("on a colored background, outlined's label and both supporting texts follow the background's on-color", async ({
+  test("on a colored background, both variants keep M3's roles", async ({
     page,
   }) => {
     await settled(page);
-    const outlined = field(page, "on-secondary-container", "Outlined");
-    const onColor = await colorRole(page, "on-secondary-container");
-    await expect(part(outlined, "label")).toHaveCSS("color", onColor);
-    await expect(outlined).toHaveCSS("color", onColor);
     for (const name of ["Filled", "Outlined"]) {
-      await expect(
-        part(field(page, "on-secondary-container", name), "supporting-text")
-      ).toHaveCSS("color", onColor);
+      const input = field(page, "on-secondary-container", name);
+      await expect(part(input, "label")).toHaveCSS(
+        "color",
+        await colorRole(page, "on-surface-variant")
+      );
+      await expect(input).toHaveCSS(
+        "color",
+        await colorRole(page, "on-surface")
+      );
+      await expect(part(input, "supporting-text")).toHaveCSS(
+        "color",
+        await colorRole(page, "on-surface-variant")
+      );
     }
-    // the filled container keeps its own colors
-    const filled = field(page, "on-secondary-container", "Filled");
-    await expect(part(filled, "container")).toHaveCSS(
+    await expect(
+      part(field(page, "on-secondary-container", "Filled"), "container")
+    ).toHaveCSS(
       "background-color",
       await colorRole(page, "surface-container-highest")
-    );
-    await expect(part(filled, "label")).toHaveCSS(
-      "color",
-      await colorRole(page, "on-surface-variant")
     );
   });
 

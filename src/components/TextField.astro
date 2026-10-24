@@ -156,35 +156,27 @@ const ariaDescribedBy =
 </div>
 
 <style>
-  /* The roles each state draws from (Compose's FilledTextFieldTokens and
-     OutlinedTextFieldTokens), swapped whole for the error state. Outside the filled container,
-     the outlined field's parts and the supporting text sit on the page's background, so they
-     follow its on-colors, which are M3's on-surface and on-surface-variant outside any wrapper. */
+  /* The roles each state draws from, as M3's Specs page maps them, swapped whole for the error
+     state. The variants differ only in the indicator or outline and the hovered label. */
   [data-ac-text-field] {
     --ac-text-field-accent: var(--theme-color-primary);
-    --ac-text-field-supporting: var(--theme-color-on-bg-variant);
-  }
-
-  [data-ac-text-field="filled"] {
-    --ac-text-field-indicator: var(--theme-color-on-surface-variant);
+    --ac-text-field-supporting: var(--theme-color-on-surface-variant);
     --ac-text-field-indicator-hover: var(--theme-color-on-surface);
     --ac-text-field-label: var(--theme-color-on-surface-variant);
-    --ac-text-field-label-hover: var(--theme-color-on-surface-variant);
     --ac-text-field-icon: var(--theme-color-on-surface-variant);
     --ac-text-field-trailing: var(--theme-color-on-surface-variant);
     --ac-text-field-trailing-hover: var(--theme-color-on-surface-variant);
     --ac-text-field-input: var(--theme-color-on-surface);
   }
 
+  [data-ac-text-field="filled"] {
+    --ac-text-field-indicator: var(--theme-color-on-surface-variant);
+    --ac-text-field-label-hover: var(--theme-color-on-surface-variant);
+  }
+
   [data-ac-text-field="outlined"] {
     --ac-text-field-indicator: var(--theme-color-outline);
-    --ac-text-field-indicator-hover: currentColor;
-    --ac-text-field-label: var(--theme-color-on-bg-variant);
-    --ac-text-field-label-hover: currentColor;
-    --ac-text-field-icon: var(--theme-color-on-bg-variant);
-    --ac-text-field-trailing: var(--theme-color-on-bg-variant);
-    --ac-text-field-trailing-hover: var(--theme-color-on-bg-variant);
-    --ac-text-field-input: currentColor;
+    --ac-text-field-label-hover: var(--theme-color-on-surface);
   }
 
   /* An error is set by aria-invalid, which also announces it, or by the browser's own
@@ -340,7 +332,7 @@ const ariaDescribedBy =
   }
 
   [data-ac-text-field]:has(input:focus) [data-ac-text-field-part="outline"] {
-    --ac-text-field-outline-width: 2px;
+    --ac-text-field-outline-width: 3px;
     border-color: var(--ac-text-field-accent);
   }
 
@@ -437,9 +429,10 @@ const ariaDescribedBy =
     );
   }
 
-  /* Compose's timing: the label moves and resizes, and the indicator and outline thicken, on
-     fast spatial. Colors, the state layer, and the placeholder, prefix and suffix fade on fast
-     effects. */
+  /* Compose's timing, which M3's Specs page doesn't give: the label moves and resizes, and the
+     indicator and outline thicken, on fast spatial. Colors, the state layer, the prefix and
+     suffix fade on fast effects. The placeholder fades in on slow effects, as the field is
+     focused, and out on fast effects. A transition's timing is the state it moves to's. */
   @media (prefers-reduced-motion: no-preference) {
     [data-ac-text-field-part="state-layer"],
     [data-ac-text-field-part="prefix"],
@@ -447,6 +440,11 @@ const ariaDescribedBy =
     input::placeholder {
       transition: opacity var(--theme-duration-spring-fast-effects)
         var(--ease-spring-fast-effects);
+    }
+
+    input:focus::placeholder {
+      transition: opacity var(--theme-duration-spring-slow-effects)
+        var(--ease-spring-slow-effects);
     }
 
     [data-ac-text-field-part="container"],

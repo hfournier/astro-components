@@ -55,15 +55,13 @@ In MDX, leave a blank line between the label's text and each slotted element, or
 
 - **Enabled:** filled, a `surface-container-highest` container with a 1px `on-surface-variant` indicator. Outlined, a 1px `outline` outline. The label is `on-surface-variant` and the input text `on-surface`.
 - **Hovered:** the indicator or outline turns `on-surface`, and the filled container shows an `on-surface` state layer at 8%. The outlined label turns `on-surface`.
-- **Focused:** the indicator or outline thickens to 2px `primary`, and the label turns `primary`. The caret is `primary`.
+- **Focused:** the filled indicator thickens to 2px and the outline to 3px, both `primary`, as on M3's Specs page, and the label turns `primary`. The caret is `primary`.
 - **Error** (`aria-invalid="true"`, or the browser's own validation once the person has interacted): the indicator or outline, label, caret, trailing icon and supporting text turn `error`, and hovered, the indicator, label and trailing icon turn `on-error-container`. See Accessibility.
 - **Disabled** (`disabled`): everything in `on-surface` at 38%, the filled container at 4% and the outline at 12%.
 - **Read-only** (`readonly`): styled as an enabled field, as M3 asks. Say it's read-only in its label or supporting text.
 
-The outlined field's label, icons, prefix, suffix and input text, and both variants' supporting text, sit on the background around the field, so they follow its on-colors inside a BaseWrapper. Outside one, these are M3's `on-surface-variant` and `on-surface`. The filled container keeps its own colors on any background.
-
-The outline and active indicator are 2px when focused, as in Compose. M3's Specs page lists a 3px focused outline for the outlined field.
+Both variants keep these roles on any background, as M3's Specs page maps them, so an outlined field inside a colored BaseWrapper still has an `on-surface-variant` label and supporting text and `on-surface` input text.
 
 ## Motion
 
-As in Compose, the label moves and resizes, the outline's gap opens, and the indicator or outline thickens on the fast spatial spring. Colors, the state layer, the placeholder, the prefix and the suffix fade on fast effects (ADR-0018). Compose fades a placeholder in on the slow effects spring, which the theme doesn't have, so it uses fast effects. Under reduced motion, every state changes at once.
+M3's Specs page gives no timing, so TextField follows Compose: the label moves and resizes, the outline's gap opens, and the indicator or outline thickens on the fast spatial spring. Colors, the state layer, the prefix and the suffix fade on fast effects (ADR-0018). The placeholder fades in on slow effects as the field is focused, and out on fast effects. Under reduced motion, every state changes at once.
