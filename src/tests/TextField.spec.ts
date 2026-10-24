@@ -206,7 +206,7 @@ test.describe("TextField", () => {
     ).toBe("1");
   });
 
-  test("filled: surface-container-highest with a 1px on-surface-variant indicator; focused, a 2px primary one and a primary label", async ({
+  test("filled: surface-container-highest with a 1px on-surface-variant indicator; focused, a 3px primary one and a primary label", async ({
     page,
   }) => {
     await settled(page);
@@ -231,7 +231,7 @@ test.describe("TextField", () => {
     );
 
     await focusByKeyboard(page, input);
-    await expect(part(input, "active-indicator")).toHaveCSS("height", "2px");
+    await expect(part(input, "active-indicator")).toHaveCSS("height", "3px");
     await expect(part(input, "active-indicator")).toHaveCSS(
       "background-color",
       await colorRole(page, "primary")

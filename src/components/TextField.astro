@@ -329,10 +329,11 @@ const ariaDescribedBy =
   }
 
   /* Focused: the thicker indicator in the accent color is M3's focus indicator for a text
-     field */
+     field. The Specs page's tokens give the filled one both a 2dp height and a 3dp thickness
+     (md.sys.state.focus-indicator.thickness); its state diagram draws 3dp, as the outline's */
   [data-ac-text-field]:has(input:focus)
     [data-ac-text-field-part="active-indicator"] {
-    height: 2px;
+    height: 3px;
     background-color: var(--ac-text-field-accent);
   }
 
