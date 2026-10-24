@@ -354,6 +354,36 @@ test.describe("TextField", () => {
     }
   });
 
+  test("M3: the error text is an alert while the field is in error, and plain supporting text isn't", async ({
+    page,
+  }) => {
+    const input = field(page, "error", "Filled");
+    const supporting = part(input, "supporting-text");
+    await expect(supporting).toHaveRole("alert");
+    await expect(
+      part(field(page, "supporting-text", "Filled"), "supporting-text")
+    ).not.toHaveAttribute("role");
+
+    // it follows aria-invalid as a script changes it
+    await input.evaluate((el) => el.setAttribute("aria-invalid", "false"));
+    await expect(supporting).not.toHaveAttribute("role");
+    await input.evaluate((el) => el.setAttribute("aria-invalid", "true"));
+    await expect(supporting).toHaveRole("alert");
+  });
+
+  test("a disabled field is marked aria-disabled, following the input as a script changes it", async ({
+    page,
+  }) => {
+    const input = field(page, "disabled", "Filled");
+    await expect(root(input)).toHaveAttribute("aria-disabled", "true");
+    await input.evaluate((el: HTMLInputElement) => (el.disabled = false));
+    await expect(root(input)).not.toHaveAttribute("aria-disabled");
+    const enabled = field(page, "filled", "Empty");
+    await expect(root(enabled)).not.toHaveAttribute("aria-disabled");
+    await enabled.evaluate((el: HTMLInputElement) => (el.disabled = true));
+    await expect(root(enabled)).toHaveAttribute("aria-disabled", "true");
+  });
+
   test("error is announced with aria-invalid and uses M3's error roles", async ({
     page,
   }) => {
@@ -576,11 +606,14 @@ test.describe("TextField", () => {
       "color",
       await colorRole(page, "error")
     );
+    // M3: the error text is an alert
+    await expect(part(username, "supporting-text")).toHaveRole("alert");
     await username.fill("ada");
     await expect(part(username, "outline")).toHaveCSS(
       "border-top-color",
       await colorRole(page, "primary")
     );
+    await expect(part(username, "supporting-text")).not.toHaveAttribute("role");
   });
 
   test("mirrors right to left: the leading icon, label and supporting text start at the right", async ({

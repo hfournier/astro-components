@@ -38,8 +38,12 @@ const supportingId = Astro.slots.has("supporting-text")
 
 // A disabled field's supporting text is at 38%, below text contrast, which WCAG allows for an
 // inactive component. Text outside a label isn't tied to the input, so aria-disabled on the
-// whole field says it's part of one. A script that toggles the input's `disabled` toggles it too.
+// whole field says it's part of one. The script below keeps it in step with the input.
 const ariaDisabled = attrs.disabled ? "true" : undefined;
+
+// M3: in the error state, the error text in the supporting text's place is an alert, announced
+// as it appears. The script below keeps it in step with aria-invalid and :user-invalid.
+const isError = String(attrs["aria-invalid"]) === "true";
 
 // The prefix and suffix say what the value is in ("Euro", "at gmail dot com"), and the
 // supporting text (or the error text in its place) how to fill it in
@@ -148,6 +152,7 @@ const ariaDescribedBy =
     <div
       id={supportingId}
       class="px-4 pt-1 text-xs leading-4 tracking-[0.4px]"
+      role={isError ? "alert" : undefined}
       data-ac-text-field-part="supporting-text"
     >
       <slot name="supporting-text" />
@@ -513,5 +518,55 @@ const ariaDescribedBy =
     if (!input || input.disabled) return;
     event.preventDefault();
     input.focus();
+  });
+
+  // Keeps each field's ARIA in step with its input: aria-disabled on the field while the input
+  // is disabled, and role="alert" on the supporting text while the field is in error
+  // (aria-invalid="true", or :user-invalid once the person has interacted with the form)
+  const sync = (field: Element) => {
+    const input = field.querySelector("input");
+    if (!input) return;
+    if (input.disabled) field.setAttribute("aria-disabled", "true");
+    else field.removeAttribute("aria-disabled");
+
+    const supporting = field.querySelector(
+      "[data-ac-text-field-part='supporting-text']"
+    );
+    if (!supporting) return;
+    const isError =
+      input.getAttribute("aria-invalid") === "true" ||
+      input.matches(":user-invalid");
+    if (isError) supporting.setAttribute("role", "alert");
+    else supporting.removeAttribute("role");
+  };
+
+  const syncFrom = (target: EventTarget | Node | null) => {
+    const field =
+      target instanceof Element && target.closest("[data-ac-text-field]");
+    if (field) sync(field);
+  };
+
+  // Attributes a script sets, observed from the root element so it covers fields brought in by
+  // Astro's ClientRouter
+  new MutationObserver((records) => {
+    for (const record of records) syncFrom(record.target);
+  }).observe(document.documentElement, {
+    subtree: true,
+    attributeFilter: ["disabled", "aria-invalid"],
+  });
+
+  // :user-invalid changes as the person edits, leaves the field or submits the form (invalid
+  // doesn't bubble, so it's caught on the way down). A reset clears it once the form has
+  // reset, after the event.
+  for (const type of ["input", "change", "focusout"]) {
+    document.addEventListener(type, (event) => syncFrom(event.target));
+  }
+  document.addEventListener("invalid", (event) => syncFrom(event.target), true);
+  document.addEventListener("reset", (event) => {
+    setTimeout(() => {
+      if (!(event.target instanceof HTMLFormElement)) return;
+      for (const field of event.target.querySelectorAll("[data-ac-text-field]"))
+        sync(field);
+    });
   });
 </script>
