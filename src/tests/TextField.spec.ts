@@ -7,16 +7,17 @@ import { box, resolvedColor, settled, textBox } from "./support/helpers";
 type TextFieldCaseId =
   | "filled"
   | "outlined"
-  | "supporting"
+  | "supporting-text"
   | "error"
   | "icons"
-  | "affixes"
+  | "prefix-suffix"
   | "disabled"
   | "no-label"
   | "form"
   | "rtl"
   | "on-secondary-container";
 
+// The icons case's fields are type="search" (searchbox), and a number field is a spinbutton
 const field = (
   page: Page,
   caseId: TextFieldCaseId,
@@ -327,8 +328,8 @@ test.describe("TextField", () => {
     page,
   }) => {
     for (const [caseId, name] of [
-      ["supporting", "Filled"],
-      ["supporting", "Outlined"],
+      ["supporting-text", "Filled"],
+      ["supporting-text", "Outlined"],
     ] as const) {
       const input = field(page, caseId, name);
       await expect(input).toHaveAccessibleDescription(
@@ -467,8 +468,8 @@ test.describe("TextField", () => {
     page,
   }) => {
     await settled(page);
-    const price = field(page, "affixes", "Filled price", "spinbutton");
-    const email = field(page, "affixes", "Outlined email");
+    const price = field(page, "prefix-suffix", "Filled price", "spinbutton");
+    const email = field(page, "prefix-suffix", "Outlined email");
     await expect(price).toHaveAccessibleDescription("Euro");
     await expect(email).toHaveAccessibleDescription("@gmail.com");
 
@@ -497,7 +498,7 @@ test.describe("TextField", () => {
   test("clicking anywhere in the container focuses the input", async ({
     page,
   }) => {
-    const input = field(page, "affixes", "Outlined email");
+    const input = field(page, "prefix-suffix", "Outlined email");
     await part(input, "suffix").click();
     await expect(input).toBeFocused();
 

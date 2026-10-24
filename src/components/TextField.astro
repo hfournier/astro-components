@@ -38,7 +38,8 @@ const supportingId = Astro.slots.has("supporting-text")
 
 // A disabled field's supporting text is at 38%, below text contrast, which WCAG allows for an
 // inactive component. Text outside a label isn't tied to the input, so aria-disabled on the
-// whole field says it's part of one. Toggle it with the input's `disabled`.
+// whole field says it's part of one. A script that toggles the input's `disabled` toggles it too.
+const ariaDisabled = attrs.disabled ? "true" : undefined;
 
 // The prefix and suffix say what the value is in ("Euro", "at gmail dot com"), and the
 // supporting text (or the error text in its place) how to fill it in
@@ -53,7 +54,7 @@ const ariaDescribedBy =
     classList
   )}
   data-ac-text-field={variant}
-  aria-disabled={attrs.disabled ? "true" : undefined}
+  aria-disabled={ariaDisabled}
   data-ac-text-field-labelled={label ? "" : undefined}
   data-ac-text-field-leading={hasLeadingIcon ? "" : undefined}
   data-ac-text-field-trailing={hasTrailingIcon ? "" : undefined}
