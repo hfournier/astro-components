@@ -1,0 +1,69 @@
+---
+name: TextField
+description: A Material 3 text field, extending HTML's `<input>` element, in M3's filled or outlined container. It has M3's floating label, optional leading and trailing icons, prefix and suffix text, and supporting text that becomes error text in the error state. Being a native input, it submits, resets and validates with its form.
+category: Forms
+role: pattern
+meta:
+  title: TextField | astro-components HenriFournier.dev
+  description: A Material 3 filled or outlined text field on a native input, with a floating label, icons, prefix and suffix, supporting text and an error state.
+extends:
+  kind: element
+  tag: [input]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/text
+props:
+  - name: variant
+    type: '"filled" | "outlined"'
+    required: false
+    default: '"filled"'
+    description: M3's two text fields. `filled` has a `surface-container-highest` container with rounded top corners and an active indicator along its bottom edge. `outlined` has a transparent container in a rounded outline, with the floated label sitting in a gap in the outline.
+  - name: type
+    type: '"text" | "email" | "number" | "password" | "search" | "tel" | "url"'
+    required: false
+    default: '"text"'
+    description: The input's type, limited to the single-line text types. Each keeps its native behavior, such as an email keyboard on mobile or a number's validation. The browser's own clear button on a search field is hidden, since M3 clears a field with a trailing icon.
+slots:
+  - name: default
+    description: The label's text, which names the input. It rests in the field in M3's Body Large while the field is empty, and floats above the text in Body Small when the field is focused or has a value. Keep it short, so it isn't truncated. Leave it empty only when the field is named another way, with `aria-label` or `aria-labelledby`.
+    kind: text
+  - name: leading-icon
+    description: An optional Icon before the text, 24px in `on-surface-variant`, such as a search icon. It's decoration, so leave it without a `label`.
+    kind: component
+    component: Icon
+  - name: trailing-icon
+    description: An optional icon after the text, in `on-surface-variant`, or `error` in the error state. Put an Icon here for a signifier or an error icon (with `label="Error"`), or a ButtonIcon for an action such as clearing the field or showing a password, which Tab reaches after the input.
+    kind: any
+  - name: prefix
+    description: Optional text just before the input text, such as a currency symbol, in `on-surface-variant`. It shows once the label floats, and describes the input.
+    kind: any
+  - name: suffix
+    description: Optional text at the end of the input, such as a unit or an email domain, in `on-surface-variant`. It shows once the label floats, and describes the input.
+    kind: any
+  - name: supporting-text
+    description: Optional text below the field, in M3's Body Small, that describes the input, such as how it's used or a note that it's required. In the error state, swap it for the error text, which turns `error`.
+    kind: any
+---
+
+## Attributes
+
+Every attribute except `class` goes on the `<input>`: `name`, `value`, `placeholder`, `required`, `disabled`, `readonly`, `pattern`, `maxlength`, `autocomplete`, `aria-*` and the rest. `class` goes on the element around the whole field, so it can place and size it. A field is 280px wide by default, Compose's minimum; set a width with `class`, such as `w-full`. Listen for the input's `input` or `change` event to react to a change.
+
+A `placeholder` shows only while the field is focused and empty, since the resting label takes its place. Without a label, it always shows.
+
+In MDX, leave a blank line between the label's text and each slotted element, or MDX puts them in one paragraph and the slots aren't found.
+
+## States
+
+- **Enabled:** filled, a `surface-container-highest` container with a 1px `on-surface-variant` indicator. Outlined, a 1px `outline` outline. The label is `on-surface-variant` and the input text `on-surface`.
+- **Hovered:** the indicator or outline turns `on-surface`, and the filled container shows an `on-surface` state layer at 8%. The outlined label turns `on-surface`.
+- **Focused:** the indicator or outline thickens to 2px `primary`, and the label turns `primary`. The caret is `primary`.
+- **Error** (`aria-invalid="true"`, or the browser's own validation once the person has interacted): the indicator or outline, label, caret, trailing icon and supporting text turn `error`, and hovered, the indicator, label and trailing icon turn `on-error-container`. See Accessibility.
+- **Disabled** (`disabled`): everything in `on-surface` at 38%, the filled container at 4% and the outline at 12%.
+- **Read-only** (`readonly`): styled as an enabled field, as M3 asks. Say it's read-only in its label or supporting text.
+
+The outlined field's label, icons, prefix, suffix and input text, and both variants' supporting text, sit on the background around the field, so they follow its on-colors inside a BaseWrapper. Outside one, these are M3's `on-surface-variant` and `on-surface`. The filled container keeps its own colors on any background.
+
+The outline and active indicator are 2px when focused, as in Compose. M3's Specs page lists a 3px focused outline for the outlined field.
+
+## Motion
+
+As in Compose, the label moves and resizes, the outline's gap opens, and the indicator or outline thickens on the fast spatial spring. Colors, the state layer, the placeholder, the prefix and the suffix fade on fast effects (ADR-0018). Compose fades a placeholder in on the slow effects spring, which the theme doesn't have, so it uses fast effects. Under reduced motion, every state changes at once.

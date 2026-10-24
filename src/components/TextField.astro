@@ -1,0 +1,518 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import crypto from "node:crypto";
+import { twMerge } from "tailwind-merge";
+import { unwrapParagraph } from "../utils";
+
+// A native text input, so it submits, resets and validates with its form. Every attribute but
+// `class` goes on the input (`name`, `value`, `placeholder`, `required`, `disabled`, `aria-*`),
+// and `class` on the element around the whole field. The default slot is the label's text.
+type Props = Omit<HTMLAttributes<"input">, "type"> & {
+  type?: "email" | "number" | "password" | "search" | "tel" | "text" | "url";
+  variant?: "filled" | "outlined";
+};
+
+const {
+  type = "text",
+  variant = "filled",
+  id = `ac-text-field-${crypto.randomUUID()}`,
+  placeholder,
+  "aria-describedby": describedBy,
+  class: classList,
+  ...attrs
+}: Props = Astro.props;
+
+const label = Astro.slots.has("default")
+  ? unwrapParagraph(await Astro.slots.render("default")).trim()
+  : "";
+// M3: a required field's label ends with an asterisk, which its accessible name includes
+const labelText = label && attrs.required ? `${label}*` : label;
+
+const hasLeadingIcon = Astro.slots.has("leading-icon");
+const hasTrailingIcon = Astro.slots.has("trailing-icon");
+const prefixId = Astro.slots.has("prefix") ? `${id}-prefix` : undefined;
+const suffixId = Astro.slots.has("suffix") ? `${id}-suffix` : undefined;
+const supportingId = Astro.slots.has("supporting-text")
+  ? `${id}-supporting-text`
+  : undefined;
+
+// A disabled field's supporting text is at 38%, below text contrast, which WCAG allows for an
+// inactive component. Text outside a label isn't tied to the input, so aria-disabled on the
+// whole field says it's part of one. Toggle it with the input's `disabled`.
+
+// The prefix and suffix say what the value is in ("Euro", "at gmail dot com"), and the
+// supporting text (or the error text in its place) how to fill it in
+const ariaDescribedBy =
+  [prefixId, suffixId, supportingId, describedBy].filter(Boolean).join(" ") ||
+  undefined;
+---
+
+<div
+  class:list={twMerge(
+    "inline-flex w-70 max-w-full flex-col align-top text-base leading-6 tracking-[0.5px]",
+    classList
+  )}
+  data-ac-text-field={variant}
+  aria-disabled={attrs.disabled ? "true" : undefined}
+  data-ac-text-field-labelled={label ? "" : undefined}
+  data-ac-text-field-leading={hasLeadingIcon ? "" : undefined}
+  data-ac-text-field-trailing={hasTrailingIcon ? "" : undefined}
+>
+  <div
+    class:list={[
+      "relative flex h-14 cursor-text",
+      variant === "filled" ? "rounded-t-sm" : "rounded-sm",
+    ]}
+    data-ac-text-field-part="container"
+  >
+    {variant === "filled" ? (
+      <>
+        <span
+          class="pointer-events-none absolute inset-0 rounded-[inherit]"
+          data-ac-text-field-part="state-layer"
+        />
+        <span
+          class="pointer-events-none absolute inset-x-0 bottom-0"
+          data-ac-text-field-part="active-indicator"
+        />
+      </>
+    ) : (
+      // The outline is a fieldset so that its legend, a hidden copy of the label, cuts the gap
+      // the floated label sits in, whatever the label's width
+      <fieldset
+        class="pointer-events-none absolute inset-x-0 bottom-0 m-0 min-w-0 rounded-[inherit]"
+        aria-hidden="true"
+        data-ac-text-field-part="outline"
+      >
+        {label && (
+          <legend>
+            <span set:html={labelText} />
+          </legend>
+        )}
+      </fieldset>
+    )}
+    {hasLeadingIcon && (
+      <span
+        class="relative grid w-12 shrink-0 place-items-center"
+        data-ac-text-field-part="leading-icon"
+      >
+        <slot name="leading-icon" />
+      </span>
+    )}
+    <div
+      class:list={[
+        "relative flex min-w-0 flex-1 items-baseline",
+        variant === "filled" && label ? "pt-6 pb-2" : "py-4",
+        hasLeadingIcon ? "ps-1" : "ps-4",
+        hasTrailingIcon ? "pe-1" : "pe-4",
+      ]}
+    >
+      {prefixId && (
+        <span id={prefixId} class="me-0.5" data-ac-text-field-part="prefix">
+          <slot name="prefix" />
+        </span>
+      )}
+      <input
+        class="h-6 min-w-0 flex-1 bg-transparent p-0 outline-none disabled:cursor-default"
+        id={id}
+        type={type}
+        placeholder={placeholder ?? (label ? " " : undefined)}
+        aria-describedby={ariaDescribedBy}
+        {...attrs}
+      />
+      {suffixId && (
+        <span id={suffixId} class="ms-0.5" data-ac-text-field-part="suffix">
+          <slot name="suffix" />
+        </span>
+      )}
+    </div>
+    {label && (
+      <label
+        class="pointer-events-none absolute top-4 truncate"
+        for={id}
+        data-ac-text-field-part="label"
+        set:html={labelText}
+      />
+    )}
+    {hasTrailingIcon && (
+      <span
+        class="relative grid w-12 shrink-0 place-items-center"
+        data-ac-text-field-part="trailing-icon"
+      >
+        <slot name="trailing-icon" />
+      </span>
+    )}
+  </div>
+  {supportingId && (
+    <div
+      id={supportingId}
+      class="px-4 pt-1 text-xs leading-4 tracking-[0.4px]"
+      data-ac-text-field-part="supporting-text"
+    >
+      <slot name="supporting-text" />
+    </div>
+  )}
+</div>
+
+<style>
+  /* The roles each state draws from (Compose's FilledTextFieldTokens and
+     OutlinedTextFieldTokens), swapped whole for the error state. Outside the filled container,
+     the outlined field's parts and the supporting text sit on the page's background, so they
+     follow its on-colors, which are M3's on-surface and on-surface-variant outside any wrapper. */
+  [data-ac-text-field] {
+    --ac-text-field-accent: var(--theme-color-primary);
+    --ac-text-field-supporting: var(--theme-color-on-bg-variant);
+  }
+
+  [data-ac-text-field="filled"] {
+    --ac-text-field-indicator: var(--theme-color-on-surface-variant);
+    --ac-text-field-indicator-hover: var(--theme-color-on-surface);
+    --ac-text-field-label: var(--theme-color-on-surface-variant);
+    --ac-text-field-label-hover: var(--theme-color-on-surface-variant);
+    --ac-text-field-icon: var(--theme-color-on-surface-variant);
+    --ac-text-field-trailing: var(--theme-color-on-surface-variant);
+    --ac-text-field-trailing-hover: var(--theme-color-on-surface-variant);
+    --ac-text-field-input: var(--theme-color-on-surface);
+  }
+
+  [data-ac-text-field="outlined"] {
+    --ac-text-field-indicator: var(--theme-color-outline);
+    --ac-text-field-indicator-hover: currentColor;
+    --ac-text-field-label: var(--theme-color-on-bg-variant);
+    --ac-text-field-label-hover: currentColor;
+    --ac-text-field-icon: var(--theme-color-on-bg-variant);
+    --ac-text-field-trailing: var(--theme-color-on-bg-variant);
+    --ac-text-field-trailing-hover: var(--theme-color-on-bg-variant);
+    --ac-text-field-input: currentColor;
+  }
+
+  /* An error is set by aria-invalid, which also announces it, or by the browser's own
+     validation, once the person has interacted with the form */
+  [data-ac-text-field]:has(input:is([aria-invalid="true"], :user-invalid)) {
+    --ac-text-field-accent: var(--theme-color-error);
+    --ac-text-field-supporting: var(--theme-color-error);
+    --ac-text-field-indicator: var(--theme-color-error);
+    --ac-text-field-indicator-hover: var(--theme-color-on-error-container);
+    --ac-text-field-label: var(--theme-color-error);
+    --ac-text-field-label-hover: var(--theme-color-on-error-container);
+    --ac-text-field-trailing: var(--theme-color-error);
+    --ac-text-field-trailing-hover: var(--theme-color-on-error-container);
+  }
+
+  /* The filled container is its own surface: a ButtonIcon in it, and its focus ring, take the
+     surface's colors whatever the background around the field */
+  [data-ac-text-field="filled"] [data-ac-text-field-part="container"] {
+    --theme-color-on-bg-variant: var(--theme-color-on-surface-variant);
+    --theme-color-focus-ring-on-bg: var(--theme-color-secondary);
+    --theme-color-wrapper-bg: var(--theme-color-surface-container-highest);
+    background-color: var(--theme-color-surface-container-highest);
+  }
+
+  [data-ac-text-field-part="state-layer"] {
+    background-color: var(--theme-color-on-surface);
+    opacity: 0;
+  }
+
+  [data-ac-text-field-part="active-indicator"] {
+    height: 1px;
+    background-color: var(--ac-text-field-indicator);
+  }
+
+  [data-ac-text-field-part="outline"] {
+    --ac-text-field-outline-width: 1px;
+    border: var(--ac-text-field-outline-width) solid
+      var(--ac-text-field-indicator);
+    /* the legend starts 12px in, so the label it copies starts at the field's 16px padding */
+    padding: 0 calc(12px - var(--ac-text-field-outline-width));
+    top: 0;
+  }
+
+  /* A fieldset centers its top border on the legend, which is 16px tall, the floated label's
+     line. Raised by 8px less half the border, the border's top edge stays on the container's. */
+  [data-ac-text-field][data-ac-text-field-labelled]
+    [data-ac-text-field-part="outline"] {
+    top: calc(var(--ac-text-field-outline-width) / 2 - 8px);
+  }
+
+  legend {
+    display: block;
+    width: auto;
+    max-width: 0.01px;
+    height: 16px;
+    padding: 0;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+    visibility: hidden;
+  }
+
+  legend > span {
+    padding-inline: 4px;
+  }
+
+  [data-ac-text-field-part="label"] {
+    inset-inline-start: 16px;
+    inset-inline-end: 16px;
+    color: var(--ac-text-field-label);
+  }
+
+  [data-ac-text-field][data-ac-text-field-leading]
+    [data-ac-text-field-part="label"] {
+    inset-inline-start: 52px;
+  }
+
+  [data-ac-text-field][data-ac-text-field-trailing]
+    [data-ac-text-field-part="label"] {
+    inset-inline-end: 52px;
+  }
+
+  [data-ac-text-field-part="leading-icon"] {
+    color: var(--ac-text-field-icon);
+  }
+
+  [data-ac-text-field-part="trailing-icon"] {
+    --theme-color-on-bg-variant: var(--ac-text-field-trailing);
+    color: var(--ac-text-field-trailing);
+  }
+
+  [data-ac-text-field-part="prefix"],
+  [data-ac-text-field-part="suffix"] {
+    color: var(--ac-text-field-icon);
+  }
+
+  [data-ac-text-field-part="supporting-text"] {
+    color: var(--ac-text-field-supporting);
+  }
+
+  input {
+    color: var(--ac-text-field-input);
+    caret-color: var(--ac-text-field-accent);
+  }
+
+  input::placeholder {
+    color: var(--ac-text-field-icon);
+    opacity: 1;
+  }
+
+  /* M3 uses a trailing icon to clear a field, rather than the browser's own button */
+  input::-webkit-search-cancel-button,
+  input::-webkit-search-decoration {
+    appearance: none;
+  }
+
+  /* Hovered, unless focused: a focused field keeps its focused colors under the pointer */
+  [data-ac-text-field]:has(input:enabled:not(:focus))
+    [data-ac-text-field-part="container"]:hover
+    [data-ac-text-field-part="state-layer"] {
+    opacity: 0.08;
+  }
+
+  [data-ac-text-field]:has(input:enabled:not(:focus))
+    [data-ac-text-field-part="container"]:hover
+    :is(
+      [data-ac-text-field-part="active-indicator"],
+      [data-ac-text-field-part="outline"]
+    ) {
+    --ac-text-field-indicator: var(--ac-text-field-indicator-hover);
+  }
+
+  [data-ac-text-field]:has(input:enabled:not(:focus))
+    [data-ac-text-field-part="container"]:hover
+    [data-ac-text-field-part="label"] {
+    color: var(--ac-text-field-label-hover);
+  }
+
+  [data-ac-text-field]:has(input:enabled:not(:focus))
+    [data-ac-text-field-part="container"]:hover
+    [data-ac-text-field-part="trailing-icon"] {
+    --ac-text-field-trailing: var(--ac-text-field-trailing-hover);
+  }
+
+  /* Focused: the thicker indicator in the accent color is M3's focus indicator for a text
+     field */
+  [data-ac-text-field]:has(input:focus)
+    [data-ac-text-field-part="active-indicator"] {
+    height: 2px;
+    background-color: var(--ac-text-field-accent);
+  }
+
+  [data-ac-text-field]:has(input:focus) [data-ac-text-field-part="outline"] {
+    --ac-text-field-outline-width: 2px;
+    border-color: var(--ac-text-field-accent);
+  }
+
+  [data-ac-text-field]:has(input:focus) [data-ac-text-field-part="label"] {
+    color: var(--ac-text-field-accent);
+  }
+
+  /* The label floats above the input when the field is focused or has a value (an empty
+     field shows its placeholder, which is a space when none is given). Filled, it moves to the
+     top of the container, in line with the input. Outlined, it sits on the outline, at the
+     field's start even past a leading icon, as in Compose. */
+  [data-ac-text-field]:has(
+      input:is(:focus, :not(:placeholder-shown), :autofill)
+    )
+    [data-ac-text-field-part="label"] {
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 0.4px;
+  }
+
+  [data-ac-text-field]:has(
+      input:is(:focus, :not(:placeholder-shown), :autofill)
+    )
+    legend {
+    max-width: 100%;
+  }
+
+  [data-ac-text-field="filled"]:has(
+      input:is(:focus, :not(:placeholder-shown), :autofill)
+    )
+    [data-ac-text-field-part="label"] {
+    top: 8px;
+  }
+
+  [data-ac-text-field="outlined"]:has(
+      input:is(:focus, :not(:placeholder-shown), :autofill)
+    )
+    [data-ac-text-field-part="label"] {
+    top: -8px;
+    inset-inline-start: 16px;
+  }
+
+  /* While the label rests in the field, it takes the placeholder's place, and the prefix and
+     suffix wait for it to float, as in Compose */
+  [data-ac-text-field][data-ac-text-field-labelled]:not(
+      :has(input:is(:focus, :not(:placeholder-shown), :autofill))
+    )
+    :is(
+      [data-ac-text-field-part="prefix"],
+      [data-ac-text-field-part="suffix"]
+    ) {
+    opacity: 0;
+  }
+
+  [data-ac-text-field][data-ac-text-field-labelled]
+    input:not(:focus)::placeholder {
+    opacity: 0;
+  }
+
+  /* Disabled: everything on-surface at 38%, the filled container at 4% and the outline at 12% */
+  [data-ac-text-field]:has(input:disabled) {
+    --ac-text-field-disabled: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 38%,
+      transparent
+    );
+    --ac-text-field-indicator: var(--ac-text-field-disabled);
+    --ac-text-field-label: var(--ac-text-field-disabled);
+    --ac-text-field-icon: var(--ac-text-field-disabled);
+    --ac-text-field-trailing: var(--ac-text-field-disabled);
+    --ac-text-field-input: var(--ac-text-field-disabled);
+    --ac-text-field-supporting: var(--ac-text-field-disabled);
+  }
+
+  [data-ac-text-field]:has(input:disabled)
+    [data-ac-text-field-part="container"] {
+    cursor: default;
+  }
+
+  [data-ac-text-field="filled"]:has(input:disabled)
+    [data-ac-text-field-part="container"] {
+    background-color: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 4%,
+      transparent
+    );
+  }
+
+  [data-ac-text-field="outlined"]:has(input:disabled) {
+    --ac-text-field-indicator: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 12%,
+      transparent
+    );
+  }
+
+  /* Compose's timing: the label moves and resizes, and the indicator and outline thicken, on
+     fast spatial. Colors, the state layer, and the placeholder, prefix and suffix fade on fast
+     effects. */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-ac-text-field-part="state-layer"],
+    [data-ac-text-field-part="prefix"],
+    [data-ac-text-field-part="suffix"],
+    input::placeholder {
+      transition: opacity var(--theme-duration-spring-fast-effects)
+        var(--ease-spring-fast-effects);
+    }
+
+    [data-ac-text-field-part="container"],
+    [data-ac-text-field-part="leading-icon"],
+    [data-ac-text-field-part="trailing-icon"],
+    [data-ac-text-field-part="supporting-text"] {
+      transition:
+        color var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects),
+        background-color var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects);
+    }
+
+    [data-ac-text-field-part="active-indicator"] {
+      transition:
+        background-color var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects),
+        height var(--theme-duration-spring-fast-spatial)
+          var(--ease-spring-fast-spatial);
+    }
+
+    [data-ac-text-field-part="outline"] {
+      transition:
+        border-color var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects),
+        border-width var(--theme-duration-spring-fast-spatial)
+          var(--ease-spring-fast-spatial),
+        padding var(--theme-duration-spring-fast-spatial)
+          var(--ease-spring-fast-spatial),
+        top var(--theme-duration-spring-fast-spatial)
+          var(--ease-spring-fast-spatial);
+    }
+
+    legend {
+      transition: max-width var(--theme-duration-spring-fast-spatial)
+        var(--ease-spring-fast-spatial);
+    }
+
+    [data-ac-text-field-part="label"] {
+      transition:
+        color var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects),
+        top var(--theme-duration-spring-fast-spatial)
+          var(--ease-spring-fast-spatial),
+        inset-inline-start var(--theme-duration-spring-fast-spatial)
+          var(--ease-spring-fast-spatial),
+        font-size var(--theme-duration-spring-fast-spatial)
+          var(--ease-spring-fast-spatial),
+        line-height var(--theme-duration-spring-fast-spatial)
+          var(--ease-spring-fast-spatial),
+        letter-spacing var(--theme-duration-spring-fast-spatial)
+          var(--ease-spring-fast-spatial);
+    }
+  }
+</style>
+
+<script>
+  // A press anywhere in the container that isn't on the input or a control of its own (the
+  // padding, the label, an icon, the prefix or suffix) focuses the input, as a press on a
+  // native field does. Delegated, so it covers fields brought in by Astro's ClientRouter.
+  document.addEventListener("mousedown", (event) => {
+    const target = event.target as Element;
+    const container = target.closest("[data-ac-text-field-part='container']");
+    if (!container || target.closest("input, button, a, [tabindex]")) return;
+    const input = container.querySelector("input");
+    if (!input || input.disabled) return;
+    event.preventDefault();
+    input.focus();
+  });
+</script>
