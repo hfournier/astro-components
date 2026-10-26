@@ -509,11 +509,10 @@ const controlAttrs = {
   // The inputs whose validity message is the counter's, so a message of the page's own stays
   const overLimit = new WeakSet<Element>();
 
-  // A growing multi-line field takes its content's height, through field-sizing or, where
-  // that isn't supported, set here. The change moves on the fast spatial spring, unless motion
-  // is reduced. CSS can't transition it, since both heights are the content's, so it's animated
-  // from the height the field last had (or has now, partway through an animation).
-  const sizesItself = CSS.supports("field-sizing", "content");
+  // A growing multi-line field takes its content's height through field-sizing. The change
+  // moves on the fast spatial spring, unless motion is reduced. CSS can't transition it, since
+  // the height property stays the same while the content changes, so it's animated from the
+  // height the field last had (or has now, partway through an animation).
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
   const heights = new WeakMap<Element, number>();
   const grow = (input: HTMLInputElement | HTMLTextAreaElement) => {
@@ -523,10 +522,6 @@ const controlAttrs = {
       ? input.getBoundingClientRect().height
       : heights.get(input);
     for (const animation of running) animation.cancel();
-    if (!sizesItself) {
-      input.style.height = "auto";
-      input.style.height = `${input.scrollHeight}px`;
-    }
     const to = input.getBoundingClientRect().height;
     heights.set(input, to);
     // a hidden field has no height to move from or to
@@ -610,7 +605,7 @@ const controlAttrs = {
   document.addEventListener("invalid", (event) => syncFrom(event.target), true);
 
   // A value over the limit from the start makes the input invalid once the page loads, and a
-  // growing field without field-sizing takes its height then
+  // growing field records its height then, for its first change to move from
   const syncAll = () => {
     for (const field of document.querySelectorAll("[data-ac-text-field]"))
       sync(field);
