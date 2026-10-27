@@ -4,12 +4,23 @@ import crypto from "node:crypto";
 import { twMerge } from "tailwind-merge";
 import { unwrapParagraph } from "../utils";
 
-// A native text input, so it submits, resets and validates with its form. Every attribute but
-// `class` goes on the input (`name`, `value`, `placeholder`, `required`, `disabled`, `aria-*`),
-// and `class` on the element around the whole field. The default slot is the label's text.
-type Props = Omit<HTMLAttributes<"input">, "type"> & {
-  type?: "email" | "number" | "password" | "search" | "tel" | "text" | "url";
+// A native text input, or a textarea for `type="textarea"`, so it submits, resets and validates
+// with its form. Every attribute but `class` and `maxlength` goes on the input (`name`, `value`,
+// `placeholder`, `required`, `disabled`, `aria-*`), and `class` on the element around the whole
+// field. The default slot is the label's text.
+type Props = (
+  | (Omit<HTMLAttributes<"input">, "type"> & {
+      type?:
+        "email" | "number" | "password" | "search" | "tel" | "text" | "url";
+      rows?: never;
+    })
+  | (Omit<HTMLAttributes<"textarea">, "rows"> & {
+      type: "textarea";
+      rows?: number;
+    })
+) & {
   variant?: "filled" | "outlined";
+  maxlength?: number;
 };
 
 const {
@@ -17,10 +28,18 @@ const {
   variant = "filled",
   id = `ac-text-field-${crypto.randomUUID()}`,
   placeholder,
+  value,
+  rows,
+  maxlength,
   "aria-describedby": describedBy,
   class: classList,
   ...attrs
 }: Props = Astro.props;
+
+// A multi-line field is a textarea. Without `rows`, it starts one line tall and grows with its
+// content; with `rows`, it's M3's text area, that many lines tall, and scrolls.
+const isMultiLine = type === "textarea";
+const hasFixedRows = isMultiLine && rows != null;
 
 const label = Astro.slots.has("default")
   ? unwrapParagraph(await Astro.slots.render("default")).trim()
@@ -36,6 +55,14 @@ const supportingId = Astro.slots.has("supporting-text")
   ? `${id}-supporting-text`
   : undefined;
 
+// M3's character counter: `maxlength` is a limit people can type past, as on Android, rather
+// than the native one that stops them. Past it, the counter and the field turn error, and the
+// script below makes the input invalid, so its form won't submit.
+const limit = maxlength == null ? undefined : Number(maxlength);
+const counterId = limit === undefined ? undefined : `${id}-counter`;
+const count = String(value ?? "").length;
+const isOverLimit = limit !== undefined && count > limit;
+
 // A disabled field's supporting text is at 38%, below text contrast, which WCAG allows for an
 // inactive component. Text outside a label isn't tied to the input, so aria-disabled on the
 // whole field says it's part of one. The script below keeps it in step with the input.
@@ -43,13 +70,29 @@ const ariaDisabled = attrs.disabled ? "true" : undefined;
 
 // M3: in the error state, the error text in the supporting text's place is an alert, announced
 // as it appears. The script below keeps it in step with aria-invalid and :user-invalid.
-const isError = String(attrs["aria-invalid"]) === "true";
+const isError = String(attrs["aria-invalid"]) === "true" || isOverLimit;
 
-// The prefix and suffix say what the value is in ("Euro", "at gmail dot com"), and the
-// supporting text (or the error text in its place) how to fill it in
+// The prefix and suffix say what the value is in ("Euro", "at gmail dot com"), the supporting
+// text (or the error text in its place) how to fill it in, and the counter how much is left
 const ariaDescribedBy =
-  [prefixId, suffixId, supportingId, describedBy].filter(Boolean).join(" ") ||
-  undefined;
+  [prefixId, suffixId, supportingId, counterId, describedBy]
+    .filter(Boolean)
+    .join(" ") || undefined;
+
+// The placeholder fades in on slow effects as the field is focused, and out on fast effects
+const controlClass = [
+  "min-w-0 flex-1 bg-transparent p-0 text-(--ac-text-field-input) caret-(--ac-text-field-accent) outline-none disabled:cursor-default",
+  "placeholder:text-(--ac-text-field-icon) placeholder:opacity-100 motion-safe:placeholder:transition-opacity",
+  "motion-safe:focus:placeholder:duration-(--theme-duration-spring-slow-effects) motion-safe:focus:placeholder:ease-spring-slow-effects",
+  // While the label rests in the field, it takes the placeholder's place
+  label && "not-focus:placeholder:opacity-0",
+];
+const controlAttrs = {
+  id,
+  placeholder: placeholder ?? (label ? " " : undefined),
+  "aria-describedby": ariaDescribedBy,
+  "data-ac-text-field-limit": limit,
+};
 ---
 
 <div
@@ -62,43 +105,58 @@ const ariaDescribedBy =
   data-ac-text-field-labelled={label ? "" : undefined}
   data-ac-text-field-leading={hasLeadingIcon ? "" : undefined}
   data-ac-text-field-trailing={hasTrailingIcon ? "" : undefined}
+  data-ac-text-field-over-limit={isOverLimit ? "" : undefined}
 >
   <div
     class:list={[
-      "relative flex h-14 cursor-text",
-      variant === "filled" ? "rounded-t-sm" : "rounded-sm",
+      "relative flex cursor-text motion-safe:transition-colors",
+      isMultiLine ? "min-h-14" : "h-14",
+      variant === "filled"
+        ? // The filled container is its own surface: a ButtonIcon in it, and its focus ring,
+          // take the surface's colors whatever the background around the field
+          "rounded-t-sm bg-(--theme-color-surface-container-highest) [--theme-color-focus-ring-on-bg:var(--theme-color-secondary)] [--theme-color-on-bg-variant:var(--theme-color-on-surface-variant)] [--theme-color-wrapper-bg:var(--theme-color-surface-container-highest)]"
+        : "rounded-sm",
     ]}
     data-ac-text-field-part="container"
   >
     {variant === "filled" ? (
       <>
         <span
-          class="pointer-events-none absolute inset-0 rounded-[inherit]"
+          class="pointer-events-none absolute inset-0 rounded-[inherit] bg-(--theme-color-on-surface) opacity-0 motion-safe:transition-opacity"
           data-ac-text-field-part="state-layer"
         />
         <span
-          class="pointer-events-none absolute inset-x-0 bottom-0"
+          class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-(--ac-text-field-indicator)"
           data-ac-text-field-part="active-indicator"
         />
       </>
     ) : (
       // The outline is a fieldset so that its legend, a hidden copy of the label, cuts the gap
-      // the floated label sits in, whatever the label's width
+      // the floated label sits in, whatever the label's width. The legend starts 12px in, so
+      // the label it copies starts at the field's 16px padding.
       <fieldset
-        class="pointer-events-none absolute inset-x-0 bottom-0 m-0 min-w-0 rounded-[inherit]"
+        class:list={[
+          "pointer-events-none absolute inset-x-0 bottom-0 m-0 min-w-0 rounded-[inherit] border-(length:--ac-text-field-outline-width) border-(--ac-text-field-indicator) px-[calc(12px-var(--ac-text-field-outline-width))] [--ac-text-field-outline-width:1px]",
+          // A fieldset centers its top border on the legend, which is 16px tall, the floated
+          // label's line. Raised by 8px less half the border, the border's top edge stays on
+          // the container's.
+          label
+            ? "top-[calc(var(--ac-text-field-outline-width)/2-8px)]"
+            : "top-0",
+        ]}
         aria-hidden="true"
         data-ac-text-field-part="outline"
       >
         {label && (
-          <legend>
-            <span set:html={labelText} />
+          <legend class="invisible block h-4 w-auto max-w-[0.01px] overflow-hidden p-0 text-xs leading-4 tracking-[0.4px] whitespace-nowrap motion-safe:transition-[max-width] motion-safe:duration-(--theme-duration-spring-fast-spatial) motion-safe:ease-spring-fast-spatial">
+            <span class="px-1" set:html={labelText} />
           </legend>
         )}
       </fieldset>
     )}
     {hasLeadingIcon && (
       <span
-        class="relative grid w-12 shrink-0 place-items-center"
+        class="relative grid w-12 shrink-0 place-items-center text-(--ac-text-field-icon) motion-safe:transition-colors"
         data-ac-text-field-part="leading-icon"
       >
         <slot name="leading-icon" />
@@ -113,27 +171,63 @@ const ariaDescribedBy =
       ]}
     >
       {prefixId && (
-        <span id={prefixId} class="me-0.5" data-ac-text-field-part="prefix">
+        <span
+          id={prefixId}
+          class="me-0.5 text-(--ac-text-field-icon) motion-safe:transition-opacity"
+          data-ac-text-field-part="prefix"
+        >
           <slot name="prefix" />
         </span>
       )}
-      <input
-        class="h-6 min-w-0 flex-1 bg-transparent p-0 outline-none disabled:cursor-default"
-        id={id}
-        type={type}
-        placeholder={placeholder ?? (label ? " " : undefined)}
-        aria-describedby={ariaDescribedBy}
-        {...attrs}
-      />
+      {isMultiLine ? (
+        <textarea
+          class:list={[
+            controlClass,
+            // No resize handle. It grows a line at a time with its content, or as a text area
+            // is `rows` lines tall, Body Large's 24px each, and scrolls.
+            "resize-none",
+            hasFixedRows
+              ? "h-[calc(var(--ac-text-field-rows)*24px)]"
+              : "min-h-6 overflow-y-hidden field-sizing-content",
+          ]}
+          {...controlAttrs}
+          rows={rows ?? 1}
+          style={hasFixedRows ? `--ac-text-field-rows: ${rows}` : undefined}
+          data-ac-text-field-grows={hasFixedRows ? undefined : ""}
+          {...attrs}
+          set:text={value}
+        ></textarea>
+      ) : (
+        <input
+          class:list={[
+            controlClass,
+            "h-6",
+            // M3 uses a trailing icon to clear a field, rather than the browser's own button
+            "[&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none",
+          ]}
+          {...controlAttrs}
+          type={type}
+          value={value}
+          {...attrs}
+        />
+      )}
       {suffixId && (
-        <span id={suffixId} class="ms-0.5" data-ac-text-field-part="suffix">
+        <span
+          id={suffixId}
+          class="ms-0.5 text-(--ac-text-field-icon) motion-safe:transition-opacity"
+          data-ac-text-field-part="suffix"
+        >
           <slot name="suffix" />
         </span>
       )}
     </div>
     {label && (
       <label
-        class="pointer-events-none absolute top-4 truncate"
+        class:list={[
+          "pointer-events-none absolute top-4 truncate text-(--ac-text-field-label)",
+          hasLeadingIcon ? "inset-s-13" : "inset-s-4",
+          hasTrailingIcon ? "inset-e-13" : "inset-e-4",
+        ]}
         for={id}
         data-ac-text-field-part="label"
         set:html={labelText}
@@ -141,21 +235,41 @@ const ariaDescribedBy =
     )}
     {hasTrailingIcon && (
       <span
-        class="relative grid w-12 shrink-0 place-items-center"
+        class="relative grid w-12 shrink-0 place-items-center text-(--ac-text-field-trailing) motion-safe:transition-colors [--theme-color-on-bg-variant:var(--ac-text-field-trailing)]"
         data-ac-text-field-part="trailing-icon"
       >
         <slot name="trailing-icon" />
       </span>
     )}
   </div>
-  {supportingId && (
-    <div
-      id={supportingId}
-      class="px-4 pt-1 text-xs leading-4 tracking-[0.4px]"
-      role={isError ? "alert" : undefined}
-      data-ac-text-field-part="supporting-text"
-    >
-      <slot name="supporting-text" />
+  {(supportingId || counterId) && (
+    <div class="flex gap-4 px-4 text-xs leading-4 tracking-[0.4px]">
+      {supportingId && (
+        <div
+          id={supportingId}
+          class="min-w-0 pt-1 text-(--ac-text-field-supporting) motion-safe:transition-colors"
+          role={isError ? "alert" : undefined}
+          data-ac-text-field-part="supporting-text"
+        >
+          <slot name="supporting-text" />
+        </div>
+      )}
+      {counterId && (
+        <div
+          id={counterId}
+          class="ms-auto shrink-0 pt-1 text-(--ac-text-field-supporting) motion-safe:transition-colors"
+          data-ac-text-field-part="counter"
+        >
+          <span class="sr-only">Character count, </span>
+          <span data-ac-text-field-count>{count}</span>/{limit}
+        </div>
+      )}
+      {counterId && (
+        // Says so when the value goes past the counter's limit. Outside the counter, so the
+        // input's description doesn't include it, and rendered empty, so it's in place before
+        // anything is announced.
+        <span class="sr-only" role="alert" data-ac-text-field-announcement />
+      )}
     </div>
   )}
 </div>
@@ -184,9 +298,12 @@ const ariaDescribedBy =
     --ac-text-field-label-hover: var(--theme-color-on-surface);
   }
 
-  /* An error is set by aria-invalid, which also announces it, or by the browser's own
-     validation, once the person has interacted with the form */
-  [data-ac-text-field]:has(input:is([aria-invalid="true"], :user-invalid)) {
+  /* An error is set by aria-invalid, which also announces it, by the browser's own validation,
+     once the person has interacted with the form, or by a value past the counter's limit */
+  [data-ac-text-field]:has(
+    :is(input, textarea):is([aria-invalid="true"], :user-invalid)
+  ),
+  [data-ac-text-field][data-ac-text-field-over-limit] {
     --ac-text-field-accent: var(--theme-color-error);
     --ac-text-field-supporting: var(--theme-color-error);
     --ac-text-field-indicator: var(--theme-color-error);
@@ -197,117 +314,14 @@ const ariaDescribedBy =
     --ac-text-field-trailing-hover: var(--theme-color-on-error-container);
   }
 
-  /* The filled container is its own surface: a ButtonIcon in it, and its focus ring, take the
-     surface's colors whatever the background around the field */
-  [data-ac-text-field="filled"] [data-ac-text-field-part="container"] {
-    --theme-color-on-bg-variant: var(--theme-color-on-surface-variant);
-    --theme-color-focus-ring-on-bg: var(--theme-color-secondary);
-    --theme-color-wrapper-bg: var(--theme-color-surface-container-highest);
-    background-color: var(--theme-color-surface-container-highest);
-  }
-
-  [data-ac-text-field-part="state-layer"] {
-    background-color: var(--theme-color-on-surface);
-    opacity: 0;
-  }
-
-  [data-ac-text-field-part="active-indicator"] {
-    height: 1px;
-    background-color: var(--ac-text-field-indicator);
-  }
-
-  [data-ac-text-field-part="outline"] {
-    --ac-text-field-outline-width: 1px;
-    border: var(--ac-text-field-outline-width) solid
-      var(--ac-text-field-indicator);
-    /* the legend starts 12px in, so the label it copies starts at the field's 16px padding */
-    padding: 0 calc(12px - var(--ac-text-field-outline-width));
-    top: 0;
-  }
-
-  /* A fieldset centers its top border on the legend, which is 16px tall, the floated label's
-     line. Raised by 8px less half the border, the border's top edge stays on the container's. */
-  [data-ac-text-field][data-ac-text-field-labelled]
-    [data-ac-text-field-part="outline"] {
-    top: calc(var(--ac-text-field-outline-width) / 2 - 8px);
-  }
-
-  legend {
-    display: block;
-    width: auto;
-    max-width: 0.01px;
-    height: 16px;
-    padding: 0;
-    overflow: hidden;
-    font-size: 12px;
-    line-height: 16px;
-    letter-spacing: 0.4px;
-    white-space: nowrap;
-    visibility: hidden;
-  }
-
-  legend > span {
-    padding-inline: 4px;
-  }
-
-  [data-ac-text-field-part="label"] {
-    inset-inline-start: 16px;
-    inset-inline-end: 16px;
-    color: var(--ac-text-field-label);
-  }
-
-  [data-ac-text-field][data-ac-text-field-leading]
-    [data-ac-text-field-part="label"] {
-    inset-inline-start: 52px;
-  }
-
-  [data-ac-text-field][data-ac-text-field-trailing]
-    [data-ac-text-field-part="label"] {
-    inset-inline-end: 52px;
-  }
-
-  [data-ac-text-field-part="leading-icon"] {
-    color: var(--ac-text-field-icon);
-  }
-
-  [data-ac-text-field-part="trailing-icon"] {
-    --theme-color-on-bg-variant: var(--ac-text-field-trailing);
-    color: var(--ac-text-field-trailing);
-  }
-
-  [data-ac-text-field-part="prefix"],
-  [data-ac-text-field-part="suffix"] {
-    color: var(--ac-text-field-icon);
-  }
-
-  [data-ac-text-field-part="supporting-text"] {
-    color: var(--ac-text-field-supporting);
-  }
-
-  input {
-    color: var(--ac-text-field-input);
-    caret-color: var(--ac-text-field-accent);
-  }
-
-  input::placeholder {
-    color: var(--ac-text-field-icon);
-    opacity: 1;
-  }
-
-  /* M3 uses a trailing icon to clear a field, rather than the browser's own button */
-  input::-webkit-search-cancel-button,
-  input::-webkit-search-decoration {
-    appearance: none;
-  }
-
   /* Hovered, unless focused: a focused field keeps its focused colors under the pointer */
-  [data-ac-text-field]:has(input:enabled:not(:focus))
+  [data-ac-text-field]:has(:is(input, textarea):enabled:not(:focus))
     [data-ac-text-field-part="container"]:hover
     [data-ac-text-field-part="state-layer"] {
     opacity: 0.08;
   }
 
-  [data-ac-text-field]:has(input:enabled:not(:focus))
+  [data-ac-text-field]:has(:is(input, textarea):enabled:not(:focus))
     [data-ac-text-field-part="container"]:hover
     :is(
       [data-ac-text-field-part="active-indicator"],
@@ -316,13 +330,13 @@ const ariaDescribedBy =
     --ac-text-field-indicator: var(--ac-text-field-indicator-hover);
   }
 
-  [data-ac-text-field]:has(input:enabled:not(:focus))
+  [data-ac-text-field]:has(:is(input, textarea):enabled:not(:focus))
     [data-ac-text-field-part="container"]:hover
     [data-ac-text-field-part="label"] {
     color: var(--ac-text-field-label-hover);
   }
 
-  [data-ac-text-field]:has(input:enabled:not(:focus))
+  [data-ac-text-field]:has(:is(input, textarea):enabled:not(:focus))
     [data-ac-text-field-part="container"]:hover
     [data-ac-text-field-part="trailing-icon"] {
     --ac-text-field-trailing: var(--ac-text-field-trailing-hover);
@@ -331,18 +345,20 @@ const ariaDescribedBy =
   /* Focused: the thicker indicator in the accent color is M3's focus indicator for a text
      field. The Specs page's tokens give the filled one both a 2dp height and a 3dp thickness
      (md.sys.state.focus-indicator.thickness); its state diagram draws 3dp, as the outline's */
-  [data-ac-text-field]:has(input:focus)
+  [data-ac-text-field]:has(:is(input, textarea):focus)
     [data-ac-text-field-part="active-indicator"] {
     height: 3px;
     background-color: var(--ac-text-field-accent);
   }
 
-  [data-ac-text-field]:has(input:focus) [data-ac-text-field-part="outline"] {
+  [data-ac-text-field]:has(:is(input, textarea):focus)
+    [data-ac-text-field-part="outline"] {
     --ac-text-field-outline-width: 3px;
     border-color: var(--ac-text-field-accent);
   }
 
-  [data-ac-text-field]:has(input:focus) [data-ac-text-field-part="label"] {
+  [data-ac-text-field]:has(:is(input, textarea):focus)
+    [data-ac-text-field-part="label"] {
     color: var(--ac-text-field-accent);
   }
 
@@ -351,7 +367,7 @@ const ariaDescribedBy =
      top of the container, in line with the input. Outlined, it sits on the outline, at the
      field's start even past a leading icon, as in Compose. */
   [data-ac-text-field]:has(
-      input:is(:focus, :not(:placeholder-shown), :autofill)
+      :is(input, textarea):is(:focus, :not(:placeholder-shown), :autofill)
     )
     [data-ac-text-field-part="label"] {
     font-size: 12px;
@@ -360,31 +376,32 @@ const ariaDescribedBy =
   }
 
   [data-ac-text-field]:has(
-      input:is(:focus, :not(:placeholder-shown), :autofill)
+      :is(input, textarea):is(:focus, :not(:placeholder-shown), :autofill)
     )
+    [data-ac-text-field-part="outline"]
     legend {
     max-width: 100%;
   }
 
   [data-ac-text-field="filled"]:has(
-      input:is(:focus, :not(:placeholder-shown), :autofill)
+      :is(input, textarea):is(:focus, :not(:placeholder-shown), :autofill)
     )
     [data-ac-text-field-part="label"] {
     top: 8px;
   }
 
   [data-ac-text-field="outlined"]:has(
-      input:is(:focus, :not(:placeholder-shown), :autofill)
+      :is(input, textarea):is(:focus, :not(:placeholder-shown), :autofill)
     )
     [data-ac-text-field-part="label"] {
     top: -8px;
     inset-inline-start: 16px;
   }
 
-  /* While the label rests in the field, it takes the placeholder's place, and the prefix and
-     suffix wait for it to float, as in Compose */
+  /* While the label rests in the field, the prefix and suffix wait for it to float, as in
+     Compose */
   [data-ac-text-field][data-ac-text-field-labelled]:not(
-      :has(input:is(:focus, :not(:placeholder-shown), :autofill))
+      :has(:is(input, textarea):is(:focus, :not(:placeholder-shown), :autofill))
     )
     :is(
       [data-ac-text-field-part="prefix"],
@@ -393,13 +410,8 @@ const ariaDescribedBy =
     opacity: 0;
   }
 
-  [data-ac-text-field][data-ac-text-field-labelled]
-    input:not(:focus)::placeholder {
-    opacity: 0;
-  }
-
   /* Disabled: everything on-surface at 38%, the filled container at 4% and the outline at 12% */
-  [data-ac-text-field]:has(input:disabled) {
+  [data-ac-text-field]:has(:is(input, textarea):disabled) {
     --ac-text-field-disabled: color-mix(
       in oklab,
       var(--theme-color-on-surface) 38%,
@@ -413,12 +425,12 @@ const ariaDescribedBy =
     --ac-text-field-supporting: var(--ac-text-field-disabled);
   }
 
-  [data-ac-text-field]:has(input:disabled)
+  [data-ac-text-field]:has(:is(input, textarea):disabled)
     [data-ac-text-field-part="container"] {
     cursor: default;
   }
 
-  [data-ac-text-field="filled"]:has(input:disabled)
+  [data-ac-text-field="filled"]:has(:is(input, textarea):disabled)
     [data-ac-text-field-part="container"] {
     background-color: color-mix(
       in oklab,
@@ -427,7 +439,7 @@ const ariaDescribedBy =
     );
   }
 
-  [data-ac-text-field="outlined"]:has(input:disabled) {
+  [data-ac-text-field="outlined"]:has(:is(input, textarea):disabled) {
     --ac-text-field-indicator: color-mix(
       in oklab,
       var(--theme-color-on-surface) 12%,
@@ -435,35 +447,10 @@ const ariaDescribedBy =
     );
   }
 
-  /* Compose's timing, which M3's Specs page doesn't give: the label moves and resizes, and the
-     indicator and outline thicken, on fast spatial. Colors, the state layer, the prefix and
-     suffix fade on fast effects. The placeholder fades in on slow effects, as the field is
-     focused, and out on fast effects. A transition's timing is the state it moves to's. */
+  /* Compose's timing, which M3's Specs page doesn't give, for the parts that mix two springs:
+     the label moves and resizes, and the indicator and outline thicken, on fast spatial, while
+     their colors change on fast effects. The parts on one spring have it in their classes. */
   @media (prefers-reduced-motion: no-preference) {
-    [data-ac-text-field-part="state-layer"],
-    [data-ac-text-field-part="prefix"],
-    [data-ac-text-field-part="suffix"],
-    input::placeholder {
-      transition: opacity var(--theme-duration-spring-fast-effects)
-        var(--ease-spring-fast-effects);
-    }
-
-    input:focus::placeholder {
-      transition: opacity var(--theme-duration-spring-slow-effects)
-        var(--ease-spring-slow-effects);
-    }
-
-    [data-ac-text-field-part="container"],
-    [data-ac-text-field-part="leading-icon"],
-    [data-ac-text-field-part="trailing-icon"],
-    [data-ac-text-field-part="supporting-text"] {
-      transition:
-        color var(--theme-duration-spring-fast-effects)
-          var(--ease-spring-fast-effects),
-        background-color var(--theme-duration-spring-fast-effects)
-          var(--ease-spring-fast-effects);
-    }
-
     [data-ac-text-field-part="active-indicator"] {
       transition:
         background-color var(--theme-duration-spring-fast-effects)
@@ -482,11 +469,6 @@ const ariaDescribedBy =
           var(--ease-spring-fast-spatial),
         top var(--theme-duration-spring-fast-spatial)
           var(--ease-spring-fast-spatial);
-    }
-
-    legend {
-      transition: max-width var(--theme-duration-spring-fast-spatial)
-        var(--ease-spring-fast-spatial);
     }
 
     [data-ac-text-field-part="label"] {
@@ -514,27 +496,85 @@ const ariaDescribedBy =
   document.addEventListener("mousedown", (event) => {
     const target = event.target as Element;
     const container = target.closest("[data-ac-text-field-part='container']");
-    if (!container || target.closest("input, button, a, [tabindex]")) return;
-    const input = container.querySelector("input");
+    if (!container || target.closest("input, textarea, button, a, [tabindex]"))
+      return;
+    const input = container.querySelector<
+      HTMLInputElement | HTMLTextAreaElement
+    >("input, textarea");
     if (!input || input.disabled) return;
     event.preventDefault();
     input.focus();
   });
 
-  // Keeps each field's ARIA in step with its input: aria-disabled on the field while the input
-  // is disabled, and role="alert" on the supporting text while the field is in error
-  // (aria-invalid="true", or :user-invalid once the person has interacted with the form)
+  // The inputs whose validity message is the counter's, so a message of the page's own stays
+  const overLimit = new WeakSet<Element>();
+
+  // A growing multi-line field takes its content's height through field-sizing. The change
+  // moves on the fast spatial spring, unless motion is reduced. CSS can't transition it, since
+  // the height property stays the same while the content changes, so it's animated from the
+  // height the field last had (or has now, partway through an animation).
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  const heights = new WeakMap<Element, number>();
+  const grow = (input: HTMLInputElement | HTMLTextAreaElement) => {
+    if (!input.hasAttribute("data-ac-text-field-grows")) return;
+    const running = input.getAnimations();
+    const from = running.length
+      ? input.getBoundingClientRect().height
+      : heights.get(input);
+    for (const animation of running) animation.cancel();
+    const to = input.getBoundingClientRect().height;
+    heights.set(input, to);
+    // a hidden field has no height to move from or to
+    if (!from || !to || from === to || reducedMotion.matches) return;
+    const root = getComputedStyle(document.documentElement);
+    input.animate([{ height: `${from}px` }, { height: `${to}px` }], {
+      duration: parseFloat(
+        root.getPropertyValue("--theme-duration-spring-fast-spatial")
+      ),
+      easing: root.getPropertyValue("--ease-spring-fast-spatial").trim(),
+    });
+  };
+
+  // Keeps each field in step with its input: the counter's count, and the input's validity past
+  // its limit; aria-disabled on the field while the input is disabled; and role="alert" on the
+  // supporting text while the field is in error (aria-invalid="true", past the counter's limit,
+  // or :user-invalid once the person has interacted with the form)
   const sync = (field: Element) => {
-    const input = field.querySelector("input");
+    const input = field.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+      "input, textarea"
+    );
     if (!input) return;
+    grow(input);
     if (input.disabled) field.setAttribute("aria-disabled", "true");
     else field.removeAttribute("aria-disabled");
+
+    const limit = Number(input.dataset.acTextFieldLimit);
+    const count = field.querySelector("[data-ac-text-field-count]");
+    const isOverLimit = count !== null && input.value.length > limit;
+    const wasOverLimit = field.hasAttribute("data-ac-text-field-over-limit");
+    const message = `Use ${limit} characters or fewer`;
+    if (count) count.textContent = String(input.value.length);
+    field.toggleAttribute("data-ac-text-field-over-limit", isOverLimit);
+    if (isOverLimit) {
+      input.setCustomValidity(message);
+      overLimit.add(input);
+    } else if (overLimit.delete(input)) {
+      input.setCustomValidity("");
+    }
+    // Announced as the value goes past the limit, not on each keystroke after, nor for a value
+    // already past it when the page loads
+    const announcement = field.querySelector(
+      "[data-ac-text-field-announcement]"
+    );
+    if (announcement && isOverLimit !== wasOverLimit)
+      announcement.textContent = isOverLimit ? message : "";
 
     const supporting = field.querySelector(
       "[data-ac-text-field-part='supporting-text']"
     );
     if (!supporting) return;
     const isError =
+      isOverLimit ||
       input.getAttribute("aria-invalid") === "true" ||
       input.matches(":user-invalid");
     if (isError) supporting.setAttribute("role", "alert");
@@ -563,9 +603,19 @@ const ariaDescribedBy =
     document.addEventListener(type, (event) => syncFrom(event.target));
   }
   document.addEventListener("invalid", (event) => syncFrom(event.target), true);
+
+  // A value over the limit from the start makes the input invalid once the page loads, and a
+  // growing field records its height then, for its first change to move from
+  const syncAll = () => {
+    for (const field of document.querySelectorAll("[data-ac-text-field]"))
+      sync(field);
+  };
+  syncAll();
+  document.addEventListener("astro:page-load", syncAll);
   document.addEventListener("reset", (event) => {
     setTimeout(() => {
       if (!(event.target instanceof HTMLFormElement)) return;
+      // a reset's values aren't input, so the counts and heights follow here too
       for (const field of event.target.querySelectorAll("[data-ac-text-field]"))
         sync(field);
     });
