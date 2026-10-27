@@ -35,7 +35,7 @@ const { class: classList, ...attrs }: Props = Astro.props;
       class="pointer-events-none absolute size-10 rounded-full bg-current opacity-0 motion-safe:transition-[opacity,background-color]"
       data-ac-radio-button-part="state-layer"
     ></span>
-    {/* Compose draws a 2px ring with a 10px dot inside it, which grows from the ring's center */}
+    {/* Compose draws a 2px ring with a 10px dot inside it */}
     <span
       class="pointer-events-none relative grid size-5 place-items-center rounded-full border-2 border-(--theme-color-on-bg-variant) motion-safe:transition-[border-color] motion-safe:duration-(--theme-duration-spring-default-effects) motion-safe:ease-spring-default-effects"
       data-ac-radio-button-part="icon"
@@ -50,9 +50,9 @@ const { class: classList, ...attrs }: Props = Astro.props;
 </label>
 
 <style>
-  /* Unselected, the ring is on-bg-variant at rest and the label's color (on-surface outside any
-     wrapper) when hovered, focused or pressed. Selected, the ring and dot are primary. Disabled,
-     both are on-surface at 38%. */
+  /* Unselected, the ring is the label's color (on-surface outside any wrapper) when hovered,
+     focused or pressed. Selected, the ring is primary. Disabled, the ring and dot are on-surface
+     at 38%. The dot grows from the ring's center. */
   [data-ac-radio-button] {
     --ac-radio-button-disabled: color-mix(
       in oklab,
@@ -121,8 +121,8 @@ const { class: classList, ...attrs }: Props = Astro.props;
     background-color: var(--ac-radio-button-disabled);
   }
 
-  /* Compose's timing: the dot grows and shrinks on fast spatial, and the colors change on
-     default effects. The state layer fades on fast effects, as everywhere. */
+  /* Compose's timing: the dot grows and shrinks on fast spatial, and its color changes on
+     default effects */
   @media (prefers-reduced-motion: no-preference) {
     [data-ac-radio-button-part="dot"] {
       transition:

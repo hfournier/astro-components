@@ -24,7 +24,6 @@ const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
     classList
   )}
   data-ac-switch
-  data-ac-switch-icons={icons}
 >
   <slot />
   {/* M3 touch target: 48px tall, around the 52x32 track */}
@@ -51,7 +50,7 @@ const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
     <span
       class:list={[
         "pointer-events-none grid place-items-center rounded-full bg-(--theme-color-outline) *:col-start-1 *:row-start-1 [translate:calc(-10px*var(--ac-switch-flip))_0]",
-        icons === "both" ? "size-6" : "size-4",
+        icons === "both" ? "size-[24px]" : "size-[16px]",
       ]}
       data-ac-switch-part="handle"
     >
@@ -105,8 +104,7 @@ const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
     translate: calc(10px * var(--ac-switch-flip)) 0;
   }
 
-  /* Unselected, a surface-container-highest track in an outline; selected, a primary track whose
-     outline takes its color. Disabled, at M3's 12%. */
+  /* Selected, the track is primary and its outline takes its color. Disabled, at M3's 12%. */
   input:checked ~ [data-ac-switch-part="track"] {
     border-color: transparent;
     background-color: var(--theme-color-primary);
