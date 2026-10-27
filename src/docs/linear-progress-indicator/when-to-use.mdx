@@ -1,0 +1,14 @@
+Use a linear progress indicator to show the status of a process that takes more than about 5 seconds, such as loading a page, submitting a form or saving changes:
+
+- **determinate** when you know how far the process has got
+- **indeterminate** when you don't, turning it determinate once you do
+
+Place it along the edge of the container that's loading, or along the top of a page for the page as a whole.
+
+### When not to use it
+
+- **Waits under 200ms:** show the content straight away, without an indicator.
+- **Waits from 200ms to 5 seconds:** use a loading indicator.
+- **Several items loading together:** use one indicator for the whole group, not one per item.
+- **An element narrower than 40px:** a linear indicator needs room. Use a circular one, centered on the element.
+- **The same kind of process elsewhere uses a circular indicator:** use one kind of indicator for each process throughout a product.

@@ -1,0 +1,52 @@
+---
+name: LinearProgressIndicator
+description: A Material 3 linear progress indicator, extending HTML's `<progress>` element. It shows how far a process has got along a track, or, without a value, that work is going on. It has M3's active indicator, the gap before the track, the stop indicator at its end and Expressive's optional wavy shape. Being a native progress, assistive tech announces it as a progress bar with its value.
+category: Forms
+role: pattern
+meta:
+  title: LinearProgressIndicator | astro-components HenriFournier.dev
+  description: A Material 3 linear progress indicator on a native progress element, determinate or indeterminate, flat or wavy, with M3's stop indicator.
+extends:
+  kind: element
+  tag: [progress]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/progress
+props:
+  - name: shape
+    type: '"flat" | "wavy"'
+    required: false
+    default: '"flat"'
+    description: M3's two shapes. `wavy` draws the active indicator as a wave 3px either side of the track, which grows the indicator from the track's thickness to 6px more (10px for the default track). A determinate wave lies flat below 10% and from 95%.
+  - name: thickness
+    type: number
+    required: false
+    default: "4"
+    description: The track's and active indicator's thickness in px. M3's default is 4; its thicker sample is 8. The stop indicator stays 4px, inset from the end of a thicker track.
+  - name: showStopIndicator
+    type: boolean
+    required: false
+    default: "true"
+    description: Shows M3's stop indicator, a 4px circle that marks the end of a determinate track. Turn it off only when the track has at least 3:1 contrast with the container and surfaces around it.
+---
+
+## Attributes
+
+Every attribute except `class` goes on the `<progress>`: `value`, `max`, `aria-label`, `aria-labelledby`, `id` and the rest. `class` goes on the element around it, which draws the indicator, so it can size and place it.
+
+- **Determinate:** set `value`, between 0 and `max` (1 by default). To show progress, set the progress's `value` from a script, as with any `<progress>`. The active indicator follows it.
+- **Indeterminate:** leave `value` out. Setting one later turns the indicator determinate, as M3 suggests once a process's length becomes known. Removing the attribute turns it back.
+
+## Anatomy
+
+- **Active indicator:** `primary`, from the start of the track to the value. Just started, it's a dot.
+- **Track:** `secondary-container`, from a 4px gap after the active indicator to the end.
+- **Stop indicator:** a 4px `primary` circle at the track's end, on determinate indicators only.
+
+The indicator spans the width of its container. M3 places it on the edge of the container that's loading, or along the top of a page, inset at least 4px from each end. It mirrors in right-to-left layouts, filling from the right.
+
+## Motion
+
+A new value moves the active indicator and the gap on the fast spatial spring (ADR-0018), as the wave's amplitude does when it rises after 10% and flattens from 95%. The wave travels a wavelength a second, as Compose's does.
+
+Indeterminate, the indicator runs Compose's animation: two lines cross the track in a 1750ms cycle, each one's head and tail on emphasized accelerate. M3's Specs page gives no timing for it.
+
+Under reduced motion, a new value and the wave's amplitude change at once, and the wave stands still. The indeterminate lines keep moving, since their movement is the only thing that shows that work is going on.

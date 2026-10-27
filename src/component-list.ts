@@ -19,6 +19,7 @@ export { default as Footer } from "./components/Footer.astro";
 export { default as Header } from "./components/Header.astro";
 export { default as Heading } from "./components/Heading.astro";
 export { default as Icon } from "./components/Icon.astro";
+export { default as LinearProgressIndicator } from "./components/LinearProgressIndicator.astro";
 export { default as Link } from "./components/Link.astro";
 export { default as Main } from "./components/Main.astro";
 export { default as Menu } from "./components/Menu.astro";
