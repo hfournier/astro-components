@@ -1,0 +1,61 @@
+---
+title: ProgressCircular
+description: Tests for the ProgressCircular component
+---
+
+<Heading level={1}>ProgressCircular Tests</Heading>
+
+<Section data-testid="progress-circular-determinate" class="p-4 space-y-4">
+  <Heading level={2}>Determinate</Heading>
+  <div class="flex flex-wrap gap-4">
+    <ProgressCircular value="0" aria-label="Not started" />
+    <ProgressCircular value="0.01" aria-label="Just started" />
+    <ProgressCircular value="0.25" aria-label="Uploading photos" />
+    <ProgressCircular value="30" max="50" aria-label="Copying files" />
+    <ProgressCircular value="1" aria-label="Done" />
+  </div>
+</Section>
+
+<Section data-testid="progress-circular-indeterminate" class="p-4 space-y-4">
+  <Heading level={2}>Indeterminate</Heading>
+  <div class="flex flex-wrap gap-4">
+    <ProgressCircular aria-label="Loading news article" />
+    <Heading level={3} id="progress-circular-episodes">Loading my episodes</Heading>
+    <ProgressCircular aria-labelledby="progress-circular-episodes" />
+  </div>
+</Section>
+
+<Section data-testid="progress-circular-thick" class="p-4 space-y-4">
+  <Heading level={2}>Thick track</Heading>
+  <div class="flex flex-wrap gap-4">
+    <ProgressCircular thickness={8} value="0.25" aria-label="Thick, determinate" />
+    <ProgressCircular thickness={8} aria-label="Thick, indeterminate" />
+  </div>
+</Section>
+
+<Section data-testid="progress-circular-wavy" class="p-4 space-y-4">
+  <Heading level={2}>Wavy</Heading>
+  <div class="flex flex-wrap gap-4">
+    <ProgressCircular shape="wavy" value="0.05" aria-label="Wavy, starting" />
+    <ProgressCircular shape="wavy" value="0.5" aria-label="Wavy, halfway" />
+    <ProgressCircular shape="wavy" value="0.97" aria-label="Wavy, nearly done" />
+    <ProgressCircular shape="wavy" aria-label="Wavy, indeterminate" />
+    <ProgressCircular shape="wavy" thickness={8} value="0.5" aria-label="Wavy, thick" />
+  </div>
+</Section>
+
+<Section data-testid="progress-circular-size" class="p-4 space-y-4">
+  <Heading level={2}>Size</Heading>
+  <div class="flex flex-wrap gap-4">
+    <ProgressCircular size={96} value="0.25" aria-label="Large" />
+    <ProgressCircular size={24} aria-label="Small, indeterminate" />
+  </div>
+</Section>
+
+<Section data-testid="progress-circular-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <div class="flex flex-wrap gap-4">
+    <ProgressCircular value="0.25" aria-label="Right to left" />
+    <ProgressCircular shape="wavy" value="0.5" aria-label="Right to left, wavy" />
+  </div>
+</Section>

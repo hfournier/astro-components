@@ -1,0 +1,338 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+
+// A native progress element, so assistive tech announces it as a progress bar with its value.
+// Every attribute but `class` goes on the progress (`value`, `max`, `aria-label`,
+// `aria-labelledby`), and `class` on the element around it, which draws M3's parts. Without a
+// `value` it's indeterminate. Update it from a script by setting the progress's `value`.
+type Props = HTMLAttributes<"progress"> & {
+  // M3's two shapes: flat, or Expressive's wavy active indicator
+  shape?: "flat" | "wavy";
+  // The track's thickness in px: M3's default is 4, and 8 its thick sample
+  thickness?: number;
+  // The container's size in px, from M3's 24 to 240. M3's is 40, 44 with the 8px track, and 8
+  // more when wavy.
+  size?: number;
+};
+
+const {
+  shape = "flat",
+  thickness = 4,
+  size,
+  class: classList,
+  ...attrs
+}: Props = Astro.props;
+
+// M3's wave: 1.6px either side of the track
+const amplitude = 1.6;
+const isWavy = shape === "wavy";
+const side = size ?? 36 + thickness + (isWavy ? 8 : 0);
+// The ring's center line, inset half the thickness from the container's edge, and the wave's
+// amplitude more when wavy, so its crests reach the edge
+const radius = side / 2 - thickness / 2 - (isWavy ? amplitude : 0);
+const circumference = 2 * Math.PI * radius;
+
+// The progress's own position, as the browser works it out: value over max, within 0 and 1
+const maxAttribute = Number(attrs.max ?? 1);
+const max = maxAttribute > 0 ? maxAttribute : 1;
+const position =
+  attrs.value == null
+    ? 0
+    : Math.min(Math.max(Number(attrs.value) / max || 0, 0), 1);
+
+// Each part is a stroke along the ring, drawn with round caps as Compose draws its arcs
+const stroke =
+  "fill-none [stroke-linecap:round] [stroke-width:var(--ac-progress-circular-thickness)]";
+---
+
+<span
+  class:list={twMerge(
+    "relative inline-block size-(--ac-progress-circular-size) shrink-0 align-middle",
+    // the active indicator follows the value, and the wave flattens below 10% and from 95%, as
+    // Compose's does: both transition in the <style> block
+    "[--ac-progress-circular-progress:var(--ac-progress-circular-value)] [--ac-progress-circular-fill:var(--ac-progress-circular-progress)]",
+    "[--ac-progress-circular-amplitude:calc(clamp(0,(var(--ac-progress-circular-value)_-_0.1)*1e6,1)*clamp(0,(0.95_-_var(--ac-progress-circular-value))*1e6,1))]",
+    // Lengths along the ring, in px: the active indicator's, then the space after it, M3's 4px
+    // gap between two caps (only as long as the active indicator, so it closes as that does),
+    // and the track's, which takes that space at both ends
+    "[--ac-progress-circular-active:calc(var(--ac-progress-circular-fill)*var(--ac-progress-circular-circumference))]",
+    "[--ac-progress-circular-space:min(var(--ac-progress-circular-active),var(--ac-progress-circular-gap))]",
+    "[--ac-progress-circular-track:calc(var(--ac-progress-circular-circumference)_-_var(--ac-progress-circular-active)_-_2*var(--ac-progress-circular-space))]",
+    classList
+  )}
+  style={`--ac-progress-circular-size: ${side}px; --ac-progress-circular-thickness: ${thickness}px; --ac-progress-circular-circumference: ${circumference}; --ac-progress-circular-gap: ${4 + thickness}; --ac-progress-circular-value: ${position}`}
+  data-ac-progress-circular
+  data-ac-progress-circular-shape={shape}
+>
+  <progress
+    class="absolute inset-0 size-full appearance-none opacity-0"
+    {...attrs}
+  />
+  {/* An SVG circle starts at 3 o'clock, so the ring turns a quarter back to start at 12. The
+      indeterminate animation turns it further, and the wave's phase moves it a wavelength a
+      second. It isn't mirrored in right-to-left layouts: M3's circular indicators fill
+      clockwise in every direction. */}
+  <svg
+    class:list={[
+      "pointer-events-none absolute inset-0 size-full overflow-visible rotate-[calc((var(--ac-progress-circular-rotation)_+_var(--ac-progress-circular-step))*1deg_-_90deg)]",
+      isWavy &&
+        "motion-safe:animate-[ac-progress-circular-phase_1s_linear_infinite]",
+    ]}
+    viewBox={`0 0 ${side} ${side}`}
+    aria-hidden="true"
+  >
+    {/* The track, from a gap after the active indicator to a gap before its start; it isn't
+        drawn once the gaps meet, where a zero-length dash would still show its round caps */}
+    <circle
+      class:list={[
+        stroke,
+        "stroke-(--theme-color-secondary-container) opacity-[clamp(0,var(--ac-progress-circular-track)*1e6,1)] [stroke-dasharray:calc(max(0,var(--ac-progress-circular-track))*1px)_calc(var(--ac-progress-circular-circumference)*1px)] [stroke-dashoffset:calc((var(--ac-progress-circular-active)_+_var(--ac-progress-circular-space))*-1px)]",
+      ]}
+      cx={side / 2}
+      cy={side / 2}
+      r={radius}
+      data-ac-progress-circular-part="track"
+    ></circle>
+    {isWavy ? (
+      // A script draws the wave, which CSS can't, from the fill and amplitude the styles
+      // animate, and the phase that moves it
+      <path
+        class:list={[
+          stroke,
+          "stroke-(--theme-color-primary) [stroke-linejoin:round]",
+        ]}
+        data-ac-progress-circular-part="active-indicator"
+      ></path>
+    ) : (
+      // The active indicator, from the start to the fill; at 0 it isn't drawn at all
+      <circle
+        class:list={[
+          stroke,
+          "stroke-(--theme-color-primary) opacity-[clamp(0,var(--ac-progress-circular-fill)*1e6,1)] [stroke-dasharray:calc(var(--ac-progress-circular-active)*1px)_calc(var(--ac-progress-circular-circumference)*1px)]",
+        ]}
+        cx={side / 2}
+        cy={side / 2}
+        r={radius}
+        data-ac-progress-circular-part="active-indicator"
+      ></circle>
+    )}
+  </svg>
+</span>
+
+<style>
+  /* Registered, so they animate: the progress and the wave's amplitude transition, the
+     indeterminate animation turns the ring and sweeps its active indicator, and the wave's
+     phase loops */
+  @property --ac-progress-circular-progress {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 0;
+  }
+
+  @property --ac-progress-circular-amplitude {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 0;
+  }
+
+  @property --ac-progress-circular-phase {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 0;
+  }
+
+  @property --ac-progress-circular-rotation {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 0;
+  }
+
+  @property --ac-progress-circular-step {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 0;
+  }
+
+  @property --ac-progress-circular-sweep {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 0;
+  }
+
+  /* A new value moves the active indicator on fast effects, which doesn't overshoot, so the
+     indicator never shows more progress than there is (Compose's progress spring doesn't bounce
+     either). The wave's amplitude is a shape, on fast spatial. */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-ac-progress-circular] {
+      transition:
+        --ac-progress-circular-progress
+          var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects),
+        --ac-progress-circular-amplitude
+          var(--theme-duration-spring-fast-spatial)
+          var(--ease-spring-fast-spatial);
+    }
+  }
+
+  /* Indeterminate, the active indicator is the sweep. At rest it holds still from 20% to 60% of
+     the way round, which still reads as work going on: under reduced motion it stays there
+     (ADR-0003). */
+  [data-ac-progress-circular]:has(progress:indeterminate) {
+    --ac-progress-circular-fill: var(--ac-progress-circular-sweep);
+    --ac-progress-circular-sweep: 0.4;
+    --ac-progress-circular-rotation: 72;
+  }
+
+  /* Otherwise Compose's 6s cycle: the ring turns three times at a steady speed, plus a quarter
+     turn in 300ms every 1.5s, while the active indicator grows from 10% to 87% of the way round
+     and shrinks back. A Compose keyframe's easing applies to the interval after it, so the
+     quarter turns and the growth run linear and the shrinking on standard. */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-ac-progress-circular]:has(progress:indeterminate) {
+      animation:
+        ac-progress-circular-rotation 6000ms linear infinite,
+        ac-progress-circular-step 6000ms linear infinite,
+        ac-progress-circular-sweep 6000ms linear infinite;
+    }
+  }
+
+  @keyframes ac-progress-circular-rotation {
+    from {
+      --ac-progress-circular-rotation: 0;
+    }
+    to {
+      --ac-progress-circular-rotation: 1080;
+    }
+  }
+
+  @keyframes ac-progress-circular-step {
+    0% {
+      --ac-progress-circular-step: 0;
+    }
+    5%,
+    25% {
+      --ac-progress-circular-step: 90;
+    }
+    30%,
+    50% {
+      --ac-progress-circular-step: 180;
+    }
+    55%,
+    75% {
+      --ac-progress-circular-step: 270;
+    }
+    80%,
+    100% {
+      --ac-progress-circular-step: 360;
+    }
+  }
+
+  @keyframes ac-progress-circular-sweep {
+    0%,
+    100% {
+      --ac-progress-circular-sweep: 0.1;
+    }
+    50% {
+      --ac-progress-circular-sweep: 0.87;
+      animation-timing-function: var(--ease-standard);
+    }
+  }
+
+  /* The wave moves a wavelength a second, as Compose's does */
+  @keyframes ac-progress-circular-phase {
+    to {
+      --ac-progress-circular-phase: 1;
+    }
+  }
+</style>
+
+<script>
+  // The drawn parts read the progress's position from --ac-progress-circular-value.
+  // Setting a progress's `value` (or `max`) sets its attribute, so one observer on the document
+  // keeps every indicator in step, including those brought in by Astro's ClientRouter.
+  new MutationObserver((records) => {
+    for (const { target } of records) {
+      if (
+        target instanceof HTMLProgressElement &&
+        target.parentElement?.matches("[data-ac-progress-circular]")
+      ) {
+        target.parentElement.style.setProperty(
+          "--ac-progress-circular-value",
+          String(Math.max(target.position, 0))
+        );
+      }
+    }
+  }).observe(document.documentElement, {
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["value", "max"],
+  });
+
+  // M3's wave: 1.6px either side of the track, about 15px from one crest to the next. Compose
+  // rounds the number of waves around the ring to a whole number, at least 5, so the wave closes
+  // on itself as it travels.
+  const amplitudePx = 1.6;
+  const wavelengthPx = 15;
+
+  const draw = (root: HTMLElement) => {
+    const progress = root.querySelector("progress");
+    const track = root.querySelector<SVGCircleElement>(
+      'circle[data-ac-progress-circular-part="track"]'
+    );
+    const path = root.querySelector<SVGPathElement>(
+      'path[data-ac-progress-circular-part="active-indicator"]'
+    );
+    const svg = root.querySelector("svg");
+    if (!progress || !track || !path || !svg) return;
+    const style = getComputedStyle(root);
+    const read = (name: string) =>
+      parseFloat(style.getPropertyValue(`--ac-progress-circular-${name}`));
+    const radius = track.r.baseVal.value;
+    const center = track.cx.baseVal.value;
+    const phase = parseFloat(
+      getComputedStyle(svg).getPropertyValue("--ac-progress-circular-phase")
+    );
+    // the share of M3's amplitude the wave has, 0 when flat
+    const amplitudeScale = progress.matches(":indeterminate")
+      ? 1
+      : Math.min(Math.max(read("amplitude"), 0), 1);
+    const waves = Math.max(
+      5,
+      Math.round((2 * Math.PI * radius) / wavelengthPx)
+    );
+    const sweep = Math.min(Math.max(read("fill"), 0), 1) * 2 * Math.PI;
+    let d = "";
+    if (sweep > 0) {
+      // a point every pixel or so along the ring, from 3 o'clock clockwise
+      const steps = Math.max(1, Math.ceil(sweep * radius));
+      const round = (n: number) => Math.round(n * 100) / 100;
+      for (let i = 0; i <= steps; i++) {
+        const angle = (sweep * i) / steps;
+        const r =
+          radius +
+          amplitudePx *
+            amplitudeScale *
+            Math.sin(waves * angle + 2 * Math.PI * (phase || 0));
+        d += `${i ? "L" : "M"}${round(center + r * Math.cos(angle))} ${round(center + r * Math.sin(angle))}`;
+      }
+    }
+    if (path.getAttribute("d") !== d) path.setAttribute("d", d);
+  };
+
+  // One loop draws every wavy indicator on the page, while there are any. The browser pauses it
+  // in a background tab.
+  let frame = 0;
+  const loop = () => {
+    const roots = document.querySelectorAll<HTMLElement>(
+      '[data-ac-progress-circular-shape="wavy"]'
+    );
+    roots.forEach(draw);
+    frame = roots.length ? requestAnimationFrame(loop) : 0;
+  };
+  const start = () => {
+    if (!frame) loop();
+  };
+  start();
+  document.addEventListener("astro:after-swap", start);
+</script>

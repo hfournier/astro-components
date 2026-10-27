@@ -1,0 +1,7 @@
+ProgressCircular is a native `<progress>`, so assistive tech announces it as a progress bar, with its value when it has one. An indeterminate indicator announces no value.
+
+Name every indicator with `aria-label`, or `aria-labelledby` pointing at a visible heading. Say what's loading: the process and the content it affects, such as "Loading news article" or "Refreshing page", as M3 asks.
+
+The indicator isn't focusable: it's a status, not a control. The active indicator is `primary`, at least 3:1 against the page's surfaces. On another component, such as a button, check that it keeps 3:1 against that component's color.
+
+An indeterminate indicator turns continuously, and a wavy indicator's wave moves. Under reduced motion nothing moves: new values jump into place, the wave stands still, and an indeterminate indicator holds its active indicator still on the ring. Name it well, since the name, not the movement, is then what says that work is going on.
