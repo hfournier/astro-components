@@ -510,9 +510,10 @@ test.describe("Switch", () => {
       const easings = (await style(target, "transition-timing-function")).split(
         /,\s(?![^(]*\))/
       );
+      // CSS repeats a shorter list of durations or easings to cover every property
       return {
-        duration: parseFloat(durations[index]) * 1000,
-        easing: easings[index],
+        duration: parseFloat(durations[index % durations.length]) * 1000,
+        easing: easings[index % easings.length],
       };
     };
     const token = async (name: string) => ({
