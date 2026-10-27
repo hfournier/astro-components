@@ -39,23 +39,35 @@ const {
       {...attrs}
     />
     <span
-      class="pointer-events-none absolute size-10 rounded-full"
+      class="pointer-events-none absolute size-10 rounded-full bg-(--ac-checkbox-layer) opacity-0 motion-safe:transition-[opacity,background-color]"
       data-ac-checkbox-part="state-layer"
     ></span>
     <span
-      class="pointer-events-none relative size-4.5 rounded-xs border-2"
+      class="pointer-events-none relative size-4.5 rounded-xs border-2 border-(--ac-checkbox-outline) bg-transparent motion-safe:transition-[border-color,background-color]"
       data-ac-checkbox-part="container"
     >
       {/* the check's two strokes, drawn from the 18px container's corner: they turn flat into
-          the indeterminate dash, as Compose draws them */}
+          the indeterminate dash, as Compose draws them. The mark is revealed from its leading
+          end, and hidden when unselected. */}
       <svg
-        class="absolute -inset-0.5 size-4.5 overflow-visible"
+        class="absolute -inset-0.5 size-4.5 overflow-visible [clip-path:inset(0_100%_0_0)] motion-safe:transition-[clip-path] motion-safe:delay-100 motion-safe:duration-0"
         viewBox="0 0 18 18"
         aria-hidden="true"
         data-ac-checkbox-part="icon"
       >
-        <line class="short" x2="18"></line>
-        <line class="long" x2="18"></line>
+        {/* Each stroke is a dash along a line from its start point, rotated into place.
+            Compose's check runs through (0.25, 0.5), (0.4, 0.65) and (0.75, 0.3) of the
+            container, both 2px wide with square caps. */}
+        <line
+          class="origin-top-left stroke-transparent stroke-2 [stroke-dasharray:3.818px_20px] [stroke-linecap:square] [transform:translate(4.5px,9px)_rotate(45deg)]"
+          x2="18"
+          data-ac-checkbox-part="short-stroke"
+        ></line>
+        <line
+          class="origin-top-left stroke-transparent stroke-2 [stroke-dasharray:8.91px_20px] [stroke-linecap:square] [transform:translate(7.2px,11.7px)_rotate(-45deg)]"
+          x2="18"
+          data-ac-checkbox-part="long-stroke"
+        ></line>
       </svg>
     </span>
   </span>
@@ -82,11 +94,6 @@ const {
     --ac-checkbox-outline: var(--theme-color-error);
     --ac-checkbox-outline-active: var(--theme-color-error);
     --ac-checkbox-layer: var(--theme-color-error);
-  }
-
-  [data-ac-checkbox-part="state-layer"] {
-    background-color: var(--ac-checkbox-layer);
-    opacity: 0;
   }
 
   [data-ac-checkbox]:hover [data-ac-checkbox-part="state-layer"] {
@@ -120,11 +127,6 @@ const {
 
   input:disabled ~ [data-ac-checkbox-part="state-layer"] {
     display: none;
-  }
-
-  [data-ac-checkbox-part="container"] {
-    border-color: var(--ac-checkbox-outline);
-    background-color: transparent;
   }
 
   [data-ac-checkbox]:is(:hover, :active)
@@ -161,23 +163,8 @@ const {
     );
   }
 
-  /* The mark is revealed from its leading end, as Compose draws it, and hidden when unselected */
-  [data-ac-checkbox-part="icon"] {
-    clip-path: inset(0 100% 0 0);
-  }
-
   input:is(:checked, :indeterminate) ~ * [data-ac-checkbox-part="icon"] {
     clip-path: inset(0);
-  }
-
-  /* Each stroke is a dash along a line from its start point, rotated into place. Compose's
-     check runs through (0.25, 0.5), (0.4, 0.65) and (0.75, 0.3) of the container, and its dash
-     through (0.25, 0.5) and (0.75, 0.5), both 2px wide with square caps. */
-  line {
-    stroke: transparent;
-    stroke-width: 2px;
-    stroke-linecap: square;
-    transform-origin: 0 0;
   }
 
   input:is(:checked, :indeterminate) ~ * line {
@@ -188,54 +175,27 @@ const {
     stroke: var(--theme-color-surface);
   }
 
-  .short {
-    transform: translate(4.5px, 9px) rotate(45deg);
-    stroke-dasharray: 3.818px 20px;
-  }
-
-  .long {
-    transform: translate(7.2px, 11.7px) rotate(-45deg);
-    stroke-dasharray: 8.91px 20px;
-  }
-
-  input:indeterminate ~ * .short {
+  /* Compose's dash runs through (0.25, 0.5) and (0.75, 0.5) of the container */
+  input:indeterminate ~ * [data-ac-checkbox-part="short-stroke"] {
     transform: translate(4.5px, 9px) rotate(0deg);
     stroke-dasharray: 4.5px 20px;
   }
 
-  input:indeterminate ~ * .long {
+  input:indeterminate ~ * [data-ac-checkbox-part="long-stroke"] {
     transform: translate(9px, 9px) rotate(0deg);
     stroke-dasharray: 4.5px 20px;
   }
 
-  /* Compose's timing. The state layer fades on fast effects. Selecting, the container colors
-     in on default effects and the mark draws (and morphs between check and dash) on default
+  /* Compose's timing. Selecting, the container colors in on default effects and the mark draws (and morphs between check and dash) on default
      spatial. Unselecting, the colors fade out on fast effects and the mark snaps away after
      100ms. A transition's timing is the state it moves to's. */
   @media (prefers-reduced-motion: no-preference) {
-    [data-ac-checkbox-part="state-layer"] {
-      transition:
-        opacity var(--theme-duration-spring-fast-effects)
-          var(--ease-spring-fast-effects),
-        background-color var(--theme-duration-spring-fast-effects)
-          var(--ease-spring-fast-effects);
-    }
-
-    [data-ac-checkbox-part="container"],
     line {
       transition:
-        border-color var(--theme-duration-spring-fast-effects)
-          var(--ease-spring-fast-effects),
-        background-color var(--theme-duration-spring-fast-effects)
-          var(--ease-spring-fast-effects),
         stroke var(--theme-duration-spring-fast-effects)
           var(--ease-spring-fast-effects),
         transform 0s 100ms,
         stroke-dasharray 0s 100ms;
-    }
-
-    [data-ac-checkbox-part="icon"] {
-      transition: clip-path 0s 100ms;
     }
 
     input:is(:checked, :indeterminate) ~ [data-ac-checkbox-part="container"],

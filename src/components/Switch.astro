@@ -24,7 +24,6 @@ const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
     classList
   )}
   data-ac-switch
-  data-ac-switch-icons={icons}
 >
   <slot />
   {/* M3 touch target: 48px tall, around the 52x32 track */}
@@ -40,22 +39,38 @@ const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
       {...attrs}
     />
     <span
-      class="pointer-events-none h-8 w-13 rounded-full border-2"
+      class="pointer-events-none h-8 w-13 rounded-full border-2 border-(--theme-color-outline) bg-(--theme-color-surface-container-highest) motion-safe:transition-[border-color,background-color]"
       data-ac-switch-part="track"
     ></span>
     <span
-      class="pointer-events-none size-10 rounded-full"
+      class="pointer-events-none size-10 rounded-full bg-current opacity-0 [translate:calc(-10px*var(--ac-switch-flip))_0]"
       data-ac-switch-part="state-layer"
     ></span>
+    {/* M3's handle: 16px unselected, 24px selected or holding an icon, 28px pressed */}
     <span
-      class="pointer-events-none grid place-items-center rounded-full *:col-start-1 *:row-start-1"
+      class:list={[
+        "pointer-events-none grid place-items-center rounded-full bg-(--theme-color-outline) *:col-start-1 *:row-start-1 [translate:calc(-10px*var(--ac-switch-flip))_0]",
+        icons === "both" ? "size-[24px]" : "size-[16px]",
+      ]}
       data-ac-switch-part="handle"
     >
+      {/* Each icon shows on its own state: a check in primary when selected, an x in
+          surface-container-highest when unselected. The check follows M3's Specs page, which
+          maps md.comp.switch.selected.icon.color to primary (Compose's SwitchTokens still give
+          on-primary-container). */}
       {icons !== "none" && (
-        <Icon name="check" class="size-4" data-ac-switch-icon="selected" />
+        <Icon
+          name="check"
+          class="size-4 text-(--theme-color-primary) opacity-0 motion-safe:transition-[opacity,color]"
+          data-ac-switch-icon="selected"
+        />
       )}
       {icons === "both" && (
-        <Icon name="close" class="size-4" data-ac-switch-icon="unselected" />
+        <Icon
+          name="close"
+          class="size-4 text-(--theme-color-surface-container-highest) opacity-0 motion-safe:transition-[opacity,color]"
+          data-ac-switch-icon="unselected"
+        />
       )}
     </span>
   </span>
@@ -84,23 +99,12 @@ const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
     --ac-switch-flip: -1;
   }
 
-  [data-ac-switch-part="state-layer"],
-  [data-ac-switch-part="handle"] {
-    translate: calc(-10px * var(--ac-switch-flip)) 0;
-  }
-
   input:checked ~ [data-ac-switch-part="state-layer"],
   input:checked ~ [data-ac-switch-part="handle"] {
     translate: calc(10px * var(--ac-switch-flip)) 0;
   }
 
-  /* Unselected, a surface-container-highest track in an outline; selected, a primary track whose
-     outline takes its color. Disabled, at M3's 12%. */
-  [data-ac-switch-part="track"] {
-    border-color: var(--theme-color-outline);
-    background-color: var(--theme-color-surface-container-highest);
-  }
-
+  /* Selected, the track is primary and its outline takes its color. Disabled, at M3's 12%. */
   input:checked ~ [data-ac-switch-part="track"] {
     border-color: transparent;
     background-color: var(--theme-color-primary);
@@ -120,14 +124,6 @@ const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
     background-color: var(--ac-switch-disabled-track);
   }
 
-  /* M3's handle: 16px unselected, 24px selected or holding an icon, 28px pressed */
-  [data-ac-switch-part="handle"] {
-    width: 16px;
-    height: 16px;
-    background-color: var(--theme-color-outline);
-  }
-
-  [data-ac-switch-icons="both"] [data-ac-switch-part="handle"],
   input:checked ~ [data-ac-switch-part="handle"] {
     width: 24px;
     height: 24px;
@@ -166,18 +162,6 @@ const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
     background-color: var(--theme-color-surface);
   }
 
-  /* Each icon shows on its own state: a check in primary when selected, an x in
-     surface-container-highest when unselected. The check follows M3's Specs page, which maps
-     md.comp.switch.selected.icon.color to primary (Compose's SwitchTokens still give
-     on-primary-container). */
-  [data-ac-switch-icon] {
-    opacity: 0;
-  }
-
-  [data-ac-switch-icon="selected"] {
-    color: var(--theme-color-primary);
-  }
-
   /* Hovered, focused or pressed, the check is on-primary-container, the on-color of the
      primary-container handle. M3 keeps it primary, but in a scheme whose primary-container is
      close to primary in tone (this theme's Fidelity), that leaves the check at under 2:1. */
@@ -187,10 +171,6 @@ const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
     [data-ac-switch-icon="selected"],
   input:focus-visible:checked ~ * [data-ac-switch-icon="selected"] {
     color: var(--theme-color-on-primary-container);
-  }
-
-  [data-ac-switch-icon="unselected"] {
-    color: var(--theme-color-surface-container-highest);
   }
 
   input:checked ~ * [data-ac-switch-icon="selected"],
@@ -212,11 +192,6 @@ const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
 
   /* The state layer is the label's color (on-surface outside any wrapper) unselected and primary
      selected, at 8% hovered and 10% focused or pressed */
-  [data-ac-switch-part="state-layer"] {
-    background-color: currentColor;
-    opacity: 0;
-  }
-
   input:checked ~ [data-ac-switch-part="state-layer"] {
     background-color: var(--theme-color-primary);
   }
@@ -240,14 +215,6 @@ const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
      overshoot, and colors and opacity change on fast effects. Pressed, the handle snaps to its
      28px, as Compose's does, and springs back from it on release. */
   @media (prefers-reduced-motion: no-preference) {
-    [data-ac-switch-part="track"] {
-      transition:
-        border-color var(--theme-duration-spring-fast-effects)
-          var(--ease-spring-fast-effects),
-        background-color var(--theme-duration-spring-fast-effects)
-          var(--ease-spring-fast-effects);
-    }
-
     [data-ac-switch-part="state-layer"] {
       transition:
         translate var(--theme-duration-spring-fast-spatial)
@@ -276,14 +243,6 @@ const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
         width 0s,
         height 0s,
         background-color var(--theme-duration-spring-fast-effects)
-          var(--ease-spring-fast-effects);
-    }
-
-    [data-ac-switch-icon] {
-      transition:
-        opacity var(--theme-duration-spring-fast-effects)
-          var(--ease-spring-fast-effects),
-        color var(--theme-duration-spring-fast-effects)
           var(--ease-spring-fast-effects);
     }
   }
