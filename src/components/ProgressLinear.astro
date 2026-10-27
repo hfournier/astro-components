@@ -38,15 +38,15 @@ const position =
 // Determinate, the active indicator runs to the progress and the track starts a gap after it;
 // the indeterminate state moves them in the <style> block.
 const segment =
-  "absolute top-1/2 h-(--ac-linear-progress-indicator-thickness) -translate-y-1/2 rounded-full [--ac-linear-progress-indicator-end-cap:clamp(var(--ac-linear-progress-indicator-cap),var(--ac-linear-progress-indicator-end),100%_-_var(--ac-linear-progress-indicator-cap))] [--ac-linear-progress-indicator-start-cap:clamp(var(--ac-linear-progress-indicator-cap),var(--ac-linear-progress-indicator-start),100%_-_var(--ac-linear-progress-indicator-cap))] start-[calc(var(--ac-linear-progress-indicator-start-cap)_-_var(--ac-linear-progress-indicator-cap))] w-[clamp(0px,(var(--ac-linear-progress-indicator-end)_-_var(--ac-linear-progress-indicator-start))*1000,var(--ac-linear-progress-indicator-end-cap)_-_var(--ac-linear-progress-indicator-start-cap)_+_2*var(--ac-linear-progress-indicator-cap))]";
+  "absolute top-1/2 h-(--ac-progress-linear-thickness) -translate-y-1/2 rounded-full [--ac-progress-linear-end-cap:clamp(var(--ac-progress-linear-cap),var(--ac-progress-linear-end),100%_-_var(--ac-progress-linear-cap))] [--ac-progress-linear-start-cap:clamp(var(--ac-progress-linear-cap),var(--ac-progress-linear-start),100%_-_var(--ac-progress-linear-cap))] start-[calc(var(--ac-progress-linear-start-cap)_-_var(--ac-progress-linear-cap))] w-[clamp(0px,(var(--ac-progress-linear-end)_-_var(--ac-progress-linear-start))*1000,var(--ac-progress-linear-end-cap)_-_var(--ac-progress-linear-start-cap)_+_2*var(--ac-progress-linear-cap))]";
 const track = `${segment} bg-(--theme-color-secondary-container)`;
 const active = `${segment} bg-(--theme-color-primary)`;
 // The wavy active indicator, a path the script draws
 const wave =
-  "fill-none stroke-(--theme-color-primary) [stroke-linecap:round] [stroke-width:var(--ac-linear-progress-indicator-thickness)]";
+  "fill-none stroke-(--theme-color-primary) [stroke-linecap:round] [stroke-width:var(--ac-progress-linear-thickness)]";
 // The segments only an indeterminate indicator draws, empty while it's determinate
 const indeterminateOnly =
-  "[--ac-linear-progress-indicator-end:0px] [--ac-linear-progress-indicator-start:0px]";
+  "[--ac-progress-linear-end:0px] [--ac-progress-linear-start:0px]";
 ---
 
 <span
@@ -54,19 +54,19 @@ const indeterminateOnly =
     "relative block",
     // a wavy active indicator waves 3px (M3's amplitude) either side of the track
     shape === "wavy"
-      ? "h-[calc(var(--ac-linear-progress-indicator-thickness)_+_6px)]"
-      : "h-(--ac-linear-progress-indicator-thickness)",
+      ? "h-[calc(var(--ac-progress-linear-thickness)_+_6px)]"
+      : "h-(--ac-progress-linear-thickness)",
     // the progress follows the value, and the wave flattens below 10% and from 95%, as
     // Compose's does: both transition in the <style> block
-    "[--ac-linear-progress-indicator-progress:var(--ac-linear-progress-indicator-value)]",
-    "[--ac-linear-progress-indicator-amplitude:calc(clamp(0,(var(--ac-linear-progress-indicator-value)_-_0.1)*1e6,1)*clamp(0,(0.95_-_var(--ac-linear-progress-indicator-value))*1e6,1))]",
+    "[--ac-progress-linear-progress:var(--ac-progress-linear-value)]",
+    "[--ac-progress-linear-amplitude:calc(clamp(0,(var(--ac-progress-linear-value)_-_0.1)*1e6,1)*clamp(0,(0.95_-_var(--ac-progress-linear-value))*1e6,1))]",
     // a round cap is half the thickness, and M3's 4px gap sits between two caps
-    "[--ac-linear-progress-indicator-cap:calc(var(--ac-linear-progress-indicator-thickness)/2)] [--ac-linear-progress-indicator-gap:calc(4px_+_var(--ac-linear-progress-indicator-thickness))]",
+    "[--ac-progress-linear-cap:calc(var(--ac-progress-linear-thickness)/2)] [--ac-progress-linear-gap:calc(4px_+_var(--ac-progress-linear-thickness))]",
     classList
   )}
-  style={`--ac-linear-progress-indicator-thickness: ${thickness}px; --ac-linear-progress-indicator-value: ${position}`}
-  data-ac-linear-progress-indicator
-  data-ac-linear-progress-indicator-shape={shape}
+  style={`--ac-progress-linear-thickness: ${thickness}px; --ac-progress-linear-value: ${position}`}
+  data-ac-progress-linear
+  data-ac-progress-linear-shape={shape}
 >
   <progress
     class="absolute inset-0 size-full appearance-none opacity-0"
@@ -75,37 +75,37 @@ const indeterminateOnly =
   <span
     class:list={[
       track,
-      "[--ac-linear-progress-indicator-end:100%] [--ac-linear-progress-indicator-start:calc(var(--ac-linear-progress-indicator-progress)*100%_+_min(var(--ac-linear-progress-indicator-progress)*100%,var(--ac-linear-progress-indicator-gap)))]",
+      "[--ac-progress-linear-end:100%] [--ac-progress-linear-start:calc(var(--ac-progress-linear-progress)*100%_+_min(var(--ac-progress-linear-progress)*100%,var(--ac-progress-linear-gap)))]",
     ]}
-    data-ac-linear-progress-indicator-part="track"
-    data-ac-linear-progress-indicator-segment="1"
+    data-ac-progress-linear-part="track"
+    data-ac-progress-linear-segment="1"
   ></span>
   <span
     class:list={[track, indeterminateOnly]}
-    data-ac-linear-progress-indicator-part="track"
-    data-ac-linear-progress-indicator-segment="2"
+    data-ac-progress-linear-part="track"
+    data-ac-progress-linear-segment="2"
   ></span>
   <span
     class:list={[track, indeterminateOnly]}
-    data-ac-linear-progress-indicator-part="track"
-    data-ac-linear-progress-indicator-segment="3"
+    data-ac-progress-linear-part="track"
+    data-ac-progress-linear-segment="3"
   ></span>
   {shape === "wavy" ? (
     // A script draws the wave, which CSS can't, from the progress, amplitude and indeterminate
     // positions the styles animate, and the phase that moves it a wavelength a second
     <svg
-      class="pointer-events-none absolute inset-0 size-full overflow-visible motion-safe:animate-[ac-linear-progress-indicator-phase_1s_linear_infinite] rtl:-scale-x-100"
+      class="pointer-events-none absolute inset-0 size-full overflow-visible motion-safe:animate-[ac-progress-linear-phase_1s_linear_infinite] rtl:-scale-x-100"
       aria-hidden="true"
     >
       <path
         class={wave}
-        data-ac-linear-progress-indicator-part="active-indicator"
-        data-ac-linear-progress-indicator-segment="1"
+        data-ac-progress-linear-part="active-indicator"
+        data-ac-progress-linear-segment="1"
       ></path>
       <path
         class={wave}
-        data-ac-linear-progress-indicator-part="active-indicator"
-        data-ac-linear-progress-indicator-segment="2"
+        data-ac-progress-linear-part="active-indicator"
+        data-ac-progress-linear-segment="2"
       ></path>
     </svg>
   ) : (
@@ -113,23 +113,23 @@ const indeterminateOnly =
       <span
         class:list={[
           active,
-          "[--ac-linear-progress-indicator-end:calc(var(--ac-linear-progress-indicator-progress)*100%)] [--ac-linear-progress-indicator-start:0px]",
+          "[--ac-progress-linear-end:calc(var(--ac-progress-linear-progress)*100%)] [--ac-progress-linear-start:0px]",
         ]}
-        data-ac-linear-progress-indicator-part="active-indicator"
-        data-ac-linear-progress-indicator-segment="1"
+        data-ac-progress-linear-part="active-indicator"
+        data-ac-progress-linear-segment="1"
       ></span>
       <span
         class:list={[active, indeterminateOnly]}
-        data-ac-linear-progress-indicator-part="active-indicator"
-        data-ac-linear-progress-indicator-segment="2"
+        data-ac-progress-linear-part="active-indicator"
+        data-ac-progress-linear-segment="2"
       ></span>
     </>
   )}
   {showStopIndicator && (
     // M3's 4px circle at the track's end, inset as Compose's is when the track is thicker
     <span
-      class="absolute end-[min(max(0px,(var(--ac-linear-progress-indicator-thickness)_-_4px)/2),6px)] top-1/2 size-[min(4px,var(--ac-linear-progress-indicator-thickness))] -translate-y-1/2 rounded-full bg-(--theme-color-primary)"
-      data-ac-linear-progress-indicator-part="stop-indicator"
+      class="absolute end-[min(max(0px,(var(--ac-progress-linear-thickness)_-_4px)/2),6px)] top-1/2 size-[min(4px,var(--ac-progress-linear-thickness))] -translate-y-1/2 rounded-full bg-(--theme-color-primary)"
+      data-ac-progress-linear-part="stop-indicator"
     ></span>
   )}
 </span>
@@ -137,43 +137,43 @@ const indeterminateOnly =
 <style>
   /* Registered, so they animate: the progress and the wave's amplitude transition, the
      indeterminate lines' heads and tails run on keyframes, and the wave's phase loops */
-  @property --ac-linear-progress-indicator-progress {
+  @property --ac-progress-linear-progress {
     syntax: "<number>";
     inherits: true;
     initial-value: 0;
   }
 
-  @property --ac-linear-progress-indicator-amplitude {
+  @property --ac-progress-linear-amplitude {
     syntax: "<number>";
     inherits: true;
     initial-value: 0;
   }
 
-  @property --ac-linear-progress-indicator-phase {
+  @property --ac-progress-linear-phase {
     syntax: "<number>";
     inherits: true;
     initial-value: 0;
   }
 
-  @property --ac-linear-progress-indicator-head-1 {
+  @property --ac-progress-linear-head-1 {
     syntax: "<number>";
     inherits: true;
     initial-value: 0;
   }
 
-  @property --ac-linear-progress-indicator-tail-1 {
+  @property --ac-progress-linear-tail-1 {
     syntax: "<number>";
     inherits: true;
     initial-value: 0;
   }
 
-  @property --ac-linear-progress-indicator-head-2 {
+  @property --ac-progress-linear-head-2 {
     syntax: "<number>";
     inherits: true;
     initial-value: 0;
   }
 
-  @property --ac-linear-progress-indicator-tail-2 {
+  @property --ac-progress-linear-tail-2 {
     syntax: "<number>";
     inherits: true;
     initial-value: 0;
@@ -183,165 +183,151 @@ const indeterminateOnly =
      indicator never shows more progress than there is (Compose's progress spring doesn't bounce
      either). The wave's amplitude is a shape, on fast spatial. */
   @media (prefers-reduced-motion: no-preference) {
-    [data-ac-linear-progress-indicator] {
+    [data-ac-progress-linear] {
       transition:
-        --ac-linear-progress-indicator-progress
-          var(--theme-duration-spring-fast-effects)
+        --ac-progress-linear-progress var(--theme-duration-spring-fast-effects)
           var(--ease-spring-fast-effects),
-        --ac-linear-progress-indicator-amplitude
-          var(--theme-duration-spring-fast-spatial)
+        --ac-progress-linear-amplitude var(--theme-duration-spring-fast-spatial)
           var(--ease-spring-fast-spatial);
     }
   }
 
   /* Indeterminate, at rest, one line holds still from 20% to 60% of the track, which still reads
      as work going on: under reduced motion it stays there (ADR-0003) */
-  [data-ac-linear-progress-indicator]:has(progress:indeterminate) {
-    --ac-linear-progress-indicator-tail-1: 0.2;
-    --ac-linear-progress-indicator-head-1: 0.6;
+  [data-ac-progress-linear]:has(progress:indeterminate) {
+    --ac-progress-linear-tail-1: 0.2;
+    --ac-progress-linear-head-1: 0.6;
   }
 
   /* Otherwise Compose's two lines run along the track: each one's head and tail move from the
      start to the end on emphasized accelerate, the first line's over 0-1000ms and 250-1250ms,
      the second's over 650-1500ms and 900-1750ms of a 1750ms cycle */
   @media (prefers-reduced-motion: no-preference) {
-    [data-ac-linear-progress-indicator]:has(progress:indeterminate) {
+    [data-ac-progress-linear]:has(progress:indeterminate) {
       animation:
-        ac-linear-progress-indicator-head-1 1750ms infinite,
-        ac-linear-progress-indicator-tail-1 1750ms infinite,
-        ac-linear-progress-indicator-head-2 1750ms infinite,
-        ac-linear-progress-indicator-tail-2 1750ms infinite;
+        ac-progress-linear-head-1 1750ms infinite,
+        ac-progress-linear-tail-1 1750ms infinite,
+        ac-progress-linear-head-2 1750ms infinite,
+        ac-progress-linear-tail-2 1750ms infinite;
     }
   }
 
   /* The track runs around the two lines, a gap from each end of them: after the first line,
      between the two, and before the second */
-  [data-ac-linear-progress-indicator]:has(progress:indeterminate)
-    [data-ac-linear-progress-indicator-part="track"][data-ac-linear-progress-indicator-segment="1"] {
-    --ac-linear-progress-indicator-start: calc(
-      var(--ac-linear-progress-indicator-head-1) * 100% +
-        var(--ac-linear-progress-indicator-gap) *
-        clamp(0, var(--ac-linear-progress-indicator-head-1) * 1e6, 1)
+  [data-ac-progress-linear]:has(progress:indeterminate)
+    [data-ac-progress-linear-part="track"][data-ac-progress-linear-segment="1"] {
+    --ac-progress-linear-start: calc(
+      var(--ac-progress-linear-head-1) * 100% + var(--ac-progress-linear-gap) *
+        clamp(0, var(--ac-progress-linear-head-1) * 1e6, 1)
     );
-    --ac-linear-progress-indicator-end: 100%;
+    --ac-progress-linear-end: 100%;
   }
 
-  [data-ac-linear-progress-indicator]:has(progress:indeterminate)
-    [data-ac-linear-progress-indicator-part="active-indicator"][data-ac-linear-progress-indicator-segment="1"] {
-    --ac-linear-progress-indicator-start: calc(
-      var(--ac-linear-progress-indicator-tail-1) * 100%
-    );
-    --ac-linear-progress-indicator-end: calc(
-      var(--ac-linear-progress-indicator-head-1) * 100%
-    );
+  [data-ac-progress-linear]:has(progress:indeterminate)
+    [data-ac-progress-linear-part="active-indicator"][data-ac-progress-linear-segment="1"] {
+    --ac-progress-linear-start: calc(var(--ac-progress-linear-tail-1) * 100%);
+    --ac-progress-linear-end: calc(var(--ac-progress-linear-head-1) * 100%);
   }
 
-  [data-ac-linear-progress-indicator]:has(progress:indeterminate)
-    [data-ac-linear-progress-indicator-part="track"][data-ac-linear-progress-indicator-segment="2"] {
-    --ac-linear-progress-indicator-start: calc(
-      var(--ac-linear-progress-indicator-head-2) * 100% +
-        var(--ac-linear-progress-indicator-gap) *
-        clamp(0, var(--ac-linear-progress-indicator-head-2) * 1e6, 1)
+  [data-ac-progress-linear]:has(progress:indeterminate)
+    [data-ac-progress-linear-part="track"][data-ac-progress-linear-segment="2"] {
+    --ac-progress-linear-start: calc(
+      var(--ac-progress-linear-head-2) * 100% + var(--ac-progress-linear-gap) *
+        clamp(0, var(--ac-progress-linear-head-2) * 1e6, 1)
     );
-    --ac-linear-progress-indicator-end: calc(
-      var(--ac-linear-progress-indicator-tail-1) * 100% -
-        var(--ac-linear-progress-indicator-gap) *
-        clamp(0, (1 - var(--ac-linear-progress-indicator-tail-1)) * 1e6, 1)
+    --ac-progress-linear-end: calc(
+      var(--ac-progress-linear-tail-1) * 100% - var(--ac-progress-linear-gap) *
+        clamp(0, (1 - var(--ac-progress-linear-tail-1)) * 1e6, 1)
     );
   }
 
-  [data-ac-linear-progress-indicator]:has(progress:indeterminate)
-    [data-ac-linear-progress-indicator-part="active-indicator"][data-ac-linear-progress-indicator-segment="2"] {
-    --ac-linear-progress-indicator-start: calc(
-      var(--ac-linear-progress-indicator-tail-2) * 100%
-    );
-    --ac-linear-progress-indicator-end: calc(
-      var(--ac-linear-progress-indicator-head-2) * 100%
-    );
+  [data-ac-progress-linear]:has(progress:indeterminate)
+    [data-ac-progress-linear-part="active-indicator"][data-ac-progress-linear-segment="2"] {
+    --ac-progress-linear-start: calc(var(--ac-progress-linear-tail-2) * 100%);
+    --ac-progress-linear-end: calc(var(--ac-progress-linear-head-2) * 100%);
   }
 
-  [data-ac-linear-progress-indicator]:has(progress:indeterminate)
-    [data-ac-linear-progress-indicator-part="track"][data-ac-linear-progress-indicator-segment="3"] {
-    --ac-linear-progress-indicator-start: 0px;
-    --ac-linear-progress-indicator-end: calc(
-      var(--ac-linear-progress-indicator-tail-2) * 100% -
-        var(--ac-linear-progress-indicator-gap) *
-        clamp(0, (1 - var(--ac-linear-progress-indicator-tail-2)) * 1e6, 1)
+  [data-ac-progress-linear]:has(progress:indeterminate)
+    [data-ac-progress-linear-part="track"][data-ac-progress-linear-segment="3"] {
+    --ac-progress-linear-start: 0px;
+    --ac-progress-linear-end: calc(
+      var(--ac-progress-linear-tail-2) * 100% - var(--ac-progress-linear-gap) *
+        clamp(0, (1 - var(--ac-progress-linear-tail-2)) * 1e6, 1)
     );
   }
 
   /* M3's stop indicator marks a determinate track's end only */
-  [data-ac-linear-progress-indicator]:has(progress:indeterminate)
-    [data-ac-linear-progress-indicator-part="stop-indicator"] {
+  [data-ac-progress-linear]:has(progress:indeterminate)
+    [data-ac-progress-linear-part="stop-indicator"] {
     display: none;
   }
 
-  @keyframes ac-linear-progress-indicator-head-1 {
+  @keyframes ac-progress-linear-head-1 {
     0% {
-      --ac-linear-progress-indicator-head-1: 0;
+      --ac-progress-linear-head-1: 0;
       animation-timing-function: var(--ease-emphasized-accelerate);
     }
     57.142857%,
     100% {
-      --ac-linear-progress-indicator-head-1: 1;
+      --ac-progress-linear-head-1: 1;
     }
   }
 
-  @keyframes ac-linear-progress-indicator-tail-1 {
+  @keyframes ac-progress-linear-tail-1 {
     0%,
     14.285714% {
-      --ac-linear-progress-indicator-tail-1: 0;
+      --ac-progress-linear-tail-1: 0;
       animation-timing-function: var(--ease-emphasized-accelerate);
     }
     71.428571%,
     100% {
-      --ac-linear-progress-indicator-tail-1: 1;
+      --ac-progress-linear-tail-1: 1;
     }
   }
 
-  @keyframes ac-linear-progress-indicator-head-2 {
+  @keyframes ac-progress-linear-head-2 {
     0%,
     37.142857% {
-      --ac-linear-progress-indicator-head-2: 0;
+      --ac-progress-linear-head-2: 0;
       animation-timing-function: var(--ease-emphasized-accelerate);
     }
     85.714286%,
     100% {
-      --ac-linear-progress-indicator-head-2: 1;
+      --ac-progress-linear-head-2: 1;
     }
   }
 
-  @keyframes ac-linear-progress-indicator-tail-2 {
+  @keyframes ac-progress-linear-tail-2 {
     0%,
     51.428571% {
-      --ac-linear-progress-indicator-tail-2: 0;
+      --ac-progress-linear-tail-2: 0;
       animation-timing-function: var(--ease-emphasized-accelerate);
     }
     100% {
-      --ac-linear-progress-indicator-tail-2: 1;
+      --ac-progress-linear-tail-2: 1;
     }
   }
 
   /* The wave moves a wavelength a second, as Compose's does */
-  @keyframes ac-linear-progress-indicator-phase {
+  @keyframes ac-progress-linear-phase {
     to {
-      --ac-linear-progress-indicator-phase: 1;
+      --ac-progress-linear-phase: 1;
     }
   }
 </style>
 
 <script>
-  // The drawn parts read the progress's position from --ac-linear-progress-indicator-value.
+  // The drawn parts read the progress's position from --ac-progress-linear-value.
   // Setting a progress's `value` (or `max`) sets its attribute, so one observer on the document
   // keeps every indicator in step, including those brought in by Astro's ClientRouter.
   new MutationObserver((records) => {
     for (const { target } of records) {
       if (
         target instanceof HTMLProgressElement &&
-        target.parentElement?.matches("[data-ac-linear-progress-indicator]")
+        target.parentElement?.matches("[data-ac-progress-linear]")
       ) {
         target.parentElement.style.setProperty(
-          "--ac-linear-progress-indicator-value",
+          "--ac-progress-linear-value",
           String(Math.max(target.position, 0))
         );
       }
@@ -400,23 +386,19 @@ const indeterminateOnly =
   const draw = (root: HTMLElement) => {
     const progress = root.querySelector("progress");
     const paths = root.querySelectorAll<SVGPathElement>(
-      'path[data-ac-linear-progress-indicator-part="active-indicator"]'
+      'path[data-ac-progress-linear-part="active-indicator"]'
     );
     const svg = root.querySelector("svg");
     if (!progress || paths.length < 2 || !svg) return;
     const style = getComputedStyle(root);
     const read = (name: string) =>
-      parseFloat(
-        style.getPropertyValue(`--ac-linear-progress-indicator-${name}`)
-      );
+      parseFloat(style.getPropertyValue(`--ac-progress-linear-${name}`));
     const width = root.clientWidth;
     const thickness = read("thickness");
     const cap = thickness / 2;
     const centerY = root.clientHeight / 2;
     const phase = parseFloat(
-      getComputedStyle(svg).getPropertyValue(
-        "--ac-linear-progress-indicator-phase"
-      )
+      getComputedStyle(svg).getPropertyValue("--ac-progress-linear-phase")
     );
     const isIndeterminate = progress.matches(":indeterminate");
     const wavelength = isIndeterminate
@@ -458,7 +440,7 @@ const indeterminateOnly =
   let frame = 0;
   const loop = () => {
     const roots = document.querySelectorAll<HTMLElement>(
-      '[data-ac-linear-progress-indicator-shape="wavy"]'
+      '[data-ac-progress-linear-shape="wavy"]'
     );
     roots.forEach(draw);
     frame = roots.length ? requestAnimationFrame(loop) : 0;

@@ -2,32 +2,31 @@ import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "./support/a11y-fixture";
 import { box, resolvedColor, settled } from "./support/helpers";
 
-// Each case on /tests/linear-progress-indicator is a Section with
-// data-testid="linear-progress-indicator-<caseId>". Each indicator is named by its aria-label.
-type LinearProgressCaseId =
+// Each case on /tests/progress-linear is a Section with
+// data-testid="progress-linear-<caseId>". Each indicator is named by its aria-label.
+type ProgressLinearCaseId =
   "determinate" | "indeterminate" | "thick" | "wavy" | "rtl";
 
-const section = (page: Page, caseId: LinearProgressCaseId) =>
-  page.getByTestId(`linear-progress-indicator-${caseId}`);
+const section = (page: Page, caseId: ProgressLinearCaseId) =>
+  page.getByTestId(`progress-linear-${caseId}`);
 
-const indicator = (page: Page, caseId: LinearProgressCaseId, name: string) =>
+const indicator = (page: Page, caseId: ProgressLinearCaseId, name: string) =>
   section(page, caseId).getByRole("progressbar", { name, exact: true });
 
 // The element around the <progress>, which draws M3's parts
 const root = (progress: Locator) =>
-  progress.locator("xpath=ancestor::*[@data-ac-linear-progress-indicator][1]");
+  progress.locator("xpath=ancestor::*[@data-ac-progress-linear][1]");
 
 // M3's anatomy: the active indicator and the track (two and three segments, for the
 // indeterminate animation's two lines), and the stop indicator. A wavy active indicator is a path.
 const part = (
   progress: Locator,
   name: "active-indicator" | "track" | "stop-indicator"
-) =>
-  root(progress).locator(`[data-ac-linear-progress-indicator-part="${name}"]`);
+) => root(progress).locator(`[data-ac-progress-linear-part="${name}"]`);
 
 const wave = (progress: Locator) =>
   root(progress).locator(
-    'path[data-ac-linear-progress-indicator-part="active-indicator"]'
+    'path[data-ac-progress-linear-part="active-indicator"]'
   );
 
 const style = (target: Locator, property: string) =>
@@ -70,9 +69,9 @@ const waveHeight = (progress: Locator) =>
       path.getAttribute("d") ? path.getBBox().height : 0
     );
 
-test.describe("LinearProgressIndicator", () => {
+test.describe("ProgressLinear", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/tests/linear-progress-indicator");
+    await page.goto("/tests/progress-linear");
   });
 
   test("is a native progress element, exposed as a progressbar with its value and name", async ({
@@ -210,10 +209,10 @@ test.describe("LinearProgressIndicator", () => {
       parseFloat(
         await style(page.locator("html"), `--theme-duration-spring-${name}`)
       );
-    expect(await duration("--ac-linear-progress-indicator-progress")).toBe(
+    expect(await duration("--ac-progress-linear-progress")).toBe(
       await token("fast-effects")
     );
-    expect(await duration("--ac-linear-progress-indicator-amplitude")).toBe(
+    expect(await duration("--ac-progress-linear-amplitude")).toBe(
       await token("fast-spatial")
     );
     await setValue(progress, 0.8);

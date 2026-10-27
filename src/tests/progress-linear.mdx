@@ -1,0 +1,54 @@
+---
+title: ProgressLinear
+description: Tests for the ProgressLinear component
+---
+
+<Heading level={1}>ProgressLinear Tests</Heading>
+
+<Section data-testid="progress-linear-determinate" class="p-4 space-y-4">
+  <Heading level={2}>Determinate</Heading>
+  <div class="w-60 space-y-4">
+    <ProgressLinear value="0" aria-label="Not started" />
+    <ProgressLinear value="0.01" aria-label="Just started" />
+    <ProgressLinear value="0.4" aria-label="Uploading photos" />
+    <ProgressLinear value="30" max="50" aria-label="Copying files" />
+    <ProgressLinear value="1" aria-label="Done" />
+    <ProgressLinear value="0.4" showStopIndicator={false} aria-label="Without a stop indicator" />
+  </div>
+</Section>
+
+<Section data-testid="progress-linear-indeterminate" class="p-4 space-y-4">
+  <Heading level={2}>Indeterminate</Heading>
+  <div class="w-60 space-y-4">
+    <ProgressLinear aria-label="Loading news article" />
+    <Heading level={3} id="progress-linear-episodes">Loading my episodes</Heading>
+    <ProgressLinear aria-labelledby="progress-linear-episodes" />
+  </div>
+</Section>
+
+<Section data-testid="progress-linear-thick" class="p-4 space-y-4">
+  <Heading level={2}>Thick track</Heading>
+  <div class="w-60 space-y-4">
+    <ProgressLinear thickness={8} value="0.4" aria-label="Thick, determinate" />
+    <ProgressLinear thickness={8} aria-label="Thick, indeterminate" />
+  </div>
+</Section>
+
+<Section data-testid="progress-linear-wavy" class="p-4 space-y-4">
+  <Heading level={2}>Wavy</Heading>
+  <div class="w-60 space-y-4">
+    <ProgressLinear shape="wavy" value="0.05" aria-label="Wavy, starting" />
+    <ProgressLinear shape="wavy" value="0.5" aria-label="Wavy, halfway" />
+    <ProgressLinear shape="wavy" value="0.97" aria-label="Wavy, nearly done" />
+    <ProgressLinear shape="wavy" aria-label="Wavy, indeterminate" />
+    <ProgressLinear shape="wavy" thickness={8} value="0.5" aria-label="Wavy, thick" />
+  </div>
+</Section>
+
+<Section data-testid="progress-linear-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <div class="w-60 space-y-4">
+    <ProgressLinear value="0.4" aria-label="Right to left" />
+    <ProgressLinear shape="wavy" value="0.5" aria-label="Right to left, wavy" />
+  </div>
+</Section>
