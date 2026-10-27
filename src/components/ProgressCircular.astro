@@ -9,17 +9,20 @@ import { twMerge } from "tailwind-merge";
 type Props = HTMLAttributes<"progress"> & {
   // M3's two shapes: flat, or Expressive's wavy active indicator
   shape?: "flat" | "wavy";
-  // The track's thickness in px: M3's default is 4, and 8 its thick sample
+  // The track's thickness in px: M3's default is 4, and 8 its thick sample. It's kept within a
+  // quarter of the size, so the ring always leaves a hole.
   thickness?: number;
-  // The container's size in px, kept within M3's 24 to 240. M3's is 40, 44 with the 8px track,
-  // and 8 more when wavy.
+  // The container's size in px, kept within M3's 24 to 240. M3's is 40, growing with a thicker
+  // track (44 with the 8px one), and 8 more when wavy.
   size?: number;
 };
 
 const {
   shape = "flat",
   thickness = 4,
-  size = 36 + thickness + (shape === "wavy" ? 8 : 0),
+  // M3 keeps the ring the same size and grows the container around it, so a thicker track adds
+  // what it's thicker than M3's 4px
+  size = 40 + (thickness - 4) + (shape === "wavy" ? 8 : 0),
   class: classList,
   ...attrs
 }: Props = Astro.props;
@@ -28,9 +31,10 @@ const {
 const amplitude = 1.6;
 const isWavy = shape === "wavy";
 const side = Math.min(Math.max(size, 24), 240);
+const ringThickness = Math.min(Math.max(thickness, 1), side / 4);
 // The ring's center line, inset half the thickness from the container's edge, and the wave's
 // amplitude more when wavy, so its crests reach the edge
-const radius = side / 2 - thickness / 2 - (isWavy ? amplitude : 0);
+const radius = side / 2 - ringThickness / 2 - (isWavy ? amplitude : 0);
 const circumference = 2 * Math.PI * radius;
 
 // The progress's own position, as the browser works it out: value over max, within 0 and 1
@@ -61,7 +65,7 @@ const stroke =
     "[--ac-progress-circular-track:calc(var(--ac-progress-circular-circumference)_-_var(--ac-progress-circular-active)_-_2*var(--ac-progress-circular-space))]",
     classList
   )}
-  style={`--ac-progress-circular-size: ${side}px; --ac-progress-circular-thickness: ${thickness}px; --ac-progress-circular-circumference: ${circumference}; --ac-progress-circular-gap: ${4 + thickness}; --ac-progress-circular-wave-amplitude: ${amplitude}; --ac-progress-circular-value: ${position}`}
+  style={`--ac-progress-circular-size: ${side}px; --ac-progress-circular-thickness: ${ringThickness}px; --ac-progress-circular-circumference: ${circumference}; --ac-progress-circular-gap: ${4 + ringThickness}; --ac-progress-circular-wave-amplitude: ${amplitude}; --ac-progress-circular-value: ${position}`}
   data-ac-progress-circular
   data-ac-progress-circular-shape={shape}
 >

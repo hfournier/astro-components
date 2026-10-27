@@ -285,6 +285,20 @@ test.describe("ProgressCircular", () => {
     expect(await ring(large, 118, [45, 180])).toEqual(["active", "track"]);
   });
 
+  // 24px, so a 12px track is kept to 6px: a ring of radius 9 from 6px to 12px out, leaving a hole
+  test("thickness is kept within a quarter of the size, so the ring leaves a hole", async ({
+    page,
+  }) => {
+    const progress = indicator(
+      page,
+      "size",
+      "Thicker than a quarter of its size"
+    );
+    expect((await box(root(progress))).width).toBe(24);
+    expect(await ring(progress, 9, [45, 225])).toEqual(["active", "track"]);
+    expect(await ring(progress, 4, [45, 225])).toEqual(["none", "none"]);
+  });
+
   // Fast effects, which doesn't overshoot, so the indicator never shows more progress than
   // there is; the wave's amplitude is a shape, on fast spatial
   test("a new value moves the active indicator and the gap on fast effects; the wave's amplitude changes on fast spatial", async ({

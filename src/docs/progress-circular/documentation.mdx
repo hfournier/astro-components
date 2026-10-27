@@ -20,12 +20,12 @@ props:
     type: number
     required: false
     default: "4"
-    description: The track's and active indicator's thickness in px. M3's default is 4; its thicker sample is 8.
+    description: The track's and active indicator's thickness in px. M3's default is 4; its thicker sample is 8. It's kept within 1px and a quarter of the `size`, so the ring always leaves a hole.
   - name: size
     type: number
     required: false
-    default: "36 + thickness, 8 more when wavy"
-    description: The container's width and height in px, kept within M3's 24 to 240. By default it's M3's size for the `thickness` and `shape`, 40, 44 with an 8px track, and 8px more when wavy (48, or 52). The ring stays `thickness` thick, inset from the container's edge.
+    default: "40, plus what the track is thicker than 4, plus 8 when wavy"
+    description: The container's width and height in px, kept within M3's 24 to 240. By default it's M3's size for the `thickness` and `shape`. M3 keeps the ring the same size and grows the container around it, so it's 40, 44 with an 8px track, and 8px more when wavy (48, or 52). The ring stays `thickness` thick, inset from the container's edge.
 ---
 
 ## Attributes
