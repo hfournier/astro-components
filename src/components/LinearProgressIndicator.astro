@@ -25,7 +25,8 @@ const {
 }: Props = Astro.props;
 
 // The progress's own position, as the browser works it out: value over max, within 0 and 1
-const max = Number(attrs.max ?? 1) > 0 ? Number(attrs.max ?? 1) : 1;
+const maxAttribute = Number(attrs.max ?? 1);
+const max = maxAttribute > 0 ? maxAttribute : 1;
 const position =
   attrs.value == null
     ? 0
@@ -40,8 +41,11 @@ const segment =
   "absolute top-1/2 h-(--ac-linear-progress-indicator-thickness) -translate-y-1/2 rounded-full [--ac-linear-progress-indicator-end-cap:clamp(var(--ac-linear-progress-indicator-cap),var(--ac-linear-progress-indicator-end),100%_-_var(--ac-linear-progress-indicator-cap))] [--ac-linear-progress-indicator-start-cap:clamp(var(--ac-linear-progress-indicator-cap),var(--ac-linear-progress-indicator-start),100%_-_var(--ac-linear-progress-indicator-cap))] start-[calc(var(--ac-linear-progress-indicator-start-cap)_-_var(--ac-linear-progress-indicator-cap))] w-[clamp(0px,(var(--ac-linear-progress-indicator-end)_-_var(--ac-linear-progress-indicator-start))*1000,var(--ac-linear-progress-indicator-end-cap)_-_var(--ac-linear-progress-indicator-start-cap)_+_2*var(--ac-linear-progress-indicator-cap))]";
 const track = `${segment} bg-(--theme-color-secondary-container)`;
 const active = `${segment} bg-(--theme-color-primary)`;
-// The segments only the indeterminate animation uses, at rest
-const unused =
+// The wavy active indicator, a path the script draws
+const wave =
+  "fill-none stroke-(--theme-color-primary) [stroke-linecap:round] [stroke-width:var(--ac-linear-progress-indicator-thickness)]";
+// The segments only an indeterminate indicator draws, empty while it's determinate
+const indeterminateOnly =
   "[--ac-linear-progress-indicator-end:0px] [--ac-linear-progress-indicator-start:0px]";
 ---
 
@@ -52,11 +56,10 @@ const unused =
     shape === "wavy"
       ? "h-[calc(var(--ac-linear-progress-indicator-thickness)_+_6px)]"
       : "h-(--ac-linear-progress-indicator-thickness)",
-    // the progress follows the value on fast spatial, and the wave flattens below 10% and from
-    // 95%, as Compose's does, on fast spatial too
+    // the progress follows the value, and the wave flattens below 10% and from 95%, as
+    // Compose's does: both transition in the <style> block
     "[--ac-linear-progress-indicator-progress:var(--ac-linear-progress-indicator-value)]",
     "[--ac-linear-progress-indicator-amplitude:calc(clamp(0,(var(--ac-linear-progress-indicator-value)_-_0.1)*1e6,1)*clamp(0,(0.95_-_var(--ac-linear-progress-indicator-value))*1e6,1))]",
-    "motion-safe:transition-[--ac-linear-progress-indicator-progress,--ac-linear-progress-indicator-amplitude] motion-safe:duration-(--theme-duration-spring-fast-spatial) motion-safe:ease-spring-fast-spatial",
     // a round cap is half the thickness, and M3's 4px gap sits between two caps
     "[--ac-linear-progress-indicator-cap:calc(var(--ac-linear-progress-indicator-thickness)/2)] [--ac-linear-progress-indicator-gap:calc(4px_+_var(--ac-linear-progress-indicator-thickness))]",
     classList
@@ -78,12 +81,12 @@ const unused =
     data-ac-linear-progress-indicator-segment="1"
   ></span>
   <span
-    class:list={[track, unused]}
+    class:list={[track, indeterminateOnly]}
     data-ac-linear-progress-indicator-part="track"
     data-ac-linear-progress-indicator-segment="2"
   ></span>
   <span
-    class:list={[track, unused]}
+    class:list={[track, indeterminateOnly]}
     data-ac-linear-progress-indicator-part="track"
     data-ac-linear-progress-indicator-segment="3"
   ></span>
@@ -95,12 +98,12 @@ const unused =
       aria-hidden="true"
     >
       <path
-        class="fill-none stroke-(--theme-color-primary) [stroke-linecap:round] [stroke-width:var(--ac-linear-progress-indicator-thickness)]"
+        class={wave}
         data-ac-linear-progress-indicator-part="active-indicator"
         data-ac-linear-progress-indicator-segment="1"
       ></path>
       <path
-        class="fill-none stroke-(--theme-color-primary) [stroke-linecap:round] [stroke-width:var(--ac-linear-progress-indicator-thickness)]"
+        class={wave}
         data-ac-linear-progress-indicator-part="active-indicator"
         data-ac-linear-progress-indicator-segment="2"
       ></path>
@@ -116,7 +119,7 @@ const unused =
         data-ac-linear-progress-indicator-segment="1"
       ></span>
       <span
-        class:list={[active, unused]}
+        class:list={[active, indeterminateOnly]}
         data-ac-linear-progress-indicator-part="active-indicator"
         data-ac-linear-progress-indicator-segment="2"
       ></span>
@@ -176,16 +179,39 @@ const unused =
     initial-value: 0;
   }
 
-  /* Indeterminate, Compose's two lines run along the track: each one's head and tail move from
-     the start to the end on emphasized accelerate, the first line's over 0-1000ms and
-     250-1250ms, the second's over 650-1500ms and 900-1750ms of a 1750ms cycle. They keep
-     running under reduced motion: the movement is what shows that work is going on. */
+  /* A new value moves the active indicator on fast effects, which doesn't overshoot, so the
+     indicator never shows more progress than there is (Compose's progress spring doesn't bounce
+     either). The wave's amplitude is a shape, on fast spatial. */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-ac-linear-progress-indicator] {
+      transition:
+        --ac-linear-progress-indicator-progress
+          var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects),
+        --ac-linear-progress-indicator-amplitude
+          var(--theme-duration-spring-fast-spatial)
+          var(--ease-spring-fast-spatial);
+    }
+  }
+
+  /* Indeterminate, at rest, one line holds still from 20% to 60% of the track, which still reads
+     as work going on: under reduced motion it stays there (ADR-0003) */
   [data-ac-linear-progress-indicator]:has(progress:indeterminate) {
-    animation:
-      ac-linear-progress-indicator-head-1 1750ms infinite,
-      ac-linear-progress-indicator-tail-1 1750ms infinite,
-      ac-linear-progress-indicator-head-2 1750ms infinite,
-      ac-linear-progress-indicator-tail-2 1750ms infinite;
+    --ac-linear-progress-indicator-tail-1: 0.2;
+    --ac-linear-progress-indicator-head-1: 0.6;
+  }
+
+  /* Otherwise Compose's two lines run along the track: each one's head and tail move from the
+     start to the end on emphasized accelerate, the first line's over 0-1000ms and 250-1250ms,
+     the second's over 650-1500ms and 900-1750ms of a 1750ms cycle */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-ac-linear-progress-indicator]:has(progress:indeterminate) {
+      animation:
+        ac-linear-progress-indicator-head-1 1750ms infinite,
+        ac-linear-progress-indicator-tail-1 1750ms infinite,
+        ac-linear-progress-indicator-head-2 1750ms infinite,
+        ac-linear-progress-indicator-tail-2 1750ms infinite;
+    }
   }
 
   /* The track runs around the two lines, a gap from each end of them: after the first line,
@@ -337,12 +363,12 @@ const unused =
     to: number,
     shift: number,
     wavelength: number,
-    amplitude: number,
+    amplitudeScale: number,
     centerY: number
   ) => {
     const round = (n: number) => Math.round(n * 100) / 100;
     const half = wavelength / 2;
-    const peak = 4 * amplitudePx * amplitude;
+    const peak = 4 * amplitudePx * amplitudeScale;
     // Height and slope at x, on the arch that starts at or before it
     const arch = (x: number) => {
       const index = Math.floor((x + shift) / half);
@@ -396,7 +422,8 @@ const unused =
     const wavelength = isIndeterminate
       ? wavelengths.indeterminate
       : wavelengths.determinate;
-    const amplitude = isIndeterminate
+    // the share of M3's amplitude the wave has, 0 when flat
+    const amplitudeScale = isIndeterminate
       ? 1
       : Math.min(Math.max(read("amplitude"), 0), 1);
     // Each line runs between two fractions of the track, its ends clamped a cap inside it
@@ -418,7 +445,7 @@ const unused =
               clamp(head * width),
               (phase || 0) * wavelength,
               wavelength,
-              amplitude,
+              amplitudeScale,
               centerY
             )
           : "";

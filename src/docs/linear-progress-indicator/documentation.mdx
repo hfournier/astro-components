@@ -45,8 +45,8 @@ The indicator spans the width of its container. M3 places it on the edge of the 
 
 ## Motion
 
-A new value moves the active indicator and the gap on the fast spatial spring (ADR-0018), as the wave's amplitude does when it rises after 10% and flattens from 95%. The wave travels a wavelength a second, as Compose's does.
+A new value moves the active indicator and the gap on the fast effects spring. ADR-0018 puts movement on fast spatial, but that spring overshoots, which would briefly show more progress than there is. Fast effects doesn't, like the no-bounce spring Compose suggests for progress. The wave's amplitude, a shape, rises after 10% and flattens from 95% on fast spatial. The wave travels a wavelength a second, as Compose's does.
 
 Indeterminate, the indicator runs Compose's animation: two lines cross the track in a 1750ms cycle, each one's head and tail on emphasized accelerate. M3's Specs page gives no timing for it.
 
-Under reduced motion, a new value and the wave's amplitude change at once, and the wave stands still. The indeterminate lines keep moving, since their movement is the only thing that shows that work is going on.
+Under reduced motion, a new value and the wave's amplitude change at once, and the wave stands still. An indeterminate indicator holds one line still, from 20% to 60% of the track, with the track a gap either side.

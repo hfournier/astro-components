@@ -189,15 +189,32 @@ test.describe("LinearProgressIndicator", () => {
     expect(stop!.end).toBeCloseTo(238, 0);
   });
 
-  test("a new value moves the active indicator and the gap, on fast spatial", async ({
+  // Fast effects, which doesn't overshoot, so the indicator never shows more progress than
+  // there is; the wave's amplitude is a shape, on fast spatial
+  test("a new value moves the active indicator and the gap on fast effects; the wave's amplitude changes on fast spatial", async ({
     page,
   }) => {
     const progress = indicator(page, "determinate", "Uploading photos");
-    expect(await style(root(progress), "transition-duration")).toContain(
-      await style(
-        page.locator("html"),
-        "--theme-duration-spring-fast-spatial"
-      ).then((d) => `${parseFloat(d) / 1000}s`)
+    const duration = async (property: string) => {
+      const properties = (
+        await style(root(progress), "transition-property")
+      ).split(", ");
+      const durations = (
+        await style(root(progress), "transition-duration")
+      ).split(", ");
+      const index = properties.indexOf(property);
+      expect(index, `${property} transitions`).toBeGreaterThanOrEqual(0);
+      return parseFloat(durations[index % durations.length]) * 1000;
+    };
+    const token = async (name: string) =>
+      parseFloat(
+        await style(page.locator("html"), `--theme-duration-spring-${name}`)
+      );
+    expect(await duration("--ac-linear-progress-indicator-progress")).toBe(
+      await token("fast-effects")
+    );
+    expect(await duration("--ac-linear-progress-indicator-amplitude")).toBe(
+      await token("fast-spatial")
     );
     await setValue(progress, 0.8);
     await settled(page);
@@ -227,15 +244,12 @@ test.describe("LinearProgressIndicator", () => {
       expect(timing).toEqual({ duration: 1750, iterations: Infinity });
     }
     const first = part(progress, "active-indicator").first();
-    const positions = new Set<string>();
-    for (let i = 0; i < 6; i++) {
+    const position = async () => {
       const at = await span(first, progress);
-      positions.add(
-        at ? `${Math.round(at.start)}-${Math.round(at.end)}` : "none"
-      );
-      await page.waitForTimeout(150);
-    }
-    expect(positions.size).toBeGreaterThan(2);
+      return at ? `${Math.round(at.start)}-${Math.round(at.end)}` : "none";
+    };
+    const start = await position();
+    await expect.poll(position).not.toBe(start);
   });
 
   test("an indeterminate indicator turns determinate when it gets a value", async ({
@@ -279,8 +293,9 @@ test.describe("LinearProgressIndicator", () => {
   }) => {
     const halfway = indicator(page, "wavy", "Wavy, halfway");
     const before = await wave(halfway).first().getAttribute("d");
-    await page.waitForTimeout(200);
-    expect(await wave(halfway).first().getAttribute("d")).not.toBe(before);
+    await expect
+      .poll(() => wave(halfway).first().getAttribute("d"))
+      .not.toBe(before);
 
     const indeterminate = indicator(page, "wavy", "Wavy, indeterminate");
     await expect.poll(() => waveHeight(indeterminate)).toBeCloseTo(6, 0);
@@ -322,6 +337,43 @@ test.describe("LinearProgressIndicator", () => {
       const before = await wave(halfway).first().getAttribute("d");
       await page.waitForTimeout(200);
       expect(await wave(halfway).first().getAttribute("d")).toBe(before);
+    });
+
+    // ADR-0003: no animation, so the indeterminate indicator holds one line in a fixed place,
+    // from 20% to 60% with the track a gap either side, which still reads as work going on
+    test("an indeterminate indicator holds one line still, a gap from the track on either side", async ({
+      page,
+    }) => {
+      const progress = indicator(page, "indeterminate", "Loading news article");
+      expect(
+        await root(progress).evaluate(
+          (el) => el.getAnimations({ subtree: true }).length
+        )
+      ).toBe(0);
+      const line = await span(
+        part(progress, "active-indicator").first(),
+        progress
+      );
+      expect(line!.start).toBeCloseTo(46, 0);
+      expect(line!.end).toBeCloseTo(146, 0);
+      expect(
+        await span(part(progress, "active-indicator").nth(1), progress)
+      ).toBeNull();
+      const tracks = await Promise.all(
+        (await part(progress, "track").all()).map((segment) =>
+          span(segment, progress)
+        )
+      );
+      const [after, before] = tracks;
+      expect(after!.start - line!.end).toBeCloseTo(4, 0);
+      expect(after!.end).toBeCloseTo(240, 0);
+      expect(before!.start).toBeCloseTo(0, 0);
+      expect(line!.start - before!.end).toBeCloseTo(4, 0);
+      expect(tracks[2]).toBeNull();
+      await expect(part(progress, "stop-indicator")).toBeHidden();
+
+      const wavy = indicator(page, "wavy", "Wavy, indeterminate");
+      await expect.poll(() => waveHeight(wavy)).toBeCloseTo(6, 0);
     });
   });
 });
