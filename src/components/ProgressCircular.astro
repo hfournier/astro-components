@@ -11,15 +11,15 @@ type Props = HTMLAttributes<"progress"> & {
   shape?: "flat" | "wavy";
   // The track's thickness in px: M3's default is 4, and 8 its thick sample
   thickness?: number;
-  // The container's size in px, from M3's 24 to 240. M3's is 40, 44 with the 8px track, and 8
-  // more when wavy.
+  // The container's size in px, kept within M3's 24 to 240. M3's is 40, 44 with the 8px track,
+  // and 8 more when wavy.
   size?: number;
 };
 
 const {
   shape = "flat",
   thickness = 4,
-  size,
+  size = 36 + thickness + (shape === "wavy" ? 8 : 0),
   class: classList,
   ...attrs
 }: Props = Astro.props;
@@ -27,7 +27,7 @@ const {
 // M3's wave: 1.6px either side of the track
 const amplitude = 1.6;
 const isWavy = shape === "wavy";
-const side = size ?? 36 + thickness + (isWavy ? 8 : 0);
+const side = Math.min(Math.max(size, 24), 240);
 // The ring's center line, inset half the thickness from the container's edge, and the wave's
 // amplitude more when wavy, so its crests reach the edge
 const radius = side / 2 - thickness / 2 - (isWavy ? amplitude : 0);

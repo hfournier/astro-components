@@ -276,6 +276,15 @@ test.describe("ProgressCircular", () => {
     ).toBe(24);
   });
 
+  test("size is kept within M3's 24px to 240px", async ({ page }) => {
+    const small = indicator(page, "size", "Below M3's smallest");
+    expect((await box(root(small))).width).toBe(24);
+    expect(await ring(small, 10, [45, 180])).toEqual(["active", "track"]);
+    const large = indicator(page, "size", "Above M3's largest");
+    expect((await box(root(large))).width).toBe(240);
+    expect(await ring(large, 118, [45, 180])).toEqual(["active", "track"]);
+  });
+
   // Fast effects, which doesn't overshoot, so the indicator never shows more progress than
   // there is; the wave's amplitude is a shape, on fast spatial
   test("a new value moves the active indicator and the gap on fast effects; the wave's amplitude changes on fast spatial", async ({
