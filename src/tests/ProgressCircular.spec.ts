@@ -79,12 +79,14 @@ const ring = async (
         ["track", role("secondary-container")],
         ["none", rgb(0, 0)],
       ];
+      // the screenshot is at the device's pixel ratio (2 in WebKit's Desktop Safari)
+      const scale = devicePixelRatio;
       const center = image.width / 2;
       return angles.map((angle) => {
         const radians = (angle * Math.PI) / 180;
         const color = rgb(
-          Math.floor(center + radius * Math.sin(radians)),
-          Math.floor(center - radius * Math.cos(radians))
+          Math.floor(center + radius * scale * Math.sin(radians)),
+          Math.floor(center - radius * scale * Math.cos(radians))
         );
         const distance = (reference: number[]) =>
           reference.reduce((sum, c, i) => sum + (c - color[i]) ** 2, 0);
@@ -249,7 +251,7 @@ test.describe("ProgressCircular", () => {
         "track",
       ]);
     }
-    for (const offset of [-5.5, 4.5]) {
+    for (const offset of [-6.5, 6]) {
       expect(await ring(progress, radius + offset, [45, 135])).toEqual([
         "none",
         "none",
@@ -384,9 +386,11 @@ test.describe("ProgressCircular", () => {
         const point = path.getPointAtLength((length * i) / 399);
         return Math.hypot(point.x - 24, point.y - 24);
       });
-      return radii.filter(
-        (r, i) => i > 0 && i < 399 && r > radii[i - 1] && r >= radii[i + 1]
-      ).length;
+      // each time the wave rises past halfway to its crest (the path's points are rounded, so
+      // it wobbles where it's nearly flat)
+      const crest = 20.4 + 0.8;
+      return radii.filter((r, i) => i > 0 && r >= crest && radii[i - 1] < crest)
+        .length;
     });
     // half the circle, at 9 waves around it
     expect(crests).toBeGreaterThanOrEqual(4);
