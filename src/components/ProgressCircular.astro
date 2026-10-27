@@ -61,7 +61,7 @@ const stroke =
     "[--ac-progress-circular-track:calc(var(--ac-progress-circular-circumference)_-_var(--ac-progress-circular-active)_-_2*var(--ac-progress-circular-space))]",
     classList
   )}
-  style={`--ac-progress-circular-size: ${side}px; --ac-progress-circular-thickness: ${thickness}px; --ac-progress-circular-circumference: ${circumference}; --ac-progress-circular-gap: ${4 + thickness}; --ac-progress-circular-value: ${position}`}
+  style={`--ac-progress-circular-size: ${side}px; --ac-progress-circular-thickness: ${thickness}px; --ac-progress-circular-circumference: ${circumference}; --ac-progress-circular-gap: ${4 + thickness}; --ac-progress-circular-wave-amplitude: ${amplitude}; --ac-progress-circular-value: ${position}`}
   data-ac-progress-circular
   data-ac-progress-circular-shape={shape}
 >
@@ -269,10 +269,9 @@ const stroke =
     attributeFilter: ["value", "max"],
   });
 
-  // M3's wave: 1.6px either side of the track, about 15px from one crest to the next. Compose
-  // rounds the number of waves around the ring to a whole number, at least 5, so the wave closes
-  // on itself as it travels.
-  const amplitudePx = 1.6;
+  // M3's wave: its amplitude in px, as the frontmatter insets the ring for it, and about 15px
+  // from one crest to the next. Compose rounds the number of waves around the ring to a whole
+  // number, at least 5, so the wave closes on itself as it travels.
   const wavelengthPx = 15;
 
   const draw = (root: HTMLElement) => {
@@ -311,7 +310,7 @@ const stroke =
         const angle = (sweep * i) / steps;
         const r =
           radius +
-          amplitudePx *
+          read("wave-amplitude") *
             amplitudeScale *
             Math.sin(waves * angle + 2 * Math.PI * (phase || 0));
         d += `${i ? "L" : "M"}${round(center + r * Math.cos(angle))} ${round(center + r * Math.sin(angle))}`;

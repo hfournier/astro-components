@@ -396,6 +396,9 @@ test.describe("ProgressCircular", () => {
 
     const indeterminate = indicator(page, "wavy", "Wavy, indeterminate");
     await expect.poll(() => waveDepth(indeterminate)).toBeCloseTo(3.2, 0);
+    const thick = indicator(page, "wavy", "Wavy, thick, indeterminate");
+    expect((await box(root(thick))).width).toBe(52);
+    await expect.poll(() => waveDepth(thick)).toBeCloseTo(3.2, 0);
   });
 
   // M3: circular indicators don't need to be mirrored

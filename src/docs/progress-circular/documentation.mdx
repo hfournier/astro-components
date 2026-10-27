@@ -24,8 +24,8 @@ props:
   - name: size
     type: number
     required: false
-    default: "40"
-    description: The container's width and height in px, from M3's 24 to 240. By default it's M3's 40, 44 with an 8px track, and 8px more when wavy (48, or 52). The ring stays `thickness` thick, inset from the container's edge.
+    default: "36 + thickness, 8 more when wavy"
+    description: The container's width and height in px, from M3's 24 to 240. By default it's M3's size for the `thickness` and `shape`, 40, 44 with an 8px track, and 8px more when wavy (48, or 52). The ring stays `thickness` thick, inset from the container's edge.
 ---
 
 ## Attributes
