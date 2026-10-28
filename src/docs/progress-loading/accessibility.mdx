@@ -1,0 +1,9 @@
+ProgressLoading is a native `<progress>` with no value, so assistive tech announces it as a progress bar that's busy, with no amount, as M3's Accessibility page asks.
+
+Name every indicator with `aria-label`, or `aria-labelledby` pointing at a visible heading. Say what's loading, such as "Loading news article" or "Refreshing page", as M3 asks. The shapes themselves are hidden from assistive tech.
+
+The indicator isn't focusable: it's a status, not a control. The active indicator is `primary`, at least 3:1 against the page's surfaces, or `on-primary-container` on its container. The container itself needn't reach 3:1. On another component, such as a button, check that the active indicator keeps 3:1 against that component's color.
+
+If people refresh content by pulling it down, give them another way too, such as a refresh button beside the content or in an app bar, since a swipe alone isn't accessible.
+
+Under reduced motion nothing moves: the indicator holds still on its first shape. Name it well, since the name, not the movement, is then what says that work is going on.

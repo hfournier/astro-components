@@ -1,0 +1,161 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import { loadingIndicatorSequence, morphPathData } from "../shapes";
+
+// A native progress element with no value, so assistive tech announces it as a busy progress
+// bar. Every attribute but `class` goes on the progress (`aria-label`, `aria-labelledby`), and
+// `class` on the element around it, which draws M3's parts. It has no value: M3's loading
+// indicator doesn't turn into a determinate one.
+type Props = Omit<HTMLAttributes<"progress">, "value" | "max"> & {
+  // M3's optional container, a primary-container circle behind the active indicator, for when it
+  // sits over other content
+  showContainer?: boolean;
+  // The container's size in px, from M3's 24 to 240; M3's is 48. The active indicator keeps its
+  // 38/48 share of it.
+  size?: number;
+};
+
+const {
+  showContainer = false,
+  size = 48,
+  class: classList,
+  ...attrs
+}: Props = Astro.props;
+
+// A size outside M3's fails the build, rather than drawing something other than was asked for.
+// MDX passes attributes as strings, so `size="96"` is read as the number it says.
+const side = Number(size);
+if (!Number.isFinite(side) || side < 24 || side > 240) {
+  throw new Error(
+    `ProgressLoading: M3's loading indicators are 24 to 240px, but this one's \`size\` is ${size}.`
+  );
+}
+
+// Compose's first frame: SoftBurst, a quarter turn round. Under reduced motion it stays there.
+const { morphs, scale } = loadingIndicatorSequence();
+const firstFrame = morphPathData(morphs[0], 0, scale);
+---
+
+<span
+  class:list={twMerge(
+    "relative inline-block size-(--ac-progress-loading-size) shrink-0 rounded-full align-middle",
+    showContainer && "bg-(--theme-color-primary-container)",
+    classList
+  )}
+  style={`--ac-progress-loading-size: ${side}px;`}
+  data-ac-progress-loading
+>
+  <progress
+    class="absolute inset-0 size-full appearance-none opacity-0"
+    {...attrs}
+  />
+  {/* The whole indicator turns once every 4666ms, as Compose's does; the script morphs the
+      active indicator and adds a quarter turn with each morph. It isn't mirrored in
+      right-to-left layouts: like M3's circular progress indicator, it turns clockwise. */}
+  <svg
+    class="pointer-events-none absolute inset-0 size-full motion-safe:animate-[ac-progress-loading-rotation_4666ms_linear_infinite]"
+    viewBox="0 0 100 100"
+    aria-hidden="true"
+  >
+    <path
+      class:list={[
+        showContainer
+          ? "fill-(--theme-color-on-primary-container)"
+          : "fill-(--theme-color-primary)",
+      ]}
+      d={firstFrame}
+      transform="rotate(90 50 50)"
+      data-ac-progress-loading-part="active-indicator"
+    ></path>
+  </svg>
+</span>
+
+<style>
+  @keyframes ac-progress-loading-rotation {
+    to {
+      rotate: 360deg;
+    }
+  }
+</style>
+
+<script>
+  import { loadingIndicatorSequence, morphPathData } from "../shapes";
+
+  // Compose's timing: a morph starts every 650ms, on a spring (damping 0.6, stiffness 200) that
+  // overshoots, turning a quarter as it goes. M3's Specs page gives none. Compose ends the spring
+  // once it's within 0.1 of the end, about 298ms in, just past its overshoot, and snaps there.
+  const intervalMs = 650;
+  const stiffness = 200;
+  const dampingRatio = 0.6;
+  const decay = dampingRatio * Math.sqrt(stiffness);
+  const frequency = Math.sqrt(stiffness) * Math.sqrt(1 - dampingRatio ** 2);
+  // Compose's estimate of when an underdamped spring settles within its visibility threshold
+  const settleMs =
+    (Math.log(1 / Math.hypot(10, (10 * decay) / frequency)) / -decay) * 1000;
+  const spring = (ms: number) => {
+    if (ms >= settleMs) return 1;
+    const t = ms / 1000;
+    return (
+      1 -
+      Math.exp(-decay * t) *
+        (Math.cos(frequency * t) +
+          (decay / frequency) * Math.sin(frequency * t))
+    );
+  };
+
+  const { morphs, scale } = loadingIndicatorSequence();
+  // Compose's first frame, as the frontmatter draws it
+  const firstFrame = morphPathData(morphs[0], 0, scale);
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  const selector =
+    '[data-ac-progress-loading] [data-ac-progress-loading-part="active-indicator"]';
+  // Each indicator's clock starts when the loop first draws it
+  const started = new WeakMap<Element, number>();
+
+  const draw = (path: Element, now: number) => {
+    if (!started.has(path)) started.set(path, now);
+    const elapsed = now - started.get(path)!;
+    const morphCount = Math.floor(elapsed / intervalMs);
+    const progress = spring(elapsed - morphCount * intervalMs);
+    path.setAttribute(
+      "d",
+      morphPathData(morphs[morphCount % morphs.length], progress, scale)
+    );
+    path.setAttribute(
+      "transform",
+      `rotate(${(90 * (morphCount + 1 + progress)) % 360} 50 50)`
+    );
+  };
+
+  // One loop draws every indicator on the page, while there are any. The browser pauses it in a
+  // background tab.
+  let frame = 0;
+  const loop = (now: number) => {
+    const paths = document.querySelectorAll(selector);
+    if (reducedMotion.matches) {
+      frame = 0;
+      return;
+    }
+    paths.forEach((path) => draw(path, now));
+    frame = paths.length ? requestAnimationFrame(loop) : 0;
+  };
+  const start = () => {
+    if (!frame && !reducedMotion.matches) frame = requestAnimationFrame(loop);
+  };
+  start();
+  // An indicator added later, by a script or Astro's ClientRouter, starts its turn animation,
+  // which starts the loop if it had stopped
+  document.addEventListener("animationstart", (event) => {
+    if (event.animationName === "ac-progress-loading-rotation") start();
+  });
+  // Turning reduced motion on holds every indicator on its first frame; off, they move again
+  reducedMotion.addEventListener("change", () => {
+    if (!reducedMotion.matches) return start();
+    document.querySelectorAll(selector).forEach((path) => {
+      started.delete(path);
+      path.setAttribute("d", firstFrame);
+      path.setAttribute("transform", "rotate(90 50 50)");
+    });
+  });
+</script>

@@ -105,6 +105,7 @@ component color roles that background roles re-point) is hand-written in
 │   ├── component-list.ts  # every component, exposed to MDX examples
 │   ├── content.config.ts  # Zod schemas for the components/usage/examples/tests content collections
 │   ├── types.ts           # shared prop types (background roles, variants, ...)
+│   ├── shapes.ts          # M3's shapes and morphs, ported from AndroidX graphics-shapes (ProgressLoading)
 │   └── utils.ts           # shared helpers (current-path matching, MDX paragraph unwrapping, ...)
 ├── docs/
 │   ├── adr/               # architecture decision records

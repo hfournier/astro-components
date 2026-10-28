@@ -1,0 +1,13 @@
+Use a loading indicator to show that a process is under way when the wait is short, from about 200ms to 5 seconds, and how far it's got doesn't need showing. M3 recommends it in place of most indeterminate circular progress indicators.
+
+- Center it on the element or page that's loading.
+- When more items are loading onto a page, place it in the empty space where they'll appear, not over the content already there.
+- Show the container when it sits over other content, as when refreshing a list.
+- It can sit inside another component, such as a button whose action takes a few seconds.
+
+### When not to use it
+
+- **Waits under 200ms:** show the content straight away, without an indicator.
+- **Waits over 5 seconds:** use a circular or linear progress indicator.
+- **A process whose length can become known:** use an indeterminate progress indicator and turn it determinate. Don't swap a loading indicator for a progress indicator partway through.
+- **Decoration:** it always stands for a process under way.

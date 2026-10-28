@@ -1,0 +1,43 @@
+---
+name: ProgressLoading
+description: A Material 3 Expressive loading indicator, extending HTML's `<progress>` element. It shows that a short process, under about 5 seconds, is under way, by morphing through seven of M3's shapes as it turns. It can sit on M3's optional circular container. Being a native progress with no value, assistive tech announces it as a busy progress bar.
+category: Forms
+role: pattern
+meta:
+  title: ProgressLoading | astro-components HenriFournier.dev
+  description: A Material 3 Expressive loading indicator on a native progress element, morphing through M3's shapes, contained or not.
+extends:
+  kind: element
+  tag: [progress]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/progress
+props:
+  - name: showContainer
+    type: boolean
+    required: false
+    default: "false"
+    description: Shows M3's optional container, a `primary-container` circle behind the active indicator, which turns `on-primary-container`. Use it when the indicator sits over other content, so it stands out.
+  - name: size
+    type: number
+    required: false
+    default: "48"
+    description: The width and height in px, from M3's 24 to 240; a size outside them, or one that isn't a number, fails the build. The active indicator keeps M3's 38/48 share of it.
+---
+
+## Attributes
+
+Every attribute except `class` goes on the `<progress>`: `aria-label`, `aria-labelledby`, `id` and the rest. `class` goes on the element around it, which draws the indicator, so it can place it. It takes no `value` or `max`: M3's loading indicator never turns into a determinate one. When a process's length can become known, use a circular or linear progress indicator instead.
+
+## Anatomy
+
+- **Active indicator:** `primary`, a shape 38/48 of the size that morphs through M3's SoftBurst, Cookie9Sided, Pentagon, Pill, Sunny, Cookie4Sided and Oval, then back to SoftBurst.
+- **Container (optional):** a `primary-container` circle behind it; the active indicator turns `on-primary-container`.
+
+Center it on the element or page that's loading, or in the space where new content will appear. It isn't mirrored in right-to-left layouts: like a circular progress indicator, it turns clockwise in every direction.
+
+## Motion
+
+It follows Compose's loading indicator, since M3's Specs page gives no timing. A new morph starts every 650ms, on Compose's spring for it (damping 0.6, stiffness 200), and turns the shape a quarter as it goes. The spring overshoots a little, and Compose stops it about 300ms in. Meanwhile the whole indicator turns once every 4666ms. That spring is Compose's own for the loading indicator, in place of ADR-0018's fast spatial, as ADR-0018 allows where the Specs page gives no motion.
+
+The shapes and their morphs are a TypeScript port of AndroidX's graphics-shapes library, the one Compose draws them with, so each corner of one shape morphs into the nearest corner of the next. Copying the component means copying `src/shapes.ts` beside it too.
+
+Under reduced motion it holds still on its first shape, SoftBurst, a quarter turn round.

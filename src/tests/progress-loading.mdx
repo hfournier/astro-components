@@ -1,0 +1,37 @@
+---
+title: ProgressLoading
+description: Tests for the ProgressLoading component
+---
+
+<Heading level={1}>ProgressLoading Tests</Heading>
+
+<Section data-testid="progress-loading-default" class="p-4 space-y-4">
+  <Heading level={2}>Default</Heading>
+  <div class="flex flex-wrap gap-4">
+    <ProgressLoading aria-label="Loading news article" />
+    <Heading level={3} id="progress-loading-episodes">Refreshing my episodes</Heading>
+    <ProgressLoading aria-labelledby="progress-loading-episodes" />
+  </div>
+</Section>
+
+<Section data-testid="progress-loading-contained" class="p-4 space-y-4">
+  <Heading level={2}>Contained</Heading>
+  <div class="flex flex-wrap gap-4">
+    <ProgressLoading showContainer aria-label="Refreshing page" />
+  </div>
+</Section>
+
+<Section data-testid="progress-loading-size" class="p-4 space-y-4">
+  <Heading level={2}>Size</Heading>
+  <div class="flex flex-wrap gap-4">
+    <ProgressLoading size={96} aria-label="Large" />
+    <ProgressLoading size={24} showContainer aria-label="Small, contained" />
+  </div>
+</Section>
+
+<Section data-testid="progress-loading-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <div class="flex flex-wrap gap-4">
+    <ProgressLoading aria-label="Right to left" />
+  </div>
+</Section>
