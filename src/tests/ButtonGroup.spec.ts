@@ -37,12 +37,46 @@ const gaps = (target: Locator) =>
     return rects.slice(1).map((rect, i) => rect.left - rects[i].right);
   }, BUTTONS);
 
+// The space beside a small (40px) button's content: a button's 16px padding inside its 1px border,
+// and an icon button's 8px either side of its 24px icon
+const BUTTON_SPACE = 17;
+const ICON_BUTTON_SPACE = 8;
+
 // Compose's growth for a pressed button: 15% of its width, taken from its neighbours, each giving
-// up no more than 24px (its trailing padding). A middle button takes half from each side.
-const growth = (width: number, isMiddle: boolean) =>
+// up no more than the space beside its content. A middle button takes half from each side.
+const growth = (width: number, isMiddle: boolean, space: number) =>
   isMiddle
-    ? 2 * Math.round(Math.min((0.15 * width) / 2, 24))
-    : Math.round(Math.min(0.15 * width, 24));
+    ? 2 * Math.floor(Math.min((0.15 * width) / 2, space))
+    : Math.floor(Math.min(0.15 * width, space));
+
+// How far any button's content (its icons and label, nothing out of flow such as a tooltip) reaches past its edges
+const overflow = (target: Locator) =>
+  target.evaluate(
+    (el, selector) =>
+      Math.max(
+        0,
+        ...[...el.querySelectorAll(selector)].flatMap((child) => {
+          const rect = child.getBoundingClientRect();
+          return [...child.childNodes]
+            .filter(
+              (node) =>
+                !(
+                  node instanceof Element &&
+                  ["absolute", "fixed"].includes(
+                    getComputedStyle(node).position
+                  )
+                )
+            )
+            .flatMap((node) => {
+              const range = document.createRange();
+              range.selectNode(node);
+              return [...range.getClientRects()].filter((r) => r.width > 0);
+            })
+            .flatMap((r) => [rect.left - r.left, r.right - rect.right]);
+        })
+      ),
+    BUTTONS
+  );
 
 // A press, with the button in view, long enough for the spring to settle on its widened widths
 const holdPressed = async (page: Page, target: Locator) => {
@@ -176,7 +210,7 @@ test.describe("ButtonGroup", () => {
     const target = group(page, "default", "Playback");
     const before = await widths(target);
     const groupWidth = (await box(target)).width;
-    const grow = growth(before[1], true);
+    const grow = growth(before[1], true, BUTTON_SPACE);
     await holdPressed(page, button(target, "Play now"));
     const pressed = await widths(target);
     expect(pressed[1]).toBeCloseTo(before[1] + grow, 0);
@@ -193,7 +227,7 @@ test.describe("ButtonGroup", () => {
   }) => {
     const target = group(page, "default", "Playback");
     const before = await widths(target);
-    const grow = growth(before[0], false);
+    const grow = growth(before[0], false, BUTTON_SPACE);
     await holdPressed(page, button(target, "Rewind"));
     const pressed = await widths(target);
     expect(pressed[0]).toBeCloseTo(before[0] + grow, 0);
@@ -212,7 +246,7 @@ test.describe("ButtonGroup", () => {
       button(target, "Play now").click()
     );
     expect(widest[1] - before[1]).toBeGreaterThanOrEqual(
-      0.75 * growth(before[1], true)
+      0.75 * growth(before[1], true, BUTTON_SPACE)
     );
     await settled(page);
     expect(await widths(target)).toEqual(before);
@@ -225,7 +259,7 @@ test.describe("ButtonGroup", () => {
     await page.keyboard.down("Space");
     await page.waitForTimeout(600);
     expect((await widths(target))[1]).toBeCloseTo(
-      before[1] + growth(before[1], true),
+      before[1] + growth(before[1], true, ICON_BUTTON_SPACE),
       0
     );
     await page.keyboard.up("Space");
@@ -253,7 +287,7 @@ test.describe("ButtonGroup", () => {
     const before = await widths(target);
     await holdPressed(page, button(target, "Small add"));
     expect((await widths(target))[1]).toBeCloseTo(
-      before[1] + growth(before[1], true),
+      before[1] + growth(before[1], true, BUTTON_SPACE),
       0
     );
     await page.mouse.up();
@@ -263,18 +297,49 @@ test.describe("ButtonGroup", () => {
   test("square, outlined and elevated groups widen a pressed button too", async ({
     page,
   }) => {
-    for (const [name, pressedName] of [
-      ["Square", "Square start"],
-      ["Outlined", "Outlined start"],
-      ["Elevated", "Elevated start"],
+    for (const [name, pressedName, space] of [
+      ["Square", "Square start", ICON_BUTTON_SPACE],
+      ["Outlined", "Outlined start", ICON_BUTTON_SPACE],
+      ["Elevated", "Elevated start", BUTTON_SPACE],
     ] as const) {
       const target = group(page, "styles", name);
       const before = await widths(target);
       await holdPressed(page, button(target, pressedName));
       expect((await widths(target))[0], name).toBeCloseTo(
-        before[0] + growth(before[0], false),
+        before[0] + growth(before[0], false, space),
         0
       );
+      await page.mouse.up();
+      await settled(page);
+    }
+  });
+
+  // Compose's compressionLimit: a neighbour gives up its padding, never its content
+  test("a neighbour narrows no further than the space beside its content", async ({
+    page,
+  }) => {
+    const target = group(page, "toggle", "Save to");
+    const before = await widths(target);
+    await holdPressed(page, button(target, "Bookmark"));
+    const pressed = await widths(target);
+    expect(pressed[1]).toBeCloseTo(before[1] - ICON_BUTTON_SPACE, 0);
+    expect(pressed[2]).toBeCloseTo(before[2] + ICON_BUTTON_SPACE, 0);
+    expect(await overflow(target)).toBeLessThanOrEqual(0.5);
+    await page.mouse.up();
+    await settled(page);
+    for (const name of [
+      "Extra small group",
+      "Small group",
+      "Medium group",
+      "Large group",
+      "Extra large group",
+    ]) {
+      const sized = group(page, "sizes", name);
+      await holdPressed(
+        page,
+        button(sized, `${name.replace(" group", "")} end`)
+      );
+      expect(await overflow(sized), name).toBeLessThanOrEqual(0.5);
       await page.mouse.up();
       await settled(page);
     }
@@ -329,7 +394,7 @@ test.describe("ButtonGroup", () => {
     await expect(button(target, "First")).toBeFocused();
 
     const before = await widths(target);
-    const grow = growth(before[0], false);
+    const grow = growth(before[0], false, BUTTON_SPACE);
     await holdPressed(page, button(target, "First"));
     const pressed = await widths(target);
     expect(pressed[0]).toBeCloseTo(before[0] + grow, 0);

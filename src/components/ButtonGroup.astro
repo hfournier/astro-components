@@ -17,7 +17,7 @@ const { class: classList, ...attrs }: Props = Astro.props;
   class:list={twMerge(
     "flex w-fit items-center gap-2",
     "has-[>[data-ac-button-size=sm]]:not-has-[>[data-ac-button-size=xs]]:gap-3",
-    "has-[>[data-ac-button-size=xs]]:gap-[18px]",
+    "has-[>[data-ac-button-size=xs]]:gap-4.5",
     classList
   )}
   role="group"
@@ -31,10 +31,10 @@ const { class: classList, ...attrs }: Props = Astro.props;
   // Compose's standard button group: a pressed button grows by 15% of its width, taking it from
   // its neighbours, so the group's width doesn't change. A middle button takes half from each
   // side, an end button all of it from its one neighbour. Each neighbour gives up no more than
-  // 24px, Compose's default (its button's trailing padding). The widths move on M3's fast spatial
+  // the space beside its content, as Compose's compressionLimit (its button's trailing padding)
+  // means it to, so its icon and label stay inside it. The widths move on M3's fast spatial
   // spring, as Compose's do.
   const expandedRatio = 0.15;
-  const compressionLimit = 24;
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
   // A group's buttons: its children, less any script Astro puts beside them
   const notScript = ":not(script, style, template)";
@@ -46,10 +46,11 @@ const { class: classList, ...attrs }: Props = Astro.props;
   const groupItemOf = (event: Event) =>
     (event.target as Element).closest<HTMLElement>(itemSelector);
 
-  // A group's widths at rest, the animations moving it away from them, and, while a button is
-  // pressed, that button with its width at rest and widened
+  // A group's widths at rest, the space beside each one's content, the animations moving it away
+  // from them, and, while a button is pressed, that button with its width at rest and widened
   type GroupState = {
     natural: number[];
+    limits: number[];
     animations: Animation[];
     pressed?: { item: HTMLElement; rest: number; widened: number };
   };
@@ -57,6 +58,30 @@ const { class: classList, ...attrs }: Props = Astro.props;
 
   const widthsOf = (items: Element[]) =>
     items.map((item) => item.getBoundingClientRect().width);
+
+  // How narrow each item can get before its content, its icons and label but nothing
+  // out of flow, such as a tooltip, reaches its edge: the smaller space either side of it
+  const limitsOf = (items: Element[]) =>
+    items.map((item) => {
+      const rect = item.getBoundingClientRect();
+      const content = [...item.childNodes]
+        .filter(
+          (node) =>
+            !(
+              node instanceof Element &&
+              ["absolute", "fixed"].includes(getComputedStyle(node).position)
+            )
+        )
+        .flatMap((node) => {
+          const range = document.createRange();
+          range.selectNode(node);
+          return [...range.getClientRects()].filter((r) => r.width > 0);
+        });
+      if (!content.length) return rect.width;
+      const start = Math.min(...content.map((r) => r.left));
+      const end = Math.max(...content.map((r) => r.right));
+      return Math.max(0, Math.min(start - rect.left, rect.right - end));
+    });
 
   // Animates each item from its current width to `to`, holding it there
   const animate = (items: HTMLElement[], from: number[], to: number[]) => {
@@ -89,6 +114,7 @@ const { class: classList, ...attrs }: Props = Astro.props;
       return;
     const state = states.get(group);
     const natural = state?.natural ?? widthsOf(items);
+    const limits = state?.limits ?? limitsOf(items);
     const current = widthsOf(items);
     state?.animations.forEach((animation) => animation.cancel());
 
@@ -100,21 +126,21 @@ const { class: classList, ...attrs }: Props = Astro.props;
         : index === items.length - 1
           ? [index - 1]
           : [index - 1, index + 1];
-    // a middle button's 15% splits between its two neighbours
-    const share = Math.round(
+    // a middle button's 15% splits evenly between its two neighbours, so it grows from its center
+    const share = Math.floor(
       Math.min(
         (expandedRatio * natural[index]) / neighbours.length,
-        compressionLimit
+        ...neighbours.map((neighbour) => limits[neighbour])
       )
     );
+    if (share <= 0) return;
     for (const neighbour of neighbours) {
-      const taken = Math.min(share, natural[neighbour]);
-      target[neighbour] -= taken;
-      target[index] += taken;
+      target[neighbour] -= share;
+      target[index] += share;
     }
-    if (target[index] === natural[index]) return;
     states.set(group, {
       natural,
+      limits,
       animations: animate(items, current, target),
       pressed: { item, rest: natural[index], widened: target[index] },
     });
@@ -130,7 +156,11 @@ const { class: classList, ...attrs }: Props = Astro.props;
     const restore = () => {
       if (states.get(group) !== state) return;
       const animations = animate(items, widthsOf(items), state.natural);
-      const next = { natural: state.natural, animations };
+      const next = {
+        natural: state.natural,
+        limits: state.limits,
+        animations,
+      };
       states.set(group, next);
       Promise.all(animations.map((animation) => animation.finished)).then(
         () => {
