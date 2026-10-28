@@ -36,6 +36,7 @@ export { default as NavRail } from "./components/NavRail.astro";
 export { default as NavRailItem } from "./components/NavRailItem.astro";
 export { default as NavRailSubItems } from "./components/NavRailSubItems.astro";
 export { default as Popover } from "./components/Popover.astro";
+export { default as ProgressCircular } from "./components/ProgressCircular.astro";
 export { default as ProgressLinear } from "./components/ProgressLinear.astro";
 export { default as RadioButton } from "./components/RadioButton.astro";
 export { default as Section } from "./components/Section.astro";

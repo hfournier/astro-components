@@ -1,0 +1,49 @@
+---
+// Renders ProgressLinear with each case of its props and lists the outcome: the thickness it drew,
+// or the error it threw. A ProgressLinear that throws would fail the whole page and the build, so
+// each case renders in its own container and its error is caught.
+import { experimental_AstroContainer } from "astro/container";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Main from "../../components/Main.astro";
+import ProgressLinear from "../../components/ProgressLinear.astro";
+
+const container = await experimental_AstroContainer.create();
+// MDX passes attributes as strings, so some cases do too
+const cases: Record<string, Record<string, unknown>> = {
+  "thickness-as-text": { thickness: "8" },
+  "thickness-zero": { thickness: 0 },
+  "thickness-not-a-number": { thickness: "thick" },
+  "shape-unknown": { shape: "round" },
+};
+const outcomes = await Promise.all(
+  Object.values(cases).map(async (props) => {
+    try {
+      const html = await container.renderToString(ProgressLinear, {
+        props: { ...props, "aria-label": "Loading" },
+      });
+      return `rendered ${html.match(/--ac-progress-linear-thickness: (\S+);/)?.[1]}`;
+    } catch (error) {
+      return (error as Error).message;
+    }
+  })
+);
+---
+
+<BaseLayout
+  title="ProgressLinear props"
+  description="What ProgressLinear renders, or throws, for each case of its props"
+>
+  <Main class="mx-auto max-w-[75ch] px-4">
+    <h1>ProgressLinear props</h1>
+    <dl>
+      {Object.keys(cases).map((name, index) => (
+        <>
+          <dt>{name}</dt>
+          <dd data-testid={`progress-linear-props-${name}`}>
+            {outcomes[index]}
+          </dd>
+        </>
+      ))}
+    </dl>
+  </Main>
+</BaseLayout>

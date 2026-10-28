@@ -1,0 +1,53 @@
+---
+// Renders ProgressCircular with each case of its props and lists the outcome: the size it drew,
+// or the error it threw. A ProgressCircular that throws would fail the whole page and the build,
+// so each case renders in its own container and its error is caught.
+import { experimental_AstroContainer } from "astro/container";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Main from "../../components/Main.astro";
+import ProgressCircular from "../../components/ProgressCircular.astro";
+
+const container = await experimental_AstroContainer.create();
+// MDX passes attributes as strings, so some cases do too
+const cases: Record<string, Record<string, unknown>> = {
+  "size-as-text": { size: "96" },
+  "size-too-small": { size: 12 },
+  "size-too-large": { size: 320 },
+  "size-not-a-number": { size: "big" },
+  "thickness-zero": { thickness: 0 },
+  "thickness-too-thick": { size: 24, thickness: 12 },
+  "thickness-not-a-number": { thickness: "thick" },
+  "shape-unknown": { shape: "round" },
+};
+const outcomes = await Promise.all(
+  Object.values(cases).map(async (props) => {
+    try {
+      const html = await container.renderToString(ProgressCircular, {
+        props: { ...props, "aria-label": "Loading" },
+      });
+      return `rendered ${html.match(/--ac-progress-circular-size: (\S+);/)?.[1]}`;
+    } catch (error) {
+      return (error as Error).message;
+    }
+  })
+);
+---
+
+<BaseLayout
+  title="ProgressCircular props"
+  description="What ProgressCircular renders, or throws, for each case of its props"
+>
+  <Main class="mx-auto max-w-[75ch] px-4">
+    <h1>ProgressCircular props</h1>
+    <dl>
+      {Object.keys(cases).map((name, index) => (
+        <>
+          <dt>{name}</dt>
+          <dd data-testid={`progress-circular-props-${name}`}>
+            {outcomes[index]}
+          </dd>
+        </>
+      ))}
+    </dl>
+  </Main>
+</BaseLayout>

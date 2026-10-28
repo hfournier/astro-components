@@ -1,0 +1,51 @@
+---
+name: ProgressCircular
+description: A Material 3 circular progress indicator, extending HTML's `<progress>` element. It shows how far a process has got around a ring, or, without a value, that work is going on. It has M3's active indicator, the gap either side of the track and Expressive's optional wavy shape. Being a native progress, assistive tech announces it as a progress bar with its value.
+category: Forms
+role: pattern
+meta:
+  title: ProgressCircular | astro-components HenriFournier.dev
+  description: A Material 3 circular progress indicator on a native progress element, determinate or indeterminate, flat or wavy.
+extends:
+  kind: element
+  tag: [progress]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/progress
+props:
+  - name: shape
+    type: '"flat" | "wavy"'
+    required: false
+    default: '"flat"'
+    description: M3's two shapes; any other fails the build. `wavy` draws the active indicator as a wave 1.6px either side of the track, about 15px from crest to crest, which grows the default container by 8px. A determinate wave lies flat below 10% and from 95%.
+  - name: thickness
+    type: number
+    required: false
+    default: "4"
+    description: The track's and active indicator's thickness in px. M3's default is 4; its thicker sample is 8. It must be more than 0 and at most a quarter of the `size`, so the ring always leaves a hole; anything else fails the build.
+  - name: size
+    type: number
+    required: false
+    default: "40, plus what the track is thicker than 4, plus 8 when wavy"
+    description: The container's width and height in px, from M3's 24 to 240; a size outside them fails the build. By default it's M3's size for the `thickness` and `shape`. M3 keeps the ring the same size and grows the container around it, so it's 40, 44 with an 8px track, and 8px more when wavy (48, or 52). The ring stays `thickness` thick, inset from the container's edge.
+---
+
+## Attributes
+
+Every attribute except `class` goes on the `<progress>`: `value`, `max`, `aria-label`, `aria-labelledby`, `id` and the rest. `class` goes on the element around it, which draws the indicator, so it can place it.
+
+- **Determinate:** set `value`, between 0 and `max` (1 by default). To show progress, set the progress's `value` from a script, as with any `<progress>`. The active indicator follows it.
+- **Indeterminate:** leave `value` out. Setting one later turns the indicator determinate, as M3 suggests once a process's length becomes known. Removing the attribute turns it back.
+
+## Anatomy
+
+- **Active indicator:** `primary`, clockwise from the top of the ring to the value. Just started, it's a dot.
+- **Track:** `secondary-container`, from a 4px gap after the active indicator round to a 4px gap before its start.
+
+A circular indicator has no stop indicator. Center it on the element or page that's loading, or in the space where new content will appear. It isn't mirrored in right-to-left layouts: M3's circular indicators fill clockwise in every direction.
+
+## Motion
+
+A new value moves the active indicator and the gaps on the fast effects spring. ADR-0018 puts movement on fast spatial, but that spring overshoots, which would briefly show more progress than there is. The wave's amplitude, a shape, rises after 10% and flattens from 95% on fast spatial. The wave travels a wavelength a second, as Compose's does.
+
+Indeterminate, the indicator runs Compose's 6 second cycle. The ring turns three times at a steady speed, plus a quarter turn in 300ms every 1.5 seconds. Meanwhile the active indicator grows from 10% to 87% of the way round, then shrinks back on standard easing. M3's Specs page gives no timing for it.
+
+Under reduced motion, a new value and the wave's amplitude change at once, and the wave stands still. An indeterminate indicator holds still, its active indicator from 20% to 60% of the way round.
