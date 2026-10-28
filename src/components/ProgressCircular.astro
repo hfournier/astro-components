@@ -9,11 +9,11 @@ import { twMerge } from "tailwind-merge";
 type Props = HTMLAttributes<"progress"> & {
   // M3's two shapes: flat, or Expressive's wavy active indicator
   shape?: "flat" | "wavy";
-  // The track's thickness in px: M3's default is 4, and 8 its thick sample. It's kept within a
-  // quarter of the size, so the ring always leaves a hole.
+  // The track's thickness in px: M3's default is 4, and 8 its thick sample. At most a quarter of
+  // the size, so the ring always leaves a hole.
   thickness?: number;
-  // The container's size in px, kept within M3's 24 to 240. M3's is 40, growing with a thicker
-  // track (44 with the 8px one), and 8 more when wavy.
+  // The container's size in px, from M3's 24 to 240. M3's is 40, growing with a thicker track
+  // (44 with the 8px one), and 8 more when wavy.
   size?: number;
 };
 
@@ -22,19 +22,43 @@ const {
   thickness = 4,
   // M3 keeps the ring the same size and grows the container around it, so a thicker track adds
   // what it's thicker than M3's 4px
-  size = 40 + (thickness - 4) + (shape === "wavy" ? 8 : 0),
+  size = 40 + (Number(thickness) - 4) + (shape === "wavy" ? 8 : 0),
   class: classList,
   ...attrs
 }: Props = Astro.props;
 
+// Values outside M3's fail the build, rather than drawing something other than was asked for.
+// MDX passes attributes as strings, so `size="96"` is read as the number it says.
+if (shape !== "flat" && shape !== "wavy") {
+  throw new Error(
+    `ProgressCircular: M3's shapes are "flat" and "wavy", but this one's \`shape\` is "${shape}".`
+  );
+}
+// The thickness first, since the default size follows it
+const trackThickness = Number(thickness);
+if (!Number.isFinite(trackThickness) || trackThickness <= 0) {
+  throw new Error(
+    `ProgressCircular: \`thickness\` is a number of px more than 0, but this one's is ${thickness}.`
+  );
+}
+const side = Number(size);
+if (!Number.isFinite(side) || side < 24 || side > 240) {
+  throw new Error(
+    `ProgressCircular: M3's circular indicators are 24 to 240px, but this one's \`size\` is ${size}.`
+  );
+}
+if (trackThickness > side / 4) {
+  throw new Error(
+    `ProgressCircular: \`thickness\` is at most a quarter of the size, so the ring leaves a hole: ${side / 4}px for this ${side}px one, but it's ${thickness}.`
+  );
+}
+
 // M3's wave: 1.6px either side of the track
 const amplitude = 1.6;
 const isWavy = shape === "wavy";
-const side = Math.min(Math.max(size, 24), 240);
-const ringThickness = Math.min(Math.max(thickness, 1), side / 4);
 // The ring's center line, inset half the thickness from the container's edge, and the wave's
 // amplitude more when wavy, so its crests reach the edge
-const radius = side / 2 - ringThickness / 2 - (isWavy ? amplitude : 0);
+const radius = side / 2 - trackThickness / 2 - (isWavy ? amplitude : 0);
 const circumference = 2 * Math.PI * radius;
 
 // The progress's own position, as the browser works it out: value over max, within 0 and 1
@@ -65,7 +89,7 @@ const stroke =
     "[--ac-progress-circular-track:calc(var(--ac-progress-circular-circumference)_-_var(--ac-progress-circular-active)_-_2*var(--ac-progress-circular-space))]",
     classList
   )}
-  style={`--ac-progress-circular-size: ${side}px; --ac-progress-circular-thickness: ${ringThickness}px; --ac-progress-circular-circumference: ${circumference}; --ac-progress-circular-gap: ${4 + ringThickness}; --ac-progress-circular-wave-amplitude: ${amplitude}; --ac-progress-circular-value: ${position}`}
+  style={`--ac-progress-circular-size: ${side}px; --ac-progress-circular-thickness: ${trackThickness}px; --ac-progress-circular-circumference: ${circumference}; --ac-progress-circular-gap: ${4 + trackThickness}; --ac-progress-circular-wave-amplitude: ${amplitude}; --ac-progress-circular-value: ${position}`}
   data-ac-progress-circular
   data-ac-progress-circular-shape={shape}
 >

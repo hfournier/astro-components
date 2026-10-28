@@ -276,29 +276,6 @@ test.describe("ProgressCircular", () => {
     ).toBe(24);
   });
 
-  test("size is kept within M3's 24px to 240px", async ({ page }) => {
-    const small = indicator(page, "size", "Below M3's smallest");
-    expect((await box(root(small))).width).toBe(24);
-    expect(await ring(small, 10, [45, 180])).toEqual(["active", "track"]);
-    const large = indicator(page, "size", "Above M3's largest");
-    expect((await box(root(large))).width).toBe(240);
-    expect(await ring(large, 118, [45, 180])).toEqual(["active", "track"]);
-  });
-
-  // 24px, so a 12px track is kept to 6px: a ring of radius 9 from 6px to 12px out, leaving a hole
-  test("thickness is kept within a quarter of the size, so the ring leaves a hole", async ({
-    page,
-  }) => {
-    const progress = indicator(
-      page,
-      "size",
-      "Thicker than a quarter of its size"
-    );
-    expect((await box(root(progress))).width).toBe(24);
-    expect(await ring(progress, 9, [45, 225])).toEqual(["active", "track"]);
-    expect(await ring(progress, 4, [45, 225])).toEqual(["none", "none"]);
-  });
-
   // Fast effects, which doesn't overshoot, so the indicator never shows more progress than
   // there is; the wave's amplitude is a shape, on fast spatial
   test("a new value moves the active indicator and the gap on fast effects; the wave's amplitude changes on fast spatial", async ({
@@ -482,5 +459,55 @@ test.describe("ProgressCircular", () => {
       const wavy = indicator(page, "wavy", "Wavy, indeterminate");
       await expect.poll(() => waveDepth(wavy)).toBeCloseTo(3.2, 0);
     });
+  });
+});
+
+// Props outside M3's fail the build rather than drawing something other than was asked for.
+// /tests/progress-circular-props renders each case and lists the size it drew or the error it
+// threw.
+test.describe("ProgressCircular props", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/tests/progress-circular-props");
+  });
+
+  const outcome = (page: Page, name: string) =>
+    page.getByTestId(`progress-circular-props-${name}`);
+
+  test("reads a size given as text, as MDX passes it", async ({ page }) => {
+    await expect(outcome(page, "size-as-text")).toHaveText("rendered 96px");
+  });
+
+  test("throws on a size outside M3's 24px to 240px, or not a number", async ({
+    page,
+  }) => {
+    await expect(outcome(page, "size-too-small")).toHaveText(
+      "ProgressCircular: M3's circular indicators are 24 to 240px, but this one's `size` is 12."
+    );
+    await expect(outcome(page, "size-too-large")).toHaveText(
+      /`size` is 320\.$/
+    );
+    await expect(outcome(page, "size-not-a-number")).toHaveText(
+      /`size` is big\.$/
+    );
+  });
+
+  test("throws on a thickness of 0, more than a quarter of the size, or not a number", async ({
+    page,
+  }) => {
+    await expect(outcome(page, "thickness-zero")).toHaveText(
+      "ProgressCircular: `thickness` is a number of px more than 0, but this one's is 0."
+    );
+    await expect(outcome(page, "thickness-not-a-number")).toHaveText(
+      /this one's is thick\.$/
+    );
+    await expect(outcome(page, "thickness-too-thick")).toHaveText(
+      "ProgressCircular: `thickness` is at most a quarter of the size, so the ring leaves a hole: 6px for this 24px one, but it's 12."
+    );
+  });
+
+  test("throws on a shape M3 doesn't have", async ({ page }) => {
+    await expect(outcome(page, "shape-unknown")).toHaveText(
+      `ProgressCircular: M3's shapes are "flat" and "wavy", but this one's \`shape\` is "round".`
+    );
   });
 });
