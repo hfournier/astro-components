@@ -53,9 +53,27 @@ description: Tests for the ButtonGroup component
   </ButtonGroup>
 </Section>
 
+<Section data-testid="button-group-styles" class="p-4 space-y-4">
+  <Heading level={2}>Shapes and styles</Heading>
+  <ButtonGroup aria-label="Square">
+    <Button shape="square" variant="tonal">Square start</Button>
+    <ButtonIcon shape="square" isToggle variant="tonal" icon="star" label="Square star" />
+    <Button shape="square" variant="tonal">Square end</Button>
+  </ButtonGroup>
+  <ButtonGroup aria-label="Outlined">
+    <Button variant="outlined">Outlined start</Button>
+    <ButtonIcon variant="outlined" icon="share" label="Outlined share" />
+    <Button variant="outlined">Outlined end</Button>
+  </ButtonGroup>
+  <ButtonGroup aria-label="Elevated">
+    <Button variant="elevated">Elevated start</Button>
+    <Button variant="elevated">Elevated end</Button>
+  </ButtonGroup>
+</Section>
+
 <Section data-testid="button-group-toggle" class="p-4 space-y-4">
   <Heading level={2}>Toggle</Heading>
-  <ButtonGroup aria-label="Text style">
+  <ButtonGroup aria-label="Save to">
     <ButtonIcon isToggle variant="tonal" icon="star" label="Star" />
     <ButtonIcon isToggle isSelected variant="tonal" icon="favorite" label="Favorite" />
     <Button isToggle variant="tonal" icon="bookmark">Bookmark</Button>

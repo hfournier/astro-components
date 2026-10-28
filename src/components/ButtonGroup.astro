@@ -42,6 +42,9 @@ const { class: classList, ...attrs }: Props = Astro.props;
   const itemsOf = (group: Element) => [
     ...group.querySelectorAll<HTMLElement>(`:scope > ${notScript}`),
   ];
+  // The group's button an event happened on or in, if any
+  const groupItemOf = (event: Event) =>
+    (event.target as Element).closest<HTMLElement>(itemSelector);
 
   // A group's widths at rest, the animations moving it away from them, and, while a button is
   // pressed, that button with its width at rest and widened
@@ -151,7 +154,7 @@ const { class: classList, ...attrs }: Props = Astro.props;
   // interactions do
   document.addEventListener("pointerdown", (event) => {
     if (!event.isPrimary || event.button !== 0) return;
-    const item = (event.target as Element).closest<HTMLElement>(itemSelector);
+    const item = groupItemOf(event);
     if (!item) return;
     press(item);
     const group = item.parentElement!;
@@ -164,11 +167,14 @@ const { class: classList, ...attrs }: Props = Astro.props;
     document.addEventListener("pointercancel", end);
   });
 
+  // The button held down with Space or Enter, if any
+  let keyPressed: HTMLElement | null = null;
   document.addEventListener("keydown", (event) => {
-    const item = (event.target as Element).closest<HTMLElement>(itemSelector);
+    const item = groupItemOf(event);
     if (!item) return;
     if ((event.key === " " || event.key === "Enter") && !event.repeat) {
       press(item);
+      keyPressed = item;
       return;
     }
     // M3's Accessibility page: the arrow keys move between the group's buttons, as Tab does,
@@ -190,9 +196,17 @@ const { class: classList, ...attrs }: Props = Astro.props;
     }
   });
 
+  const endKeyPress = () => {
+    if (!keyPressed) return;
+    release(keyPressed.parentElement!);
+    keyPressed = null;
+  };
   document.addEventListener("keyup", (event) => {
-    if (event.key !== " " && event.key !== "Enter") return;
-    const item = (event.target as Element).closest<HTMLElement>(itemSelector);
-    if (item) release(item.parentElement!);
+    if (event.key === " " || event.key === "Enter") endKeyPress();
+  });
+  // A key let go elsewhere, as when Enter opens a dialog or Tab moves on, still ends the press
+  // once focus leaves the button. Only a key press: WebKit blurs a button a pointer presses.
+  document.addEventListener("focusout", (event) => {
+    if (event.target === keyPressed) endKeyPress();
   });
 </script>
