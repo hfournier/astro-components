@@ -634,14 +634,10 @@ const customPolygon = (pnr: PointNRound[], reps: number, mirroring = false) => {
   );
 };
 
-const rotation = (degrees: number): Transform => {
-  const a = (degrees / 180) * Math.PI;
-  return (p) =>
-    point(
-      p.x * Math.cos(a) - p.y * Math.sin(a),
-      p.x * Math.sin(a) + p.y * Math.cos(a)
-    );
-};
+const rotation =
+  (degrees: number): Transform =>
+  (p) =>
+    rotateDegrees(p, degrees, point(0, 0));
 
 const pn = (x: number, y: number, r?: CornerRounding): PointNRound => ({
   o: point(x, y),

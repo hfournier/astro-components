@@ -38,6 +38,6 @@ Center it on the element or page that's loading, or in the space where new conte
 
 It follows Compose's loading indicator, since M3's Specs page gives no timing. A new morph starts every 650ms, on Compose's spring for it (damping 0.6, stiffness 200), and turns the shape a quarter as it goes. The spring overshoots a little, and Compose stops it about 300ms in. Meanwhile the whole indicator turns once every 4666ms. That spring is Compose's own for the loading indicator, in place of ADR-0018's fast spatial, as ADR-0018 allows where the Specs page gives no motion.
 
-The shapes and their morphs are a TypeScript port of AndroidX's graphics-shapes library, the one Compose draws them with, so each corner of one shape morphs into the nearest corner of the next.
+The shapes and their morphs are a TypeScript port of AndroidX's graphics-shapes library, the one Compose draws them with, so each corner of one shape morphs into the nearest corner of the next. Copying the component means copying `src/shapes.ts` beside it too.
 
 Under reduced motion it holds still on its first shape, SoftBurst, a quarter turn round.

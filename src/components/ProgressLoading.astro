@@ -45,7 +45,6 @@ const firstFrame = morphPathData(morphs[0], 0, scale);
   )}
   style={`--ac-progress-loading-size: ${side}px;`}
   data-ac-progress-loading
-  data-ac-progress-loading-container={showContainer ? "" : undefined}
 >
   <progress
     class="absolute inset-0 size-full appearance-none opacity-0"
@@ -106,6 +105,8 @@ const firstFrame = morphPathData(morphs[0], 0, scale);
   };
 
   const { morphs, scale } = loadingIndicatorSequence();
+  // Compose's first frame, as the frontmatter draws it
+  const firstFrame = morphPathData(morphs[0], 0, scale);
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
   const selector =
     '[data-ac-progress-loading] [data-ac-progress-loading-part="active-indicator"]';
@@ -153,7 +154,7 @@ const firstFrame = morphPathData(morphs[0], 0, scale);
     if (!reducedMotion.matches) return start();
     document.querySelectorAll(selector).forEach((path) => {
       started.delete(path);
-      path.setAttribute("d", morphPathData(morphs[0], 0, scale));
+      path.setAttribute("d", firstFrame);
       path.setAttribute("transform", "rotate(90 50 50)");
     });
   });
