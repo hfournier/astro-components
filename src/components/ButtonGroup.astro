@@ -1,0 +1,242 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+
+// M3 Expressive's standard button group: an invisible container that spaces its buttons and icon
+// buttons, and widens a pressed one while its neighbours narrow. It has no color, shape or size of
+// its own; each button sets its own. Name it, if it needs a name, with `aria-label` or
+// `aria-labelledby`.
+type Props = HTMLAttributes<"div">;
+
+const { class: classList, ...attrs }: Props = Astro.props;
+---
+
+{/* M3's space between buttons follows their size: 18px for extra small, 12px for small and 8px
+    for the rest. With mixed sizes it keeps the smallest one's, so each keeps its 48px target. */}
+<div
+  class:list={twMerge(
+    "flex w-fit items-center gap-2",
+    "has-[>[data-ac-button-size=sm]]:not-has-[>[data-ac-button-size=xs]]:gap-3",
+    "has-[>[data-ac-button-size=xs]]:gap-4.5",
+    classList
+  )}
+  role="group"
+  data-ac-button-group
+  {...attrs}
+>
+  <slot />
+</div>
+
+<script>
+  // Compose's standard button group: a pressed button grows by 15% of its width, taking it from
+  // its neighbours, so the group's width doesn't change. A middle button takes half from each
+  // side, an end button all of it from its one neighbour. Each neighbour gives up no more than
+  // the space beside its content, as Compose's compressionLimit (its button's trailing padding)
+  // means it to, so its icon and label stay inside it. The widths move on M3's fast spatial
+  // spring, as Compose's do.
+  const expandedRatio = 0.15;
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  // A group's buttons: its children, less any script Astro puts beside them
+  const notScript = ":not(script, style, template)";
+  const itemSelector = `[data-ac-button-group] > ${notScript}`;
+  const itemsOf = (group: Element) => [
+    ...group.querySelectorAll<HTMLElement>(`:scope > ${notScript}`),
+  ];
+  // The group's button an event happened on or in, if any
+  const groupItemOf = (event: Event) =>
+    (event.target as Element).closest<HTMLElement>(itemSelector);
+
+  // A group's widths at rest, the space beside each one's content, the animations moving it away
+  // from them, and, while a button is pressed, that button with its width at rest and widened
+  type GroupState = {
+    natural: number[];
+    limits: number[];
+    animations: Animation[];
+    pressed?: { item: HTMLElement; rest: number; widened: number };
+  };
+  const states = new WeakMap<Element, GroupState>();
+
+  const widthsOf = (items: Element[]) =>
+    items.map((item) => item.getBoundingClientRect().width);
+
+  // How narrow each item can get before its content, its icons and label but nothing
+  // out of flow, such as a tooltip, reaches its edge: the smaller space either side of it
+  const limitsOf = (items: Element[]) =>
+    items.map((item) => {
+      const rect = item.getBoundingClientRect();
+      const content = [...item.childNodes]
+        .filter(
+          (node) =>
+            !(
+              node instanceof Element &&
+              ["absolute", "fixed"].includes(getComputedStyle(node).position)
+            )
+        )
+        .flatMap((node) => {
+          const range = document.createRange();
+          range.selectNode(node);
+          return [...range.getClientRects()].filter((r) => r.width > 0);
+        });
+      if (!content.length) return rect.width;
+      const start = Math.min(...content.map((r) => r.left));
+      const end = Math.max(...content.map((r) => r.right));
+      return Math.max(0, Math.min(start - rect.left, rect.right - end));
+    });
+
+  // Animates each item from its current width to `to`, holding it there
+  const animate = (items: HTMLElement[], from: number[], to: number[]) => {
+    const root = getComputedStyle(document.documentElement);
+    const timing: KeyframeAnimationOptions = {
+      duration: parseFloat(
+        root.getPropertyValue("--theme-duration-spring-fast-spatial")
+      ),
+      easing: root.getPropertyValue("--ease-spring-fast-spatial").trim(),
+      fill: "forwards",
+    };
+    return items.flatMap((item, i) =>
+      from[i] === to[i]
+        ? []
+        : // a Button is at most as wide as its content, so the cap lifts while it moves
+          item.animate(
+            [
+              { width: `${from[i]}px`, maxWidth: "none" },
+              { width: `${to[i]}px`, maxWidth: "none" },
+            ],
+            timing
+          )
+    );
+  };
+
+  const press = (item: HTMLElement) => {
+    const group = item.parentElement!;
+    const items = itemsOf(group);
+    if (reducedMotion.matches || item.matches(":disabled") || items.length < 2)
+      return;
+    const state = states.get(group);
+    const natural = state?.natural ?? widthsOf(items);
+    const limits = state?.limits ?? limitsOf(items);
+    const current = widthsOf(items);
+    state?.animations.forEach((animation) => animation.cancel());
+
+    const index = items.indexOf(item);
+    const target = [...natural];
+    const neighbours =
+      index === 0
+        ? [1]
+        : index === items.length - 1
+          ? [index - 1]
+          : [index - 1, index + 1];
+    // a middle button's 15% splits evenly between its two neighbours, so it grows from its center
+    const share = Math.floor(
+      Math.min(
+        (expandedRatio * natural[index]) / neighbours.length,
+        ...neighbours.map((neighbour) => limits[neighbour])
+      )
+    );
+    if (share <= 0) return;
+    for (const neighbour of neighbours) {
+      target[neighbour] -= share;
+      target[index] += share;
+    }
+    states.set(group, {
+      natural,
+      limits,
+      animations: animate(items, current, target),
+      pressed: { item, rest: natural[index], widened: target[index] },
+    });
+  };
+
+  // Compose waits until the widening is 75% done before springing back, so a quick tap still
+  // shows it
+  const release = (group: Element) => {
+    const state = states.get(group);
+    if (!state?.pressed) return;
+    const { item, rest, widened } = state.pressed;
+    const items = itemsOf(group);
+    const restore = () => {
+      if (states.get(group) !== state) return;
+      const animations = animate(items, widthsOf(items), state.natural);
+      const next = {
+        natural: state.natural,
+        limits: state.limits,
+        animations,
+      };
+      states.set(group, next);
+      Promise.all(animations.map((animation) => animation.finished)).then(
+        () => {
+          if (states.get(group) !== next) return;
+          animations.forEach((animation) => animation.cancel());
+          states.delete(group);
+        },
+        () => undefined
+      );
+    };
+    const restoreOnceWidened = () => {
+      if (states.get(group) !== state) return;
+      const width = item.getBoundingClientRect().width;
+      if ((width - rest) / (widened - rest) >= 0.75) restore();
+      else requestAnimationFrame(restoreOnceWidened);
+    };
+    restoreOnceWidened();
+  };
+
+  // Pressing with a pointer, or holding Space or Enter on a focused button, as Compose's press
+  // interactions do
+  document.addEventListener("pointerdown", (event) => {
+    if (!event.isPrimary || event.button !== 0) return;
+    const item = groupItemOf(event);
+    if (!item) return;
+    press(item);
+    const group = item.parentElement!;
+    const end = () => {
+      release(group);
+      document.removeEventListener("pointerup", end);
+      document.removeEventListener("pointercancel", end);
+    };
+    document.addEventListener("pointerup", end);
+    document.addEventListener("pointercancel", end);
+  });
+
+  // The button held down with Space or Enter, if any
+  let keyPressed: HTMLElement | null = null;
+  document.addEventListener("keydown", (event) => {
+    const item = groupItemOf(event);
+    if (!item) return;
+    if ((event.key === " " || event.key === "Enter") && !event.repeat) {
+      press(item);
+      keyPressed = item;
+      return;
+    }
+    // M3's Accessibility page: the arrow keys move between the group's buttons, as Tab does,
+    // mirrored right to left. They stop at the ends and skip disabled buttons.
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    const group = item.parentElement!;
+    const isRtl = getComputedStyle(group).direction === "rtl";
+    const step = (event.key === "ArrowRight") !== isRtl ? 1 : -1;
+    const items = itemsOf(group);
+    for (
+      let i = items.indexOf(item) + step;
+      i >= 0 && i < items.length;
+      i += step
+    ) {
+      if (items[i].matches(":disabled")) continue;
+      event.preventDefault();
+      items[i].focus();
+      return;
+    }
+  });
+
+  const endKeyPress = () => {
+    if (!keyPressed) return;
+    release(keyPressed.parentElement!);
+    keyPressed = null;
+  };
+  document.addEventListener("keyup", (event) => {
+    if (event.key === " " || event.key === "Enter") endKeyPress();
+  });
+  // A key let go elsewhere, as when Enter opens a dialog or Tab moves on, still ends the press
+  // once focus leaves the button. Only a key press: WebKit blurs a button a pointer presses.
+  document.addEventListener("focusout", (event) => {
+    if (event.target === keyPressed) endKeyPress();
+  });
+</script>

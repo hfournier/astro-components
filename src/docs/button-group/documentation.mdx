@@ -1,0 +1,34 @@
+---
+name: ButtonGroup
+description: A Material 3 Expressive standard button group, extending HTML's `<div>` element with the `group` role. It holds buttons and icon buttons side by side, spaced for their size, and widens a button while it's pressed, narrowing its neighbours to make room. It has no color or shape of its own.
+category: Forms
+role: pattern
+meta:
+  title: ButtonGroup | astro-components HenriFournier.dev
+  description: A Material 3 Expressive standard button group that spaces buttons and icon buttons and widens the one being pressed.
+extends:
+  kind: element
+  tag: [div]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/div
+props: []
+slots:
+  - name: default
+    description: The group's Buttons and ButtonIcons, in one line. All of one size and one shape, by default; their styles, widths and toggles can differ.
+    kind: any
+---
+
+## Attributes
+
+Every attribute goes on the `<div>`, which has `role="group"`. Name the group with `aria-label`, or `aria-labelledby` pointing at a visible heading, when a name helps say what its buttons are for. M3 doesn't require one: each button's own label is what matters.
+
+## Anatomy
+
+- **Container:** invisible. It hugs its buttons and is as tall as they are. Between them it leaves M3's space for their size: 18px for extra small, 12px for small and 8px for medium, large and extra large. With mixed sizes it keeps the smallest one's space, so each button keeps its 48px target.
+
+The group reads the size from its buttons, so set `size` on each Button and ButtonIcon, not on the group. Use filled, tonal, outlined or elevated buttons; standard icon buttons and text buttons have no container to change width.
+
+## Motion
+
+Pressing a button, with a pointer or by holding Space or Enter, widens it by 15% of its width, and its neighbours give up the same width, so the group stays the same size. A middle button takes half from each side; an end button takes it all from its one neighbour. A neighbour gives up no more than the space beside its icon or label, so its content always stays inside it: for a small button, its 16px padding, and for a small icon button, the 8px either side of its icon. That limit is Compose's, which caps each neighbour at its trailing padding; M3's Specs page gives the 15% but no limit. The widths move on M3's fast spatial spring, and the group waits until the widening is three-quarters done before springing back, so a quick tap still shows it. Meanwhile the button's own corners morph as they do outside a group, and a toggle button swaps shape when it's selected.
+
+Under reduced motion the widths don't change.
