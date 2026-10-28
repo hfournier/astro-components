@@ -46,6 +46,7 @@ roles) and [`docs/adr/`](./docs/adr) for the design decisions behind it.
 | `Aside`                          | pattern   | A themed wrapper that renders as a native `<aside>`, built on BaseWrapper.                                        |
 | `Badge`                          | pattern   | An M3 badge showing a count or status dot on another element (usually an icon), using CSS anchor positioning.    |
 | `Button`                         | pattern   | Extends `<button>` (or `<a>` via `as="a"`) with M3's elevated/filled/tonal/outlined/text variants, shapes and sizes. |
+| `ButtonGroup`                    | pattern   | An M3 Expressive standard button group: spaces its buttons by size and widens the pressed one, narrowing its neighbours. |
 | `ButtonIcon`                     | pattern   | An M3 icon button: four styles, five sizes, three widths, an optional toggle state and a tooltip with its label.  |
 | `Details`                        | pattern   | Extends `<details>` with an M3 summary row, optional leading icon and animated chevron; outlined or plain.        |
 | `Dialog`                         | pattern   | A modal `<dialog>` styled after M3, with optional icon and headline, scrolling content and an actions footer.     |

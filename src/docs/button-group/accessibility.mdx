@@ -1,0 +1,7 @@
+ButtonGroup is a `<div>` with `role="group"`, so assistive tech announces its buttons as one set. The group itself isn't focusable. Tab lands on its first button and moves through the rest, and the left and right arrow keys move between them too, mirrored right to left. The arrow keys stop at the ends and skip disabled buttons. Space or Enter presses the focused button.
+
+The group needs no name of its own, though `aria-label` or `aria-labelledby` can give it one. Label each button instead, as Button and ButtonIcon ask: an icon button's `label` is its name. A toggle button announces whether it's selected through `aria-pressed`.
+
+Each button keeps a 48px target. Extra small and small groups leave 18px and 12px between buttons so the targets don't overlap; don't reduce that space.
+
+Under reduced motion, pressing a button doesn't change any widths.

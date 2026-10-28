@@ -1,0 +1,81 @@
+---
+title: ButtonGroup
+description: Tests for the ButtonGroup component
+---
+
+<Heading level={1}>ButtonGroup Tests</Heading>
+
+<Section data-testid="button-group-default" class="p-4 space-y-4">
+  <Heading level={2}>Default</Heading>
+  <ButtonGroup aria-label="Playback">
+    <Button variant="tonal">Rewind</Button>
+    <Button>Play now</Button>
+    <Button variant="tonal">Forward</Button>
+  </ButtonGroup>
+  <Heading level={3} id="button-group-actions">Message actions</Heading>
+  <ButtonGroup aria-labelledby="button-group-actions">
+    <ButtonIcon variant="tonal" icon="edit" label="Edit" />
+    <ButtonIcon variant="tonal" icon="share" label="Share" />
+    <ButtonIcon variant="tonal" icon="delete" label="Delete" />
+  </ButtonGroup>
+</Section>
+
+<Section data-testid="button-group-sizes" class="p-4 space-y-4">
+  <Heading level={2}>Sizes</Heading>
+  <ButtonGroup aria-label="Extra small group">
+    <Button size="xs" variant="tonal">Extra small</Button>
+    <ButtonIcon size="xs" variant="tonal" icon="add" label="Extra small add" />
+    <Button size="xs" variant="tonal">Extra small end</Button>
+  </ButtonGroup>
+  <ButtonGroup aria-label="Small group">
+    <Button variant="tonal">Small</Button>
+    <ButtonIcon variant="tonal" icon="add" label="Small add" />
+    <Button variant="tonal">Small end</Button>
+  </ButtonGroup>
+  <ButtonGroup aria-label="Medium group">
+    <Button size="md" variant="tonal">Medium</Button>
+    <ButtonIcon size="md" variant="tonal" icon="add" label="Medium add" />
+    <Button size="md" variant="tonal">Medium end</Button>
+  </ButtonGroup>
+  <ButtonGroup aria-label="Large group">
+    <Button size="lg" variant="tonal">Large</Button>
+    <ButtonIcon size="lg" variant="tonal" icon="add" label="Large add" />
+    <Button size="lg" variant="tonal">Large end</Button>
+  </ButtonGroup>
+  <ButtonGroup aria-label="Extra large group">
+    <Button size="xl" variant="tonal">Extra large</Button>
+    <ButtonIcon size="xl" variant="tonal" icon="add" label="Extra large add" />
+    <Button size="xl" variant="tonal">Extra large end</Button>
+  </ButtonGroup>
+  <ButtonGroup aria-label="Mixed group">
+    <Button size="xs" variant="tonal">Mixed extra small</Button>
+    <Button variant="tonal">Mixed small</Button>
+  </ButtonGroup>
+</Section>
+
+<Section data-testid="button-group-toggle" class="p-4 space-y-4">
+  <Heading level={2}>Toggle</Heading>
+  <ButtonGroup aria-label="Text style">
+    <ButtonIcon isToggle variant="tonal" icon="star" label="Star" />
+    <ButtonIcon isToggle isSelected variant="tonal" icon="favorite" label="Favorite" />
+    <Button isToggle variant="tonal" icon="bookmark">Bookmark</Button>
+  </ButtonGroup>
+</Section>
+
+<Section data-testid="button-group-disabled" class="p-4 space-y-4">
+  <Heading level={2}>Disabled</Heading>
+  <ButtonGroup aria-label="With a disabled button">
+    <Button variant="tonal">Before</Button>
+    <Button variant="tonal" disabled>Unavailable</Button>
+    <Button variant="tonal">After</Button>
+  </ButtonGroup>
+</Section>
+
+<Section data-testid="button-group-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <ButtonGroup aria-label="Right to left">
+    <Button variant="tonal">First</Button>
+    <Button>Second</Button>
+    <Button variant="tonal">Third</Button>
+  </ButtonGroup>
+</Section>
