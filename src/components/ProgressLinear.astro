@@ -24,6 +24,20 @@ const {
   ...attrs
 }: Props = Astro.props;
 
+// Values outside M3's fail the build, rather than drawing something other than was asked for.
+// MDX passes attributes as strings, so `thickness="8"` is read as the number it says.
+if (shape !== "flat" && shape !== "wavy") {
+  throw new Error(
+    `ProgressLinear: M3's shapes are "flat" and "wavy", but this one's \`shape\` is "${shape}".`
+  );
+}
+const trackThickness = Number(thickness);
+if (!Number.isFinite(trackThickness) || trackThickness <= 0) {
+  throw new Error(
+    `ProgressLinear: \`thickness\` is a number of px more than 0, but this one's is ${thickness}.`
+  );
+}
+
 // The progress's own position, as the browser works it out: value over max, within 0 and 1
 const maxAttribute = Number(attrs.max ?? 1);
 const max = maxAttribute > 0 ? maxAttribute : 1;
@@ -64,7 +78,7 @@ const indeterminateOnly =
     "[--ac-progress-linear-cap:calc(var(--ac-progress-linear-thickness)/2)] [--ac-progress-linear-gap:calc(4px_+_var(--ac-progress-linear-thickness))]",
     classList
   )}
-  style={`--ac-progress-linear-thickness: ${thickness}px; --ac-progress-linear-value: ${position}`}
+  style={`--ac-progress-linear-thickness: ${trackThickness}px; --ac-progress-linear-value: ${position}`}
   data-ac-progress-linear
   data-ac-progress-linear-shape={shape}
 >

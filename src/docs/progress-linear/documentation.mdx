@@ -15,12 +15,12 @@ props:
     type: '"flat" | "wavy"'
     required: false
     default: '"flat"'
-    description: M3's two shapes. `wavy` draws the active indicator as a wave 3px either side of the track, which grows the indicator from the track's thickness to 6px more (10px for the default track). A determinate wave lies flat below 10% and from 95%.
+    description: M3's two shapes; any other fails the build. `wavy` draws the active indicator as a wave 3px either side of the track, which grows the indicator from the track's thickness to 6px more (10px for the default track). A determinate wave lies flat below 10% and from 95%.
   - name: thickness
     type: number
     required: false
     default: "4"
-    description: The track's and active indicator's thickness in px. M3's default is 4; its thicker sample is 8. The stop indicator stays 4px, inset from the end of a thicker track.
+    description: The track's and active indicator's thickness in px. M3's default is 4; its thicker sample is 8. It must be more than 0; anything else fails the build. The stop indicator stays 4px, inset from the end of a thicker track.
   - name: showStopIndicator
     type: boolean
     required: false

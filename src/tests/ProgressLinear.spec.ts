@@ -376,3 +376,36 @@ test.describe("ProgressLinear", () => {
     });
   });
 });
+
+// Props outside M3's fail the build rather than drawing something other than was asked for.
+// /tests/progress-linear-props renders each case and lists the thickness it drew or the error it
+// threw.
+test.describe("ProgressLinear props", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/tests/progress-linear-props");
+  });
+
+  const outcome = (page: Page, name: string) =>
+    page.getByTestId(`progress-linear-props-${name}`);
+
+  test("reads a thickness given as text, as MDX passes it", async ({
+    page,
+  }) => {
+    await expect(outcome(page, "thickness-as-text")).toHaveText("rendered 8px");
+  });
+
+  test("throws on a thickness of 0, or not a number", async ({ page }) => {
+    await expect(outcome(page, "thickness-zero")).toHaveText(
+      "ProgressLinear: `thickness` is a number of px more than 0, but this one's is 0."
+    );
+    await expect(outcome(page, "thickness-not-a-number")).toHaveText(
+      /this one's is thick\.$/
+    );
+  });
+
+  test("throws on a shape M3 doesn't have", async ({ page }) => {
+    await expect(outcome(page, "shape-unknown")).toHaveText(
+      `ProgressLinear: M3's shapes are "flat" and "wavy", but this one's \`shape\` is "round".`
+    );
+  });
+});
