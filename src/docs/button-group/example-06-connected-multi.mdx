@@ -1,0 +1,17 @@
+---
+title: Connected, multi-select
+description: A connected group with `selection="multi"` keeps its buttons toggle buttons, each pressed on its own. Square buttons keep small outer corners too; a selected one turns fully round.
+---
+
+<div class="space-y-4">
+  <ButtonGroup variant="connected" selection="multi" aria-label="Filters">
+    <Button isToggle variant="outlined">Open</Button>
+    <Button isToggle isSelected variant="outlined">Assigned</Button>
+    <Button isToggle variant="outlined">Closed</Button>
+  </ButtonGroup>
+  <ButtonGroup variant="connected" selection="multi" class="w-fit" aria-label="Save to">
+    <ButtonIcon isToggle shape="square" variant="tonal" icon="star" label="Starred" />
+    <ButtonIcon isToggle shape="square" variant="tonal" icon="favorite" label="Favorites" />
+    <ButtonIcon isToggle shape="square" variant="tonal" icon="bookmark" label="Bookmarks" />
+  </ButtonGroup>
+</div>

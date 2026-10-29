@@ -1,0 +1,89 @@
+---
+title: ButtonGroup connected
+description: Tests for the connected ButtonGroup
+---
+
+<Heading level={1}>Connected ButtonGroup Tests</Heading>
+
+<Section data-testid="button-group-connected-single" class="p-4 space-y-4">
+  <Heading level={2}>Single-select</Heading>
+  <ButtonGroup variant="connected" selection="single" aria-label="View">
+    <Button isToggle variant="tonal" icon="calendar_month">Day</Button>
+    <Button isToggle isSelected variant="tonal">Week</Button>
+    <Button isToggle variant="tonal">Month</Button>
+  </ButtonGroup>
+  <ButtonGroup variant="connected" selection="single" isSelectionRequired aria-label="Sort">
+    <Button isToggle isSelected variant="tonal">Newest</Button>
+    <Button isToggle variant="tonal">Oldest</Button>
+    <Button isToggle variant="tonal" disabled>Popular</Button>
+  </ButtonGroup>
+</Section>
+
+<Section data-testid="button-group-connected-multi" class="p-4 space-y-4">
+  <Heading level={2}>Multi-select</Heading>
+  <ButtonGroup variant="connected" selection="multi" aria-label="Filters">
+    <Button isToggle variant="tonal">Open</Button>
+    <Button isToggle isSelected variant="tonal">Assigned</Button>
+    <Button isToggle variant="tonal">Closed</Button>
+  </ButtonGroup>
+  <ButtonGroup variant="connected" selection="multi" isSelectionRequired aria-label="Days">
+    <Button isToggle isSelected variant="tonal">Monday</Button>
+    <Button isToggle variant="tonal">Tuesday</Button>
+  </ButtonGroup>
+  <ButtonGroup variant="connected" selection="multi" aria-label="Save">
+    <ButtonIcon isToggle variant="tonal" icon="star" label="Star" />
+    <ButtonIcon isToggle variant="tonal" icon="favorite" label="Favorite" />
+    <ButtonIcon isToggle variant="tonal" icon="bookmark" label="Bookmark" />
+  </ButtonGroup>
+</Section>
+
+<Section data-testid="button-group-connected-sizes" class="p-4 space-y-4">
+  <Heading level={2}>Sizes</Heading>
+  <ButtonGroup variant="connected" selection="single" aria-label="Extra small">
+    <Button isToggle size="xs" variant="tonal">XS one</Button>
+    <Button isToggle size="xs" variant="tonal">XS two</Button>
+    <Button isToggle size="xs" variant="tonal">XS three</Button>
+  </ButtonGroup>
+  <ButtonGroup variant="connected" selection="single" aria-label="Small">
+    <Button isToggle variant="tonal">S one</Button>
+    <Button isToggle variant="tonal">S two</Button>
+    <Button isToggle variant="tonal">S three</Button>
+  </ButtonGroup>
+  <ButtonGroup variant="connected" selection="single" aria-label="Medium">
+    <Button isToggle size="md" variant="tonal">M one</Button>
+    <Button isToggle size="md" variant="tonal">M two</Button>
+    <Button isToggle size="md" variant="tonal">M three</Button>
+  </ButtonGroup>
+  <ButtonGroup variant="connected" selection="single" aria-label="Large">
+    <Button isToggle size="lg" variant="tonal">L one</Button>
+    <Button isToggle size="lg" variant="tonal">L two</Button>
+    <Button isToggle size="lg" variant="tonal">L three</Button>
+  </ButtonGroup>
+  <ButtonGroup variant="connected" selection="single" aria-label="Extra large">
+    <Button isToggle size="xl" variant="tonal">XL one</Button>
+    <Button isToggle size="xl" variant="tonal">XL two</Button>
+    <Button isToggle size="xl" variant="tonal">XL three</Button>
+  </ButtonGroup>
+  <ButtonGroup variant="connected" selection="multi" class="w-fit" aria-label="Extra small icons">
+    <ButtonIcon isToggle size="xs" width="narrow" variant="tonal" icon="star" label="XS star" />
+    <ButtonIcon isToggle size="xs" width="narrow" variant="tonal" icon="favorite" label="XS favorite" />
+  </ButtonGroup>
+</Section>
+
+<Section data-testid="button-group-connected-square" class="p-4 space-y-4">
+  <Heading level={2}>Square</Heading>
+  <ButtonGroup variant="connected" selection="single" aria-label="Square">
+    <Button isToggle shape="square" variant="outlined">Square one</Button>
+    <Button isToggle shape="square" variant="outlined">Square two</Button>
+    <Button isToggle shape="square" variant="outlined">Square three</Button>
+  </ButtonGroup>
+</Section>
+
+<Section data-testid="button-group-connected-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <ButtonGroup variant="connected" selection="single" aria-label="Right to left">
+    <Button isToggle variant="tonal">First</Button>
+    <Button isToggle variant="tonal">Second</Button>
+    <Button isToggle variant="tonal">Third</Button>
+  </ButtonGroup>
+</Section>

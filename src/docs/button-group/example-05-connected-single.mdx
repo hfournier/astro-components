@@ -1,0 +1,10 @@
+---
+title: Connected, single-select
+description: A connected group with `selection="single"` is a radiogroup, one button checked at a time. With `isSelectionRequired`, the checked one stays checked when clicked again.
+---
+
+<ButtonGroup variant="connected" selection="single" isSelectionRequired aria-label="View">
+  <Button isToggle variant="tonal">Day</Button>
+  <Button isToggle isSelected variant="tonal">Week</Button>
+  <Button isToggle variant="tonal">Month</Button>
+</ButtonGroup>

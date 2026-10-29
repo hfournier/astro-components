@@ -2,30 +2,179 @@
 import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
 
-// M3 Expressive's standard button group: an invisible container that spaces its buttons and icon
-// buttons, and widens a pressed one while its neighbours narrow. It has no color, shape or size of
-// its own; each button sets its own. Name it, if it needs a name, with `aria-label` or
-// `aria-labelledby`.
-type Props = HTMLAttributes<"div">;
+// M3 Expressive's button groups: invisible containers with no color or size of their own; each
+// button sets its own. Name one, if it needs a name, with `aria-label` or `aria-labelledby`.
+// - standard spaces its buttons and icon buttons, and widens a pressed one while its neighbours
+//   narrow
+// - connected joins toggle buttons 2px apart, with small inner corners, into one selection
+type Props = HTMLAttributes<"div"> & {
+  variant?: "standard" | "connected";
+  // A connected group's selection: one button at a time, each a radio, or any number of toggle
+  // buttons. Defaults to single.
+  selection?: "single" | "multi";
+  // A connected group's last selected button can't be unselected
+  isSelectionRequired?: boolean;
+};
 
-const { class: classList, ...attrs }: Props = Astro.props;
+const {
+  variant = "standard",
+  selection: selectionProp,
+  isSelectionRequired = false,
+  class: classList,
+  ...attrs
+}: Props = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["standard", "connected"].includes(variant)) {
+  throw new Error(
+    `ButtonGroup: M3's button groups are "standard" and "connected", but this one's \`variant\` is "${variant}".`
+  );
+}
+if (
+  selectionProp !== undefined &&
+  !["single", "multi"].includes(selectionProp)
+) {
+  throw new Error(
+    `ButtonGroup: M3's selections are "single" and "multi", but this one's \`selection\` is "${selectionProp}".`
+  );
+}
+const isConnected = variant === "connected";
+if (!isConnected && (selectionProp !== undefined || isSelectionRequired)) {
+  throw new Error(
+    `ButtonGroup: only M3's connected button groups have a selection, but this one's \`variant\` is "standard".`
+  );
+}
+const selection = isConnected ? (selectionProp ?? "single") : undefined;
+
+// A connected group's buttons, counted in the rendered slot by the marker on each Button's and
+// ButtonIcon's opening tag. Its selection is the group's: each button's own toggle marker comes
+// off, so only the script below flips it, and in a single-select group each becomes a radio.
+let items = "";
+if (isConnected) {
+  const rendered = await Astro.slots.render("default");
+  const buttonCount = rendered.match(/\sdata-ac-button-size=/g)?.length ?? 0;
+  const toggleCount =
+    rendered.match(/\saria-pressed="(true|false)"/g)?.length ?? 0;
+  const selectedCount = rendered.match(/\saria-pressed="true"/g)?.length ?? 0;
+  // M3: connected groups are for selection, so each button is a toggle
+  const plainCount = buttonCount - toggleCount;
+  if (plainCount > 0) {
+    throw new Error(
+      `ButtonGroup: M3's connected button groups hold toggle buttons (isToggle), but ${plainCount} of this one's ${plainCount === 1 ? "isn't" : "aren't"}.`
+    );
+  }
+  if (selection === "single" && selectedCount > 1) {
+    throw new Error(
+      `ButtonGroup: a single-select group has at most one button selected, but this one has ${selectedCount}.`
+    );
+  }
+  if (isSelectionRequired && selectedCount === 0) {
+    throw new Error(
+      `ButtonGroup: a group whose selection is required starts with a button selected, but this one has none.`
+    );
+  }
+  items = rendered.replace(
+    /\sdata-ac-(button-toggle(="")?|icon-toggle="aria-pressed")(?=[\s>])/g,
+    ""
+  );
+  if (selection === "single") {
+    items = items.replace(
+      /\saria-pressed="(true|false)"/g,
+      ' role="radio" aria-checked="$1"'
+    );
+  }
+}
 ---
 
-{/* M3's space between buttons follows their size: 18px for extra small, 12px for small and 8px
-    for the rest. With mixed sizes it keeps the smallest one's, so each keeps its 48px target. */}
-<div
-  class:list={twMerge(
-    "flex w-fit items-center gap-2",
-    "has-[>[data-ac-button-size=sm]]:not-has-[>[data-ac-button-size=xs]]:gap-3",
-    "has-[>[data-ac-button-size=xs]]:gap-4.5",
-    classList
-  )}
-  role="group"
-  data-ac-button-group
-  {...attrs}
->
-  <slot />
-</div>
+{isConnected ? (
+  <div
+    class:list={twMerge("flex w-full items-center gap-0.5", classList)}
+    role={selection === "single" ? "radiogroup" : "group"}
+    data-ac-button-group="connected"
+    data-ac-button-group-selection={selection}
+    data-ac-button-group-required={isSelectionRequired ? "" : undefined}
+    {...attrs}
+  >
+    <Fragment set:html={items} />
+  </div>
+) : (
+  /* M3's space between buttons follows their size: 18px for extra small, 12px for small and 8px
+     for the rest. With mixed sizes it keeps the smallest one's, so each keeps its 48px target. */
+  <div
+    class:list={twMerge(
+      "flex w-fit items-center gap-2",
+      "has-[>[data-ac-button-size=sm]]:not-has-[>[data-ac-button-size=xs]]:gap-3",
+      "has-[>[data-ac-button-size=xs]]:gap-4.5",
+      classList
+    )}
+    role="group"
+    data-ac-button-group="standard"
+    {...attrs}
+  >
+    <slot />
+  </div>
+)}
+
+<style>
+  /* M3's connected group. Unlayered, so it wins over the corners each Button and ButtonIcon set
+     with their own utilities. Per their size: a round button's full corners (half its height, in
+     px as Button's own are, so they animate), and the inner corners at rest and pressed. */
+  [data-ac-button-group="connected"] > :global(*) {
+    --ac-connected-full: 20px;
+    --ac-connected-inner: 8px;
+    --ac-connected-pressed: 4px;
+    /* an outer corner: full on a round button, the inner corner's size on a square one */
+    --ac-connected-outer: var(--ac-connected-inner);
+    --ac-connected-corner: var(--ac-connected-inner);
+    --ac-connected-start: var(--ac-connected-corner);
+    --ac-connected-end: var(--ac-connected-corner);
+    border-start-start-radius: var(--ac-connected-start);
+    border-end-start-radius: var(--ac-connected-start);
+    border-start-end-radius: var(--ac-connected-end);
+    border-end-end-radius: var(--ac-connected-end);
+    /* M3: the group spans its surface, its buttons sharing the width, each at least 48px wide */
+    flex: 1 0 3rem;
+    max-width: none;
+  }
+  [data-ac-button-group="connected"] > :global([data-ac-button-size="xs"]) {
+    --ac-connected-full: 16px;
+  }
+  [data-ac-button-group="connected"] > :global([data-ac-button-size="md"]) {
+    --ac-connected-full: 28px;
+  }
+  [data-ac-button-group="connected"] > :global([data-ac-button-size="lg"]) {
+    --ac-connected-full: 48px;
+    --ac-connected-inner: 16px;
+    --ac-connected-pressed: 12px;
+  }
+  [data-ac-button-group="connected"] > :global([data-ac-button-size="xl"]) {
+    --ac-connected-full: 68px;
+    --ac-connected-inner: 20px;
+    --ac-connected-pressed: 16px;
+  }
+  [data-ac-button-group="connected"] > :global([data-ac-button-shape="round"]) {
+    --ac-connected-outer: var(--ac-connected-full);
+  }
+  /* The first and last buttons' outer sides, less any script Astro puts beside them */
+  [data-ac-button-group="connected"]
+    > :global(:nth-child(1 of :not(script, style, template))) {
+    --ac-connected-start: var(--ac-connected-outer);
+  }
+  [data-ac-button-group="connected"]
+    > :global(:nth-last-child(1 of :not(script, style, template))) {
+    --ac-connected-end: var(--ac-connected-outer);
+  }
+  /* M3: selected, every corner is full. Pressed, which wins, the inner ones narrow. */
+  [data-ac-button-group="connected"]
+    > :global(:is([aria-pressed="true"], [aria-checked="true"])) {
+    --ac-connected-outer: var(--ac-connected-full);
+    --ac-connected-corner: var(--ac-connected-full);
+  }
+  [data-ac-button-group="connected"] > :global(:active:not(:disabled)) {
+    --ac-connected-corner: var(--ac-connected-pressed);
+  }
+</style>
 
 <script>
   // Compose's standard button group: a pressed button grows by 15% of its width, taking it from
@@ -107,10 +256,16 @@ const { class: classList, ...attrs }: Props = Astro.props;
     );
   };
 
+  // M3: a connected group's pressed button only changes shape, so only a standard group widens one
   const press = (item: HTMLElement) => {
     const group = item.parentElement!;
     const items = itemsOf(group);
-    if (reducedMotion.matches || item.matches(":disabled") || items.length < 2)
+    if (
+      group.matches("[data-ac-button-group=connected]") ||
+      reducedMotion.matches ||
+      item.matches(":disabled") ||
+      items.length < 2
+    )
       return;
     const state = states.get(group);
     const natural = state?.natural ?? widthsOf(items);
@@ -195,6 +350,30 @@ const { class: classList, ...attrs }: Props = Astro.props;
     };
     document.addEventListener("pointerup", end);
     document.addEventListener("pointercancel", end);
+  });
+
+  // A connected group's selection, on each click (keyboard activation fires click too): a radio
+  // checks and unchecks the others, a toggle button flips. With selection required, the last
+  // selected button stays selected.
+  document.addEventListener("click", (event) => {
+    const item = groupItemOf(event);
+    const group = item?.parentElement;
+    const selection = group?.dataset.acButtonGroupSelection;
+    if (!item || !group || !selection || item.matches(":disabled")) return;
+    const attribute = selection === "single" ? "aria-checked" : "aria-pressed";
+    const isOn = item.getAttribute(attribute) === "true";
+    const selected = itemsOf(group).filter(
+      (other) => other.getAttribute(attribute) === "true"
+    );
+    if (
+      isOn &&
+      "acButtonGroupRequired" in group.dataset &&
+      selected.length === 1
+    )
+      return;
+    if (selection === "single" && !isOn)
+      selected.forEach((other) => other.setAttribute(attribute, "false"));
+    item.setAttribute(attribute, String(!isOn));
   });
 
   // The button held down with Space or Enter, if any
