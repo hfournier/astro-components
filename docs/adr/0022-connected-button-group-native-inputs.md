@@ -1,5 +1,7 @@
 # The connected button group renders native radios and checkboxes
 
+> **First consequence updated by ADR-0023**: Button's container styling now lives in BaseButton, so ButtonGroupConnected's copy is compared against BaseButton, and keeps its copy for the reasons below.
+
 M3's connected button group (#197) is a choice: single-select or multi-select, the replacement for segmented buttons. A first version let ButtonGroup hold Buttons in its slot and took over their selection. That left the group little control over its buttons. Each one had to be a toggle, of one style, and correctly selected to start with, and the group could only check those rules by matching the rendered slot HTML. To make single-select buttons radios, it rewrote their `aria-pressed` into `role="radio"` and `aria-checked` as text, and switched off their own toggle scripts.
 
 M3's Accessibility page describes the keyboard for all button groups, and isn't consistent about Tab. Its table says Tab navigates between buttons, while its prose says Tab reaches the group and the arrow keys move between its items. Both agree that the arrow keys only move focus, and that Space or Enter selects the focused item. Native radios behave differently: a radio group is one Tab stop, the arrow keys move the selection, not just the focus, and Enter doesn't select.
@@ -20,6 +22,6 @@ We rejected keeping Buttons in the slot. The group's rules would stay checks on 
 
 ## Consequences
 
-- ButtonGroupConnected repeats Button's toggle styling (sizes, colors, state layer, motion) on its labels, as classes, so it reads line by line against Button's. Its states come from the input through `has-*` variants, rather than from the element itself. That departs from ADR-0020 §2, which puts state that styles another part in a `<style>` block: here each label reads only its own input, and keeping Button's classes keeps the copy comparable. A change to Button's look needs copying across (ADR-0013).
+- ButtonGroupConnected repeats Button's toggle styling (sizes, colors, state layer, motion) on its labels, as classes, so it reads line by line against Button's and BaseButton's (ADR-0023). Its states come from the input through `has-*` variants, rather than from the element itself. That departs from ADR-0020 §2, which puts state that styles another part in a `<style>` block: here each label reads only its own input, and keeping Button's classes keeps the copy comparable. A change to BaseButton's look needs copying across (ADR-0013).
 - The pressed shape is set by a small script, not `:active`, because Firefox doesn't give `:active` to a radio pressed while another radio in its group has focus.
 - WebKit doesn't treat focus moved between radios by the arrow keys as `:focus-visible`, so there a radio the arrow keys move to shows no focus ring, though one reached with Tab does. That's WebKit's behaviour for every native radio.

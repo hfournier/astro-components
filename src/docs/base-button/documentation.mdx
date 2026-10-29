@@ -1,0 +1,47 @@
+---
+name: BaseButton
+description: A primitive that draws Material 3's button container, rendering a native `<button>` (or `<a>`) with each style's colors, the outline, the state layer, the 48px touch target, the focus ring, the disabled look and the motion, for pattern components like Button and ButtonSplit.
+category: Base
+role: primitive
+meta:
+  title: BaseButton | astro-components HenriFournier.dev
+  description: A primitive drawing Material 3's button container (colors, outline, state layer, touch target, focus ring, disabled, motion) for Button and ButtonSplit.
+extends:
+  kind: element
+  tag: [button, a]
+props:
+  - name: as
+    type: '"button" | "a"'
+    required: false
+    default: '"button"'
+    description: Which element to render. Any other value fails the build.
+  - name: variant
+    type: '"elevated" | "filled" | "tonal" | "outlined" | "text"'
+    required: false
+    default: '"filled"'
+    description: The Material 3 button style, which sets the container, outline and label colors and the elevation. Filled and tonal rise to elevation 1 on hover, and elevated from 1 to 2. Any other value, or `text` with `isToggle`, fails the build.
+  - name: size
+    type: '"xs" | "sm" | "md" | "lg" | "xl"'
+    required: false
+    default: '"sm"'
+    description: Sets the outline width (1px up to `md`, 2px for `lg`, 3px for `xl`), which the state layer extends over. Height and padding are the caller's. Any other value fails the build.
+  - name: isToggle
+    type: boolean
+    required: false
+    default: "false"
+    description: Gives a toggle's colors. A filled toggle rests on a surface container, and each style takes its selected colors while `aria-pressed="true"` and enabled. The caller sets `aria-pressed` and flips it.
+slots:
+  - name: default
+    description: The button's content.
+    kind: any
+---
+
+## What the caller adds
+
+BaseButton draws only the container. The component that composes it gives, through `class`:
+
+- the corners and their morph (pressed, selected, or engaged as a split button's inner corners)
+- the height, padding and layout
+- the content and icons, and a toggle's `aria-pressed` with its selected shape
+
+BaseButton leaves the corners out, so no caller has to override them. A caller's `class` is merged last, so it can also replace a color or the transition, as FabMenuItem does for its items.

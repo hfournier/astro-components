@@ -12,6 +12,10 @@ const expected: Record<string, string | RegExp> = {
   "base-wrapper-as": `BaseWrapper: its elements are "article", "aside", "div", "figure", "footer", "header", "main" and "section", but this one's \`as\` is "span".`,
   "base-wrapper-bg-color":
     /^BaseWrapper: its backgrounds are "primary-container", .+ and "transparent", but this one's `bgColor` is "primary"\.$/,
+  "base-button-as": `BaseButton: its elements are "button" and "a", but this one's \`as\` is "div".`,
+  "base-button-variant": `BaseButton: M3's button styles are "elevated", "filled", "tonal", "outlined" and "text", but this one's \`variant\` is "contained".`,
+  "base-button-size": `BaseButton: M3's sizes are ${sizes}, but this one's \`size\` is "medium".`,
+  "base-button-toggle-text": `BaseButton: M3's toggle buttons are "elevated", "filled", "tonal" and "outlined", but this one's \`variant\` is "text".`,
   "button-as": `Button: its elements are "button" and "a", but this one's \`as\` is "div".`,
   "button-variant": `Button: M3's button styles are "elevated", "filled", "tonal", "outlined" and "text", but this one's \`variant\` is "contained".`,
   "button-shape": `Button: M3's shapes are "round" and "square", but this one's \`shape\` is "oval".`,

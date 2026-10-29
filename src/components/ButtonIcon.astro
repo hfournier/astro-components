@@ -156,7 +156,9 @@ const borderClasses = {
   xl: "border-3 before:-inset-[3px] [--ac-tooltip-anchor-inset:-3px]",
 }[size];
 
-// M3 disabled: icon on-surface at 38%, any container on-surface at 10%.
+// The container is drawn here rather than by BaseButton, as its styles, touch target and motion
+// differ from Button's (ADR-0023). M3 disabled: icon on-surface at 38%, any container on-surface
+// at 10%.
 const disabledContainer =
   "disabled:bg-(--theme-color-on-surface)/10 disabled:border-transparent";
 

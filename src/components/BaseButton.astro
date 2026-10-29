@@ -1,0 +1,145 @@
+---
+import type { HTMLTag, Polymorphic } from "astro/types";
+import { twMerge } from "tailwind-merge";
+
+// M3's button container, drawn once for Button and ButtonSplit (ADR-0023): each style's colors (a
+// toggle's resting and selected ones too), the elevation, the outline width for each size, the
+// state layer, the 48px touch target, the focus ring, disabled, and the motion. The caller's
+// `class` gives everything else: corners and their morph, height and padding, and layout.
+type Props<Tag extends Extract<HTMLTag, "a" | "button"> = "button"> =
+  Polymorphic<{
+    as: Tag;
+    // A toggle's colors: filled rests on a surface container, and each style has selected colors
+    // while aria-pressed. The caller sets aria-pressed and flips it.
+    isToggle?: boolean;
+    // sets the outline width
+    size?: "xs" | "sm" | "md" | "lg" | "xl";
+    variant?: "elevated" | "filled" | "outlined" | "text" | "tonal";
+  }>;
+
+// Two-read `Astro.props`, as in Button: the first read grabs `as` untyped
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const { as: Tag = "button" }: any = Astro.props;
+const {
+  // kept out of `attrs`, which would render it as a literal attribute; `Tag` holds it
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  as: _as,
+  isToggle = false,
+  size = "sm",
+  variant = "filled",
+  class: classList,
+  ...attrs
+}: Props<"a" | "button"> = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["button", "a"].includes(Tag)) {
+  throw new Error(
+    `BaseButton: its elements are "button" and "a", but this one's \`as\` is "${Tag}".`
+  );
+}
+if (!["elevated", "filled", "tonal", "outlined", "text"].includes(variant)) {
+  throw new Error(
+    `BaseButton: M3's button styles are "elevated", "filled", "tonal", "outlined" and "text", but this one's \`variant\` is "${variant}".`
+  );
+}
+// M3's toggle buttons have no text style
+if (isToggle && variant === "text") {
+  throw new Error(
+    `BaseButton: M3's toggle buttons are "elevated", "filled", "tonal" and "outlined", but this one's \`variant\` is "text".`
+  );
+}
+if (!["xs", "sm", "md", "lg", "xl"].includes(size)) {
+  throw new Error(
+    `BaseButton: M3's sizes are "xs", "sm", "md", "lg" and "xl", but this one's \`size\` is "${size}".`
+  );
+}
+
+// M3 outline width grows with size. The state layer extends over the border, so it insets by the
+// same amount.
+const borderClasses = {
+  xs: "border before:-inset-px",
+  sm: "border before:-inset-px",
+  md: "border before:-inset-px",
+  lg: "border-2 before:-inset-0.5",
+  xl: "border-3 before:-inset-[3px]",
+}[size];
+
+// M3 disabled: label on-surface at 38%, any container on-surface at 10%. An outline stays
+// outline-variant.
+const disabledContainer =
+  "disabled:bg-(--theme-color-on-surface)/10 disabled:border-transparent";
+
+// M3: elevated rests at level 1 and rises to 2 on hover; filled and tonal rest at 0 and rise to 1
+const elevatedShadow = `shadow-theme-elevation-1 not-disabled:hover:shadow-theme-elevation-2 disabled:shadow-none`;
+const raisedOnHover = "not-disabled:hover:shadow-theme-elevation-1";
+
+const variantClasses = {
+  elevated: `bg-(--theme-color-surface-container-low) border-(--theme-color-surface-container-low) text-(--theme-color-primary) ${elevatedShadow} ${disabledContainer}`,
+  // M3's filled toggle sits on a surface container until it's selected
+  filled: isToggle
+    ? `bg-(--theme-color-surface-container) border-(--theme-color-surface-container) text-(--theme-color-on-surface-variant) ${raisedOnHover} ${disabledContainer}`
+    : `bg-(--theme-color-primary) border-(--theme-color-primary) text-(--theme-color-on-primary) ${raisedOnHover} ${disabledContainer}`,
+  outlined:
+    "bg-transparent border-(--theme-color-outline-variant) text-(--theme-color-on-surface-variant)",
+  text: "bg-transparent border-transparent text-(--theme-color-primary)",
+  tonal: `bg-(--theme-color-secondary-container) border-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container) ${raisedOnHover} ${disabledContainer}`,
+}[variant];
+
+// A toggle's selected colors only apply while enabled, so a disabled toggle looks disabled. A
+// selected outlined toggle has a container, so disabled it gets the disabled one.
+const selectedClasses = {
+  elevated:
+    "not-disabled:aria-pressed:bg-(--theme-color-primary) not-disabled:aria-pressed:border-(--theme-color-primary) not-disabled:aria-pressed:text-(--theme-color-on-primary)",
+  filled:
+    "not-disabled:aria-pressed:bg-(--theme-color-primary) not-disabled:aria-pressed:border-(--theme-color-primary) not-disabled:aria-pressed:text-(--theme-color-on-primary)",
+  outlined:
+    "not-disabled:aria-pressed:bg-(--theme-color-inverse-surface) not-disabled:aria-pressed:border-(--theme-color-inverse-surface) not-disabled:aria-pressed:text-(--theme-color-inverse-on-surface) disabled:aria-pressed:bg-(--theme-color-on-surface)/10 disabled:aria-pressed:border-transparent",
+  text: "",
+  tonal:
+    "not-disabled:aria-pressed:bg-(--theme-color-secondary) not-disabled:aria-pressed:border-(--theme-color-secondary) not-disabled:aria-pressed:text-(--theme-color-on-secondary)",
+}[variant];
+---
+
+<Tag
+  class:list={twMerge(
+    "cursor-pointer",
+    "relative isolate before:absolute before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0 motion-safe:before:transition-opacity",
+    "not-disabled:hover:before:opacity-8 not-disabled:focus-visible:before:opacity-10 not-disabled:active:before:opacity-10",
+    // M3: a button whose menu is open keeps its pressed state layer
+    "aria-[haspopup=menu]:aria-expanded:before:opacity-10",
+    // M3 touch target: at least 48px high, centered on the button, for every size
+    "after:absolute after:inset-x-0 after:top-1/2 after:h-12 after:min-h-full after:-translate-y-1/2",
+    "disabled:cursor-default disabled:text-(--theme-color-on-surface)/38",
+    // the mixed springs, from the <style> block below; a caller's own transition replaces it
+    "motion-safe:[transition:var(--ac-base-button-transition)]",
+    "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
+    borderClasses,
+    variantClasses,
+    isToggle && selectedClasses,
+    classList
+  )}
+  data-ac-base-button
+  {...attrs}
+>
+  <slot />
+</Tag>
+
+<style>
+  /* M3's button tokens put the corner morph on the fast spatial spring; colors and the shadow are
+     on fast effects (ADR-0018). A custom property rather than `transition` itself, so a caller's
+     transition class can replace it (ADR-0020 §4), as FabMenuItem's stagger does. */
+  [data-ac-base-button] {
+    --ac-base-button-transition:
+      color var(--theme-duration-spring-fast-effects)
+        var(--ease-spring-fast-effects),
+      background-color var(--theme-duration-spring-fast-effects)
+        var(--ease-spring-fast-effects),
+      border-color var(--theme-duration-spring-fast-effects)
+        var(--ease-spring-fast-effects),
+      border-radius var(--theme-duration-spring-fast-spatial)
+        var(--ease-spring-fast-spatial),
+      box-shadow var(--theme-duration-spring-fast-effects)
+        var(--ease-spring-fast-effects);
+  }
+</style>

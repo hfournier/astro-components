@@ -1,8 +1,8 @@
 ---
 import type { HTMLTag, Polymorphic } from "astro/types";
-import { twMerge } from "tailwind-merge";
 import { filledIconFor, type SvgIconNameTypes } from "../svgs";
 import { unwrapParagraph } from "../utils";
+import BaseButton from "./BaseButton.astro";
 import Icon from "./Icon.astro";
 
 // Astro's own polymorphic-component helper. `src/tests/types/ButtonProps.astro` pins what it
@@ -103,6 +103,9 @@ const resolvedType = Tag === "button" ? (type ?? "button") : type;
 
 const label = unwrapParagraph(await Astro.slots.render("default"));
 
+// BaseButton draws the container: colors, outline, state layer, touch target, focus ring, disabled
+// and motion. Button adds its corners, size and content.
+
 // Size sets the height, padding, label type, icon size and the gap between icon and label, as in
 // M3 Expressive's five sizes. M3 picks the label style by size: Label Large for extra small and
 // small, Title Medium for medium, Headline Small for large and Headline Large for extra large.
@@ -124,16 +127,6 @@ const iconSizeClasses = {
   md: "size-6",
   lg: "size-8",
   xl: "size-10",
-}[size];
-
-// M3 outline width grows with size. The state layer extends over the border, so it insets by the
-// same amount.
-const borderClasses = {
-  xs: "border before:-inset-px",
-  sm: "border before:-inset-px",
-  md: "border before:-inset-px",
-  lg: "border-2 before:-inset-0.5",
-  xl: "border-3 before:-inset-[3px]",
 }[size];
 
 // "round" is half the height in px rather than rounded-full, so the corners can animate to and
@@ -169,41 +162,6 @@ const pressedShapeClasses = {
   xl: "not-disabled:active:rounded-2xl",
 }[size];
 
-// M3 disabled: label on-surface at 38%, any container on-surface at 10%. An outline stays
-// outline-variant.
-const disabledContainer =
-  "disabled:bg-(--theme-color-on-surface)/10 disabled:border-transparent";
-
-// M3: elevated rests at level 1 and rises to 2 on hover; filled and tonal rest at 0 and rise to 1
-const elevatedShadow = `shadow-theme-elevation-1 not-disabled:hover:shadow-theme-elevation-2 disabled:shadow-none`;
-const raisedOnHover = "not-disabled:hover:shadow-theme-elevation-1";
-
-const variantClasses = {
-  elevated: `bg-(--theme-color-surface-container-low) border-(--theme-color-surface-container-low) text-(--theme-color-primary) ${elevatedShadow} ${disabledContainer}`,
-  // M3's filled toggle sits on a surface container until it's selected
-  filled: isToggle
-    ? `bg-(--theme-color-surface-container) border-(--theme-color-surface-container) text-(--theme-color-on-surface-variant) ${raisedOnHover} ${disabledContainer}`
-    : `bg-(--theme-color-primary) border-(--theme-color-primary) text-(--theme-color-on-primary) ${raisedOnHover} ${disabledContainer}`,
-  outlined:
-    "bg-transparent border-(--theme-color-outline-variant) text-(--theme-color-on-surface-variant)",
-  text: "bg-transparent border-transparent text-(--theme-color-primary)",
-  tonal: `bg-(--theme-color-secondary-container) border-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container) ${raisedOnHover} ${disabledContainer}`,
-}[variant];
-
-// A toggle's selected colors only apply while enabled, so a disabled toggle looks disabled. A
-// selected outlined toggle has a container, so disabled it gets the disabled one.
-const selectedClasses = {
-  elevated:
-    "not-disabled:aria-pressed:bg-(--theme-color-primary) not-disabled:aria-pressed:border-(--theme-color-primary) not-disabled:aria-pressed:text-(--theme-color-on-primary)",
-  filled:
-    "not-disabled:aria-pressed:bg-(--theme-color-primary) not-disabled:aria-pressed:border-(--theme-color-primary) not-disabled:aria-pressed:text-(--theme-color-on-primary)",
-  outlined:
-    "not-disabled:aria-pressed:bg-(--theme-color-inverse-surface) not-disabled:aria-pressed:border-(--theme-color-inverse-surface) not-disabled:aria-pressed:text-(--theme-color-inverse-on-surface) disabled:aria-pressed:bg-(--theme-color-on-surface)/10 disabled:aria-pressed:border-transparent",
-  text: "",
-  tonal:
-    "not-disabled:aria-pressed:bg-(--theme-color-secondary) not-disabled:aria-pressed:border-(--theme-color-secondary) not-disabled:aria-pressed:text-(--theme-color-on-secondary)",
-}[variant];
-
 const isToggleButton = isToggle && Tag === "button";
 
 // M3: a selected toggle shows its icon filled, so it defaults to the -fill version when there is one
@@ -213,30 +171,20 @@ const selectedIcon =
     : undefined;
 ---
 
-<Tag
-  class:list={twMerge(
-    "group/button flex cursor-pointer items-center justify-center whitespace-nowrap",
-    "relative isolate before:absolute before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0 motion-safe:before:transition-opacity",
-    "not-disabled:hover:before:opacity-8 not-disabled:focus-visible:before:opacity-10 not-disabled:active:before:opacity-10",
-    // M3: a button whose menu is open keeps its pressed state layer
-    "aria-[haspopup=menu]:aria-expanded:before:opacity-10",
-    // M3 touch target: at least 48px high, centered on the button, for every size
-    "after:absolute after:inset-x-0 after:top-1/2 after:h-12 after:min-h-full after:-translate-y-1/2",
-    "disabled:cursor-default disabled:text-(--theme-color-on-surface)/38",
-    // M3's button tokens put the corner morph on the fast spatial spring; colors and the shadow
-    // are on fast effects (ADR-0018)
-    "motion-safe:[transition:color_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects),background-color_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects),border-color_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects),border-radius_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial),box-shadow_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects)]",
-    "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
+<BaseButton
+  as={Tag}
+  variant={variant}
+  size={size}
+  isToggle={isToggleButton}
+  class:list={[
+    "group/button flex items-center justify-center whitespace-nowrap",
     showFullwidth ? "min-w-full" : "max-w-fit",
-    borderClasses,
-    variantClasses,
     shapeClasses,
-    isToggleButton && selectedClasses,
     isToggleButton && selectedShapeClasses,
     pressedShapeClasses,
     sizeClasses,
-    classList
-  )}
+    classList,
+  ]}
   type={resolvedType}
   aria-pressed={isToggleButton ? String(isSelected) : undefined}
   data-ac-button-toggle={isToggleButton ? "" : undefined}
@@ -266,7 +214,7 @@ const selectedIcon =
       <Icon class:list={[iconSizeClasses, "shrink-0"]} name={icon} />
     ))}
   <Fragment set:html={label} />
-</Tag>
+</BaseButton>
 
 <script>
   // Each click flips a toggle's aria-pressed (keyboard activation fires click too). ButtonIcon has
