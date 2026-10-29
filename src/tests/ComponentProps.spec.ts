@@ -33,6 +33,16 @@ const expected: Record<string, string | RegExp> = {
   "button-icon-size": `ButtonIcon: M3's sizes are ${sizes}, but this one's \`size\` is "medium".`,
   "button-icon-variant": `ButtonIcon: M3's icon button styles are "filled", "tonal", "outlined" and "standard", but this one's \`variant\` is "text".`,
   "button-icon-width": `ButtonIcon: M3's widths are "narrow", "default" and "wide", but this one's \`width\` is "full".`,
+  "button-split-menu-id":
+    "ButtonSplit: its trailing button opens a Menu, which needs the menu's id, but this one's `menuId` is undefined.",
+  "button-split-menu-id-empty":
+    "ButtonSplit: its trailing button opens a Menu, which needs the menu's id, but this one's `menuId` is \"\".",
+  "button-split-menu-label":
+    "ButtonSplit: its trailing button shows only an icon, which needs a name, but this one's `menuLabel` is undefined.",
+  "button-split-name":
+    "ButtonSplit: its leading button needs a name, from its label or an `aria-label`, but this one has neither.",
+  "button-split-size": `ButtonSplit: M3's sizes are ${sizes}, but this one's \`size\` is "medium".`,
+  "button-split-variant": `ButtonSplit: M3's split buttons are "elevated", "filled", "tonal" and "outlined", but this one's \`variant\` is "text".`,
   "details-size": `Details: its sizes are "md" and "lg", but this one's \`size\` is "sm".`,
   "details-variant": `Details: its variants are "outlined" and "plain", but this one's \`variant\` is "filled".`,
   "divider-inset": `Divider: M3's insets are "none", "start" and "middle", but this one's \`inset\` is "end".`,
@@ -52,16 +62,6 @@ const expected: Record<string, string | RegExp> = {
   "nav-rail-align": `NavRail: M3's alignments are "top" and "center", but this one's \`align\` is "bottom".`,
   "popover-bg-color": `Popover: M3's popover surfaces are "surface-container", "surface-container-high" and "inverse-surface", but this one's \`bgColor\` is "surface-container-low".`,
   "sheet-side-edge": `SheetSide: its edges are "start" and "end", but this one's \`edge\` is "left".`,
-  "split-button-menu":
-    "SplitButton: its trailing button opens a Menu, which needs the menu's id, but this one's `menu` is undefined.",
-  "split-button-menu-empty":
-    "SplitButton: its trailing button opens a Menu, which needs the menu's id, but this one's `menu` is \"\".",
-  "split-button-menu-label":
-    "SplitButton: its trailing button shows only an icon, which needs a name, but this one's `menuLabel` is undefined.",
-  "split-button-name":
-    "SplitButton: its leading button needs a name, from its label or an `aria-label`, but this one has neither.",
-  "split-button-size": `SplitButton: M3's sizes are ${sizes}, but this one's \`size\` is "medium".`,
-  "split-button-variant": `SplitButton: M3's split buttons are "elevated", "filled", "tonal" and "outlined", but this one's \`variant\` is "text".`,
   "switch-icons": `Switch: M3's icon options are "none", "selected" and "both", but this one's \`icons\` is "unselected".`,
   "tab-transition": `Tab: its transitions are "fade", "fade-up" and "slide-left", but this one's \`transition\` is "slide".`,
   "tabs-align": `Tabs: M3's alignments are "start" and "center", but this one's \`align\` is "end".`,

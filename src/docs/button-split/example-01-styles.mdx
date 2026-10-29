@@ -4,18 +4,18 @@ description: Split buttons come in Button's elevated, filled, tonal and outlined
 ---
 
 <div class="flex flex-wrap gap-4">
-  <SplitButton variant="elevated" menu="styles-elevated-menu" menuLabel="More reply options">
+  <ButtonSplit variant="elevated" menuId="styles-elevated-menu" menuLabel="More reply options">
     Reply
-  </SplitButton>
-  <SplitButton menu="styles-filled-menu" menuLabel="More send options">
+  </ButtonSplit>
+  <ButtonSplit menuId="styles-filled-menu" menuLabel="More send options">
     Send
-  </SplitButton>
-  <SplitButton variant="tonal" menu="styles-tonal-menu" menuLabel="More save options">
+  </ButtonSplit>
+  <ButtonSplit variant="tonal" menuId="styles-tonal-menu" menuLabel="More save options">
     Save
-  </SplitButton>
-  <SplitButton variant="outlined" menu="styles-outlined-menu" menuLabel="More share options">
+  </ButtonSplit>
+  <ButtonSplit variant="outlined" menuId="styles-outlined-menu" menuLabel="More share options">
     Share
-  </SplitButton>
+  </ButtonSplit>
 </div>
 <Menu id="styles-elevated-menu">
   <MenuItem label="Reply all" />

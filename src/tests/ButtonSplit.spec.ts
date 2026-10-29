@@ -8,19 +8,19 @@ import {
   settled,
 } from "./support/helpers";
 
-// Each case on /tests/split-button is a Section with data-testid="split-button-<caseId>"
+// Each case on /tests/button-split is a Section with data-testid="button-split-<caseId>"
 type SplitCaseId = "menu" | "sizes" | "styles" | "rtl";
 
 const button = (page: Page, caseId: SplitCaseId, name: string) =>
   page
-    .getByTestId(`split-button-${caseId}`)
+    .getByTestId(`button-split-${caseId}`)
     .getByRole("button", { name, exact: true });
 
 const menu = (page: Page, id: string) => page.locator(`#${id}`);
 
 // The trailing button's menu icon
 const menuIcon = (trailing: Locator) =>
-  trailing.locator("[data-ac-split-button-part=icon]");
+  trailing.locator("[data-ac-button-split-part=icon]");
 
 // A button's corner radii, from its start edge: start-top, end-top, end-bottom, start-bottom
 const corners = (target: Locator) =>
@@ -40,7 +40,7 @@ const corners = (target: Locator) =>
 // How far the menu icon's center sits from its button's, toward the end edge
 const iconOffset = (trailing: Locator) =>
   trailing.evaluate((el) => {
-    const icon = el.querySelector("[data-ac-split-button-part=icon]")!;
+    const icon = el.querySelector("[data-ac-button-split-part=icon]")!;
     const center = (rect: DOMRect) => rect.left + rect.width / 2;
     const offset =
       center(icon.getBoundingClientRect()) - center(el.getBoundingClientRect());
@@ -118,9 +118,9 @@ const open = async (page: Page, trailing: Locator) => {
   await settled(page);
 };
 
-test.describe("SplitButton", () => {
+test.describe("ButtonSplit", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/tests/split-button");
+    await page.goto("/tests/button-split");
   });
 
   test("the leading button is named by its label and the trailing one by menuLabel, declaring its menu", async ({

@@ -130,12 +130,12 @@ test.describe("motion", () => {
     await expectTransitions(chevron, { rotate: FAST_SPATIAL });
   });
 
-  test("SplitButton: corners on fast spatial, colors on fast effects, the menu icon turning on standard fast spatial", async ({
+  test("ButtonSplit: corners on fast spatial, colors on fast effects, the menu icon turning on standard fast spatial", async ({
     page,
   }) => {
-    await page.goto("/tests/split-button");
+    await page.goto("/tests/button-split");
     const trailing = page
-      .getByTestId("split-button-menu")
+      .getByTestId("button-split-menu")
       .getByRole("button", { name: "More watch options" });
     await expectTransitions(trailing, {
       color: FAST_EFFECTS,
@@ -143,7 +143,7 @@ test.describe("motion", () => {
       "border-radius": FAST_SPATIAL,
     });
     await expectTransitions(
-      trailing.locator("[data-ac-split-button-part=icon]"),
+      trailing.locator("[data-ac-button-split-part=icon]"),
       { rotate: STANDARD_FAST_SPATIAL, translate: FAST_SPATIAL }
     );
   });

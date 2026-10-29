@@ -1,17 +1,17 @@
 ---
-name: SplitButton
+name: ButtonSplit
 description: A Material 3 Expressive split button, extending HTML's `<button>` element. A leading button for the main action sits 2px from a trailing menu button that opens a Menu of related actions. While the menu is open, the trailing button turns fully round and its icon turns toward the leading button.
 category: Forms
 role: pattern
 meta:
-  title: SplitButton | astro-components HenriFournier.dev
+  title: ButtonSplit | astro-components HenriFournier.dev
   description: A Material 3 Expressive split button, a main action beside a menu button that opens a Menu of related actions.
 extends:
   kind: element
   tag: [button]
 mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button
 props:
-  - name: menu
+  - name: menuId
     type: string
     required: true
     description: The id of the Menu the trailing button opens. Put the Menu anywhere on the page. The trailing button points at it with `commandfor`, so Menu's script makes it the menu's trigger. Leaving it out fails the build.

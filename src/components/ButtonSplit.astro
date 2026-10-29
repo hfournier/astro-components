@@ -6,14 +6,14 @@ import { unwrapParagraph } from "../utils";
 import Icon from "./Icon.astro";
 
 // An M3 Expressive split button: a leading button for the main action, and a trailing menu button,
-// 2px apart, that opens the Menu `menu` names. The trailing button points at the menu with
+// 2px apart, that opens the Menu `menuId` names. The trailing button points at the menu with
 // `commandfor`, so the browser toggles it and Menu's script gives it the menu button pattern: its
 // aria-expanded, focus into the menu and back, and the arrow keys. While the menu is open, the
 // trailing button is fully round and its icon turns toward the leading button. `class` goes on the
 // container; every other attribute on the leading button, as it's "the same as buttons".
 type Props = HTMLAttributes<"button"> & {
   // the id of the Menu the trailing button opens
-  menu: string;
+  menuId: string;
   // the trailing button's accessible name, which also names the menu: say there are more options
   // for the main action, e.g. "More watch options" for "Watch later"
   menuLabel: string;
@@ -24,7 +24,7 @@ type Props = HTMLAttributes<"button"> & {
 };
 
 const {
-  menu,
+  menuId,
   menuLabel,
   icon,
   size = "sm",
@@ -39,25 +39,25 @@ const {
 // (ADR-0021)
 if (!["xs", "sm", "md", "lg", "xl"].includes(size)) {
   throw new Error(
-    `SplitButton: M3's sizes are "xs", "sm", "md", "lg" and "xl", but this one's \`size\` is "${size}".`
+    `ButtonSplit: M3's sizes are "xs", "sm", "md", "lg" and "xl", but this one's \`size\` is "${size}".`
   );
 }
 if (!["elevated", "filled", "tonal", "outlined"].includes(variant)) {
   throw new Error(
-    `SplitButton: M3's split buttons are "elevated", "filled", "tonal" and "outlined", but this one's \`variant\` is "${variant}".`
+    `ButtonSplit: M3's split buttons are "elevated", "filled", "tonal" and "outlined", but this one's \`variant\` is "${variant}".`
   );
 }
 // an absent prop prints as undefined, an empty one as ""
 const quoted = (value?: string) =>
   value === undefined ? "undefined" : `"${value}"`;
-if (!menu) {
+if (!menuId) {
   throw new Error(
-    `SplitButton: its trailing button opens a Menu, which needs the menu's id, but this one's \`menu\` is ${quoted(menu)}.`
+    `ButtonSplit: its trailing button opens a Menu, which needs the menu's id, but this one's \`menuId\` is ${quoted(menuId)}.`
   );
 }
 if (!menuLabel) {
   throw new Error(
-    `SplitButton: its trailing button shows only an icon, which needs a name, but this one's \`menuLabel\` is ${quoted(menuLabel)}.`
+    `ButtonSplit: its trailing button shows only an icon, which needs a name, but this one's \`menuLabel\` is ${quoted(menuLabel)}.`
   );
 }
 
@@ -67,7 +67,7 @@ const label = Astro.slots.has("default")
   : "";
 if (!label.trim() && !attrs["aria-label"] && !attrs["aria-labelledby"]) {
   throw new Error(
-    "SplitButton: its leading button needs a name, from its label or an `aria-label`, but this one has neither."
+    "ButtonSplit: its leading button needs a name, from its label or an `aria-label`, but this one has neither."
   );
 }
 
@@ -76,11 +76,11 @@ if (!label.trim() && !attrs["aria-label"] && !attrs["aria-labelledby"]) {
 // pressed. The menu icon sits off center toward the leading button, so it looks centered beside
 // the round end, until the menu opens and the trailing button is round all over.
 const sizeProperties = {
-  xs: "[--ac-split-button-full:16px] [--ac-split-button-inner:4px] [--ac-split-button-engaged:8px] [--ac-split-button-icon-offset:-1px]",
-  sm: "[--ac-split-button-full:20px] [--ac-split-button-inner:4px] [--ac-split-button-engaged:12px] [--ac-split-button-icon-offset:-1px]",
-  md: "[--ac-split-button-full:28px] [--ac-split-button-inner:4px] [--ac-split-button-engaged:12px] [--ac-split-button-icon-offset:-2px]",
-  lg: "[--ac-split-button-full:48px] [--ac-split-button-inner:8px] [--ac-split-button-engaged:20px] [--ac-split-button-icon-offset:-3px]",
-  xl: "[--ac-split-button-full:68px] [--ac-split-button-inner:12px] [--ac-split-button-engaged:20px] [--ac-split-button-icon-offset:-6px]",
+  xs: "[--ac-button-split-full:16px] [--ac-button-split-inner:4px] [--ac-button-split-engaged:8px] [--ac-button-split-icon-offset:-1px]",
+  sm: "[--ac-button-split-full:20px] [--ac-button-split-inner:4px] [--ac-button-split-engaged:12px] [--ac-button-split-icon-offset:-1px]",
+  md: "[--ac-button-split-full:28px] [--ac-button-split-inner:4px] [--ac-button-split-engaged:12px] [--ac-button-split-icon-offset:-2px]",
+  lg: "[--ac-button-split-full:48px] [--ac-button-split-inner:8px] [--ac-button-split-engaged:20px] [--ac-button-split-icon-offset:-3px]",
+  xl: "[--ac-button-split-full:68px] [--ac-button-split-inner:12px] [--ac-button-split-engaged:20px] [--ac-button-split-icon-offset:-6px]",
 }[size];
 
 // Button's height, label type and icon gap per size. The leading button's padding is M3's
@@ -156,16 +156,16 @@ const buttonClasses = [
 
 // The leading button's start corners are full; its end corners widen while it's engaged
 const leadingShapeClasses =
-  "rounded-s-(--ac-split-button-full) rounded-e-(--ac-split-button-inner) enabled:hover:rounded-e-(--ac-split-button-engaged) focus-visible:rounded-e-(--ac-split-button-engaged) enabled:active:rounded-e-(--ac-split-button-engaged)";
+  "rounded-s-(--ac-button-split-full) rounded-e-(--ac-button-split-inner) enabled:hover:rounded-e-(--ac-button-split-engaged) focus-visible:rounded-e-(--ac-button-split-engaged) enabled:active:rounded-e-(--ac-button-split-engaged)";
 // The trailing button's end corners are full; its start corners widen while it's engaged, and are
 // full too while its menu is open, however it's engaged, keeping the pressed state layer
 const trailingShapeClasses =
-  "rounded-e-(--ac-split-button-full) rounded-s-(--ac-split-button-inner) not-aria-expanded:enabled:hover:rounded-s-(--ac-split-button-engaged) not-aria-expanded:focus-visible:rounded-s-(--ac-split-button-engaged) not-aria-expanded:enabled:active:rounded-s-(--ac-split-button-engaged) aria-expanded:rounded-s-(--ac-split-button-full) aria-expanded:before:opacity-10 aria-expanded:[--ac-split-button-icon-offset:0px]";
+  "rounded-e-(--ac-button-split-full) rounded-s-(--ac-button-split-inner) not-aria-expanded:enabled:hover:rounded-s-(--ac-button-split-engaged) not-aria-expanded:focus-visible:rounded-s-(--ac-button-split-engaged) not-aria-expanded:enabled:active:rounded-s-(--ac-button-split-engaged) aria-expanded:rounded-s-(--ac-button-split-full) aria-expanded:before:opacity-10 aria-expanded:[--ac-button-split-icon-offset:0px]";
 ---
 
 <div
   class:list={twMerge("flex w-fit gap-0.5", sizeProperties, classList)}
-  data-ac-split-button
+  data-ac-button-split
 >
   <button
     class:list={twMerge(
@@ -176,7 +176,7 @@ const trailingShapeClasses =
     )}
     type={type}
     disabled={disabled}
-    data-ac-split-button-part="leading"
+    data-ac-button-split-part="leading"
     {...attrs}
   >
     {icon && <Icon class:list={[iconSizeClasses, "shrink-0"]} name={icon} />}
@@ -191,10 +191,10 @@ const trailingShapeClasses =
     )}
     type="button"
     disabled={disabled}
-    commandfor={menu}
+    commandfor={menuId}
     command="toggle-popover"
     aria-label={menuLabel}
-    data-ac-split-button-part="trailing"
+    data-ac-button-split-part="trailing"
   >
     {/* M3's Guidelines: the menu icon turns 180° inward, toward the leading button, as the menu
          opens, on the standard scheme's fast spatial spring rather than the expressive one. Its
@@ -202,12 +202,12 @@ const trailingShapeClasses =
     <Icon
       class:list={[
         menuIconSizeClasses,
-        "shrink-0 translate-x-(--ac-split-button-icon-offset) rtl:-translate-x-(--ac-split-button-icon-offset)",
+        "shrink-0 translate-x-(--ac-button-split-icon-offset) rtl:-translate-x-(--ac-button-split-icon-offset)",
         "group-aria-expanded/trailing:rotate-180 rtl:group-aria-expanded/trailing:-rotate-180",
         "motion-safe:[transition:rotate_var(--theme-duration-spring-standard-fast-spatial)_var(--ease-spring-standard-fast-spatial),translate_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial)]",
       ]}
       name="keyboard_arrow_down"
-      data-ac-split-button-part="icon"
+      data-ac-button-split-part="icon"
     />
   </button>
 </div>
