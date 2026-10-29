@@ -106,6 +106,22 @@ export type SlotWithHeadingType = {
   headingId: string;
 };
 
+// One choice in a ButtonGroupConnected
+export type ButtonGroupConnectedOptionType = {
+  // The option's text, or, with showLabel false, its accessible name and tooltip
+  label: string;
+  // What the form submits for it. Defaults to the label.
+  value?: string;
+  // A leading icon, or the option's only content with showLabel false
+  icon?: SvgIconNameTypes;
+  // Shown in place of `icon` while selected. Defaults to the icon's -fill version, when there is one
+  selectedIcon?: SvgIconNameTypes;
+  showLabel?: boolean;
+  // Its initial state
+  isSelected?: boolean;
+  disabled?: boolean;
+};
+
 export type TabType = {
   badgeDescription?: string;
   badgeLabel?: string;

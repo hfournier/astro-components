@@ -1,0 +1,176 @@
+---
+title: ButtonGroupConnected
+description: Tests for the ButtonGroupConnected component
+---
+
+<Heading level={1}>ButtonGroupConnected Tests</Heading>
+
+<Section data-testid="button-group-connected-single" class="p-4 space-y-4">
+  <Heading level={2}>Single-select</Heading>
+  <ButtonGroupConnected
+    name="view"
+    aria-label="View"
+    options={[
+      { label: "Day", icon: "calendar_month" },
+      { label: "Week", isSelected: true },
+      { label: "Month" },
+    ]}
+  />
+  <ButtonGroupConnected
+    name="sort"
+    isSelectionRequired
+    aria-label="Sort"
+    options={[
+      { label: "Newest", isSelected: true },
+      { label: "Oldest" },
+      { label: "Popular", disabled: true },
+    ]}
+  />
+</Section>
+
+<Section data-testid="button-group-connected-multi" class="p-4 space-y-4">
+  <Heading level={2}>Multi-select</Heading>
+  <ButtonGroupConnected
+    name="filters"
+    selection="multi"
+    aria-label="Filters"
+    options={[
+      { label: "Open" },
+      { label: "Assigned", isSelected: true },
+      { label: "Pending", disabled: true },
+      { label: "Closed" },
+    ]}
+  />
+  <ButtonGroupConnected
+    name="days"
+    selection="multi"
+    isSelectionRequired
+    aria-label="Days"
+    options={[{ label: "Monday", isSelected: true }, { label: "Tuesday" }]}
+  />
+  <ButtonGroupConnected
+    name="save"
+    selection="multi"
+    class="w-fit"
+    aria-label="Save"
+    options={[
+      { label: "Star", icon: "star", showLabel: false },
+      { label: "Favorite", icon: "favorite", showLabel: false },
+      { label: "Bookmark", icon: "bookmark", showLabel: false },
+    ]}
+  />
+</Section>
+
+<Section data-testid="button-group-connected-sizes" class="p-4 space-y-4">
+  <Heading level={2}>Sizes</Heading>
+  <ButtonGroupConnected
+    name="xs"
+    size="xs"
+    aria-label="Extra small"
+    options={[{ label: "XS one" }, { label: "XS two" }, { label: "XS three" }]}
+  />
+  <ButtonGroupConnected
+    name="sm"
+    aria-label="Small"
+    options={[{ label: "S one" }, { label: "S two" }, { label: "S three" }]}
+  />
+  <ButtonGroupConnected
+    name="md"
+    size="md"
+    aria-label="Medium"
+    options={[{ label: "M one" }, { label: "M two" }, { label: "M three" }]}
+  />
+  <ButtonGroupConnected
+    name="lg"
+    size="lg"
+    aria-label="Large"
+    options={[{ label: "L one" }, { label: "L two" }, { label: "L three" }]}
+  />
+  <ButtonGroupConnected
+    name="xl"
+    size="xl"
+    aria-label="Extra large"
+    options={[{ label: "XL one" }, { label: "XL two" }, { label: "XL three" }]}
+  />
+  <ButtonGroupConnected
+    name="xs-icons"
+    size="xs"
+    selection="multi"
+    class="w-fit"
+    aria-label="Extra small icons"
+    options={[
+      { label: "XS star", icon: "star", showLabel: false },
+      { label: "XS favorite", icon: "favorite", showLabel: false },
+    ]}
+  />
+</Section>
+
+<Section data-testid="button-group-connected-styles" class="p-4 space-y-4">
+  <Heading level={2}>Shapes and styles</Heading>
+  <ButtonGroupConnected
+    name="square"
+    shape="square"
+    variant="outlined"
+    aria-label="Square"
+    options={[
+      { label: "Square one" },
+      { label: "Square two" },
+      { label: "Square three" },
+    ]}
+  />
+  <ButtonGroupConnected
+    name="filled"
+    variant="filled"
+    aria-label="Filled"
+    options={[{ label: "Filled one", isSelected: true }, { label: "Filled two" }]}
+  />
+  <ButtonGroupConnected
+    name="elevated"
+    variant="elevated"
+    aria-label="Elevated"
+    options={[
+      { label: "Elevated one", isSelected: true },
+      { label: "Elevated two" },
+    ]}
+  />
+</Section>
+
+<Section data-testid="button-group-connected-form" class="p-4 space-y-4">
+  <Heading level={2}>In a form</Heading>
+  <form id="connected-form">
+    <ButtonGroupConnected
+      name="size"
+      aria-label="Size"
+      options={[
+        { label: "Small", value: "s" },
+        { label: "Medium", value: "m", isSelected: true },
+        { label: "Large", value: "l" },
+      ]}
+    />
+    <ButtonGroupConnected
+      name="toppings"
+      selection="multi"
+      aria-label="Toppings"
+      options={[
+        { label: "Cheese", isSelected: true },
+        { label: "Olives" },
+        { label: "Basil", isSelected: true },
+      ]}
+    />
+  </form>
+</Section>
+
+<Section data-testid="button-group-connected-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <ButtonGroupConnected
+    name="rtl"
+    aria-label="Right to left"
+    options={[{ label: "First" }, { label: "Second" }, { label: "Third" }]}
+  />
+  <ButtonGroupConnected
+    name="rtl-multi"
+    selection="multi"
+    aria-label="Right to left multi"
+    options={[{ label: "One" }, { label: "Two" }]}
+  />
+</Section>

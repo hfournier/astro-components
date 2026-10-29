@@ -10,6 +10,7 @@ import Badge from "../../components/Badge.astro";
 import BaseOverlay from "../../components/BaseOverlay.astro";
 import BaseWrapper from "../../components/BaseWrapper.astro";
 import Button from "../../components/Button.astro";
+import ButtonGroupConnected from "../../components/ButtonGroupConnected.astro";
 import ButtonIcon from "../../components/ButtonIcon.astro";
 import Details from "../../components/Details.astro";
 import Divider from "../../components/Divider.astro";
@@ -32,6 +33,11 @@ const container = await experimental_AstroContainer.create();
 const add = { icon: "add", label: "Add" };
 const fabMenu = { ...add, id: "fab-menu" };
 const field = { label: "Name" };
+// ButtonGroupConnected needs a name and two or more options
+const choice = {
+  name: "choice",
+  options: [{ label: "One" }, { label: "Two" }],
+};
 // Each case: the component, and the props it needs plus the one under test. MDX passes
 // attributes as strings, so the number cases do too, and a valid one lists what it drew.
 const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
@@ -53,6 +59,44 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     "button-shape": [Button, { shape: "oval" }],
     "button-size": [Button, { size: "medium" }],
     "button-toggle-text": [Button, { isToggle: true, variant: "text" }],
+    "button-group-connected-name": [
+      ButtonGroupConnected,
+      { options: choice.options },
+    ],
+    "button-group-connected-selection": [
+      ButtonGroupConnected,
+      { ...choice, selection: "exclusive" },
+    ],
+    "button-group-connected-shape": [
+      ButtonGroupConnected,
+      { ...choice, shape: "oval" },
+    ],
+    "button-group-connected-size": [
+      ButtonGroupConnected,
+      { ...choice, size: "medium" },
+    ],
+    "button-group-connected-variant": [
+      ButtonGroupConnected,
+      { ...choice, variant: "text" },
+    ],
+    "button-group-connected-one-option": [
+      ButtonGroupConnected,
+      { ...choice, options: [{ label: "One" }] },
+    ],
+    "button-group-connected-two-selected": [
+      ButtonGroupConnected,
+      {
+        ...choice,
+        options: [
+          { label: "One", isSelected: true },
+          { label: "Two", isSelected: true },
+        ],
+      },
+    ],
+    "button-group-connected-required-none": [
+      ButtonGroupConnected,
+      { ...choice, isSelectionRequired: true },
+    ],
     "button-icon-shape": [ButtonIcon, { ...add, shape: "oval" }],
     "button-icon-size": [ButtonIcon, { ...add, size: "medium" }],
     "button-icon-variant": [ButtonIcon, { ...add, variant: "text" }],

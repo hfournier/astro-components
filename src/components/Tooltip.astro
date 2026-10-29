@@ -9,7 +9,8 @@ import { unwrapParagraph } from "../utils";
 //
 // - "plain" (default): a short label for the element it's placed in, above it (or below, in an
 //   app bar). Put it as a direct child of that element, which must be positioned (e.g.
-//   `relative`). It shows 500ms into a hover, straight away on keyboard focus, and on a long press
+//   `relative`), or of a label around the input it names. It shows 500ms into a hover, straight
+//   away on keyboard focus, and on a long press
 //   on a touchscreen. Its text repeats the element's accessible name, so it's hidden from assistive
 //   tech. To anchor to the element's border box rather than its padding box, the element sets
 //   --ac-tooltip-anchor-inset to minus its border width (e.g. `[--ac-tooltip-anchor-inset:-1px]`).
@@ -260,8 +261,10 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
         getComputedStyle(tooltip)
           .getPropertyValue("--ac-tooltip-off")
           .trim() === "1";
-      const isEngaged = () =>
-        isPointerOver || isPressed || parent.matches(":focus-visible");
+      // its element is focused, or holds the focused input, as a label does
+      const isFocused = () =>
+        parent.matches(":focus-visible, :has(> input:focus-visible)");
+      const isEngaged = () => isPointerOver || isPressed || isFocused();
       const hideNow = () => {
         clearTimeout(timer);
         tooltip.removeAttribute("data-shown");
@@ -300,7 +303,7 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
         hideLater();
       });
       parent.addEventListener("focusin", () => {
-        if (parent.matches(":focus-visible")) show();
+        if (isFocused()) show();
       });
       // a keyboard blur hides it straight away
       parent.addEventListener("focusout", () => {

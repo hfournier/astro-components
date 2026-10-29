@@ -1,0 +1,16 @@
+---
+title: Multi-select
+description: With `selection="multi"`, each option is a checkbox, checked on its own. Icons show filled while their option is selected.
+---
+
+<ButtonGroupConnected
+  name="filters"
+  selection="multi"
+  variant="outlined"
+  aria-label="Filters"
+  options={[
+    { label: "Inbox", icon: "inbox", isSelected: true },
+    { label: "Starred", icon: "star" },
+    { label: "Archived", icon: "archive" },
+  ]}
+/>

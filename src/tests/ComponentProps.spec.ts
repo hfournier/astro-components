@@ -17,6 +17,18 @@ const expected: Record<string, string | RegExp> = {
   "button-shape": `Button: M3's shapes are "round" and "square", but this one's \`shape\` is "oval".`,
   "button-size": `Button: M3's sizes are ${sizes}, but this one's \`size\` is "medium".`,
   "button-toggle-text": `Button: M3's toggle buttons are "elevated", "filled", "tonal" and "outlined", but this one's \`variant\` is "text".`,
+  "button-group-connected-name":
+    "ButtonGroupConnected: its options submit as one form field, which needs a name, but this one's `name` is undefined.",
+  "button-group-connected-selection": `ButtonGroupConnected: its selections are "single" and "multi", but this one's \`selection\` is "exclusive".`,
+  "button-group-connected-shape": `ButtonGroupConnected: M3's shapes are "round" and "square", but this one's \`shape\` is "oval".`,
+  "button-group-connected-size": `ButtonGroupConnected: M3's sizes are ${sizes}, but this one's \`size\` is "medium".`,
+  "button-group-connected-variant": `ButtonGroupConnected: M3's toggle buttons are "elevated", "filled", "tonal" and "outlined", but this one's \`variant\` is "text".`,
+  "button-group-connected-one-option":
+    "ButtonGroupConnected: M3's connected button groups join two or more buttons, but this one has 1.",
+  "button-group-connected-two-selected":
+    "ButtonGroupConnected: a single-select group has at most one option selected, but this one has 2.",
+  "button-group-connected-required-none":
+    "ButtonGroupConnected: a group whose selection is required starts with an option selected, but this one has none.",
   "button-icon-shape": `ButtonIcon: M3's shapes are "round" and "square", but this one's \`shape\` is "oval".`,
   "button-icon-size": `ButtonIcon: M3's sizes are ${sizes}, but this one's \`size\` is "medium".`,
   "button-icon-variant": `ButtonIcon: M3's icon button styles are "filled", "tonal", "outlined" and "standard", but this one's \`variant\` is "text".`,
