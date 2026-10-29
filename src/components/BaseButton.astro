@@ -12,7 +12,7 @@ type Props<Tag extends Extract<HTMLTag, "a" | "button"> = "button"> =
     // A toggle's colors: filled rests on a surface container, and each style has selected colors
     // while aria-pressed. The caller sets aria-pressed and flips it.
     isToggle?: boolean;
-    // sets the outline width
+    // Sets the outline width; the caller sets the height and padding
     size?: "xs" | "sm" | "md" | "lg" | "xl";
     variant?: "elevated" | "filled" | "outlined" | "text" | "tonal";
   }>;
