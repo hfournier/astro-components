@@ -1,0 +1,65 @@
+---
+name: SplitButton
+description: A Material 3 Expressive split button, extending HTML's `<button>` element. A leading button for the main action sits 2px from a trailing menu button that opens a Menu of related actions. While the menu is open, the trailing button turns fully round and its icon turns toward the leading button.
+category: Forms
+role: pattern
+meta:
+  title: SplitButton | astro-components HenriFournier.dev
+  description: A Material 3 Expressive split button, a main action beside a menu button that opens a Menu of related actions.
+extends:
+  kind: element
+  tag: [button]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button
+props:
+  - name: menu
+    type: string
+    required: true
+    description: The id of the Menu the trailing button opens. Put the Menu anywhere on the page. The trailing button points at it with `commandfor`, so Menu's script makes it the menu's trigger. Leaving it out fails the build.
+  - name: menuLabel
+    type: string
+    required: true
+    description: The trailing button's accessible name, which also names the menu. Say that it offers more options for the main action, such as "More watch options" beside "Watch later". Leaving it out fails the build.
+  - name: icon
+    type: SvgIconNameTypes
+    required: false
+    description: An icon before the leading button's label, sized as Button's (20px for `xs` and `sm`, 24px for `md`, 32px for `lg`, 40px for `xl`). It's decorative. With no label, the leading button shows only the icon; name it with `aria-label`, or the build fails.
+  - name: size
+    type: '"xs" | "sm" | "md" | "lg" | "xl"'
+    required: false
+    default: '"sm"'
+    description: M3's five sizes, as Button's, from 32px to 136px tall. Each sets the label's type style, the padding, the corners and the menu icon's size. Any other value fails the build.
+  - name: variant
+    type: '"elevated" | "filled" | "tonal" | "outlined"'
+    required: false
+    default: '"filled"'
+    description: Both buttons' style, with Button's colors. M3 has no text split button, as it has no container to split. Any other value fails the build.
+slots:
+  - name: default
+    description: The leading button's label. Keep it to one or two words. Leave it out for an icon-only leading button.
+    kind: text
+---
+
+## Attributes
+
+`class` goes on the container, which lays the two buttons side by side. Every other attribute goes on the leading `<button>`, as it's a common button: `onclick`, `type="submit"`, `form`, `aria-label` and the rest. `disabled` disables both buttons.
+
+## Anatomy
+
+- **Leading button:** an icon, a label, or both, with Button's height, label type and icon size. Its outer corners are full and its inner corners small. Its padding is M3's split button spacing, a little tighter on the inner side in the two smallest sizes.
+- **Trailing button:** the menu icon, `keyboard_arrow_down`, which M3 asks not to change, since it turns as the menu opens. It's as wide as it's tall from medium up, and 48px wide in extra small and small. Its icon sits slightly off center toward the leading button, so it looks centered beside the round end, until the menu opens.
+
+The buttons are 2px apart in every size. Their inner corners widen while each is hovered, focused or pressed:
+
+| | Extra small | Small | Medium | Large | Extra large |
+| --- | --- | --- | --- | --- | --- |
+| Height | 32px | 40px | 56px | 96px | 136px |
+| Inner corners | 4px | 4px | 4px | 8px | 12px |
+| Hovered, focused or pressed | 8px | 12px | 12px | 20px | 20px |
+| Menu icon | 22px | 22px | 26px | 38px | 50px |
+| Menu icon off center | 1px | 1px | 2px | 3px | 6px |
+
+While its menu is open, the trailing button is fully round and keeps a pressed state layer. Its colors don't change, unlike a toggle button's. The menu opens 4px below it, lined up with its start edge, or wherever there's room.
+
+## Motion
+
+The corners morph on the fast spatial spring and the colors change on fast effects, as a Button's do. The menu icon turns 180° inward as the menu opens and back as it closes, on the standard scheme's fast spatial spring, which M3 names for this turn. Under reduced motion, the corners and the icon change at once.

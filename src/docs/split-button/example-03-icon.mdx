@@ -1,0 +1,16 @@
+---
+title: Icon only
+description: "With an `icon` and no label, the leading button shows only the icon. Name it with `aria-label`, as you would any icon button."
+---
+
+<SplitButton
+  icon="favorite"
+  variant="outlined"
+  aria-label="Favorite"
+  menu="icon-favorite-menu"
+  menuLabel="More favorite options"
+/>
+<Menu id="icon-favorite-menu">
+  <MenuItem label="Add to a list" />
+  <MenuItem label="Remove from favorites" />
+</Menu>

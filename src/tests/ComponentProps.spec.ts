@@ -52,6 +52,14 @@ const expected: Record<string, string | RegExp> = {
   "nav-rail-align": `NavRail: M3's alignments are "top" and "center", but this one's \`align\` is "bottom".`,
   "popover-bg-color": `Popover: M3's popover surfaces are "surface-container", "surface-container-high" and "inverse-surface", but this one's \`bgColor\` is "surface-container-low".`,
   "sheet-side-edge": `SheetSide: its edges are "start" and "end", but this one's \`edge\` is "left".`,
+  "split-button-menu":
+    "SplitButton: its trailing button opens a Menu, which needs the menu's id, but this one's `menu` is undefined.",
+  "split-button-menu-label":
+    "SplitButton: its trailing button shows only an icon, which needs a name, but this one's `menuLabel` is undefined.",
+  "split-button-name":
+    "SplitButton: its leading button needs a name, from its label or an `aria-label`, but this one has neither.",
+  "split-button-size": `SplitButton: M3's sizes are ${sizes}, but this one's \`size\` is "medium".`,
+  "split-button-variant": `SplitButton: M3's split buttons are "elevated", "filled", "tonal" and "outlined", but this one's \`variant\` is "text".`,
   "switch-icons": `Switch: M3's icon options are "none", "selected" and "both", but this one's \`icons\` is "unselected".`,
   "tab-transition": `Tab: its transitions are "fade", "fade-up" and "slide-left", but this one's \`transition\` is "slide".`,
   "tabs-align": `Tabs: M3's alignments are "start" and "center", but this one's \`align\` is "end".`,

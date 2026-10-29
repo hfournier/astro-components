@@ -22,6 +22,7 @@ import NavDrawer from "../../components/NavDrawer.astro";
 import NavRail from "../../components/NavRail.astro";
 import Popover from "../../components/Popover.astro";
 import SheetSide from "../../components/SheetSide.astro";
+import SplitButton from "../../components/SplitButton.astro";
 import Switch from "../../components/Switch.astro";
 import Tab from "../../components/Tab.astro";
 import Tabs from "../../components/Tabs.astro";
@@ -38,6 +39,8 @@ const choice = {
   name: "choice",
   options: [{ label: "One" }, { label: "Two" }],
 };
+// SplitButton needs a menu and its trailing button's name
+const split = { menu: "split-menu", menuLabel: "More options" };
 // Each case: the component, and the props it needs plus the one under test. MDX passes
 // attributes as strings, so the number cases do too, and a valid one lists what it drew.
 const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
@@ -123,6 +126,11 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
       { id: "popover", bgColor: "surface-container-low" },
     ],
     "sheet-side-edge": [SheetSide, { edge: "left" }],
+    "split-button-menu": [SplitButton, { menuLabel: split.menuLabel }],
+    "split-button-menu-label": [SplitButton, { menu: split.menu }],
+    "split-button-name": [SplitButton, { ...split, icon: "add" }],
+    "split-button-size": [SplitButton, { ...split, size: "medium" }],
+    "split-button-variant": [SplitButton, { ...split, variant: "text" }],
     "switch-icons": [Switch, { icons: "unselected" }],
     "tab-transition": [Tab, { label: "One", transition: "slide" }],
     "tabs-align": [Tabs, { align: "end" }],
@@ -154,13 +162,16 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     "tooltip-placement": [Tooltip, { placement: "left" }],
     "tooltip-variant": [Tooltip, { variant: "tooltip" }],
   };
+// The cases whose slot isn't "Text": an icon-only button's is empty
+const slots: Record<string, string> = { "split-button-name": "" };
 const outcomes = await Promise.all(
-  Object.values(cases).map(async ([Component, props]) => {
+  Object.entries(cases).map(async ([name, [Component, props]]) => {
+    const slot = slots[name] ?? "Text";
     try {
       // some components render their slot as text, so each gets one
       const html = await container.renderToString(Component, {
         props,
-        slots: { default: "Text" },
+        slots: slot ? { default: slot } : {},
       });
       // what a valid case drew: a heading's element, a text area's rows, a counter's limit
       const drawn = [

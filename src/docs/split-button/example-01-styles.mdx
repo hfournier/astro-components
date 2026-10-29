@@ -1,0 +1,35 @@
+---
+title: Styles
+description: Split buttons come in Button's elevated, filled, tonal and outlined styles. An open menu adds only a state layer, not a selected color.
+---
+
+<div class="flex flex-wrap gap-4">
+  <SplitButton variant="elevated" menu="styles-elevated-menu" menuLabel="More reply options">
+    Reply
+  </SplitButton>
+  <SplitButton menu="styles-filled-menu" menuLabel="More send options">
+    Send
+  </SplitButton>
+  <SplitButton variant="tonal" menu="styles-tonal-menu" menuLabel="More save options">
+    Save
+  </SplitButton>
+  <SplitButton variant="outlined" menu="styles-outlined-menu" menuLabel="More share options">
+    Share
+  </SplitButton>
+</div>
+<Menu id="styles-elevated-menu">
+  <MenuItem label="Reply all" />
+  <MenuItem label="Forward" />
+</Menu>
+<Menu id="styles-filled-menu">
+  <MenuItem label="Schedule send" />
+  <MenuItem label="Send and archive" />
+</Menu>
+<Menu id="styles-tonal-menu">
+  <MenuItem label="Save as" />
+  <MenuItem label="Save a copy" />
+</Menu>
+<Menu id="styles-outlined-menu">
+  <MenuItem label="Copy link" />
+  <MenuItem label="Email" />
+</Menu>
