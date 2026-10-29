@@ -20,7 +20,7 @@ props:
     type: '"elevated" | "filled" | "tonal" | "outlined" | "text"'
     required: false
     default: "filled"
-    description: The button's Material 3 style, from most to least emphasis (see Style by emphasis). `filled` uses the primary color. `tonal` uses the secondary container color. `elevated` sits on a low surface container with a shadow. `outlined` has an outline and no fill. `text` has neither. Filled and tonal rise to elevation 1 on hover, and elevated from 1 to 2. As a toggle, `elevated` and `filled` turn primary when selected, `tonal` turns secondary and `outlined` turns inverse surface. Any other value fails the build.
+    description: The button's Material 3 style, from most to least emphasis (see Style by emphasis). `filled` uses the primary color. `tonal` uses the secondary container color. `elevated` sits on a low surface container with a shadow. `outlined` has an outline and no fill. `text` has neither. Filled and tonal rise to elevation 1 on hover, and elevated from 1 to 2. As a toggle, `elevated` and `filled` turn primary when selected, `tonal` turns secondary and `outlined` turns inverse surface. Any other value, or `text` on a toggle, fails the build.
   - name: size
     type: '"xs" | "sm" | "md" | "lg" | "xl"'
     required: false

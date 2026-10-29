@@ -2,7 +2,7 @@
 import type { HTMLAttributes } from "astro/types";
 import Icon from "./Icon.astro";
 import { twMerge } from "tailwind-merge";
-import type { HeadingLevelType } from "../types";
+import { headingLevels, type HeadingLevelType } from "../types";
 import { unwrapParagraph } from "../utils";
 
 type Props = HTMLAttributes<"h1"> & {
@@ -10,6 +10,14 @@ type Props = HTMLAttributes<"h1"> & {
 };
 
 const { class: classList, id, level, ...attrs } = Astro.props;
+
+// A level outside HTML's fails the build, rather than rendering an element that isn't a heading
+// (ADR-0021). MDX passes attributes as strings, so `level="2"` is read as the number it says.
+if (!(headingLevels as readonly number[]).includes(Number(level))) {
+  throw new Error(
+    `Heading: HTML's heading levels are 1 to 6, but this one's \`level\` is ${typeof level === "string" ? `"${level}"` : level}.`
+  );
+}
 
 // Each level is one step of M3's type scale, in rem so it follows the reader's font size
 const headingClasses = {

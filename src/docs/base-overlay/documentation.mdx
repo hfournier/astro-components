@@ -16,7 +16,7 @@ props:
     default: '"dialog"'
     description: Which HTML element to render the overlay as. Any other value fails the build.
   - name: bgColor
-    type: '"surface" | "surface-container-low" | "surface-container" | "surface-container-high" | "inverse-surface"'
+    type: '"surface" | "surface-container-low" | "surface-container" | "surface-container-high" | "inverse-surface" | "tertiary-container"'
     required: false
     default: '"surface-container-high"'
     description: The Material 3 surface of the overlay's panel, limited to the surfaces M3 uses for overlays - `Surface` for full-screen dialogs, `Surface Container Low` for sheets and drawers, `Surface Container` for menus and rich tooltips, `Surface Container High` for dialogs, and `Inverse Surface` for plain tooltips and snackbars. The panel is a BaseWrapper, so text, links and focus rings inside it take matching colors. Any other value fails the build.

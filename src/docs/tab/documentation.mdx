@@ -32,7 +32,7 @@ props:
     type: '"fade" | "fade-up" | "slide-left"'
     required: false
     default: '"fade"'
-    description: Which transition to play when this tab's panel swaps into view. The `fade` transition is a simple fade-in/fade-out, while the `fade-up` animates the panel fading in from below, and the `slide-left` animates the panel fading in and sliding from the right.
+    description: Which transition to play when this tab's panel swaps into view. The `fade` transition is a simple fade-in/fade-out, while the `fade-up` animates the panel fading in from below, and the `slide-left` animates the panel fading in and sliding from the right. Any other value fails the build.
 slots:
   - name: default
     description: The content to display when this tab is selected.

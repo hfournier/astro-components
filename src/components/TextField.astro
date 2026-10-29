@@ -36,8 +36,8 @@ const {
   ...attrs
 }: Props = Astro.props;
 
-// Values outside these fail the build, rather than drawing something other than was asked for
-// (ADR-0021)
+// Values outside these, or numbers outside their range, fail the build, rather than drawing
+// something other than was asked for (ADR-0021)
 if (
   ![
     "text",
@@ -59,20 +59,20 @@ if (!["filled", "outlined"].includes(variant)) {
     `TextField: M3's styles are "filled" and "outlined", but this one's \`variant\` is "${variant}".`
   );
 }
-// MDX passes attributes as strings, so `rows="4"` is read as the number it says
+// MDX passes attributes as strings, so `rows="4"` is read as the number it says. Text that isn't
+// a number is quoted in the message.
+const shown = (value: unknown) =>
+  typeof value === "string" ? `"${value}"` : value;
 const rowCount = rows == null ? undefined : Number(rows);
 if (rowCount !== undefined && !(Number.isInteger(rowCount) && rowCount >= 1)) {
   throw new Error(
-    `TextField: \`rows\` is a whole number of lines from 1, but this one's is ${rows}.`
+    `TextField: a text area is a whole number of lines tall, from 1, but this one's \`rows\` is ${shown(rows)}.`
   );
 }
-// M3's character counter: `maxlength` is a limit people can type past, as on Android, rather
-// than the native one that stops them. Past it, the counter and the field turn error, and the
-// script below makes the input invalid, so its form won't submit.
 const limit = maxlength == null ? undefined : Number(maxlength);
 if (limit !== undefined && !(Number.isInteger(limit) && limit >= 0)) {
   throw new Error(
-    `TextField: \`maxlength\` is a whole number of characters from 0, but this one's is ${maxlength}.`
+    `TextField: a character limit is a whole number, from 0, but this one's \`maxlength\` is ${shown(maxlength)}.`
   );
 }
 
@@ -95,6 +95,9 @@ const supportingId = Astro.slots.has("supporting-text")
   ? `${id}-supporting-text`
   : undefined;
 
+// M3's character counter: `maxlength` is a limit people can type past, as on Android, rather
+// than the native one that stops them. Past it, the counter and the field turn error, and the
+// script below makes the input invalid, so its form won't submit.
 const counterId = limit === undefined ? undefined : `${id}-counter`;
 const count = String(value ?? "").length;
 const isOverLimit = limit !== undefined && count > limit;

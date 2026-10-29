@@ -1,7 +1,10 @@
 import type { CollectionEntry } from "astro:content";
 import type { SvgIconNameTypes } from "./svgs";
 
-// M3 background roles, and transparent. A list, so BaseWrapper can check its `bgColor` (ADR-0021).
+// Each `as const` list here is what a component checks that prop against, and its type comes from
+// the list (ADR-0021)
+
+// M3 background roles, and transparent
 export const bgColors = [
   "primary-container",
   "primary-fixed",
@@ -28,21 +31,23 @@ export type BgColorType = (typeof bgColors)[number];
 // M3 overlay surfaces: full-screen dialogs (Surface), sheets/drawers and vertical menus (Low),
 // vibrant vertical menus (Tertiary container), baseline menus and rich tooltips (Container), dialogs
 // (High), plain tooltips and snackbars (Inverse). Other tinted backgrounds have no overlay use in M3.
-export type OverlayBgColorType = Extract<
-  BgColorType,
-  | "surface"
-  | "surface-container-low"
-  | "surface-container"
-  | "surface-container-high"
-  | "inverse-surface"
-  | "tertiary-container"
->;
+export const overlayBgColors = [
+  "surface",
+  "surface-container-low",
+  "surface-container",
+  "surface-container-high",
+  "inverse-surface",
+  "tertiary-container",
+] as const satisfies readonly BgColorType[];
+export type OverlayBgColorType = (typeof overlayBgColors)[number];
 
 // A popover is menu-, dialog- or tooltip-like, so sheets' Low surface is left out.
-export type PopoverBgColorType = Extract<
-  OverlayBgColorType,
-  "surface-container" | "surface-container-high" | "inverse-surface"
->;
+export const popoverBgColors = [
+  "surface-container",
+  "surface-container-high",
+  "inverse-surface",
+] as const satisfies readonly OverlayBgColorType[];
+export type PopoverBgColorType = (typeof popoverBgColors)[number];
 
 export type ButtonPropsType = { id?: string; text: string; value: string };
 
@@ -67,7 +72,8 @@ export const componentCategories = [
 ] as const;
 export type ComponentCategoryType = (typeof componentCategories)[number];
 
-export type HeadingLevelType = 1 | 2 | 3 | 4 | 5 | 6;
+export const headingLevels = [1, 2, 3, 4, 5, 6] as const;
+export type HeadingLevelType = (typeof headingLevels)[number];
 
 export type LayoutPropsType = {
   classListBody?: string;
@@ -85,7 +91,8 @@ export type NavSubItemType = {
   badgeLabel?: string | number;
 };
 
-export type OverlayTransitionType = "fade" | "fade-scale" | "fade-down";
+export const overlayTransitions = ["fade", "fade-scale", "fade-down"] as const;
+export type OverlayTransitionType = (typeof overlayTransitions)[number];
 
 // A prop/slot paired with the heading id already assigned to it in the table
 // of contents, so consumers don't have to re-derive the id by matching on
@@ -106,11 +113,14 @@ export type TabType = {
   label: string;
 };
 
-export type TabAlignType = "start" | "center";
+export const tabAligns = ["start", "center"] as const;
+export type TabAlignType = (typeof tabAligns)[number];
 
-export type TabTransitionType = "fade" | "fade-up" | "slide-left";
+export const tabTransitions = ["fade", "fade-up", "slide-left"] as const;
+export type TabTransitionType = (typeof tabTransitions)[number];
 
-export type TabVariantType = "primary" | "secondary";
+export const tabVariants = ["primary", "secondary"] as const;
+export type TabVariantType = (typeof tabVariants)[number];
 
 export type DetailsVariantType = "outlined" | "plain";
 

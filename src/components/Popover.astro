@@ -3,7 +3,7 @@ import type { ComponentProps } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import BaseOverlay from "./BaseOverlay.astro";
 import Icon from "./Icon.astro";
-import type { PopoverBgColorType } from "../types";
+import { popoverBgColors, type PopoverBgColorType } from "../types";
 
 type BaseOverlayProps = ComponentProps<typeof BaseOverlay>;
 
@@ -19,6 +19,23 @@ const {
   showCloseX = false,
   ...attrs
 } = Astro.props;
+
+// A surface outside a popover's fails the build, rather than drawing something other than was
+// asked for (ADR-0021). BaseOverlay checks the rest of its props.
+// A list's values as "a", "b" and "c", for the messages below
+const quoted = (values: readonly string[]) =>
+  values
+    .map((value) => `"${value}"`)
+    .join(", ")
+    .replace(/, (?=[^,]*$)/, " and ");
+if (
+  attrs.bgColor !== undefined &&
+  !(popoverBgColors as readonly string[]).includes(attrs.bgColor)
+) {
+  throw new Error(
+    `Popover: M3's popover surfaces are ${quoted(popoverBgColors)}, but this one's \`bgColor\` is "${attrs.bgColor}".`
+  );
+}
 ---
 
 <BaseOverlay

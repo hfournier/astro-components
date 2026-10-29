@@ -2,7 +2,12 @@
 import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import crypto from "node:crypto";
-import type { OverlayBgColorType, OverlayTransitionType } from "../types";
+import {
+  overlayBgColors,
+  overlayTransitions,
+  type OverlayBgColorType,
+  type OverlayTransitionType,
+} from "../types";
 import BaseWrapper from "./BaseWrapper.astro";
 
 type Props = Omit<HTMLAttributes<"dialog" | "div">, "id"> & {
@@ -32,28 +37,25 @@ const {
 
 // Values outside these fail the build, rather than drawing something other than was asked for
 // (ADR-0021)
+// A list's values as "a", "b" and "c", for the messages below
+const quoted = (values: readonly string[]) =>
+  values
+    .map((value) => `"${value}"`)
+    .join(", ")
+    .replace(/, (?=[^,]*$)/, " and ");
 if (!["dialog", "div"].includes(Tag)) {
   throw new Error(
     `BaseOverlay: its elements are "dialog" and "div", but this one's \`as\` is "${Tag}".`
   );
 }
-if (
-  ![
-    "surface",
-    "surface-container-low",
-    "surface-container",
-    "surface-container-high",
-    "inverse-surface",
-    "tertiary-container",
-  ].includes(bgColor)
-) {
+if (!(overlayBgColors as readonly string[]).includes(bgColor)) {
   throw new Error(
-    `BaseOverlay: M3's overlay surfaces are "surface", "surface-container-low", "surface-container", "surface-container-high", "inverse-surface" and "tertiary-container", but this one's \`bgColor\` is "${bgColor}".`
+    `BaseOverlay: M3's overlay surfaces are ${quoted(overlayBgColors)}, but this one's \`bgColor\` is "${bgColor}".`
   );
 }
-if (!["fade", "fade-scale", "fade-down"].includes(transition)) {
+if (!(overlayTransitions as readonly string[]).includes(transition)) {
   throw new Error(
-    `BaseOverlay: its transitions are "fade", "fade-scale" and "fade-down", but this one's \`transition\` is "${transition}".`
+    `BaseOverlay: its transitions are ${quoted(overlayTransitions)}, but this one's \`transition\` is "${transition}".`
   );
 }
 

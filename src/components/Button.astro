@@ -80,6 +80,12 @@ if (!["elevated", "filled", "tonal", "outlined", "text"].includes(variant)) {
     `Button: M3's button styles are "elevated", "filled", "tonal", "outlined" and "text", but this one's \`variant\` is "${variant}".`
   );
 }
+// M3's toggle buttons have no text style
+if (isToggle && variant === "text") {
+  throw new Error(
+    `Button: M3's toggle buttons are "elevated", "filled", "tonal" and "outlined", but this one's \`variant\` is "text".`
+  );
+}
 if (!["round", "square"].includes(shape)) {
   throw new Error(
     `Button: M3's shapes are "round" and "square", but this one's \`shape\` is "${shape}".`

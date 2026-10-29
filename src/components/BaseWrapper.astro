@@ -33,6 +33,12 @@ const {
 
 // Values outside these fail the build, rather than drawing something other than was asked for
 // (ADR-0021)
+// A list's values as "a", "b" and "c", for the messages below
+const quoted = (values: readonly string[]) =>
+  values
+    .map((value) => `"${value}"`)
+    .join(", ")
+    .replace(/, (?=[^,]*$)/, " and ");
 if (
   ![
     "article",
@@ -50,11 +56,11 @@ if (
   );
 }
 if (!(bgColors as readonly string[]).includes(bgColor)) {
-  const list = bgColors.map((color) => `"${color}"`);
   throw new Error(
-    `BaseWrapper: its backgrounds are ${list.slice(0, -1).join(", ")} and ${list.at(-1)}, but this one's \`bgColor\` is "${bgColor}".`
+    `BaseWrapper: its backgrounds are ${quoted(bgColors)}, but this one's \`bgColor\` is "${bgColor}".`
   );
 }
+
 // Each background also sets --theme-color-wrapper-bg, which descendants read for things that
 // must match the surface behind them - e.g. focus-ring offsets (ring-offset-(--theme-color-wrapper-bg)).
 // `transparent` leaves it alone, so they inherit the nearest wrapper's (or the page's) value.

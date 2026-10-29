@@ -14,7 +14,13 @@ import { twMerge } from "tailwind-merge";
 import TabList from "./TabList.astro";
 import TabPanels from "./TabPanels.astro";
 import BaseWrapper from "./BaseWrapper.astro";
-import type { TabAlignType, TabType, TabVariantType } from "../types";
+import {
+  tabAligns,
+  tabVariants,
+  type TabAlignType,
+  type TabType,
+  type TabVariantType,
+} from "../types";
 import type { SvgIconNameTypes } from "../svgs";
 
 type BaseWrapperProps = ComponentProps<typeof BaseWrapper>;
@@ -32,6 +38,25 @@ const {
   class: classList,
   ...attrs
 } = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+// A list's values as "a", "b" and "c", for the messages below
+const quoted = (values: readonly string[]) =>
+  values
+    .map((value) => `"${value}"`)
+    .join(", ")
+    .replace(/, (?=[^,]*$)/, " and ");
+if (!(tabAligns as readonly string[]).includes(align)) {
+  throw new Error(
+    `Tabs: M3's alignments are ${quoted(tabAligns)}, but this one's \`align\` is "${align}".`
+  );
+}
+if (!(tabVariants as readonly string[]).includes(variant)) {
+  throw new Error(
+    `Tabs: M3's tabs are ${quoted(tabVariants)}, but this one's \`variant\` is "${variant}".`
+  );
+}
 
 const slot = Astro.slots.has("default")
   ? await Astro.slots.render("default")

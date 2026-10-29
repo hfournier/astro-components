@@ -1,7 +1,7 @@
 ---
 import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
-import type { TabTransitionType } from "../types";
+import { tabTransitions, type TabTransitionType } from "../types";
 import type { SvgIconNameTypes } from "../svgs";
 
 type Props = HTMLAttributes<"div"> & {
@@ -21,6 +21,20 @@ const {
   class: classList,
   ...attrs
 } = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+// A list's values as "a", "b" and "c", for the messages below
+const quoted = (values: readonly string[]) =>
+  values
+    .map((value) => `"${value}"`)
+    .join(", ")
+    .replace(/, (?=[^,]*$)/, " and ");
+if (!(tabTransitions as readonly string[]).includes(transition)) {
+  throw new Error(
+    `Tab: its transitions are ${quoted(tabTransitions)}, but this one's \`transition\` is "${transition}".`
+  );
+}
 
 // M3's enter and exit pattern (ADR-0018): a panel comes in on emphasized decelerate over
 // medium 4 as its hidden attribute goes, and leaves on emphasized accelerate over short 4

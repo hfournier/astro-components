@@ -14,7 +14,7 @@ props:
     type: '"start" | "center"'
     required: false
     default: '"start"'
-    description: Where fixed tabs sit from a medium window up, where each is as wide as the widest tab rather than filling the width. M3's responsive layout guidance puts them at the leading edge or the center of the body region. The divider under them still spans the full width. Ignored on scrollable tabs.
+    description: Where fixed tabs sit from a medium window up, where each is as wide as the widest tab rather than filling the width. M3's responsive layout guidance puts them at the leading edge or the center of the body region. The divider under them still spans the full width. Ignored on scrollable tabs. Any other value fails the build.
   - name: isScrollable
     type: boolean
     required: false
@@ -24,7 +24,7 @@ props:
     type: '"primary" | "secondary"'
     required: false
     default: '"primary"'
-    description: M3's tab style. Primary tabs, for the main destinations of a content pane, stack an icon above the label and mark the selected tab with a 3px indicator as wide as its content. Secondary tabs, for a second level within content, put the icon beside the label and use a 2px indicator as wide as the tab.
+    description: M3's tab style. Primary tabs, for the main destinations of a content pane, stack an icon above the label and mark the selected tab with a 3px indicator as wide as its content. Secondary tabs, for a second level within content, put the icon beside the label and use a 2px indicator as wide as the tab. Any other value fails the build.
 slots:
   - name: default
     description: The set of tabs to render.
