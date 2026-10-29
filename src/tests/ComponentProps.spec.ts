@@ -54,6 +54,8 @@ const expected: Record<string, string | RegExp> = {
   "sheet-side-edge": `SheetSide: its edges are "start" and "end", but this one's \`edge\` is "left".`,
   "split-button-menu":
     "SplitButton: its trailing button opens a Menu, which needs the menu's id, but this one's `menu` is undefined.",
+  "split-button-menu-empty":
+    "SplitButton: its trailing button opens a Menu, which needs the menu's id, but this one's `menu` is \"\".",
   "split-button-menu-label":
     "SplitButton: its trailing button shows only an icon, which needs a name, but this one's `menuLabel` is undefined.",
   "split-button-name":

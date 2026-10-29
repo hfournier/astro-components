@@ -35,11 +35,6 @@ const {
   ...attrs
 }: Props = Astro.props;
 
-// none for an icon-only leading button
-const label = Astro.slots.has("default")
-  ? unwrapParagraph(await Astro.slots.render("default"))
-  : "";
-
 // Values outside these fail the build, rather than drawing something other than was asked for
 // (ADR-0021)
 if (!["xs", "sm", "md", "lg", "xl"].includes(size)) {
@@ -52,16 +47,24 @@ if (!["elevated", "filled", "tonal", "outlined"].includes(variant)) {
     `SplitButton: M3's split buttons are "elevated", "filled", "tonal" and "outlined", but this one's \`variant\` is "${variant}".`
   );
 }
+// an absent prop prints as undefined, an empty one as ""
+const quoted = (value?: string) =>
+  value === undefined ? "undefined" : `"${value}"`;
 if (!menu) {
   throw new Error(
-    "SplitButton: its trailing button opens a Menu, which needs the menu's id, but this one's `menu` is undefined."
+    `SplitButton: its trailing button opens a Menu, which needs the menu's id, but this one's \`menu\` is ${quoted(menu)}.`
   );
 }
 if (!menuLabel) {
   throw new Error(
-    "SplitButton: its trailing button shows only an icon, which needs a name, but this one's `menuLabel` is undefined."
+    `SplitButton: its trailing button shows only an icon, which needs a name, but this one's \`menuLabel\` is ${quoted(menuLabel)}.`
   );
 }
+
+// none for an icon-only leading button
+const label = Astro.slots.has("default")
+  ? unwrapParagraph(await Astro.slots.render("default"))
+  : "";
 if (!label.trim() && !attrs["aria-label"] && !attrs["aria-labelledby"]) {
   throw new Error(
     "SplitButton: its leading button needs a name, from its label or an `aria-label`, but this one has neither."
@@ -155,9 +158,9 @@ const buttonClasses = [
 const leadingShapeClasses =
   "rounded-s-(--ac-split-button-full) rounded-e-(--ac-split-button-inner) enabled:hover:rounded-e-(--ac-split-button-engaged) focus-visible:rounded-e-(--ac-split-button-engaged) enabled:active:rounded-e-(--ac-split-button-engaged)";
 // The trailing button's end corners are full; its start corners widen while it's engaged, and are
-// full too while its menu is open, keeping the pressed state layer
+// full too while its menu is open, however it's engaged, keeping the pressed state layer
 const trailingShapeClasses =
-  "rounded-e-(--ac-split-button-full) rounded-s-(--ac-split-button-inner) enabled:hover:rounded-s-(--ac-split-button-engaged) focus-visible:rounded-s-(--ac-split-button-engaged) enabled:active:rounded-s-(--ac-split-button-engaged) aria-expanded:rounded-s-(--ac-split-button-full) aria-expanded:before:opacity-10 aria-expanded:[--ac-split-button-icon-offset:0px]";
+  "rounded-e-(--ac-split-button-full) rounded-s-(--ac-split-button-inner) not-aria-expanded:enabled:hover:rounded-s-(--ac-split-button-engaged) not-aria-expanded:focus-visible:rounded-s-(--ac-split-button-engaged) not-aria-expanded:enabled:active:rounded-s-(--ac-split-button-engaged) aria-expanded:rounded-s-(--ac-split-button-full) aria-expanded:before:opacity-10 aria-expanded:[--ac-split-button-icon-offset:0px]";
 ---
 
 <div
@@ -194,13 +197,14 @@ const trailingShapeClasses =
     data-ac-split-button-part="trailing"
   >
     {/* M3's Guidelines: the menu icon turns 180° inward, toward the leading button, as the menu
-         opens, on the standard scheme's fast spatial spring rather than the expressive one */}
+         opens, on the standard scheme's fast spatial spring rather than the expressive one. Its
+         move to the center is on fast spatial, as any change of position is (ADR-0018). */}
     <Icon
       class:list={[
         menuIconSizeClasses,
         "shrink-0 translate-x-(--ac-split-button-icon-offset) rtl:-translate-x-(--ac-split-button-icon-offset)",
         "group-aria-expanded/trailing:rotate-180 rtl:group-aria-expanded/trailing:-rotate-180",
-        "motion-safe:transition-[rotate,translate] motion-safe:duration-(--theme-duration-spring-standard-fast-spatial) motion-safe:ease-spring-standard-fast-spatial",
+        "motion-safe:[transition:rotate_var(--theme-duration-spring-standard-fast-spatial)_var(--ease-spring-standard-fast-spatial),translate_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial)]",
       ]}
       name="keyboard_arrow_down"
       data-ac-split-button-part="icon"

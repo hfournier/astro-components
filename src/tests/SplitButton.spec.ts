@@ -294,6 +294,16 @@ test.describe("SplitButton", () => {
     });
   }
 
+  // A click leaves the pointer on the button, and hovered corners mustn't win over the open ones
+  test("an open menu's trailing button stays round with the pointer still on it", async ({
+    page,
+  }) => {
+    const trailing = button(page, "sizes", trailingName("Small"));
+    await trailing.click();
+    await settled(page);
+    expect(await corners(trailing)).toEqual([20, 20, 20, 20]);
+  });
+
   // M3's Specs: the same colors as Buttons; an open menu's trailing button keeps a pressed state
   // layer rather than a selected color
   test("each style takes Button's colors, in light and dark", async ({

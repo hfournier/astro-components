@@ -127,6 +127,7 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     ],
     "sheet-side-edge": [SheetSide, { edge: "left" }],
     "split-button-menu": [SplitButton, { menuLabel: split.menuLabel }],
+    "split-button-menu-empty": [SplitButton, { ...split, menu: "" }],
     "split-button-menu-label": [SplitButton, { menu: split.menu }],
     "split-button-name": [SplitButton, { ...split, icon: "add" }],
     "split-button-size": [SplitButton, { ...split, size: "medium" }],

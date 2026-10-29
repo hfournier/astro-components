@@ -144,7 +144,7 @@ test.describe("motion", () => {
     });
     await expectTransitions(
       trailing.locator("[data-ac-split-button-part=icon]"),
-      { rotate: STANDARD_FAST_SPATIAL, translate: STANDARD_FAST_SPATIAL }
+      { rotate: STANDARD_FAST_SPATIAL, translate: FAST_SPATIAL }
     );
   });
 
