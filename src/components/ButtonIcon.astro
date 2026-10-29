@@ -41,6 +41,29 @@ const {
   ...attrs
 }: Props = Astro.props;
 
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["round", "square"].includes(shape)) {
+  throw new Error(
+    `ButtonIcon: M3's shapes are "round" and "square", but this one's \`shape\` is "${shape}".`
+  );
+}
+if (!["xs", "sm", "md", "lg", "xl"].includes(size)) {
+  throw new Error(
+    `ButtonIcon: M3's sizes are "xs", "sm", "md", "lg" and "xl", but this one's \`size\` is "${size}".`
+  );
+}
+if (!["filled", "tonal", "outlined", "standard"].includes(variant)) {
+  throw new Error(
+    `ButtonIcon: M3's icon button styles are "filled", "tonal", "outlined" and "standard", but this one's \`variant\` is "${variant}".`
+  );
+}
+if (!["narrow", "default", "wide"].includes(width)) {
+  throw new Error(
+    `ButtonIcon: M3's widths are "narrow", "default" and "wide", but this one's \`width\` is "${width}".`
+  );
+}
+
 // M3: a selected toggle shows the filled icon, so it doesn't rely on color alone
 const selectedIcon =
   selectedIconProp ?? (isToggle ? filledIconFor(icon) : undefined);

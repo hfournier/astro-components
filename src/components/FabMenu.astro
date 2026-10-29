@@ -47,6 +47,24 @@ const {
   ...attrs
 } = Astro.props;
 
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["default", "md", "lg"].includes(size)) {
+  throw new Error(
+    `FabMenu: M3's sizes are "default", "md" and "lg", but this one's \`size\` is "${size}".`
+  );
+}
+if (!["primary", "secondary", "tertiary"].includes(color)) {
+  throw new Error(
+    `FabMenu: M3's colors are "primary", "secondary" and "tertiary", but this one's \`color\` is "${color}".`
+  );
+}
+if (!["end", "start"].includes(align)) {
+  throw new Error(
+    `FabMenu: its alignments are "end" and "start", but this one's \`align\` is "${align}".`
+  );
+}
+
 const slot = Astro.slots.has("default")
   ? await Astro.slots.render("default")
   : "";

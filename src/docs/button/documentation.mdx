@@ -15,22 +15,22 @@ props:
     type: '"button" | "a"'
     required: false
     default: "button"
-    description: Which element Button renders. Use `as="a"` (with `href`) to render an anchor styled identically to the button, for a link that should look like a button.
+    description: Which element Button renders. Use `as="a"` (with `href`) to render an anchor styled identically to the button, for a link that should look like a button. Any other value fails the build.
   - name: variant
     type: '"elevated" | "filled" | "tonal" | "outlined" | "text"'
     required: false
     default: "filled"
-    description: The button's Material 3 style, from most to least emphasis (see Style by emphasis). `filled` uses the primary color. `tonal` uses the secondary container color. `elevated` sits on a low surface container with a shadow. `outlined` has an outline and no fill. `text` has neither. Filled and tonal rise to elevation 1 on hover, and elevated from 1 to 2. As a toggle, `elevated` and `filled` turn primary when selected, `tonal` turns secondary and `outlined` turns inverse surface.
+    description: The button's Material 3 style, from most to least emphasis (see Style by emphasis). `filled` uses the primary color. `tonal` uses the secondary container color. `elevated` sits on a low surface container with a shadow. `outlined` has an outline and no fill. `text` has neither. Filled and tonal rise to elevation 1 on hover, and elevated from 1 to 2. As a toggle, `elevated` and `filled` turn primary when selected, `tonal` turns secondary and `outlined` turns inverse surface. Any other value, or `text` on a toggle, fails the build.
   - name: size
     type: '"xs" | "sm" | "md" | "lg" | "xl"'
     required: false
     default: "sm"
-    description: M3 Expressive's five sizes, from extra small to extra large. Each sets the height (32, 40, 56, 96 or 136px), the padding on each side (12, 16, 24, 48 or 64px), the label's type style (Label Large for `xs` and `sm`, Title Medium for `md`, Headline Small for `lg` and Headline Large for `xl`), the icon size, the corner radii and the outline width. Every size keeps a touch target at least 48px high.
+    description: M3 Expressive's five sizes, from extra small to extra large. Each sets the height (32, 40, 56, 96 or 136px), the padding on each side (12, 16, 24, 48 or 64px), the label's type style (Label Large for `xs` and `sm`, Title Medium for `md`, Headline Small for `lg` and Headline Large for `xl`), the icon size, the corner radii and the outline width. Every size keeps a touch target at least 48px high. Any other value fails the build.
   - name: shape
     type: '"round" | "square"'
     required: false
     default: "round"
-    description: The button's corners at rest. `round` is fully rounded. `square` uses corner radii that scale with `size` (12, 12, 16, 28 and 28px). Either way, the corners tighten while the button is pressed.
+    description: The button's corners at rest. `round` is fully rounded. `square` uses corner radii that scale with `size` (12, 12, 16, 28 and 28px). Either way, the corners tighten while the button is pressed. Any other value fails the build.
   - name: icon
     type: SvgIconNameTypes
     required: false

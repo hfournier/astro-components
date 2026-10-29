@@ -14,12 +14,12 @@ props:
     type: '"article" | "aside" | "div" | "figure" | "footer" | "header" | "main" | "section"'
     required: false
     default: '"div"'
-    description: Which HTML element to render the wrapper as.
+    description: Which HTML element to render the wrapper as. Any other value fails the build.
   - name: bgColor
     type: '"primary-container" | "primary-fixed" | "primary-fixed-dim" | "secondary-container" | "secondary-fixed" | "secondary-fixed-dim" | "tertiary-container" | "tertiary-fixed" | "tertiary-fixed-dim" | "surface-dim" | "surface-bright" | "inverse-surface" | "surface-container-lowest" | "surface-container-low" | "surface-container" | "surface-container-high" | "surface-container-highest" | "transparent"'
     required: false
     default: '"transparent"'
-    description: Which Material 3 background role to apply to the wrapper, paired with its matching "on" role for text (e.g. `primary-container` with `on-primary-container`). It also sets `--theme-color-wrapper-bg` for descendants, so things like focus-ring offsets match the background behind them. `transparent` applies no background and keeps the surrounding wrapper's value.
+    description: Which Material 3 background role to apply to the wrapper, paired with its matching "on" role for text (e.g. `primary-container` with `on-primary-container`). It also sets `--theme-color-wrapper-bg` for descendants, so things like focus-ring offsets match the background behind them. `transparent` applies no background and keeps the surrounding wrapper's value. Any other value fails the build.
 slots:
   - name: default
     description: The content to display inside the wrapper.

@@ -15,7 +15,7 @@ props:
     type: '"none" | "selected" | "both"'
     required: false
     default: '"none"'
-    description: M3's optional icon in the handle. `selected` shows a check when the switch is on; `both` also shows an x when it's off, which grows the unselected handle from 16px to 24px to hold it. The icons are decoration, hidden from assistive tech.
+    description: M3's optional icon in the handle. `selected` shows a check when the switch is on; `both` also shows an x when it's off, which grows the unselected handle from 16px to 24px to hold it. The icons are decoration, hidden from assistive tech. Any other value fails the build.
 slots:
   - name: default
     description: The label's text, in M3's Body Large and the background's on-color (`on-surface` outside any wrapper), placed before the switch. Describe what the switch turns on. Clicking it toggles the switch. Leave it empty only when the switch is named another way, with `aria-label` or `aria-labelledby`.

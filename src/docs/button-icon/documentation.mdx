@@ -37,7 +37,7 @@ props:
     type: '"round" | "square"'
     required: false
     default: '"round"'
-    description: The button's corners at rest. `round` is fully rounded, and `square` uses corner radii that scale with `size`. Either way, the corners tighten while the button is pressed.
+    description: The button's corners at rest. `round` is fully rounded, and `square` uses corner radii that scale with `size`. Either way, the corners tighten while the button is pressed. Any other value fails the build.
   - name: showTooltip
     type: boolean
     required: false
@@ -47,17 +47,17 @@ props:
     type: '"xs" | "sm" | "md" | "lg" | "xl"'
     required: false
     default: '"sm"'
-    description: The button's height, from M3's extra small to extra large (32px, 40px, 56px, 96px and 136px). Every size keeps a touch target of at least 48×48px. The outline of an `outlined` button gets thicker with the size.
+    description: The button's height, from M3's extra small to extra large (32px, 40px, 56px, 96px and 136px). Every size keeps a touch target of at least 48×48px. The outline of an `outlined` button gets thicker with the size. Any other value fails the build.
   - name: variant
     type: '"filled" | "outlined" | "standard" | "tonal"'
     required: false
     default: '"standard"'
-    description: The button's Material 3 style, from most to least emphasis. `filled` uses the primary color. `tonal` uses the secondary container color. `outlined` has an outline and no fill. `standard` has neither. As a toggle, `filled` sits on a surface container until it's selected, then turns primary; `tonal` turns secondary, `outlined` turns inverse surface, and `standard` turns its icon primary. M3's design kit defaults to `filled`, but ButtonIcon defaults to `standard`, as Compose's base `IconButton` does. M3 says to use filled sparingly, so the highest-emphasis style makes an odd default.
+    description: The button's Material 3 style, from most to least emphasis. `filled` uses the primary color. `tonal` uses the secondary container color. `outlined` has an outline and no fill. `standard` has neither. As a toggle, `filled` sits on a surface container until it's selected, then turns primary; `tonal` turns secondary, `outlined` turns inverse surface, and `standard` turns its icon primary. M3's design kit defaults to `filled`, but ButtonIcon defaults to `standard`, as Compose's base `IconButton` does. M3 says to use filled sparingly, so the highest-emphasis style makes an odd default. Any other value fails the build.
   - name: width
     type: '"narrow" | "default" | "wide"'
     required: false
     default: '"default"'
-    description: The space on either side of the icon. `default` gives a square (or circular) button. `narrow` and `wide` are M3's narrower and wider widths, for tight spaces or for giving an action more weight.
+    description: The space on either side of the icon. `default` gives a square (or circular) button. `narrow` and `wide` are M3's narrower and wider widths, for tight spaces or for giving an action more weight. Any other value fails the build.
 ---
 
 ## Style by emphasis

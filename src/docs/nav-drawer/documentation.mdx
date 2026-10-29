@@ -15,7 +15,7 @@ props:
     type: BgColorType
     required: false
     default: '"surface"'
-    description: The drawer's background role. By default it's M3's colors for each mode, `surface` for the standard drawer from large up and `surface-container-low` for the drawer below large. Any other role is used at every size, e.g. `surface-container-low` beside a rail on that color.
+    description: The drawer's background role. By default it's M3's colors for each mode, `surface` for the standard drawer from large up and `surface-container-low` for the drawer below large. Any other role is used at every size, e.g. `surface-container-low` beside a rail on that color. A value that isn't one of BaseWrapper's backgrounds fails the build.
   - name: isModal
     type: boolean
     required: false
@@ -25,7 +25,7 @@ props:
     type: '"narrow" | "wide"'
     required: false
     default: '"narrow"'
-    description: The drawer's width, as an expanded NavRail's, 220px or 360px. M3 specifies 360px (`"wide"`); the narrower default leaves the page's content 140px more room beside the rail and drawer, which matters most just above the large breakpoint (1200px), where the drawer first sits in the layout. For another width, see `--ac-nav-drawer-width`.
+    description: The drawer's width, as an expanded NavRail's, 220px or 360px. M3 specifies 360px (`"wide"`); the narrower default leaves the page's content 140px more room beside the rail and drawer, which matters most just above the large breakpoint (1200px), where the drawer first sits in the layout. For another width, see `--ac-nav-drawer-width`. Any other value fails the build.
 slots:
   - name: default
     description: The sections to show, one for each rail item that has sub-items. Each section's `parentHref` is the `href` of its rail item.

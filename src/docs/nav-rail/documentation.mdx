@@ -15,7 +15,7 @@ props:
     type: BgColorType
     required: false
     default: '"surface"'
-    description: The rail's background role. Text, icons and focus rings follow the chosen background. M3's rail sits on `surface` at elevation 0, straight on the page, and its modal rail below medium on `surface-container`. Pass another role, such as `"surface-container"`, for M3's filled rail; it's used below medium too.
+    description: The rail's background role. Text, icons and focus rings follow the chosen background. M3's rail sits on `surface` at elevation 0, straight on the page, and its modal rail below medium on `surface-container`. Pass another role, such as `"surface-container"`, for M3's filled rail; it's used below medium too. A value that isn't one of BaseWrapper's backgrounds fails the build.
   - name: isExpandable
     type: boolean
     required: false
@@ -25,12 +25,12 @@ props:
     type: '"narrow" | "wide"'
     required: false
     default: '"narrow"'
-    description: The rail's width while expanded (an expandable rail's, and every rail's below medium), M3's minimum (220px) or maximum (360px). For another width, see `--ac-nav-rail-expanded-width`.
+    description: The rail's width while expanded (an expandable rail's, and every rail's below medium), M3's minimum (220px) or maximum (360px). For another width, see `--ac-nav-rail-expanded-width`. Any other value fails the build.
   - name: align
     type: '"top" | "center"'
     required: false
     default: '"top"'
-    description: Where the destinations sit as a group, as M3 allows. `"center"` centers them in the space below the menu button and FAB, which stay at the top; M3 suggests it on tablets.
+    description: Where the destinations sit as a group, as M3 allows. `"center"` centers them in the space below the menu button and FAB, which stay at the top; M3 suggests it on tablets. Any other value fails the build.
   - name: label
     type: string
     required: false

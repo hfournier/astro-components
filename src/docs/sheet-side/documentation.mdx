@@ -20,7 +20,7 @@ props:
     type: BgColorType
     required: false
     default: '"surface" (standard) or "surface-container-low" (modal)'
-    description: The sheet's background role, M3's by default. Text, links and focus rings follow the chosen background.
+    description: The sheet's background role, M3's by default. Text, links and focus rings follow the chosen background. A value that isn't one of BaseWrapper's backgrounds fails the build.
   - name: closeLabel
     type: string
     required: false
@@ -30,7 +30,7 @@ props:
     type: '"start" | "end"'
     required: false
     default: '"end"'
-    description: The window edge the sheet is on, following the writing direction, so `"end"` is the right edge in a left-to-right page.
+    description: The window edge the sheet is on, following the writing direction, so `"end"` is the right edge in a left-to-right page. Any other value fails the build.
   - name: headline
     type: string
     required: false
