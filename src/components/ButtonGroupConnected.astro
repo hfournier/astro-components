@@ -1,0 +1,367 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import { filledIconFor } from "../svgs";
+import type { ButtonGroupConnectedOptionType } from "../types";
+import Icon from "./Icon.astro";
+import Tooltip from "./Tooltip.astro";
+
+// M3 Expressive's connected button group, the replacement for segmented buttons: options joined
+// 2px apart with small inner corners, one choice between them. Each option is a native input
+// styled as M3's toggle button, so the group submits with a form like any radios or checkboxes:
+// - single-select: radios sharing `name`, one checked at a time, as a radiogroup (ADR-0022)
+// - multi-select: checkboxes, each checked on its own
+// The group draws its options in one style, size and shape. Name it with `aria-label` or
+// `aria-labelledby`.
+type Props = HTMLAttributes<"div"> & {
+  // The form field's name, shared by its radios or checkboxes
+  name: string;
+  options: ButtonGroupConnectedOptionType[];
+  // One option at a time, or any number. Defaults to single.
+  selection?: "single" | "multi";
+  // The group always has an option selected: one starts selected, and the last can't be unselected
+  isSelectionRequired?: boolean;
+  shape?: "round" | "square";
+  size?: "xs" | "sm" | "md" | "lg" | "xl";
+  variant?: "elevated" | "filled" | "tonal" | "outlined";
+};
+
+const {
+  name,
+  options,
+  selection = "single",
+  isSelectionRequired = false,
+  shape = "round",
+  size = "sm",
+  variant = "tonal",
+  class: classList,
+  ...attrs
+}: Props = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!name) {
+  throw new Error(
+    "ButtonGroupConnected: its options are one form field, so it needs a `name`."
+  );
+}
+if (!["single", "multi"].includes(selection)) {
+  throw new Error(
+    `ButtonGroupConnected: M3's selections are "single" and "multi", but this one's \`selection\` is "${selection}".`
+  );
+}
+if (!["round", "square"].includes(shape)) {
+  throw new Error(
+    `ButtonGroupConnected: M3's shapes are "round" and "square", but this one's \`shape\` is "${shape}".`
+  );
+}
+if (!["xs", "sm", "md", "lg", "xl"].includes(size)) {
+  throw new Error(
+    `ButtonGroupConnected: M3's sizes are "xs", "sm", "md", "lg" and "xl", but this one's \`size\` is "${size}".`
+  );
+}
+if (!["elevated", "filled", "tonal", "outlined"].includes(variant)) {
+  throw new Error(
+    `ButtonGroupConnected: M3's toggle buttons are "elevated", "filled", "tonal" and "outlined", but this one's \`variant\` is "${variant}".`
+  );
+}
+if (!Array.isArray(options) || options.length < 2) {
+  throw new Error(
+    `ButtonGroupConnected: M3's connected button groups join two or more buttons, but this one has ${Array.isArray(options) ? options.length : 0}.`
+  );
+}
+const selectedCount = options.filter((option) => option.isSelected).length;
+if (selection === "single" && selectedCount > 1) {
+  throw new Error(
+    `ButtonGroupConnected: a single-select group has at most one option selected, but this one has ${selectedCount}.`
+  );
+}
+if (isSelectionRequired && selectedCount === 0) {
+  throw new Error(
+    "ButtonGroupConnected: a group whose selection is required starts with an option selected, but this one has none."
+  );
+}
+
+// M3's connected corners, per size: a round option's full corners (half its height, in px so they
+// animate), and the inner corners at rest and pressed. The options read them as custom
+// properties, so each position needs only its own classes below.
+const cornerClasses = {
+  xs: "[--ac-button-group-connected-full:16px] [--ac-button-group-connected-inner:8px] [--ac-button-group-connected-pressed:4px]",
+  sm: "[--ac-button-group-connected-full:20px] [--ac-button-group-connected-inner:8px] [--ac-button-group-connected-pressed:4px]",
+  md: "[--ac-button-group-connected-full:28px] [--ac-button-group-connected-inner:8px] [--ac-button-group-connected-pressed:4px]",
+  lg: "[--ac-button-group-connected-full:48px] [--ac-button-group-connected-inner:16px] [--ac-button-group-connected-pressed:12px]",
+  xl: "[--ac-button-group-connected-full:68px] [--ac-button-group-connected-inner:20px] [--ac-button-group-connected-pressed:16px]",
+}[size];
+// An outer corner: full on a round option, the inner corners' size on a square one
+const outerClasses =
+  shape === "round"
+    ? "[--ac-button-group-connected-outer:var(--ac-button-group-connected-full)]"
+    : "[--ac-button-group-connected-outer:var(--ac-button-group-connected-inner)]";
+// At rest, then pressed: only the inner corners narrow, and pressed wins over selected. Pressed
+// is the script's data-ac-button-group-connected-pressed, not :active, which Firefox doesn't give
+// a radio pressed while another in its group has focus.
+const positionClasses = {
+  first:
+    "rounded-s-(--ac-button-group-connected-outer) rounded-e-(--ac-button-group-connected-inner) [&[data-ac-button-group-connected-pressed]:has(:enabled)]:rounded-e-(--ac-button-group-connected-pressed)",
+  middle:
+    "rounded-(--ac-button-group-connected-inner) [&[data-ac-button-group-connected-pressed]:has(:enabled)]:rounded-(--ac-button-group-connected-pressed)",
+  last: "rounded-s-(--ac-button-group-connected-inner) rounded-e-(--ac-button-group-connected-outer) [&[data-ac-button-group-connected-pressed]:has(:enabled)]:rounded-s-(--ac-button-group-connected-pressed)",
+};
+// M3: selected, every corner is full
+const selectedShapeClasses =
+  "has-checked:rounded-(--ac-button-group-connected-full)";
+
+// Button's sizes: height, padding, label type and the gap between icon and label. An icon-only
+// option has an icon button's padding instead.
+const labelLarge = "text-sm leading-5 font-medium tracking-[0.1px]";
+const titleMedium = "text-base leading-6 font-medium tracking-[0.15px]";
+const headlineSmall = "text-2xl leading-8 font-normal tracking-normal";
+const headlineLarge = "text-[2rem] leading-10 font-normal tracking-normal";
+const sizeClasses = {
+  xs: `${labelLarge} min-h-8 gap-1`,
+  sm: `${labelLarge} min-h-10 gap-2`,
+  md: `${titleMedium} min-h-14 gap-2`,
+  lg: `${headlineSmall} min-h-24 gap-3`,
+  xl: `${headlineLarge} min-h-34 gap-4`,
+}[size];
+const labelPaddingClasses = {
+  xs: "px-3",
+  sm: "px-4",
+  md: "px-6",
+  lg: "px-12",
+  xl: "px-16",
+}[size];
+const iconPaddingClasses = {
+  xs: "px-1.5",
+  sm: "px-2",
+  md: "px-4",
+  lg: "px-8",
+  xl: "px-12",
+}[size];
+// Button's icon sizes beside a label, and an icon button's on its own
+const iconSizeClasses = {
+  xs: "size-5",
+  sm: "size-5",
+  md: "size-6",
+  lg: "size-8",
+  xl: "size-10",
+}[size];
+const iconOnlySizeClasses = {
+  xs: "size-5",
+  sm: "size-6",
+  md: "size-6",
+  lg: "size-8",
+  xl: "size-10",
+}[size];
+
+// M3 outline width grows with size. The state layer extends over the border, so it insets by the
+// same amount.
+const borderClasses = {
+  xs: "border before:-inset-px",
+  sm: "border before:-inset-px",
+  md: "border before:-inset-px",
+  lg: "border-2 before:-inset-0.5",
+  xl: "border-3 before:-inset-[3px]",
+}[size];
+
+// Button's toggle colors. Selected colors only apply while enabled, so a disabled option looks
+// disabled; a selected outlined option has a container, so disabled it gets the disabled one.
+const disabledContainer =
+  "has-disabled:bg-(--theme-color-on-surface)/10 has-disabled:border-transparent";
+const raisedOnHover = "has-enabled:hover:shadow-theme-elevation-1";
+const variantClasses = {
+  elevated: `bg-(--theme-color-surface-container-low) border-(--theme-color-surface-container-low) text-(--theme-color-primary) shadow-theme-elevation-1 has-enabled:hover:shadow-theme-elevation-2 has-disabled:shadow-none ${disabledContainer} has-[:enabled:checked]:bg-(--theme-color-primary) has-[:enabled:checked]:border-(--theme-color-primary) has-[:enabled:checked]:text-(--theme-color-on-primary)`,
+  filled: `bg-(--theme-color-surface-container) border-(--theme-color-surface-container) text-(--theme-color-on-surface-variant) ${raisedOnHover} ${disabledContainer} has-[:enabled:checked]:bg-(--theme-color-primary) has-[:enabled:checked]:border-(--theme-color-primary) has-[:enabled:checked]:text-(--theme-color-on-primary)`,
+  outlined:
+    "bg-transparent border-(--theme-color-outline-variant) text-(--theme-color-on-surface-variant) has-[:enabled:checked]:bg-(--theme-color-inverse-surface) has-[:enabled:checked]:border-(--theme-color-inverse-surface) has-[:enabled:checked]:text-(--theme-color-inverse-on-surface) has-[:disabled:checked]:bg-(--theme-color-on-surface)/10 has-[:disabled:checked]:border-transparent",
+  tonal: `bg-(--theme-color-secondary-container) border-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container) ${raisedOnHover} ${disabledContainer} has-[:enabled:checked]:bg-(--theme-color-secondary) has-[:enabled:checked]:border-(--theme-color-secondary) has-[:enabled:checked]:text-(--theme-color-on-secondary)`,
+}[variant];
+
+const type = selection === "single" ? "radio" : "checkbox";
+const lastIndex = options.length - 1;
+---
+
+<div
+  class:list={twMerge("flex w-full items-center gap-0.5", classList)}
+  role={selection === "single" ? "radiogroup" : "group"}
+  data-ac-button-group-connected={selection}
+  data-ac-button-group-connected-required={isSelectionRequired ? "" : undefined}
+  {...attrs}
+>
+  {options.map(
+    (
+      {
+        label,
+        value = label,
+        icon,
+        selectedIcon: selectedIconProp,
+        showLabel = true,
+        isSelected = false,
+        disabled = false,
+      },
+      index
+    ) => {
+      const isIconOnly = !!icon && !showLabel;
+      // M3: a selected option shows its icon filled, so it doesn't rely on color alone
+      const selectedIcon = icon
+        ? (selectedIconProp ?? filledIconFor(icon))
+        : undefined;
+      const position =
+        index === 0 ? "first" : index === lastIndex ? "last" : "middle";
+      return (
+        <label
+          class:list={[
+            "group/option relative isolate flex cursor-pointer items-center justify-center whitespace-nowrap",
+            // M3: the group spans its surface, its options sharing the width, each at least
+            // 48px wide
+            "flex-[1_0_3rem]",
+            "before:absolute before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0 motion-safe:before:transition-opacity",
+            "has-enabled:hover:before:opacity-8 has-focus-visible:before:opacity-10 [&[data-ac-button-group-connected-pressed]:has(:enabled)]:before:opacity-10",
+            // M3 touch target: at least 48px high, centered on the option, for every size
+            "after:absolute after:inset-x-0 after:top-1/2 after:h-12 after:min-h-full after:-translate-y-1/2",
+            "has-disabled:cursor-default has-disabled:text-(--theme-color-on-surface)/38",
+            // Button's motion: the corner morph on the fast spatial spring, colors and the
+            // shadow on fast effects (ADR-0018)
+            "motion-safe:[transition:color_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects),background-color_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects),border-color_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects),border-radius_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial),box-shadow_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects)]",
+            "has-focus-visible:ring-3 has-focus-visible:ring-(--theme-color-focus-ring-on-bg) has-focus-visible:ring-offset-2 has-focus-visible:ring-offset-(--theme-color-wrapper-bg)",
+            borderClasses,
+            variantClasses,
+            sizeClasses,
+            isIconOnly ? iconPaddingClasses : labelPaddingClasses,
+            cornerClasses,
+            outerClasses,
+            positionClasses[position],
+            selectedShapeClasses,
+          ]}
+          data-ac-button-group-connected-part="option"
+        >
+          {/* The input covers the option, above its touch target, so a press on it presses the input, and it takes
+                the option's corners. Its look is the label's. */}
+          <input
+            class="absolute inset-0 z-1 m-0 cursor-[inherit] appearance-none rounded-[inherit] outline-none"
+            type={type}
+            name={name}
+            value={value}
+            checked={isSelected}
+            disabled={disabled}
+            required={selection === "single" && isSelectionRequired}
+          />
+          {icon &&
+            (selectedIcon ? (
+              <>
+                {/* swapped by CSS, so the icon follows the input however it changes */}
+                <Icon
+                  class:list={[
+                    isIconOnly ? iconOnlySizeClasses : iconSizeClasses,
+                    "pointer-events-none shrink-0 group-has-checked/option:hidden",
+                  ]}
+                  name={icon}
+                />
+                <Icon
+                  class:list={[
+                    isIconOnly ? iconOnlySizeClasses : iconSizeClasses,
+                    "pointer-events-none hidden shrink-0 group-has-checked/option:block",
+                  ]}
+                  name={selectedIcon}
+                />
+              </>
+            ) : (
+              <Icon
+                class:list={[
+                  isIconOnly ? iconOnlySizeClasses : iconSizeClasses,
+                  "pointer-events-none shrink-0",
+                ]}
+                name={icon}
+              />
+            ))}
+          {isIconOnly ? (
+            <>
+              <span class="sr-only">{label}</span>
+              {/* M3: on web, an icon button shows a tooltip naming it */}
+              <Tooltip>{label}</Tooltip>
+            </>
+          ) : (
+            <span class="pointer-events-none">{label}</span>
+          )}
+        </label>
+      );
+    }
+  )}
+</div>
+
+<script>
+  // Marks the option being pressed, with the pointer or by holding Space on its input, as Button's
+  // :active would; see the pressed classes above
+  const pressedAttribute = "data-ac-button-group-connected-pressed";
+  const optionOf = (target: EventTarget | null) =>
+    target instanceof Element
+      ? target.closest<HTMLElement>(
+          "[data-ac-button-group-connected-part=option]"
+        )
+      : null;
+
+  document.addEventListener("pointerdown", (event) => {
+    if (!event.isPrimary || event.button !== 0) return;
+    const option = optionOf(event.target);
+    if (!option) return;
+    option.setAttribute(pressedAttribute, "");
+    const end = () => {
+      option.removeAttribute(pressedAttribute);
+      document.removeEventListener("pointerup", end);
+      document.removeEventListener("pointercancel", end);
+    };
+    document.addEventListener("pointerup", end);
+    document.addEventListener("pointercancel", end);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === " " && !event.repeat)
+      optionOf(event.target)?.setAttribute(pressedAttribute, "");
+  });
+  document.addEventListener("keyup", (event) => {
+    if (event.key === " ")
+      optionOf(event.target)?.removeAttribute(pressedAttribute);
+  });
+  document.addEventListener("focusout", (event) => {
+    optionOf(event.target)?.removeAttribute(pressedAttribute);
+  });
+
+  // Radios already keep one checked and move with the arrow keys. A multi-select group's
+  // checkboxes don't, so: M3's Accessibility page has the left and right arrow keys move between
+  // them, mirrored right to left, stopping at the ends and skipping disabled ones; and with
+  // selection required, the last checked one stays checked.
+  const groupOf = (target: EventTarget | null) =>
+    target instanceof HTMLInputElement && target.type === "checkbox"
+      ? target.closest<HTMLElement>("[data-ac-button-group-connected=multi]")
+      : null;
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    const group = groupOf(event.target);
+    if (!group) return;
+    const isRtl = getComputedStyle(group).direction === "rtl";
+    const step = (event.key === "ArrowRight") !== isRtl ? 1 : -1;
+    const inputs = [
+      ...group.querySelectorAll<HTMLInputElement>("input[type=checkbox]"),
+    ];
+    for (
+      let i = inputs.indexOf(event.target as HTMLInputElement) + step;
+      i >= 0 && i < inputs.length;
+      i += step
+    ) {
+      if (inputs[i].disabled) continue;
+      event.preventDefault();
+      inputs[i].focus();
+      return;
+    }
+  });
+
+  // A click has already flipped the checkbox, so cancelling it puts it back
+  document.addEventListener("click", (event) => {
+    const group = groupOf(event.target);
+    if (
+      group?.hasAttribute("data-ac-button-group-connected-required") &&
+      !group.querySelector("input:checked")
+    )
+      event.preventDefault();
+  });
+</script>

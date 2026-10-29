@@ -157,7 +157,7 @@ const shapeClasses = shape === "round" ? roundCorners : squareCorners;
 // M3: a selected toggle swaps shapes, round becoming square and square becoming round
 const selectedShapeClasses = (shape === "round" ? squareCorners : roundCorners)
   .split(" ")
-  .map((corner) => `selected:${corner}`)
+  .map((corner) => `aria-pressed:${corner}`)
   .join(" ");
 
 // M3: pressed, round and square buttons both morph to the same, squarer corners
@@ -194,14 +194,14 @@ const variantClasses = {
 // selected outlined toggle has a container, so disabled it gets the disabled one.
 const selectedClasses = {
   elevated:
-    "not-disabled:selected:bg-(--theme-color-primary) not-disabled:selected:border-(--theme-color-primary) not-disabled:selected:text-(--theme-color-on-primary)",
+    "not-disabled:aria-pressed:bg-(--theme-color-primary) not-disabled:aria-pressed:border-(--theme-color-primary) not-disabled:aria-pressed:text-(--theme-color-on-primary)",
   filled:
-    "not-disabled:selected:bg-(--theme-color-primary) not-disabled:selected:border-(--theme-color-primary) not-disabled:selected:text-(--theme-color-on-primary)",
+    "not-disabled:aria-pressed:bg-(--theme-color-primary) not-disabled:aria-pressed:border-(--theme-color-primary) not-disabled:aria-pressed:text-(--theme-color-on-primary)",
   outlined:
-    "not-disabled:selected:bg-(--theme-color-inverse-surface) not-disabled:selected:border-(--theme-color-inverse-surface) not-disabled:selected:text-(--theme-color-inverse-on-surface) disabled:selected:bg-(--theme-color-on-surface)/10 disabled:selected:border-transparent",
+    "not-disabled:aria-pressed:bg-(--theme-color-inverse-surface) not-disabled:aria-pressed:border-(--theme-color-inverse-surface) not-disabled:aria-pressed:text-(--theme-color-inverse-on-surface) disabled:aria-pressed:bg-(--theme-color-on-surface)/10 disabled:aria-pressed:border-transparent",
   text: "",
   tonal:
-    "not-disabled:selected:bg-(--theme-color-secondary) not-disabled:selected:border-(--theme-color-secondary) not-disabled:selected:text-(--theme-color-on-secondary)",
+    "not-disabled:aria-pressed:bg-(--theme-color-secondary) not-disabled:aria-pressed:border-(--theme-color-secondary) not-disabled:aria-pressed:text-(--theme-color-on-secondary)",
 }[variant];
 
 const isToggleButton = isToggle && Tag === "button";
@@ -241,25 +241,23 @@ const selectedIcon =
   aria-pressed={isToggleButton ? String(isSelected) : undefined}
   data-ac-button-toggle={isToggleButton ? "" : undefined}
   data-ac-button-size={size}
-  data-ac-button-shape={shape}
   {...attrs}
 >
   {icon &&
     (selectedIcon ? (
       <>
-        {/* swapped by CSS, so the icon follows aria-pressed, or aria-checked in a single-select
-            ButtonGroup, however it changes */}
+        {/* swapped by CSS, so the icon follows aria-pressed however it changes */}
         <Icon
           class:list={[
             iconSizeClasses,
-            "shrink-0 group-selected/button:hidden",
+            "shrink-0 group-aria-pressed/button:hidden",
           ]}
           name={icon}
         />
         <Icon
           class:list={[
             iconSizeClasses,
-            "hidden shrink-0 group-selected/button:block",
+            "hidden shrink-0 group-aria-pressed/button:block",
           ]}
           name={selectedIcon}
         />

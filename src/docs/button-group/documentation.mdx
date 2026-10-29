@@ -1,62 +1,34 @@
 ---
 name: ButtonGroup
-description: A Material 3 Expressive button group, extending HTML's `<div>` element with the `group` or `radiogroup` role. The standard group holds buttons and icon buttons side by side, spaced for their size, and widens a button while it's pressed, narrowing its neighbours to make room. The connected group joins toggle buttons into one single-select or multi-select choice, replacing M3's segmented button. It has no color of its own.
+description: A Material 3 Expressive standard button group, extending HTML's `<div>` element with the `group` role. It holds buttons and icon buttons side by side, spaced for their size, and widens a button while it's pressed, narrowing its neighbours to make room. It has no color or shape of its own.
 category: Forms
 role: pattern
 meta:
   title: ButtonGroup | astro-components HenriFournier.dev
-  description: A Material 3 Expressive button group, standard or connected, that spaces buttons and widens a pressed one, or joins toggles into one selection.
+  description: A Material 3 Expressive standard button group that spaces buttons and icon buttons and widens the one being pressed.
 extends:
   kind: element
   tag: [div]
 mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/div
-props:
-  - name: variant
-    type: '"standard" | "connected"'
-    required: false
-    default: '"standard"'
-    description: M3's two button groups. `standard` spaces its buttons and widens a pressed one. `connected` joins toggle buttons 2px apart into one selection, spanning the width it's in. Any other value fails the build.
-  - name: selection
-    type: '"single" | "multi"'
-    required: false
-    default: '"single" (connected)'
-    description: A connected group's selection. `single` makes the group a `radiogroup` and each button a radio, one checked at a time; once one is checked, clicking it again leaves it checked. `multi` keeps each button a toggle button, pressed on its own. Any other value, or a selection on a standard group, fails the build.
-  - name: isSelectionRequired
-    type: boolean
-    required: false
-    default: "false"
-    description: Keeps at least one of a connected group's buttons selected from the start. One must start selected, and in a multi-select group clicking the last pressed one leaves it pressed. Setting it on a standard group fails the build.
+props: []
 slots:
   - name: default
-    description: The group's Buttons and ButtonIcons, in one line. All of one size and one shape, by default; their styles, widths and toggles can differ. In a connected group each must be a toggle (`isToggle`), and a single-select group starts with at most one selected; otherwise the build fails. Keep a connected group's buttons to one style.
+    description: The group's Buttons and ButtonIcons, in one line. All of one size and one shape, by default; their styles, widths and toggles can differ.
     kind: any
 ---
 
 ## Attributes
 
-Every attribute goes on the `<div>`, which has `role="group"`, or `role="radiogroup"` for a single-select connected group. Name the group with `aria-label`, or `aria-labelledby` pointing at a visible heading, when a name helps say what its buttons are for. M3 doesn't require one: each button's own label is what matters.
+Every attribute goes on the `<div>`, which has `role="group"`. Name the group with `aria-label`, or `aria-labelledby` pointing at a visible heading, when a name helps say what its buttons are for. M3 doesn't require one: each button's own label is what matters.
 
 ## Anatomy
 
-- **Container:** invisible, and as tall as its buttons.
-  - **Standard:** it hugs its buttons. Between them it leaves M3's space for their size: 18px for extra small, 12px for small and 8px for medium, large and extra large. With mixed sizes it keeps the smallest one's space, so each button keeps its 48px target.
-  - **Connected:** it spans the width it's in, its buttons sharing it equally, with 2px between them at every size. Each button is at least 48px wide. Add a class such as `max-w-120` to stop it growing too wide in a large window, or `w-fit` to hug its buttons.
+- **Container:** invisible. It hugs its buttons and is as tall as they are. Between them it leaves M3's space for their size: 18px for extra small, 12px for small and 8px for medium, large and extra large. With mixed sizes it keeps the smallest one's space, so each button keeps its 48px target.
 
-The group reads the size from its buttons, so set `size` on each Button and ButtonIcon, not on the group.
-
-In a connected group, the group sets its buttons' corners in place of their own:
-
-| | Extra small | Small | Medium | Large | Extra large |
-| --- | --- | --- | --- | --- | --- |
-| Inner corners | 8px | 8px | 8px | 16px | 20px |
-| Pressed inner corners | 4px | 4px | 4px | 12px | 16px |
-
-The first button's start corners and the last button's end corners are full on round buttons, and the inner corners' size on square ones. A selected button's corners are all full. These are the values in M3's tokens; the Specs page's prose gives extra small's inner corners as 4px. Use filled, tonal, outlined or elevated buttons; standard icon buttons and text buttons have no container to change width.
+The group reads the size from its buttons, so set `size` on each Button and ButtonIcon, not on the group. Use filled, tonal, outlined or elevated buttons; standard icon buttons and text buttons have no container to change width.
 
 ## Motion
 
 Pressing a button, with a pointer or by holding Space or Enter, widens it by 15% of its width, and its neighbours give up the same width, so the group stays the same size. A middle button takes half from each side; an end button takes it all from its one neighbour. A neighbour gives up no more than the space beside its icon or label, so its content always stays inside it: for a small button, its 16px padding, and for a small icon button, the 8px either side of its icon. That limit is Compose's, which caps each neighbour at its trailing padding; M3's Specs page gives the 15% but no limit. The widths move on M3's fast spatial spring, and the group waits until the widening is three-quarters done before springing back, so a quick tap still shows it. Meanwhile the button's own corners morph as they do outside a group, and a toggle button swaps shape when it's selected.
 
-A connected group widens nothing. Only the button being pressed or selected changes shape, its corners moving on the fast spatial spring and its colors on fast effects, as a Button's do.
-
-Under reduced motion the widths don't change, and a connected group's corners change at once.
+Under reduced motion the widths don't change.

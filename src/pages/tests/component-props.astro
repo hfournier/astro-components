@@ -10,7 +10,7 @@ import Badge from "../../components/Badge.astro";
 import BaseOverlay from "../../components/BaseOverlay.astro";
 import BaseWrapper from "../../components/BaseWrapper.astro";
 import Button from "../../components/Button.astro";
-import ButtonGroup from "../../components/ButtonGroup.astro";
+import ButtonGroupConnected from "../../components/ButtonGroupConnected.astro";
 import ButtonIcon from "../../components/ButtonIcon.astro";
 import Details from "../../components/Details.astro";
 import Divider from "../../components/Divider.astro";
@@ -33,121 +33,134 @@ const container = await experimental_AstroContainer.create();
 const add = { icon: "add", label: "Add" };
 const fabMenu = { ...add, id: "fab-menu" };
 const field = { label: "Name" };
-// A connected ButtonGroup counts its buttons in its rendered slot, by the attributes Button and
-// ButtonIcon render: a toggle each, selected or not, or a plain button
-const toggle = (isSelected: boolean) =>
-  `<button data-ac-button-size="sm" aria-pressed="${isSelected}">Toggle</button>`;
-const plain = `<button data-ac-button-size="sm">Plain</button>`;
-// Each case: the component, the props it needs plus the one under test, and its slot if not
-// "Text". MDX passes attributes as strings, so the number cases do too, and a valid one lists
-// what it drew.
-const cases: Record<
-  string,
-  [AstroComponentFactory, Record<string, unknown>, string?]
-> = {
-  "badge-placement": [Badge, { placement: "floating" }],
-  "base-overlay-as": [BaseOverlay, { id: "overlay", as: "section" }],
-  "base-overlay-bg-color": [
-    BaseOverlay,
-    { id: "overlay", bgColor: "primary-container" },
-  ],
-  "base-overlay-transition": [
-    BaseOverlay,
-    { id: "overlay", transition: "slide" },
-  ],
-  "base-wrapper-as": [BaseWrapper, { as: "span" }],
-  "base-wrapper-bg-color": [BaseWrapper, { bgColor: "primary" }],
-  "button-as": [Button, { as: "div" }],
-  "button-variant": [Button, { variant: "contained" }],
-  "button-shape": [Button, { shape: "oval" }],
-  "button-size": [Button, { size: "medium" }],
-  "button-toggle-text": [Button, { isToggle: true, variant: "text" }],
-  "button-group-variant": [ButtonGroup, { variant: "segmented" }],
-  "button-group-selection": [
-    ButtonGroup,
-    { variant: "connected", selection: "exclusive" },
-  ],
-  "button-group-standard-selection": [ButtonGroup, { selection: "single" }],
-  "button-group-standard-required": [
-    ButtonGroup,
-    { isSelectionRequired: true },
-  ],
-  "button-group-not-toggles": [
-    ButtonGroup,
-    { variant: "connected" },
-    toggle(false) + plain,
-  ],
-  "button-group-two-selected": [
-    ButtonGroup,
-    { variant: "connected", selection: "single" },
-    toggle(true) + toggle(true),
-  ],
-  "button-group-required-none": [
-    ButtonGroup,
-    { variant: "connected", selection: "multi", isSelectionRequired: true },
-    toggle(false) + toggle(false),
-  ],
-  "button-icon-shape": [ButtonIcon, { ...add, shape: "oval" }],
-  "button-icon-size": [ButtonIcon, { ...add, size: "medium" }],
-  "button-icon-variant": [ButtonIcon, { ...add, variant: "text" }],
-  "button-icon-width": [ButtonIcon, { ...add, width: "full" }],
-  "details-size": [Details, { label: "More", size: "sm" }],
-  "details-variant": [Details, { label: "More", variant: "filled" }],
-  "divider-inset": [Divider, { inset: "end" }],
-  "divider-orientation": [Divider, { orientation: "diagonal" }],
-  "fab-size": [Fab, { ...add, size: "sm" }],
-  "fab-color": [Fab, { ...add, color: "surface" }],
-  "fab-menu-size": [FabMenu, { ...fabMenu, size: "sm" }],
-  "fab-menu-color": [FabMenu, { ...fabMenu, color: "primary-container" }],
-  "fab-menu-align": [FabMenu, { ...fabMenu, align: "center" }],
-  "heading-level": [Heading, { level: 7 }],
-  "heading-level-not-a-number": [Heading, { level: "two" }],
-  "heading-level-as-text": [Heading, { level: "2" }],
-  "menu-color": [Menu, { id: "menu", color: "tonal" }],
-  "menu-layout": [Menu, { id: "menu", layout: "list" }],
-  "nav-drawer-width": [NavDrawer, { width: "medium" }],
-  "nav-rail-expanded-width": [NavRail, { expandedWidth: "medium" }],
-  "nav-rail-align": [NavRail, { align: "bottom" }],
-  "popover-bg-color": [
-    Popover,
-    { id: "popover", bgColor: "surface-container-low" },
-  ],
-  "sheet-side-edge": [SheetSide, { edge: "left" }],
-  "switch-icons": [Switch, { icons: "unselected" }],
-  "tab-transition": [Tab, { label: "One", transition: "slide" }],
-  "tabs-align": [Tabs, { align: "end" }],
-  "tabs-variant": [Tabs, { variant: "tertiary" }],
-  "text-field-type": [TextField, { ...field, type: "date" }],
-  "text-field-variant": [TextField, { ...field, variant: "standard" }],
-  "text-field-rows-as-text": [
-    TextField,
-    { ...field, type: "textarea", rows: "4" },
-  ],
-  "text-field-rows-zero": [TextField, { ...field, type: "textarea", rows: 0 }],
-  "text-field-rows-fraction": [
-    TextField,
-    { ...field, type: "textarea", rows: 2.5 },
-  ],
-  "text-field-rows-not-a-number": [
-    TextField,
-    { ...field, type: "textarea", rows: "tall" },
-  ],
-  "text-field-maxlength-as-text": [TextField, { ...field, maxlength: "20" }],
-  "text-field-maxlength-negative": [TextField, { ...field, maxlength: -1 }],
-  "text-field-maxlength-not-a-number": [
-    TextField,
-    { ...field, maxlength: "long" },
-  ],
-  "tooltip-placement": [Tooltip, { placement: "left" }],
-  "tooltip-variant": [Tooltip, { variant: "tooltip" }],
+// ButtonGroupConnected needs a name and two or more options
+const choice = {
+  name: "choice",
+  options: [{ label: "One" }, { label: "Two" }],
 };
+// Each case: the component, and the props it needs plus the one under test. MDX passes
+// attributes as strings, so the number cases do too, and a valid one lists what it drew.
+const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
+  {
+    "badge-placement": [Badge, { placement: "floating" }],
+    "base-overlay-as": [BaseOverlay, { id: "overlay", as: "section" }],
+    "base-overlay-bg-color": [
+      BaseOverlay,
+      { id: "overlay", bgColor: "primary-container" },
+    ],
+    "base-overlay-transition": [
+      BaseOverlay,
+      { id: "overlay", transition: "slide" },
+    ],
+    "base-wrapper-as": [BaseWrapper, { as: "span" }],
+    "base-wrapper-bg-color": [BaseWrapper, { bgColor: "primary" }],
+    "button-as": [Button, { as: "div" }],
+    "button-variant": [Button, { variant: "contained" }],
+    "button-shape": [Button, { shape: "oval" }],
+    "button-size": [Button, { size: "medium" }],
+    "button-toggle-text": [Button, { isToggle: true, variant: "text" }],
+    "button-group-connected-name": [
+      ButtonGroupConnected,
+      { options: choice.options },
+    ],
+    "button-group-connected-selection": [
+      ButtonGroupConnected,
+      { ...choice, selection: "exclusive" },
+    ],
+    "button-group-connected-shape": [
+      ButtonGroupConnected,
+      { ...choice, shape: "oval" },
+    ],
+    "button-group-connected-size": [
+      ButtonGroupConnected,
+      { ...choice, size: "medium" },
+    ],
+    "button-group-connected-variant": [
+      ButtonGroupConnected,
+      { ...choice, variant: "text" },
+    ],
+    "button-group-connected-one-option": [
+      ButtonGroupConnected,
+      { ...choice, options: [{ label: "One" }] },
+    ],
+    "button-group-connected-two-selected": [
+      ButtonGroupConnected,
+      {
+        ...choice,
+        options: [
+          { label: "One", isSelected: true },
+          { label: "Two", isSelected: true },
+        ],
+      },
+    ],
+    "button-group-connected-required-none": [
+      ButtonGroupConnected,
+      { ...choice, isSelectionRequired: true },
+    ],
+    "button-icon-shape": [ButtonIcon, { ...add, shape: "oval" }],
+    "button-icon-size": [ButtonIcon, { ...add, size: "medium" }],
+    "button-icon-variant": [ButtonIcon, { ...add, variant: "text" }],
+    "button-icon-width": [ButtonIcon, { ...add, width: "full" }],
+    "details-size": [Details, { label: "More", size: "sm" }],
+    "details-variant": [Details, { label: "More", variant: "filled" }],
+    "divider-inset": [Divider, { inset: "end" }],
+    "divider-orientation": [Divider, { orientation: "diagonal" }],
+    "fab-size": [Fab, { ...add, size: "sm" }],
+    "fab-color": [Fab, { ...add, color: "surface" }],
+    "fab-menu-size": [FabMenu, { ...fabMenu, size: "sm" }],
+    "fab-menu-color": [FabMenu, { ...fabMenu, color: "primary-container" }],
+    "fab-menu-align": [FabMenu, { ...fabMenu, align: "center" }],
+    "heading-level": [Heading, { level: 7 }],
+    "heading-level-not-a-number": [Heading, { level: "two" }],
+    "heading-level-as-text": [Heading, { level: "2" }],
+    "menu-color": [Menu, { id: "menu", color: "tonal" }],
+    "menu-layout": [Menu, { id: "menu", layout: "list" }],
+    "nav-drawer-width": [NavDrawer, { width: "medium" }],
+    "nav-rail-expanded-width": [NavRail, { expandedWidth: "medium" }],
+    "nav-rail-align": [NavRail, { align: "bottom" }],
+    "popover-bg-color": [
+      Popover,
+      { id: "popover", bgColor: "surface-container-low" },
+    ],
+    "sheet-side-edge": [SheetSide, { edge: "left" }],
+    "switch-icons": [Switch, { icons: "unselected" }],
+    "tab-transition": [Tab, { label: "One", transition: "slide" }],
+    "tabs-align": [Tabs, { align: "end" }],
+    "tabs-variant": [Tabs, { variant: "tertiary" }],
+    "text-field-type": [TextField, { ...field, type: "date" }],
+    "text-field-variant": [TextField, { ...field, variant: "standard" }],
+    "text-field-rows-as-text": [
+      TextField,
+      { ...field, type: "textarea", rows: "4" },
+    ],
+    "text-field-rows-zero": [
+      TextField,
+      { ...field, type: "textarea", rows: 0 },
+    ],
+    "text-field-rows-fraction": [
+      TextField,
+      { ...field, type: "textarea", rows: 2.5 },
+    ],
+    "text-field-rows-not-a-number": [
+      TextField,
+      { ...field, type: "textarea", rows: "tall" },
+    ],
+    "text-field-maxlength-as-text": [TextField, { ...field, maxlength: "20" }],
+    "text-field-maxlength-negative": [TextField, { ...field, maxlength: -1 }],
+    "text-field-maxlength-not-a-number": [
+      TextField,
+      { ...field, maxlength: "long" },
+    ],
+    "tooltip-placement": [Tooltip, { placement: "left" }],
+    "tooltip-variant": [Tooltip, { variant: "tooltip" }],
+  };
 const outcomes = await Promise.all(
-  Object.values(cases).map(async ([Component, props, slot = "Text"]) => {
+  Object.values(cases).map(async ([Component, props]) => {
     try {
       // some components render their slot as text, so each gets one
       const html = await container.renderToString(Component, {
         props,
-        slots: { default: slot },
+        slots: { default: "Text" },
       });
       // what a valid case drew: a heading's element, a text area's rows, a counter's limit
       const drawn = [

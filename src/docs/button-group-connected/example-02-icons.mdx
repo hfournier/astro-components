@@ -1,0 +1,16 @@
+---
+title: Icon-only options
+description: "An option with `showLabel: false` shows only its icon. Its label is still its accessible name, and shows in a tooltip. Add `w-fit` so a short group hugs its options."
+---
+
+<ButtonGroupConnected
+  name="save-to"
+  selection="multi"
+  class="w-fit"
+  aria-label="Save to"
+  options={[
+    { label: "Starred", icon: "star", showLabel: false },
+    { label: "Favorites", icon: "favorite", showLabel: false, isSelected: true },
+    { label: "Bookmarks", icon: "bookmark", showLabel: false },
+  ]}
+/>

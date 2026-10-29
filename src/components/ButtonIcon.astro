@@ -98,18 +98,18 @@ const shapeClasses = {
 // M3: a selected toggle swaps shapes, round becoming square and square becoming round
 const selectedShapeClasses = {
   round: {
-    xs: "selected:rounded-xl",
-    sm: "selected:rounded-xl",
-    md: "selected:rounded-2xl",
-    lg: "selected:rounded-[28px]",
-    xl: "selected:rounded-[28px]",
+    xs: "aria-pressed:rounded-xl",
+    sm: "aria-pressed:rounded-xl",
+    md: "aria-pressed:rounded-2xl",
+    lg: "aria-pressed:rounded-[28px]",
+    xl: "aria-pressed:rounded-[28px]",
   }[size],
   square: {
-    xs: "selected:rounded-[16px]",
-    sm: "selected:rounded-[20px]",
-    md: "selected:rounded-[28px]",
-    lg: "selected:rounded-[48px]",
-    xl: "selected:rounded-[68px]",
+    xs: "aria-pressed:rounded-[16px]",
+    sm: "aria-pressed:rounded-[20px]",
+    md: "aria-pressed:rounded-[28px]",
+    lg: "aria-pressed:rounded-[48px]",
+    xl: "aria-pressed:rounded-[68px]",
   }[size],
 }[shape];
 
@@ -163,17 +163,17 @@ const disabledContainer =
 // A toggle's selected colors only apply while enabled, so a disabled toggle looks disabled
 const variantClasses = {
   filled: isToggle
-    ? `bg-(--theme-color-surface-container) border-(--theme-color-surface-container) text-(--theme-color-on-surface-variant) not-disabled:selected:bg-(--theme-color-primary) not-disabled:selected:border-(--theme-color-primary) not-disabled:selected:text-(--theme-color-on-primary) ${disabledContainer}`
+    ? `bg-(--theme-color-surface-container) border-(--theme-color-surface-container) text-(--theme-color-on-surface-variant) not-disabled:aria-pressed:bg-(--theme-color-primary) not-disabled:aria-pressed:border-(--theme-color-primary) not-disabled:aria-pressed:text-(--theme-color-on-primary) ${disabledContainer}`
     : `bg-(--theme-color-primary) border-(--theme-color-primary) text-(--theme-color-on-primary) ${disabledContainer}`,
   // the outline stays outline-variant when disabled
   outlined: isToggle
-    ? "bg-transparent border-(--theme-color-outline-variant) text-(--theme-color-on-bg-variant) not-disabled:selected:bg-(--theme-color-inverse-surface) not-disabled:selected:border-(--theme-color-inverse-surface) not-disabled:selected:text-(--theme-color-inverse-on-surface) disabled:selected:bg-(--theme-color-on-surface)/10 disabled:selected:border-transparent"
+    ? "bg-transparent border-(--theme-color-outline-variant) text-(--theme-color-on-bg-variant) not-disabled:aria-pressed:bg-(--theme-color-inverse-surface) not-disabled:aria-pressed:border-(--theme-color-inverse-surface) not-disabled:aria-pressed:text-(--theme-color-inverse-on-surface) disabled:aria-pressed:bg-(--theme-color-on-surface)/10 disabled:aria-pressed:border-transparent"
     : "bg-transparent border-(--theme-color-outline-variant) text-(--theme-color-on-bg-variant)",
   standard: isToggle
-    ? "bg-transparent border-transparent text-(--theme-color-on-bg-variant) not-disabled:selected:text-(--theme-color-primary)"
+    ? "bg-transparent border-transparent text-(--theme-color-on-bg-variant) not-disabled:aria-pressed:text-(--theme-color-primary)"
     : "bg-transparent border-transparent text-(--theme-color-on-bg-variant)",
   tonal: isToggle
-    ? `bg-(--theme-color-secondary-container) border-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container) not-disabled:selected:bg-(--theme-color-secondary) not-disabled:selected:border-(--theme-color-secondary) not-disabled:selected:text-(--theme-color-on-secondary) ${disabledContainer}`
+    ? `bg-(--theme-color-secondary-container) border-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container) not-disabled:aria-pressed:bg-(--theme-color-secondary) not-disabled:aria-pressed:border-(--theme-color-secondary) not-disabled:aria-pressed:text-(--theme-color-on-secondary) ${disabledContainer}`
     : `bg-(--theme-color-secondary-container) border-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container) ${disabledContainer}`,
 }[variant];
 ---
@@ -205,24 +205,22 @@ const variantClasses = {
   aria-pressed={isToggle ? (isSelected ? "true" : "false") : undefined}
   data-ac-icon-toggle={isToggle ? "aria-pressed" : undefined}
   data-ac-button-size={size}
-  data-ac-button-shape={shape}
   {...attrs}
 >
   {selectedIcon ? (
     <>
-      {/* swapped by CSS, so the icon follows aria-pressed (aria-checked in a single-select
-          ButtonGroup) or aria-expanded however they change */}
+      {/* swapped by CSS, so the icon follows aria-pressed/aria-expanded however they change */}
       <Icon
         class:list={[
           iconSizeClasses,
-          "group-aria-expanded/icon-button:hidden group-selected/icon-button:hidden",
+          "group-aria-expanded/icon-button:hidden group-aria-pressed/icon-button:hidden",
         ]}
         name={icon}
       />
       <Icon
         class:list={[
           iconSizeClasses,
-          "hidden group-aria-expanded/icon-button:block group-selected/icon-button:block",
+          "hidden group-aria-expanded/icon-button:block group-aria-pressed/icon-button:block",
         ]}
         name={selectedIcon}
       />

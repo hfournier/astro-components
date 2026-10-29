@@ -1,0 +1,69 @@
+---
+name: ButtonGroupConnected
+description: A Material 3 Expressive connected button group, the replacement for segmented buttons, extending HTML's `<div>` element with the `radiogroup` or `group` role. It joins its options 2px apart with small inner corners, into one single-select or multi-select choice. Each option is a native radio or checkbox drawn as M3's toggle button, so the group submits with a form.
+category: Forms
+role: pattern
+meta:
+  title: ButtonGroupConnected | astro-components HenriFournier.dev
+  description: A Material 3 Expressive connected button group, a single-select or multi-select choice of radios or checkboxes drawn as joined toggle buttons.
+extends:
+  kind: element
+  tag: [div]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/radio
+props:
+  - name: name
+    type: string
+    required: true
+    description: The form field's name, which its radios or checkboxes share. A single-select group submits the checked option's value under it, and a multi-select group each checked one's. Leaving it out fails the build.
+  - name: options
+    type: ButtonGroupConnectedOptionType[]
+    required: true
+    description: "The group's options, two or more, in order. Each has a `label`, its text, and optionally: `value`, what the form submits (the label by default); `icon`, a leading icon; `selectedIcon`, shown in place of the icon while selected (its -fill version by default, when there is one); `showLabel: false`, for an icon-only option, whose label becomes its accessible name and tooltip; `isSelected`, its initial state; and `disabled`. Fewer than two options, or more than one selected in a single-select group, fails the build."
+  - name: selection
+    type: '"single" | "multi"'
+    required: false
+    default: '"single"'
+    description: "`single` makes each option a radio, one checked at a time, in a `radiogroup`. Once one is checked, clicking it again leaves it checked. `multi` makes each a checkbox, checked on its own, in a `group`. Any other value fails the build."
+  - name: isSelectionRequired
+    type: boolean
+    required: false
+    default: "false"
+    description: The group always has an option selected. One must start selected, or the build fails. In a single-select group the radios are `required`, and in a multi-select group the last checked option can't be unchecked.
+  - name: shape
+    type: '"round" | "square"'
+    required: false
+    default: '"round"'
+    description: Round options have full outer corners at the group's ends. Square options keep the small inner corners all round. Selected, either kind is fully round. Any other value fails the build.
+  - name: size
+    type: '"xs" | "sm" | "md" | "lg" | "xl"'
+    required: false
+    default: '"sm"'
+    description: M3's five sizes, as Button's, from 32px to 136px tall. Any other value fails the build.
+  - name: variant
+    type: '"elevated" | "filled" | "tonal" | "outlined"'
+    required: false
+    default: '"tonal"'
+    description: The toggle button style of every option, with its selected colors. M3 has no connected text or standard icon buttons, as they have no container. Any other value fails the build.
+---
+
+## Attributes
+
+Every attribute goes on the `<div>`. Name the group with `aria-label`, or `aria-labelledby` pointing at a visible heading, so assistive tech says what the choice is about.
+
+## Anatomy
+
+- **Container:** invisible. It spans the width it's in, its options sharing it equally, with 2px between them at every size. Each option is at least 48px wide. Add a class such as `max-w-120` to stop it growing too wide in a large window, or `w-fit` to hug its options.
+- **Options:** M3's toggle buttons, each a `<label>` around its radio or checkbox. They take Button's height, padding, label type and icon size for their size, and an icon-only option an icon button's padding.
+
+The group sets its options' corners:
+
+| | Extra small | Small | Medium | Large | Extra large |
+| --- | --- | --- | --- | --- | --- |
+| Inner corners | 8px | 8px | 8px | 16px | 20px |
+| Pressed inner corners | 4px | 4px | 4px | 12px | 16px |
+
+The first option's start corners and the last option's end corners are full on round options, and the inner corners' size on square ones. A selected option's corners are all full. These are the values in M3's tokens; the Specs page's prose gives extra small's inner corners as 4px.
+
+## Motion
+
+Only the option being pressed or selected changes shape. Its corners move on the fast spatial spring and its colors on fast effects, as a Button's do, and nothing around it moves. Under reduced motion, the corners and colors change at once.

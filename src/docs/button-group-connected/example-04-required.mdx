@@ -1,0 +1,18 @@
+---
+title: Selection required
+description: With `isSelectionRequired`, the group always has a selection. One option starts selected; in a multi-select group the last one can't be unchecked.
+---
+
+<ButtonGroupConnected
+  name="days"
+  selection="multi"
+  isSelectionRequired
+  aria-label="Days"
+  options={[
+    { label: "Mon", value: "monday", isSelected: true },
+    { label: "Tue", value: "tuesday" },
+    { label: "Wed", value: "wednesday" },
+    { label: "Thu", value: "thursday" },
+    { label: "Fri", value: "friday" },
+  ]}
+/>

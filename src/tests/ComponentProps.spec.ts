@@ -17,13 +17,18 @@ const expected: Record<string, string | RegExp> = {
   "button-shape": `Button: M3's shapes are "round" and "square", but this one's \`shape\` is "oval".`,
   "button-size": `Button: M3's sizes are ${sizes}, but this one's \`size\` is "medium".`,
   "button-toggle-text": `Button: M3's toggle buttons are "elevated", "filled", "tonal" and "outlined", but this one's \`variant\` is "text".`,
-  "button-group-variant": `ButtonGroup: M3's button groups are "standard" and "connected", but this one's \`variant\` is "segmented".`,
-  "button-group-selection": `ButtonGroup: M3's selections are "single" and "multi", but this one's \`selection\` is "exclusive".`,
-  "button-group-standard-selection": `ButtonGroup: only M3's connected button groups have a selection, but this standard one's \`selection\` is "single".`,
-  "button-group-standard-required": `ButtonGroup: only M3's connected button groups have a selection, but this standard one's \`isSelectionRequired\` is true.`,
-  "button-group-not-toggles": `ButtonGroup: M3's connected button groups hold toggle buttons (isToggle), but 1 of this one's isn't.`,
-  "button-group-two-selected": `ButtonGroup: a single-select group has at most one button selected, but this one has 2.`,
-  "button-group-required-none": `ButtonGroup: a group whose selection is required starts with a button selected, but this one has none.`,
+  "button-group-connected-name":
+    "ButtonGroupConnected: its options are one form field, so it needs a `name`.",
+  "button-group-connected-selection": `ButtonGroupConnected: M3's selections are "single" and "multi", but this one's \`selection\` is "exclusive".`,
+  "button-group-connected-shape": `ButtonGroupConnected: M3's shapes are "round" and "square", but this one's \`shape\` is "oval".`,
+  "button-group-connected-size": `ButtonGroupConnected: M3's sizes are ${sizes}, but this one's \`size\` is "medium".`,
+  "button-group-connected-variant": `ButtonGroupConnected: M3's toggle buttons are "elevated", "filled", "tonal" and "outlined", but this one's \`variant\` is "text".`,
+  "button-group-connected-one-option":
+    "ButtonGroupConnected: M3's connected button groups join two or more buttons, but this one has 1.",
+  "button-group-connected-two-selected":
+    "ButtonGroupConnected: a single-select group has at most one option selected, but this one has 2.",
+  "button-group-connected-required-none":
+    "ButtonGroupConnected: a group whose selection is required starts with an option selected, but this one has none.",
   "button-icon-shape": `ButtonIcon: M3's shapes are "round" and "square", but this one's \`shape\` is "oval".`,
   "button-icon-size": `ButtonIcon: M3's sizes are ${sizes}, but this one's \`size\` is "medium".`,
   "button-icon-variant": `ButtonIcon: M3's icon button styles are "filled", "tonal", "outlined" and "standard", but this one's \`variant\` is "text".`,

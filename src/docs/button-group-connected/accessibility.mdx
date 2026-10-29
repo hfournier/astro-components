@@ -1,0 +1,10 @@
+Each option is a native input, so assistive tech announces it for what it is. A single-select group is a `radiogroup` of radios; a multi-select group is a `group` of checkboxes, as Compose's toggle buttons are announced as checkboxes. Each option's label is its accessible name, including an icon-only option's, which also shows in a tooltip. Name the group itself with `aria-label` or `aria-labelledby`.
+
+The keyboard follows the inputs (ADR-0022):
+
+- **Single-select:** the group is one Tab stop, landing on the checked radio, or the first. The arrow keys move the check, mirrored right to left, and Tab leaves the group. This differs from M3's Accessibility page, which has every button be a Tab stop with arrows that only move focus. Radios that worked that way would contradict the role they announce.
+- **Multi-select:** as M3's Accessibility page asks, Tab reaches each checkbox, the left and right arrow keys move between them too, mirrored right to left, stopping at the ends and skipping disabled ones, and Space checks the focused one.
+
+A selected option doesn't rely on color alone: it turns fully round, and an option with an icon shows it filled. A keyboard-focused option shows Button's focus ring. Each option keeps a 48px target, at least 48px wide and tall at every size.
+
+Under reduced motion, the corners and colors change at once.

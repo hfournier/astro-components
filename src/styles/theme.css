@@ -33,11 +33,6 @@
 @custom-variant scrollable-top (@container scroll-state(scrollable: top));
 @custom-variant scrollable-bottom (@container scroll-state(scrollable: bottom));
 
-/* selected: a toggle that's on, a toggle button (aria-pressed) or, in a single-select connected
-   ButtonGroup, a radio (aria-checked). Button and ButtonIcon style their selected state with it,
-   so either attribute draws it. */
-@custom-variant selected (&:is([aria-pressed="true"], [aria-checked="true"]));
-
 /* M3's enter and exit pattern, the timing of an overlay (BaseOverlay, the modal sheets) entering
    and leaving the screen: in on emphasized decelerate over medium 4, out on emphasized accelerate
    over short 4 (ADR-0018). A transition takes the timing of the state it goes to, so the open

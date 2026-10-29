@@ -1,0 +1,21 @@
+---
+title: Sizes and shapes
+description: Set `size` and `shape` on the group, not on each option. Larger groups have larger inner corners, and a square group keeps small corners at its ends too.
+---
+
+<div class="space-y-4">
+  <ButtonGroupConnected
+    name="size-xs"
+    size="xs"
+    aria-label="Extra small"
+    options={[{ label: "One", isSelected: true }, { label: "Two" }, { label: "Three" }]}
+  />
+  <ButtonGroupConnected
+    name="size-md"
+    size="md"
+    shape="square"
+    variant="filled"
+    aria-label="Medium square"
+    options={[{ label: "One", isSelected: true }, { label: "Two" }, { label: "Three" }]}
+  />
+</div>
