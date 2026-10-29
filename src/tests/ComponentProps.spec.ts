@@ -18,8 +18,8 @@ const expected: Record<string, string | RegExp> = {
   "button-size": `Button: M3's sizes are ${sizes}, but this one's \`size\` is "medium".`,
   "button-toggle-text": `Button: M3's toggle buttons are "elevated", "filled", "tonal" and "outlined", but this one's \`variant\` is "text".`,
   "button-group-connected-name":
-    "ButtonGroupConnected: its options are one form field, so it needs a `name`.",
-  "button-group-connected-selection": `ButtonGroupConnected: M3's selections are "single" and "multi", but this one's \`selection\` is "exclusive".`,
+    "ButtonGroupConnected: its options submit as one form field, which needs a name, but this one's `name` is undefined.",
+  "button-group-connected-selection": `ButtonGroupConnected: its selections are "single" and "multi", but this one's \`selection\` is "exclusive".`,
   "button-group-connected-shape": `ButtonGroupConnected: M3's shapes are "round" and "square", but this one's \`shape\` is "oval".`,
   "button-group-connected-size": `ButtonGroupConnected: M3's sizes are ${sizes}, but this one's \`size\` is "medium".`,
   "button-group-connected-variant": `ButtonGroupConnected: M3's toggle buttons are "elevated", "filled", "tonal" and "outlined", but this one's \`variant\` is "text".`,

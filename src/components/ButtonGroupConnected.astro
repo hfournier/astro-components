@@ -40,14 +40,9 @@ const {
 
 // Values outside these fail the build, rather than drawing something other than was asked for
 // (ADR-0021)
-if (!name) {
-  throw new Error(
-    "ButtonGroupConnected: its options are one form field, so it needs a `name`."
-  );
-}
 if (!["single", "multi"].includes(selection)) {
   throw new Error(
-    `ButtonGroupConnected: M3's selections are "single" and "multi", but this one's \`selection\` is "${selection}".`
+    `ButtonGroupConnected: its selections are "single" and "multi", but this one's \`selection\` is "${selection}".`
   );
 }
 if (!["round", "square"].includes(shape)) {
@@ -63,6 +58,12 @@ if (!["xs", "sm", "md", "lg", "xl"].includes(size)) {
 if (!["elevated", "filled", "tonal", "outlined"].includes(variant)) {
   throw new Error(
     `ButtonGroupConnected: M3's toggle buttons are "elevated", "filled", "tonal" and "outlined", but this one's \`variant\` is "${variant}".`
+  );
+}
+// Its options are one form field, and a field needs a name
+if (!name) {
+  throw new Error(
+    `ButtonGroupConnected: its options submit as one form field, which needs a name, but this one's \`name\` is ${name === undefined ? "undefined" : `"${name}"`}.`
   );
 }
 if (!Array.isArray(options) || options.length < 2) {
@@ -86,11 +87,11 @@ if (isSelectionRequired && selectedCount === 0) {
 // animate), and the inner corners at rest and pressed. The options read them as custom
 // properties, so each position needs only its own classes below.
 const cornerClasses = {
-  xs: "[--ac-button-group-connected-full:16px] [--ac-button-group-connected-inner:8px] [--ac-button-group-connected-pressed:4px]",
-  sm: "[--ac-button-group-connected-full:20px] [--ac-button-group-connected-inner:8px] [--ac-button-group-connected-pressed:4px]",
-  md: "[--ac-button-group-connected-full:28px] [--ac-button-group-connected-inner:8px] [--ac-button-group-connected-pressed:4px]",
-  lg: "[--ac-button-group-connected-full:48px] [--ac-button-group-connected-inner:16px] [--ac-button-group-connected-pressed:12px]",
-  xl: "[--ac-button-group-connected-full:68px] [--ac-button-group-connected-inner:20px] [--ac-button-group-connected-pressed:16px]",
+  xs: "[--ac-button-group-connected-full:16px] [--ac-button-group-connected-inner:8px] [--ac-button-group-connected-inner-pressed:4px]",
+  sm: "[--ac-button-group-connected-full:20px] [--ac-button-group-connected-inner:8px] [--ac-button-group-connected-inner-pressed:4px]",
+  md: "[--ac-button-group-connected-full:28px] [--ac-button-group-connected-inner:8px] [--ac-button-group-connected-inner-pressed:4px]",
+  lg: "[--ac-button-group-connected-full:48px] [--ac-button-group-connected-inner:16px] [--ac-button-group-connected-inner-pressed:12px]",
+  xl: "[--ac-button-group-connected-full:68px] [--ac-button-group-connected-inner:20px] [--ac-button-group-connected-inner-pressed:16px]",
 }[size];
 // An outer corner: full on a round option, the inner corners' size on a square one
 const outerClasses =
@@ -102,10 +103,10 @@ const outerClasses =
 // a radio pressed while another in its group has focus.
 const positionClasses = {
   first:
-    "rounded-s-(--ac-button-group-connected-outer) rounded-e-(--ac-button-group-connected-inner) [&[data-ac-button-group-connected-pressed]:has(:enabled)]:rounded-e-(--ac-button-group-connected-pressed)",
+    "rounded-s-(--ac-button-group-connected-outer) rounded-e-(--ac-button-group-connected-inner) [&[data-ac-button-group-connected-pressed]:has(:enabled)]:rounded-e-(--ac-button-group-connected-inner-pressed)",
   middle:
-    "rounded-(--ac-button-group-connected-inner) [&[data-ac-button-group-connected-pressed]:has(:enabled)]:rounded-(--ac-button-group-connected-pressed)",
-  last: "rounded-s-(--ac-button-group-connected-inner) rounded-e-(--ac-button-group-connected-outer) [&[data-ac-button-group-connected-pressed]:has(:enabled)]:rounded-s-(--ac-button-group-connected-pressed)",
+    "rounded-(--ac-button-group-connected-inner) [&[data-ac-button-group-connected-pressed]:has(:enabled)]:rounded-(--ac-button-group-connected-inner-pressed)",
+  last: "rounded-s-(--ac-button-group-connected-inner) rounded-e-(--ac-button-group-connected-outer) [&[data-ac-button-group-connected-pressed]:has(:enabled)]:rounded-s-(--ac-button-group-connected-inner-pressed)",
 };
 // M3: selected, every corner is full
 const selectedShapeClasses =
@@ -208,6 +209,7 @@ const lastIndex = options.length - 1;
         : undefined;
       const position =
         index === 0 ? "first" : index === lastIndex ? "last" : "middle";
+      const iconClasses = isIconOnly ? iconOnlySizeClasses : iconSizeClasses;
       return (
         <label
           class:list={[
@@ -235,8 +237,8 @@ const lastIndex = options.length - 1;
           ]}
           data-ac-button-group-connected-part="option"
         >
-          {/* The input covers the option, above its touch target, so a press on it presses the input, and it takes
-                the option's corners. Its look is the label's. */}
+          {/* The input covers the option, above its touch target, so a press on it presses the
+              input, and it takes the option's corners. Its look is the label's. */}
           <input
             class="absolute inset-0 z-1 m-0 cursor-[inherit] appearance-none rounded-[inherit] outline-none"
             type={type}
@@ -252,14 +254,14 @@ const lastIndex = options.length - 1;
                 {/* swapped by CSS, so the icon follows the input however it changes */}
                 <Icon
                   class:list={[
-                    isIconOnly ? iconOnlySizeClasses : iconSizeClasses,
+                    iconClasses,
                     "pointer-events-none shrink-0 group-has-checked/option:hidden",
                   ]}
                   name={icon}
                 />
                 <Icon
                   class:list={[
-                    isIconOnly ? iconOnlySizeClasses : iconSizeClasses,
+                    iconClasses,
                     "pointer-events-none hidden shrink-0 group-has-checked/option:block",
                   ]}
                   name={selectedIcon}
@@ -267,10 +269,7 @@ const lastIndex = options.length - 1;
               </>
             ) : (
               <Icon
-                class:list={[
-                  isIconOnly ? iconOnlySizeClasses : iconSizeClasses,
-                  "pointer-events-none shrink-0",
-                ]}
+                class:list={[iconClasses, "pointer-events-none shrink-0"]}
                 name={icon}
               />
             ))}
@@ -290,8 +289,8 @@ const lastIndex = options.length - 1;
 </div>
 
 <script>
-  // Marks the option being pressed, with the pointer or by holding Space on its input, as Button's
-  // :active would; see the pressed classes above
+  // Marks the option being pressed, with the pointer or by holding Space or Enter on its input,
+  // as Button's :active would; see the pressed classes above
   const pressedAttribute = "data-ac-button-group-connected-pressed";
   const optionOf = (target: EventTarget | null) =>
     target instanceof Element
@@ -313,12 +312,14 @@ const lastIndex = options.length - 1;
     document.addEventListener("pointerup", end);
     document.addEventListener("pointercancel", end);
   });
+  const isPressKey = (event: KeyboardEvent) =>
+    event.key === " " || (event.key === "Enter" && !!groupOf(event.target));
   document.addEventListener("keydown", (event) => {
-    if (event.key === " " && !event.repeat)
+    if (isPressKey(event) && !event.repeat)
       optionOf(event.target)?.setAttribute(pressedAttribute, "");
   });
   document.addEventListener("keyup", (event) => {
-    if (event.key === " ")
+    if (isPressKey(event))
       optionOf(event.target)?.removeAttribute(pressedAttribute);
   });
   document.addEventListener("focusout", (event) => {
@@ -326,18 +327,23 @@ const lastIndex = options.length - 1;
   });
 
   // Radios already keep one checked and move with the arrow keys. A multi-select group's
-  // checkboxes don't, so: M3's Accessibility page has the left and right arrow keys move between
-  // them, mirrored right to left, stopping at the ends and skipping disabled ones; and with
-  // selection required, the last checked one stays checked.
+  // checkboxes don't, so, as M3's Accessibility page asks: the left and right arrow keys move
+  // between them, mirrored right to left, stopping at the ends and skipping disabled ones; Enter
+  // checks one, as Space does; and with selection required, the last checked one stays checked.
   const groupOf = (target: EventTarget | null) =>
     target instanceof HTMLInputElement && target.type === "checkbox"
       ? target.closest<HTMLElement>("[data-ac-button-group-connected=multi]")
       : null;
 
   document.addEventListener("keydown", (event) => {
-    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
     const group = groupOf(event.target);
     if (!group) return;
+    if (event.key === "Enter") {
+      event.preventDefault();
+      if (!event.repeat) (event.target as HTMLInputElement).click();
+      return;
+    }
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
     const isRtl = getComputedStyle(group).direction === "rtl";
     const step = (event.key === "ArrowRight") !== isRtl ? 1 : -1;
     const inputs = [

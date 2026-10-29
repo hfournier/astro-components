@@ -145,7 +145,7 @@ test.describe("ButtonGroupConnected", () => {
   });
 
   // M3's Accessibility page: Tab moves between the buttons, the arrow keys too, and Space selects
-  test("multi-select keyboard: Tab and the arrow keys move between checkboxes, skipping disabled, and Space checks", async ({
+  test("multi-select keyboard: Tab and the arrow keys move between checkboxes, skipping disabled, and Space or Enter checks", async ({
     page,
   }) => {
     const filters = group(page, "multi", "Filters", "group");
@@ -159,6 +159,8 @@ test.describe("ButtonGroupConnected", () => {
     await expect(checkbox(filters, "Closed")).not.toBeChecked();
     await page.keyboard.press("Space");
     await expect(checkbox(filters, "Closed")).toBeChecked();
+    await page.keyboard.press("Enter");
+    await expect(checkbox(filters, "Closed")).not.toBeChecked();
     await page.keyboard.press("ArrowLeft");
     await page.keyboard.press("ArrowLeft");
     await expect(checkbox(filters, "Open")).toBeFocused();
