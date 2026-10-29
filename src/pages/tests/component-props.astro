@@ -1,0 +1,125 @@
+---
+// Renders each component with a prop outside its set and lists the outcome: "rendered", or the
+// error it threw (ADR-0021). A component that throws would fail the whole page and the build, so
+// each case renders in its own container and its error is caught.
+import { experimental_AstroContainer } from "astro/container";
+import type { AstroComponentFactory } from "astro/runtime/server/index.js";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Main from "../../components/Main.astro";
+import Badge from "../../components/Badge.astro";
+import BaseOverlay from "../../components/BaseOverlay.astro";
+import BaseWrapper from "../../components/BaseWrapper.astro";
+import Button from "../../components/Button.astro";
+import ButtonIcon from "../../components/ButtonIcon.astro";
+import Details from "../../components/Details.astro";
+import Divider from "../../components/Divider.astro";
+import Fab from "../../components/Fab.astro";
+import FabMenu from "../../components/FabMenu.astro";
+import Menu from "../../components/Menu.astro";
+import NavDrawer from "../../components/NavDrawer.astro";
+import NavRail from "../../components/NavRail.astro";
+import SheetSide from "../../components/SheetSide.astro";
+import Switch from "../../components/Switch.astro";
+import TextField from "../../components/TextField.astro";
+import Tooltip from "../../components/Tooltip.astro";
+
+const container = await experimental_AstroContainer.create();
+const buttonIcon = { icon: "add", label: "Add" };
+const fab = { icon: "add", label: "Add" };
+const fabMenu = { id: "fab-menu", icon: "add", label: "Add" };
+const field = { label: "Name" };
+// Each case: the component, and the props it needs plus the one under test. MDX passes
+// attributes as strings, so the number cases do too.
+const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
+  {
+    "badge-placement": [Badge, { placement: "floating" }],
+    "base-overlay-as": [BaseOverlay, { id: "overlay", as: "section" }],
+    "base-overlay-bg-color": [
+      BaseOverlay,
+      { id: "overlay", bgColor: "primary-container" },
+    ],
+    "base-overlay-transition": [
+      BaseOverlay,
+      { id: "overlay", transition: "slide" },
+    ],
+    "base-wrapper-as": [BaseWrapper, { as: "span" }],
+    "base-wrapper-bg-color": [BaseWrapper, { bgColor: "primary" }],
+    "button-as": [Button, { as: "div" }],
+    "button-variant": [Button, { variant: "contained" }],
+    "button-shape": [Button, { shape: "oval" }],
+    "button-size": [Button, { size: "medium" }],
+    "button-icon-shape": [ButtonIcon, { ...buttonIcon, shape: "oval" }],
+    "button-icon-size": [ButtonIcon, { ...buttonIcon, size: "medium" }],
+    "button-icon-variant": [ButtonIcon, { ...buttonIcon, variant: "text" }],
+    "button-icon-width": [ButtonIcon, { ...buttonIcon, width: "full" }],
+    "details-size": [Details, { label: "More", size: "sm" }],
+    "details-variant": [Details, { label: "More", variant: "filled" }],
+    "divider-inset": [Divider, { inset: "end" }],
+    "divider-orientation": [Divider, { orientation: "diagonal" }],
+    "fab-size": [Fab, { ...fab, size: "sm" }],
+    "fab-color": [Fab, { ...fab, color: "surface" }],
+    "fab-menu-size": [FabMenu, { ...fabMenu, size: "sm" }],
+    "fab-menu-color": [FabMenu, { ...fabMenu, color: "primary-container" }],
+    "fab-menu-align": [FabMenu, { ...fabMenu, align: "center" }],
+    "menu-color": [Menu, { id: "menu", color: "tonal" }],
+    "menu-layout": [Menu, { id: "menu", layout: "list" }],
+    "nav-drawer-width": [NavDrawer, { width: "medium" }],
+    "nav-rail-expanded-width": [NavRail, { expandedWidth: "medium" }],
+    "nav-rail-align": [NavRail, { align: "bottom" }],
+    "sheet-side-edge": [SheetSide, { edge: "left" }],
+    "switch-icons": [Switch, { icons: "unselected" }],
+    "text-field-type": [TextField, { ...field, type: "date" }],
+    "text-field-variant": [TextField, { ...field, variant: "standard" }],
+    "text-field-rows-as-text": [
+      TextField,
+      { ...field, type: "textarea", rows: "4" },
+    ],
+    "text-field-rows-zero": [
+      TextField,
+      { ...field, type: "textarea", rows: 0 },
+    ],
+    "text-field-rows-fraction": [
+      TextField,
+      { ...field, type: "textarea", rows: 2.5 },
+    ],
+    "text-field-rows-not-a-number": [
+      TextField,
+      { ...field, type: "textarea", rows: "tall" },
+    ],
+    "text-field-maxlength-as-text": [TextField, { ...field, maxlength: "20" }],
+    "text-field-maxlength-negative": [TextField, { ...field, maxlength: -1 }],
+    "text-field-maxlength-not-a-number": [
+      TextField,
+      { ...field, maxlength: "long" },
+    ],
+    "tooltip-placement": [Tooltip, { placement: "left" }],
+    "tooltip-variant": [Tooltip, { variant: "tooltip" }],
+  };
+const outcomes = await Promise.all(
+  Object.values(cases).map(async ([Component, props]) => {
+    try {
+      await container.renderToString(Component, { props });
+      return "rendered";
+    } catch (error) {
+      return (error as Error).message;
+    }
+  })
+);
+---
+
+<BaseLayout
+  title="Component props"
+  description="What each component throws for a prop outside its set"
+>
+  <Main class="mx-auto max-w-[75ch] px-4">
+    <h1>Component props</h1>
+    <dl>
+      {Object.keys(cases).map((name, index) => (
+        <>
+          <dt>{name}</dt>
+          <dd data-testid={`component-props-${name}`}>{outcomes[index]}</dd>
+        </>
+      ))}
+    </dl>
+  </Main>
+</BaseLayout>

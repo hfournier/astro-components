@@ -14,6 +14,14 @@ type Props = Omit<HTMLAttributes<"input">, "type" | "role"> & {
 };
 
 const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["none", "selected", "both"].includes(icons)) {
+  throw new Error(
+    `Switch: M3's icon options are "none", "selected" and "both", but this one's \`icons\` is "${icons}".`
+  );
+}
 ---
 
 <label

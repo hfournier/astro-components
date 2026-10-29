@@ -14,6 +14,19 @@ const {
   ...attrs
 } = Astro.props;
 
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["none", "start", "middle"].includes(inset)) {
+  throw new Error(
+    `Divider: M3's insets are "none", "start" and "middle", but this one's \`inset\` is "${inset}".`
+  );
+}
+if (!["horizontal", "vertical"].includes(orientation)) {
+  throw new Error(
+    `Divider: M3's orientations are "horizontal" and "vertical", but this one's \`orientation\` is "${orientation}".`
+  );
+}
+
 // Logical margins, so a start inset follows the
 // writing direction. A vertical divider stretches to its flex or grid row's height, so it needs
 // a flex or grid parent (or a height class).

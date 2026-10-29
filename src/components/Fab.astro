@@ -46,6 +46,28 @@ const {
   ...attrs
 } = Astro.props;
 
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["default", "md", "lg"].includes(size)) {
+  throw new Error(
+    `Fab: M3's sizes are "default", "md" and "lg", but this one's \`size\` is "${size}".`
+  );
+}
+if (
+  ![
+    "primary-container",
+    "secondary-container",
+    "tertiary-container",
+    "primary",
+    "secondary",
+    "tertiary",
+  ].includes(color)
+) {
+  throw new Error(
+    `Fab: M3's colors are "primary-container", "secondary-container", "tertiary-container", "primary", "secondary" and "tertiary", but this one's \`color\` is "${color}".`
+  );
+}
+
 const colorClasses = {
   primary: "bg-(--theme-color-primary) text-(--theme-color-on-primary)",
   "primary-container":

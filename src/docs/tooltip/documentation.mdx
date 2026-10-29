@@ -14,7 +14,7 @@ props:
     type: '"plain" | "rich"'
     required: false
     default: '"plain"'
-    description: '`plain` is a short label in the inverse surface color, at most 200px wide. `rich` is on a surface container, up to 320px wide, with an optional `subhead` and actions. The two are placed differently (see Placement).'
+    description: '`plain` is a short label in the inverse surface color, at most 200px wide. `rich` is on a surface container, up to 320px wide, with an optional `subhead` and actions. The two are placed differently (see Placement). Any other value fails the build.'
   - name: for
     type: string
     required: false
@@ -32,7 +32,7 @@ props:
     type: '"above" | "below"'
     required: false
     default: '"above"'
-    description: Plain tooltips only. M3 puts a plain tooltip directly above its element, or below it when the element is in an app bar.
+    description: Plain tooltips only. M3 puts a plain tooltip directly above its element, or below it when the element is in an app bar. Any other value fails the build.
 slots:
   - name: default
     description: The tooltip's text. Keep a plain tooltip's text to a few words.

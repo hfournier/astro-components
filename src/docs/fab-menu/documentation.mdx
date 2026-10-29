@@ -27,17 +27,17 @@ props:
     type: '"default" | "md" | "lg"'
     required: false
     default: '"default"'
-    description: The FAB's size, as Fab's - M3's FAB (56px), medium FAB (80px) or large FAB (96px). The items and the close button are the same for every FAB size, so the close button is always 56px. As M3 specifies, it shares the FAB's top corner on the `align` side, and the items open from there, so a larger FAB's menu sits higher.
+    description: The FAB's size, as Fab's - M3's FAB (56px), medium FAB (80px) or large FAB (96px). The items and the close button are the same for every FAB size, so the close button is always 56px. As M3 specifies, it shares the FAB's top corner on the `align` side, and the items open from there, so a larger FAB's menu sits higher. Any other value fails the build.
   - name: color
     type: '"primary" | "secondary" | "tertiary"'
     required: false
     default: '"primary"'
-    description: M3's color set for the whole menu. The closed FAB and the items use the container role (e.g. `primary-container`), and the close button the main role (e.g. `primary`). Pick the set that matches the FAB's color style elsewhere in the app, such as `primary` for a primary or primary-container FAB. In large windows, only the FAB takes it, and the Menu has M3's standard menu colors.
+    description: M3's color set for the whole menu. The closed FAB and the items use the container role (e.g. `primary-container`), and the close button the main role (e.g. `primary`). Pick the set that matches the FAB's color style elsewhere in the app, such as `primary` for a primary or primary-container FAB. In large windows, only the FAB takes it, and the Menu has M3's standard menu colors. Any other value fails the build.
   - name: align
     type: '"end" | "start"'
     required: false
     default: '"end"'
-    description: Which edge of the FAB the items, or in large windows the Menu, line up with. M3 puts the FAB and its menu at the end (trailing) edge of the window, so `"end"` is the one to use unless the FAB has to sit at the start. Right to left, both mirror, so `"end"` is the left edge and each item's icon follows its label.
+    description: Which edge of the FAB the items, or in large windows the Menu, line up with. M3 puts the FAB and its menu at the end (trailing) edge of the window, so `"end"` is the one to use unless the FAB has to sit at the start. Right to left, both mirror, so `"end"` is the left edge and each item's icon follows its label. Any other value fails the build.
 slots:
   - name: default
     description: The menu's actions, two to six of them, as M3 specifies, each a direct child. Any other number, or any other content, throws an error when the page renders.

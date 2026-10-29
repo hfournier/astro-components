@@ -30,6 +30,19 @@ const {
   ...attrs
 } = Astro.props;
 
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["narrow", "wide"].includes(expandedWidth)) {
+  throw new Error(
+    `NavRail: its expanded widths are "narrow" and "wide", but this one's \`expandedWidth\` is "${expandedWidth}".`
+  );
+}
+if (!["top", "center"].includes(align)) {
+  throw new Error(
+    `NavRail: M3's alignments are "top" and "center", but this one's \`align\` is "${align}".`
+  );
+}
+
 // M3: a navigation rail has three to seven destinations. They're counted in the rendered slot by
 // the marker attribute on each NavRailItem's opening <a> tag.
 const items = await Astro.slots.render("default");

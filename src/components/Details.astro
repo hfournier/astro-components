@@ -21,6 +21,19 @@ const {
   ...attrs
 } = Astro.props;
 
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["md", "lg"].includes(size)) {
+  throw new Error(
+    `Details: its sizes are "md" and "lg", but this one's \`size\` is "${size}".`
+  );
+}
+if (!["outlined", "plain"].includes(variant)) {
+  throw new Error(
+    `Details: its variants are "outlined" and "plain", but this one's \`variant\` is "${variant}".`
+  );
+}
+
 // lg is M3's one-line list item: 56px, Body Large. md is a denser 48px row in Body Medium. Both
 // keep the 16px padding, so the content's px-4 always lines up with the summary's leading edge.
 const sizeClasses = {

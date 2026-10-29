@@ -41,6 +41,14 @@ const {
   ...attrs
 } = Astro.props;
 
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["narrow", "wide"].includes(width)) {
+  throw new Error(
+    `NavDrawer: its widths are "narrow" and "wide", but this one's \`width\` is "${width}".`
+  );
+}
+
 const drawerId = id ?? `ac-nav-drawer-${crypto.randomUUID()}`;
 
 // Set as a custom property, so a consumer overrides it with one class

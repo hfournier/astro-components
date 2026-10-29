@@ -23,7 +23,7 @@ props:
     type: '"primary" | "primary-container" | "secondary" | "secondary-container" | "tertiary" | "tertiary-container"'
     required: false
     default: '"primary-container"'
-    description: The FAB's M3 color set, a color role and its on-color. M3's default is `primary-container`. The `-container` sets are the softer ones.
+    description: The FAB's M3 color set, a color role and its on-color. M3's default is `primary-container`. The `-container` sets are the softer ones. Any other value fails the build.
   - name: isExtended
     type: boolean
     required: false
@@ -33,7 +33,7 @@ props:
     type: '"default" | "md" | "lg"'
     required: false
     default: '"default"'
-    description: M3's FAB (56px), medium FAB (80px) or large FAB (96px). The corner radius and the icon grow with it. The default matches Compose's `FloatingActionButton`, though M3 now recommends the medium FAB for most windows (see Sizes).
+    description: M3's FAB (56px), medium FAB (80px) or large FAB (96px). The corner radius and the icon grow with it. The default matches Compose's `FloatingActionButton`, though M3 now recommends the medium FAB for most windows (see Sizes). Any other value fails the build.
   - name: showTooltip
     type: boolean
     required: false

@@ -68,6 +68,29 @@ const {
   ...attrs
 }: Props<"a" | "button"> = Astro.props;
 
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["button", "a"].includes(Tag)) {
+  throw new Error(
+    `Button: its elements are "button" and "a", but this one's \`as\` is "${Tag}".`
+  );
+}
+if (!["elevated", "filled", "tonal", "outlined", "text"].includes(variant)) {
+  throw new Error(
+    `Button: M3's button styles are "elevated", "filled", "tonal", "outlined" and "text", but this one's \`variant\` is "${variant}".`
+  );
+}
+if (!["round", "square"].includes(shape)) {
+  throw new Error(
+    `Button: M3's shapes are "round" and "square", but this one's \`shape\` is "${shape}".`
+  );
+}
+if (!["xs", "sm", "md", "lg", "xl"].includes(size)) {
+  throw new Error(
+    `Button: M3's sizes are "xs", "sm", "md", "lg" and "xl", but this one's \`size\` is "${size}".`
+  );
+}
+
 // `type="button"` only makes sense - and only defaults - on a real <button>; an <a>'s `type`
 // attribute (rarely used) is a MIME-type hint, not a click-behavior enum, so it's left alone.
 const resolvedType = Tag === "button" ? (type ?? "button") : type;

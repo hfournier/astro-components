@@ -15,12 +15,12 @@ props:
     type: '"none" | "start" | "middle"'
     required: false
     default: '"none"'
-    description: How far the line stops short of its container's edges. `none` runs the full length. `start` leaves 16px at the start (before the line in a horizontal divider, above it in a vertical one), for example to line up with text that's indented past a leading icon. `middle` leaves 16px at both ends.
+    description: How far the line stops short of its container's edges. `none` runs the full length. `start` leaves 16px at the start (before the line in a horizontal divider, above it in a vertical one), for example to line up with text that's indented past a leading icon. `middle` leaves 16px at both ends. Any other value fails the build.
   - name: orientation
     type: '"horizontal" | "vertical"'
     required: false
     default: '"horizontal"'
-    description: The direction of the line. A vertical divider stretches to the height of its row, so it needs a flex or grid parent, or a height class such as `h-6`. It's exposed to assistive tech with `aria-orientation="vertical"`.
+    description: The direction of the line. A vertical divider stretches to the height of its row, so it needs a flex or grid parent, or a height class such as `h-6`. It's exposed to assistive tech with `aria-orientation="vertical"`. Any other value fails the build.
 ---
 
 ## Full width and inset together

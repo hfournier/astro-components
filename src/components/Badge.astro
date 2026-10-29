@@ -13,6 +13,14 @@ const {
   ...attrs
 } = Astro.props;
 
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["anchored", "inline"].includes(placement)) {
+  throw new Error(
+    `Badge: its placements are "anchored" and "inline", but this one's \`placement\` is "${placement}".`
+  );
+}
+
 // A numeric string (e.g. from a data attribute) behaves like a number: hidden at 0, capped at 999+
 const value =
   typeof label === "string" && /^\d+$/.test(label) ? Number(label) : label;

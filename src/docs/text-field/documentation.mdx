@@ -15,20 +15,20 @@ props:
     type: '"filled" | "outlined"'
     required: false
     default: '"filled"'
-    description: M3's two text fields. `filled` has a `surface-container-highest` container with rounded top corners and an active indicator along its bottom edge. `outlined` has a transparent container in a rounded outline, with the floated label sitting in a gap in the outline.
+    description: M3's two text fields. `filled` has a `surface-container-highest` container with rounded top corners and an active indicator along its bottom edge. `outlined` has a transparent container in a rounded outline, with the floated label sitting in a gap in the outline. Any other value fails the build.
   - name: type
     type: '"text" | "email" | "number" | "password" | "search" | "tel" | "url" | "textarea"'
     required: false
     default: '"text"'
-    description: The input's type, one of the single-line text types, or `textarea` for a multi-line field. Each single-line type keeps its native behavior, such as an email keyboard on mobile or a number's validation. The browser's own clear button on a search field is hidden, since M3 clears a field with a trailing icon.
+    description: The input's type, one of the single-line text types, or `textarea` for a multi-line field. Each single-line type keeps its native behavior, such as an email keyboard on mobile or a number's validation. The browser's own clear button on a search field is hidden, since M3 clears a field with a trailing icon. Any other value fails the build.
   - name: rows
     type: number
     required: false
-    description: For `type="textarea"` only. Without it, the field starts one line tall and grows a line at a time with its text, as M3's multi-line field does. With it, the field is M3's text area, that many lines tall, and scrolls once its text is longer. M3 recommends a text area over a growing field on the web.
+    description: For `type="textarea"` only. Without it, the field starts one line tall and grows a line at a time with its text, as M3's multi-line field does. With it, the field is M3's text area, that many lines tall, and scrolls once its text is longer. M3 recommends a text area over a growing field on the web. A value that isn't a whole number from 1 fails the build.
   - name: maxlength
     type: number
     required: false
-    description: Shows M3's character counter, the length of the value and this limit (`5/20`), at the end of the supporting text line. Unlike the native attribute, it doesn't stop people typing past the limit. Past it, the counter and the field turn to the error colors, and the input is invalid, so its form won't submit.
+    description: Shows M3's character counter, the length of the value and this limit (`5/20`), at the end of the supporting text line. Unlike the native attribute, it doesn't stop people typing past the limit. Past it, the counter and the field turn to the error colors, and the input is invalid, so its form won't submit. A value that isn't a whole number from 0 fails the build.
 slots:
   - name: default
     description: The label's text, which names the input. It rests in the field in M3's Body Large while the field is empty, and floats above the text in Body Small when the field is focused or has a value. Keep it short, so it isn't truncated. Leave it empty only when the field is named another way, with `aria-label` or `aria-labelledby`.

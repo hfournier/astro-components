@@ -1,7 +1,7 @@
 ---
 import type { HTMLTag, Polymorphic } from "astro/types";
 import { twMerge } from "tailwind-merge";
-import type { BgColorType } from "../types";
+import { bgColors, type BgColorType } from "../types";
 
 type Props<
   Tag extends Extract<
@@ -30,6 +30,31 @@ const {
   class: classList,
   ...attrs
 } = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (
+  ![
+    "article",
+    "aside",
+    "div",
+    "figure",
+    "footer",
+    "header",
+    "main",
+    "section",
+  ].includes(Tag)
+) {
+  throw new Error(
+    `BaseWrapper: its elements are "article", "aside", "div", "figure", "footer", "header", "main" and "section", but this one's \`as\` is "${Tag}".`
+  );
+}
+if (!(bgColors as readonly string[]).includes(bgColor)) {
+  const list = bgColors.map((color) => `"${color}"`);
+  throw new Error(
+    `BaseWrapper: its backgrounds are ${list.slice(0, -1).join(", ")} and ${list.at(-1)}, but this one's \`bgColor\` is "${bgColor}".`
+  );
+}
 // Each background also sets --theme-color-wrapper-bg, which descendants read for things that
 // must match the surface behind them - e.g. focus-ring offsets (ring-offset-(--theme-color-wrapper-bg)).
 // `transparent` leaves it alone, so they inherit the nearest wrapper's (or the page's) value.

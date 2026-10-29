@@ -30,6 +30,33 @@ const {
   ...attrs
 } = Astro.props;
 
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["dialog", "div"].includes(Tag)) {
+  throw new Error(
+    `BaseOverlay: its elements are "dialog" and "div", but this one's \`as\` is "${Tag}".`
+  );
+}
+if (
+  ![
+    "surface",
+    "surface-container-low",
+    "surface-container",
+    "surface-container-high",
+    "inverse-surface",
+    "tertiary-container",
+  ].includes(bgColor)
+) {
+  throw new Error(
+    `BaseOverlay: M3's overlay surfaces are "surface", "surface-container-low", "surface-container", "surface-container-high", "inverse-surface" and "tertiary-container", but this one's \`bgColor\` is "${bgColor}".`
+  );
+}
+if (!["fade", "fade-scale", "fade-down"].includes(transition)) {
+  throw new Error(
+    `BaseOverlay: its transitions are "fade", "fade-scale" and "fade-down", but this one's \`transition\` is "${transition}".`
+  );
+}
+
 const transitionClasses = {
   fade: "opacity-0 motion-safe:transition-[display,opacity,overlay] open:opacity-100 motion-safe:starting:open:opacity-0",
   "fade-down":

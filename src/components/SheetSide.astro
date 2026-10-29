@@ -54,6 +54,14 @@ const {
   ...attrs
 } = Astro.props;
 
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["start", "end"].includes(edge)) {
+  throw new Error(
+    `SheetSide: its edges are "start" and "end", but this one's \`edge\` is "${edge}".`
+  );
+}
+
 const Tag = isModal ? "dialog" : "aside";
 const headlineId = headline ? `${id}-headline` : undefined;
 const hasActions = Astro.slots.has("actions");

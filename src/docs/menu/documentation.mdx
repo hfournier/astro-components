@@ -19,12 +19,12 @@ props:
     type: '"standard" | "vibrant"'
     required: false
     default: '"standard"'
-    description: M3's menu colors. Standard is `surface-container-low`, with `tertiary-container` checked items. Vibrant is `tertiary-container`, with `tertiary` checked items, and stands out more, so use it sparingly.
+    description: M3's menu colors. Standard is `surface-container-low`, with `tertiary-container` checked items. Vibrant is `tertiary-container`, with `tertiary` checked items, and stands out more, so use it sparingly. Any other value fails the build.
   - name: layout
     type: '"standard" | "grouped"'
     required: false
     default: '"grouped"'
-    description: M3's two layouts. Grouped puts each MenuGroup on its own surface, 2px apart. Standard is one surface with a divider between groups. M3 has no gaps in a scrolling menu, so a grouped menu too tall for the room beside its trigger is shown in the standard layout.
+    description: M3's two layouts. Grouped puts each MenuGroup on its own surface, 2px apart. Standard is one surface with a divider between groups. M3 has no gaps in a scrolling menu, so a grouped menu too tall for the room beside its trigger is shown in the standard layout. Any other value fails the build.
   - name: label
     type: string
     required: false

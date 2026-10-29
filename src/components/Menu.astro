@@ -38,6 +38,19 @@ const {
   ...attrs
 } = Astro.props;
 
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["standard", "vibrant"].includes(color)) {
+  throw new Error(
+    `Menu: M3's colors are "standard" and "vibrant", but this one's \`color\` is "${color}".`
+  );
+}
+if (!["standard", "grouped"].includes(layout)) {
+  throw new Error(
+    `Menu: M3's layouts are "standard" and "grouped", but this one's \`layout\` is "${layout}".`
+  );
+}
+
 // M3's colors: the menu's surface, and the checked item's colors (M3's selected item), which the
 // items read
 const colors = (

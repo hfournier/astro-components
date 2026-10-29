@@ -1,26 +1,29 @@
 import type { CollectionEntry } from "astro:content";
 import type { SvgIconNameTypes } from "./svgs";
 
-export type BgColorType =
-  | "primary-container"
-  | "primary-fixed"
-  | "primary-fixed-dim"
-  | "secondary-container"
-  | "secondary-fixed"
-  | "secondary-fixed-dim"
-  | "tertiary-container"
-  | "tertiary-fixed"
-  | "tertiary-fixed-dim"
-  | "surface"
-  | "surface-dim"
-  | "surface-bright"
-  | "inverse-surface"
-  | "surface-container-lowest"
-  | "surface-container-low"
-  | "surface-container"
-  | "surface-container-high"
-  | "surface-container-highest"
-  | "transparent";
+// M3 background roles, and transparent. A list, so BaseWrapper can check its `bgColor` (ADR-0021).
+export const bgColors = [
+  "primary-container",
+  "primary-fixed",
+  "primary-fixed-dim",
+  "secondary-container",
+  "secondary-fixed",
+  "secondary-fixed-dim",
+  "tertiary-container",
+  "tertiary-fixed",
+  "tertiary-fixed-dim",
+  "surface",
+  "surface-dim",
+  "surface-bright",
+  "inverse-surface",
+  "surface-container-lowest",
+  "surface-container-low",
+  "surface-container",
+  "surface-container-high",
+  "surface-container-highest",
+  "transparent",
+] as const;
+export type BgColorType = (typeof bgColors)[number];
 
 // M3 overlay surfaces: full-screen dialogs (Surface), sheets/drawers and vertical menus (Low),
 // vibrant vertical menus (Tertiary container), baseline menus and rich tooltips (Container), dialogs

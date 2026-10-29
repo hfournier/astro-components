@@ -49,6 +49,19 @@ const {
   ...attrs
 } = Astro.props;
 
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["above", "below"].includes(placement)) {
+  throw new Error(
+    `Tooltip: its placements are "above" and "below", but this one's \`placement\` is "${placement}".`
+  );
+}
+if (!["plain", "rich"].includes(variant)) {
+  throw new Error(
+    `Tooltip: M3's tooltips are "plain" and "rich", but this one's \`variant\` is "${variant}".`
+  );
+}
+
 if (variant === "rich" && !triggerId) {
   throw new Error(
     "Tooltip: a rich tooltip needs `for`, the id of the element it describes."

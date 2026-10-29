@@ -36,10 +36,50 @@ const {
   ...attrs
 }: Props = Astro.props;
 
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (
+  ![
+    "text",
+    "email",
+    "number",
+    "password",
+    "search",
+    "tel",
+    "url",
+    "textarea",
+  ].includes(type)
+) {
+  throw new Error(
+    `TextField: its types are "text", "email", "number", "password", "search", "tel", "url" and "textarea", but this one's \`type\` is "${type}".`
+  );
+}
+if (!["filled", "outlined"].includes(variant)) {
+  throw new Error(
+    `TextField: M3's styles are "filled" and "outlined", but this one's \`variant\` is "${variant}".`
+  );
+}
+// MDX passes attributes as strings, so `rows="4"` is read as the number it says
+const rowCount = rows == null ? undefined : Number(rows);
+if (rowCount !== undefined && !(Number.isInteger(rowCount) && rowCount >= 1)) {
+  throw new Error(
+    `TextField: \`rows\` is a whole number of lines from 1, but this one's is ${rows}.`
+  );
+}
+// M3's character counter: `maxlength` is a limit people can type past, as on Android, rather
+// than the native one that stops them. Past it, the counter and the field turn error, and the
+// script below makes the input invalid, so its form won't submit.
+const limit = maxlength == null ? undefined : Number(maxlength);
+if (limit !== undefined && !(Number.isInteger(limit) && limit >= 0)) {
+  throw new Error(
+    `TextField: \`maxlength\` is a whole number of characters from 0, but this one's is ${maxlength}.`
+  );
+}
+
 // A multi-line field is a textarea. Without `rows`, it starts one line tall and grows with its
 // content; with `rows`, it's M3's text area, that many lines tall, and scrolls.
 const isMultiLine = type === "textarea";
-const hasFixedRows = isMultiLine && rows != null;
+const hasFixedRows = isMultiLine && rowCount !== undefined;
 
 const label = Astro.slots.has("default")
   ? unwrapParagraph(await Astro.slots.render("default")).trim()
@@ -55,10 +95,6 @@ const supportingId = Astro.slots.has("supporting-text")
   ? `${id}-supporting-text`
   : undefined;
 
-// M3's character counter: `maxlength` is a limit people can type past, as on Android, rather
-// than the native one that stops them. Past it, the counter and the field turn error, and the
-// script below makes the input invalid, so its form won't submit.
-const limit = maxlength == null ? undefined : Number(maxlength);
 const counterId = limit === undefined ? undefined : `${id}-counter`;
 const count = String(value ?? "").length;
 const isOverLimit = limit !== undefined && count > limit;
@@ -191,8 +227,8 @@ const controlAttrs = {
               : "min-h-6 overflow-y-hidden field-sizing-content",
           ]}
           {...controlAttrs}
-          rows={rows ?? 1}
-          style={hasFixedRows ? `--ac-text-field-rows: ${rows}` : undefined}
+          rows={rowCount ?? 1}
+          style={hasFixedRows ? `--ac-text-field-rows: ${rowCount}` : undefined}
           data-ac-text-field-grows={hasFixedRows ? undefined : ""}
           {...attrs}
           set:text={value}
