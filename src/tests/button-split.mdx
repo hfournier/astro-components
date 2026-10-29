@@ -1,0 +1,97 @@
+---
+title: ButtonSplit
+description: Tests for the ButtonSplit component
+---
+
+<Heading level={1}>ButtonSplit Tests</Heading>
+
+<Section data-testid="button-split-menu" class="p-4 space-y-4">
+  <Heading level={2}>With a menu</Heading>
+  <div class="flex items-center gap-4">
+    <ButtonSplit
+      icon="schedule"
+      menuId="watch-menu"
+      menuLabel="More watch options"
+      variant="tonal"
+    >
+      Watch later
+    </ButtonSplit>
+    <Button variant="text">After</Button>
+  </div>
+  <Menu id="watch-menu">
+    <MenuItem label="Watch tonight" />
+    <MenuItem label="Watch this weekend" />
+    <MenuItem label="Remind me" />
+  </Menu>
+  <ButtonSplit
+    menuId="disabled-menu"
+    menuLabel="More send options"
+    disabled
+  >
+    Send
+  </ButtonSplit>
+  <Menu id="disabled-menu">
+    <MenuItem label="Schedule send" />
+  </Menu>
+  <ButtonSplit
+    icon="favorite"
+    aria-label="Favorite"
+    menuId="icon-menu"
+    menuLabel="More favorite options"
+  />
+  <Menu id="icon-menu">
+    <MenuItem label="Add to list" />
+  </Menu>
+</Section>
+
+<Section data-testid="button-split-sizes" class="p-4 space-y-4">
+  <Heading level={2}>Sizes</Heading>
+  <ButtonSplit size="xs" menuId="xs-menu" menuLabel="More extra small options">
+    Extra small
+  </ButtonSplit>
+  <ButtonSplit menuId="sm-menu" menuLabel="More small options">
+    Small
+  </ButtonSplit>
+  <ButtonSplit size="md" menuId="md-menu" menuLabel="More medium options">
+    Medium
+  </ButtonSplit>
+  <ButtonSplit size="lg" menuId="lg-menu" menuLabel="More large options">
+    Large
+  </ButtonSplit>
+  <ButtonSplit size="xl" menuId="xl-menu" menuLabel="More extra large options">
+    Extra large
+  </ButtonSplit>
+  <Menu id="xs-menu"><MenuItem label="One" /></Menu>
+  <Menu id="sm-menu"><MenuItem label="One" /></Menu>
+  <Menu id="md-menu"><MenuItem label="One" /></Menu>
+  <Menu id="lg-menu"><MenuItem label="One" /></Menu>
+  <Menu id="xl-menu"><MenuItem label="One" /></Menu>
+</Section>
+
+<Section data-testid="button-split-styles" class="p-4 space-y-4">
+  <Heading level={2}>Styles</Heading>
+  <ButtonSplit variant="elevated" menuId="elevated-menu" menuLabel="More elevated options">
+    Elevated
+  </ButtonSplit>
+  <ButtonSplit menuId="filled-menu" menuLabel="More filled options">
+    Filled
+  </ButtonSplit>
+  <ButtonSplit variant="tonal" menuId="tonal-menu" menuLabel="More tonal options">
+    Tonal
+  </ButtonSplit>
+  <ButtonSplit variant="outlined" menuId="outlined-menu" menuLabel="More outlined options">
+    Outlined
+  </ButtonSplit>
+  <Menu id="elevated-menu"><MenuItem label="One" /></Menu>
+  <Menu id="filled-menu"><MenuItem label="One" /></Menu>
+  <Menu id="tonal-menu"><MenuItem label="One" /></Menu>
+  <Menu id="outlined-menu"><MenuItem label="One" /></Menu>
+</Section>
+
+<Section data-testid="button-split-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <ButtonSplit menuId="rtl-menu" menuLabel="خيارات أخرى">
+    حفظ
+  </ButtonSplit>
+  <Menu id="rtl-menu"><MenuItem label="واحد" /></Menu>
+</Section>

@@ -72,6 +72,9 @@
   --ease-spring-default-spatial: cubic-bezier(0.38, 1.21, 0.22, 1);
   --ease-spring-default-effects: cubic-bezier(0.34, 0.8, 0.34, 1);
   --ease-spring-slow-effects: cubic-bezier(0.34, 0.88, 0.34, 1);
+  /* The standard scheme's fast spatial spring, which barely overshoots, only where M3 names it
+     for a component: the split button's menu icon turning (ADR-0018) */
+  --ease-spring-standard-fast-spatial: cubic-bezier(0.27, 1.06, 0.18, 1);
 
   /* M3's easing, for transitions only: an overlay entering (emphasized decelerate) or leaving
      (emphasized accelerate) the screen, and standard, M3's web fallback for emphasized
@@ -110,6 +113,7 @@
   --theme-duration-spring-default-spatial: 500ms;
   --theme-duration-spring-default-effects: 200ms;
   --theme-duration-spring-slow-effects: 300ms;
+  --theme-duration-spring-standard-fast-spatial: 350ms;
 
   /* M3's durations, named as its tokens, for the easing above: M3 pairs emphasized decelerate
      with medium 4 to enter, emphasized accelerate with short 4 to leave, and standard with

@@ -1,0 +1,9 @@
+A split button is two native `<button>`s. Tab lands on the leading button, then the trailing one, mirrored right to left, and Space or Enter presses the focused one, as M3's Accessibility page asks.
+
+- **Leading button:** named by its label, as any Button is. An icon-only leading button needs `aria-label`.
+- **Trailing button:** named by `menuLabel`. Say that it gives more options for the main action, such as "More watch options" beside "Watch later". It's the Menu's trigger, so it has `aria-haspopup="menu"`, `aria-controls` pointing at the menu, and `aria-expanded`, which says whether the menu is open. The menu is named by the trailing button.
+- **Menu:** Space, Enter or a click opens it and focuses its first item. ArrowDown and ArrowUp open it on its first and last item. Escape closes it and focus goes back to the trailing button. Everything else is Menu's keyboard.
+
+Each button keeps a 48px target. The extra small and small sizes are shorter than that, so their targets reach above and below them. The trailing button is at least 48px wide in every size.
+
+Under reduced motion, the corners and the menu icon change at once.

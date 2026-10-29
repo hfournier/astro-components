@@ -12,6 +12,7 @@ import BaseWrapper from "../../components/BaseWrapper.astro";
 import Button from "../../components/Button.astro";
 import ButtonGroupConnected from "../../components/ButtonGroupConnected.astro";
 import ButtonIcon from "../../components/ButtonIcon.astro";
+import ButtonSplit from "../../components/ButtonSplit.astro";
 import Details from "../../components/Details.astro";
 import Divider from "../../components/Divider.astro";
 import Fab from "../../components/Fab.astro";
@@ -38,6 +39,8 @@ const choice = {
   name: "choice",
   options: [{ label: "One" }, { label: "Two" }],
 };
+// ButtonSplit needs its menu's id and its trailing button's name
+const split = { menuId: "split-menu", menuLabel: "More options" };
 // Each case: the component, and the props it needs plus the one under test. MDX passes
 // attributes as strings, so the number cases do too, and a valid one lists what it drew.
 const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
@@ -101,6 +104,12 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     "button-icon-size": [ButtonIcon, { ...add, size: "medium" }],
     "button-icon-variant": [ButtonIcon, { ...add, variant: "text" }],
     "button-icon-width": [ButtonIcon, { ...add, width: "full" }],
+    "button-split-menu-id": [ButtonSplit, { menuLabel: split.menuLabel }],
+    "button-split-menu-id-empty": [ButtonSplit, { ...split, menuId: "" }],
+    "button-split-menu-label": [ButtonSplit, { menuId: split.menuId }],
+    "button-split-name": [ButtonSplit, { ...split, icon: "add" }],
+    "button-split-size": [ButtonSplit, { ...split, size: "medium" }],
+    "button-split-variant": [ButtonSplit, { ...split, variant: "text" }],
     "details-size": [Details, { label: "More", size: "sm" }],
     "details-variant": [Details, { label: "More", variant: "filled" }],
     "divider-inset": [Divider, { inset: "end" }],
@@ -154,13 +163,16 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     "tooltip-placement": [Tooltip, { placement: "left" }],
     "tooltip-variant": [Tooltip, { variant: "tooltip" }],
   };
+// The cases whose slot isn't "Text": an icon-only button's is empty
+const slots: Record<string, string> = { "button-split-name": "" };
 const outcomes = await Promise.all(
-  Object.values(cases).map(async ([Component, props]) => {
+  Object.entries(cases).map(async ([name, [Component, props]]) => {
+    const slot = slots[name] ?? "Text";
     try {
       // some components render their slot as text, so each gets one
       const html = await container.renderToString(Component, {
         props,
-        slots: { default: "Text" },
+        slots: slot ? { default: slot } : {},
       });
       // what a valid case drew: a heading's element, a text area's rows, a counter's limit
       const drawn = [

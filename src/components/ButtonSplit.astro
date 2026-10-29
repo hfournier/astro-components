@@ -1,0 +1,213 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import type { SvgIconNameTypes } from "../svgs";
+import { unwrapParagraph } from "../utils";
+import Icon from "./Icon.astro";
+
+// An M3 Expressive split button: a leading button for the main action, and a trailing menu button,
+// 2px apart, that opens the Menu `menuId` names. The trailing button points at the menu with
+// `commandfor`, so the browser toggles it and Menu's script gives it the menu button pattern: its
+// aria-expanded, focus into the menu and back, and the arrow keys. While the menu is open, the
+// trailing button is fully round and its icon turns toward the leading button. `class` goes on the
+// container; every other attribute on the leading button, as it's "the same as buttons".
+type Props = HTMLAttributes<"button"> & {
+  // the id of the Menu the trailing button opens
+  menuId: string;
+  // the trailing button's accessible name, which also names the menu: say there are more options
+  // for the main action, e.g. "More watch options" for "Watch later"
+  menuLabel: string;
+  // the leading button's icon, before its label; with no label, name it with `aria-label`
+  icon?: SvgIconNameTypes;
+  size?: "xs" | "sm" | "md" | "lg" | "xl";
+  variant?: "elevated" | "filled" | "tonal" | "outlined";
+};
+
+const {
+  menuId,
+  menuLabel,
+  icon,
+  size = "sm",
+  variant = "filled",
+  disabled,
+  class: classList,
+  type = "button",
+  ...attrs
+}: Props = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["xs", "sm", "md", "lg", "xl"].includes(size)) {
+  throw new Error(
+    `ButtonSplit: M3's sizes are "xs", "sm", "md", "lg" and "xl", but this one's \`size\` is "${size}".`
+  );
+}
+if (!["elevated", "filled", "tonal", "outlined"].includes(variant)) {
+  throw new Error(
+    `ButtonSplit: M3's split buttons are "elevated", "filled", "tonal" and "outlined", but this one's \`variant\` is "${variant}".`
+  );
+}
+// an absent prop prints as undefined, an empty one as ""
+const quoted = (value?: string) =>
+  value === undefined ? "undefined" : `"${value}"`;
+if (!menuId) {
+  throw new Error(
+    `ButtonSplit: its trailing button opens a Menu, which needs the menu's id, but this one's \`menuId\` is ${quoted(menuId)}.`
+  );
+}
+if (!menuLabel) {
+  throw new Error(
+    `ButtonSplit: its trailing button shows only an icon, which needs a name, but this one's \`menuLabel\` is ${quoted(menuLabel)}.`
+  );
+}
+
+// none for an icon-only leading button
+const label = Astro.slots.has("default")
+  ? unwrapParagraph(await Astro.slots.render("default"))
+  : "";
+if (!label.trim() && !attrs["aria-label"] && !attrs["aria-labelledby"]) {
+  throw new Error(
+    "ButtonSplit: its leading button needs a name, from its label or an `aria-label`, but this one has neither."
+  );
+}
+
+// M3's split button tokens, per size. The outer corners are full (half the height, rather than
+// rounded-full, so they can morph); the inner ones widen while their button is hovered, focused or
+// pressed. The menu icon sits off center toward the leading button, so it looks centered beside
+// the round end, until the menu opens and the trailing button is round all over.
+const sizeProperties = {
+  xs: "[--ac-button-split-full:16px] [--ac-button-split-inner:4px] [--ac-button-split-engaged:8px] [--ac-button-split-icon-offset:-1px]",
+  sm: "[--ac-button-split-full:20px] [--ac-button-split-inner:4px] [--ac-button-split-engaged:12px] [--ac-button-split-icon-offset:-1px]",
+  md: "[--ac-button-split-full:28px] [--ac-button-split-inner:4px] [--ac-button-split-engaged:12px] [--ac-button-split-icon-offset:-2px]",
+  lg: "[--ac-button-split-full:48px] [--ac-button-split-inner:8px] [--ac-button-split-engaged:20px] [--ac-button-split-icon-offset:-3px]",
+  xl: "[--ac-button-split-full:68px] [--ac-button-split-inner:12px] [--ac-button-split-engaged:20px] [--ac-button-split-icon-offset:-6px]",
+}[size];
+
+// Button's height, label type and icon gap per size. The leading button's padding is M3's
+// leading and trailing space, and the trailing button is its padding either side of its icon wide.
+const labelLarge = "text-sm leading-5 font-medium tracking-[0.1px]";
+const titleMedium = "text-base leading-6 font-medium tracking-[0.15px]";
+const headlineSmall = "text-2xl leading-8 font-normal tracking-normal";
+const headlineLarge = "text-[2rem] leading-10 font-normal tracking-normal";
+const leadingSizeClasses = {
+  xs: `${labelLarge} min-h-8 ps-3 pe-2.5 gap-1`,
+  sm: `${labelLarge} min-h-10 ps-4 pe-3 gap-2`,
+  md: `${titleMedium} min-h-14 px-6 gap-2`,
+  lg: `${headlineSmall} min-h-24 px-12 gap-3`,
+  xl: `${headlineLarge} min-h-34 px-16 gap-4`,
+}[size];
+const trailingSizeClasses = {
+  xs: "min-h-8 w-12",
+  sm: "min-h-10 w-12",
+  md: "min-h-14 w-14",
+  lg: "min-h-24 w-24",
+  xl: "min-h-34 w-34",
+}[size];
+const iconSizeClasses = {
+  xs: "size-5",
+  sm: "size-5",
+  md: "size-6",
+  lg: "size-8",
+  xl: "size-10",
+}[size];
+const menuIconSizeClasses = {
+  xs: "size-[22px]",
+  sm: "size-[22px]",
+  md: "size-[26px]",
+  lg: "size-[38px]",
+  xl: "size-[50px]",
+}[size];
+
+// Button's outline width, which the state layer extends over
+const borderClasses = {
+  xs: "border before:-inset-px",
+  sm: "border before:-inset-px",
+  md: "border before:-inset-px",
+  lg: "border-2 before:-inset-0.5",
+  xl: "border-3 before:-inset-[3px]",
+}[size];
+
+// Button's colors: M3's split buttons take them unchanged, an open menu adding only a state layer
+const disabledContainer =
+  "disabled:bg-(--theme-color-on-surface)/10 disabled:border-transparent";
+const raisedOnHover = "enabled:hover:shadow-theme-elevation-1";
+const variantClasses = {
+  elevated: `bg-(--theme-color-surface-container-low) border-(--theme-color-surface-container-low) text-(--theme-color-primary) shadow-theme-elevation-1 enabled:hover:shadow-theme-elevation-2 disabled:shadow-none ${disabledContainer}`,
+  filled: `bg-(--theme-color-primary) border-(--theme-color-primary) text-(--theme-color-on-primary) ${raisedOnHover} ${disabledContainer}`,
+  tonal: `bg-(--theme-color-secondary-container) border-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container) ${raisedOnHover} ${disabledContainer}`,
+  outlined:
+    "bg-transparent border-(--theme-color-outline-variant) text-(--theme-color-on-surface-variant)",
+}[variant];
+
+// What both buttons share with Button: the state layer, the 48px touch target, the disabled
+// label, the focus ring, and motion: corners on the fast spatial spring, colors and the shadow on
+// fast effects (ADR-0018)
+const buttonClasses = [
+  "flex cursor-pointer items-center justify-center whitespace-nowrap",
+  "relative isolate before:absolute before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0 motion-safe:before:transition-opacity",
+  "enabled:hover:before:opacity-8 enabled:focus-visible:before:opacity-10 enabled:active:before:opacity-10",
+  "after:absolute after:inset-x-0 after:top-1/2 after:h-12 after:min-h-full after:-translate-y-1/2",
+  "disabled:cursor-default disabled:text-(--theme-color-on-surface)/38",
+  "motion-safe:[transition:color_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects),background-color_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects),border-color_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects),border-radius_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial),box-shadow_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects)]",
+  "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
+  borderClasses,
+  variantClasses,
+];
+
+// The leading button's start corners are full; its end corners widen while it's engaged
+const leadingShapeClasses =
+  "rounded-s-(--ac-button-split-full) rounded-e-(--ac-button-split-inner) enabled:hover:rounded-e-(--ac-button-split-engaged) focus-visible:rounded-e-(--ac-button-split-engaged) enabled:active:rounded-e-(--ac-button-split-engaged)";
+// The trailing button's end corners are full; its start corners widen while it's engaged, and are
+// full too while its menu is open, however it's engaged, keeping the pressed state layer
+const trailingShapeClasses =
+  "rounded-e-(--ac-button-split-full) rounded-s-(--ac-button-split-inner) not-aria-expanded:enabled:hover:rounded-s-(--ac-button-split-engaged) not-aria-expanded:focus-visible:rounded-s-(--ac-button-split-engaged) not-aria-expanded:enabled:active:rounded-s-(--ac-button-split-engaged) aria-expanded:rounded-s-(--ac-button-split-full) aria-expanded:before:opacity-10 aria-expanded:[--ac-button-split-icon-offset:0px]";
+---
+
+<div
+  class:list={twMerge("flex w-fit gap-0.5", sizeProperties, classList)}
+  data-ac-button-split
+>
+  <button
+    class:list={twMerge(
+      buttonClasses,
+      "min-w-12",
+      leadingShapeClasses,
+      leadingSizeClasses
+    )}
+    type={type}
+    disabled={disabled}
+    data-ac-button-split-part="leading"
+    {...attrs}
+  >
+    {icon && <Icon class:list={[iconSizeClasses, "shrink-0"]} name={icon} />}
+    <Fragment set:html={label} />
+  </button>
+  <button
+    class:list={twMerge(
+      buttonClasses,
+      "group/trailing shrink-0",
+      trailingShapeClasses,
+      trailingSizeClasses
+    )}
+    type="button"
+    disabled={disabled}
+    commandfor={menuId}
+    command="toggle-popover"
+    aria-label={menuLabel}
+    data-ac-button-split-part="trailing"
+  >
+    {/* M3's Guidelines: the menu icon turns 180° inward, toward the leading button, as the menu
+         opens, on the standard scheme's fast spatial spring rather than the expressive one. Its
+         move to the center is on fast spatial, as any change of position is (ADR-0018). */}
+    <Icon
+      class:list={[
+        menuIconSizeClasses,
+        "shrink-0 translate-x-(--ac-button-split-icon-offset) rtl:-translate-x-(--ac-button-split-icon-offset)",
+        "group-aria-expanded/trailing:rotate-180 rtl:group-aria-expanded/trailing:-rotate-180",
+        "motion-safe:[transition:rotate_var(--theme-duration-spring-standard-fast-spatial)_var(--ease-spring-standard-fast-spatial),translate_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial)]",
+      ]}
+      name="keyboard_arrow_down"
+      data-ac-button-split-part="icon"
+    />
+  </button>
+</div>

@@ -10,6 +10,8 @@ const FAST_SPATIAL = "0.35s cubic-bezier(0.42, 1.67, 0.21, 0.9)";
 const FAST_EFFECTS = "0.15s cubic-bezier(0.31, 0.94, 0.34, 1)";
 const DEFAULT_SPATIAL = "0.5s cubic-bezier(0.38, 1.21, 0.22, 1)";
 const DEFAULT_EFFECTS = "0.2s cubic-bezier(0.34, 0.8, 0.34, 1)";
+// the standard scheme's, only where M3 names it: the split button's menu icon turning
+const STANDARD_FAST_SPATIAL = "0.35s cubic-bezier(0.27, 1.06, 0.18, 1)";
 // M3's suggested easing and duration pairs (Easing and duration, Applying)
 const ENTER = "0.4s cubic-bezier(0.05, 0.7, 0.1, 1)"; // emphasized decelerate
 const EXIT = "0.2s cubic-bezier(0.3, 0, 0.8, 0.15)"; // emphasized accelerate
@@ -126,6 +128,24 @@ test.describe("motion", () => {
       .getByTestId("details-default")
       .locator("summary svg[data-ac-details-chevron]");
     await expectTransitions(chevron, { rotate: FAST_SPATIAL });
+  });
+
+  test("ButtonSplit: corners on fast spatial, colors on fast effects, the menu icon turning on standard fast spatial", async ({
+    page,
+  }) => {
+    await page.goto("/tests/button-split");
+    const trailing = page
+      .getByTestId("button-split-menu")
+      .getByRole("button", { name: "More watch options" });
+    await expectTransitions(trailing, {
+      color: FAST_EFFECTS,
+      "background-color": FAST_EFFECTS,
+      "border-radius": FAST_SPATIAL,
+    });
+    await expectTransitions(
+      trailing.locator("[data-ac-button-split-part=icon]"),
+      { rotate: STANDARD_FAST_SPATIAL, translate: FAST_SPATIAL }
+    );
   });
 
   test("Tabs: the indicator moves on fast spatial, tab colors on fast effects", async ({
