@@ -20,12 +20,12 @@ props:
     type: '"single" | "multi"'
     required: false
     default: '"single" (connected)'
-    description: A connected group's selection. `single` makes the group a `radiogroup` and each button a radio, one checked at a time. `multi` keeps each button a toggle button, pressed on its own. Any other value, or a selection on a standard group, fails the build.
+    description: A connected group's selection. `single` makes the group a `radiogroup` and each button a radio, one checked at a time; once one is checked, clicking it again leaves it checked. `multi` keeps each button a toggle button, pressed on its own. Any other value, or a selection on a standard group, fails the build.
   - name: isSelectionRequired
     type: boolean
     required: false
     default: "false"
-    description: Keeps at least one of a connected group's buttons selected, so clicking the last selected one leaves it selected. One must start selected. Setting it on a standard group fails the build.
+    description: Keeps at least one of a connected group's buttons selected from the start. One must start selected, and in a multi-select group clicking the last pressed one leaves it pressed. Setting it on a standard group fails the build.
 slots:
   - name: default
     description: The group's Buttons and ButtonIcons, in one line. All of one size and one shape, by default; their styles, widths and toggles can differ. In a connected group each must be a toggle (`isToggle`), and a single-select group starts with at most one selected; otherwise the build fails. Keep a connected group's buttons to one style.

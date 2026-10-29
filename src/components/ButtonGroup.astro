@@ -9,10 +9,11 @@ import { twMerge } from "tailwind-merge";
 // - connected joins toggle buttons 2px apart, with small inner corners, into one selection
 type Props = HTMLAttributes<"div"> & {
   variant?: "standard" | "connected";
-  // A connected group's selection: one button at a time, each a radio, or any number of toggle
-  // buttons. Defaults to single.
+  // A connected group's selection: one button at a time, each a radio, which stays checked once
+  // chosen, or any number of toggle buttons. Defaults to single.
   selection?: "single" | "multi";
-  // A connected group's last selected button can't be unselected
+  // A connected group starts with a button selected, and its last selected one can't be
+  // unselected
   isSelectionRequired?: boolean;
 };
 
@@ -40,23 +41,35 @@ if (
   );
 }
 const isConnected = variant === "connected";
-if (!isConnected && (selectionProp !== undefined || isSelectionRequired)) {
+if (!isConnected && selectionProp !== undefined) {
   throw new Error(
-    `ButtonGroup: only M3's connected button groups have a selection, but this one's \`variant\` is "standard".`
+    `ButtonGroup: only M3's connected button groups have a selection, but this standard one's \`selection\` is "${selectionProp}".`
+  );
+}
+if (!isConnected && isSelectionRequired) {
+  throw new Error(
+    `ButtonGroup: only M3's connected button groups have a selection, but this standard one's \`isSelectionRequired\` is true.`
   );
 }
 const selection = isConnected ? (selectionProp ?? "single") : undefined;
 
-// A connected group's buttons, counted in the rendered slot by the marker on each Button's and
-// ButtonIcon's opening tag. Its selection is the group's: each button's own toggle marker comes
-// off, so only the script below flips it, and in a single-select group each becomes a radio.
-let items = "";
+// A connected group's buttons, counted in the rendered slot by the markers on each Button's and
+// ButtonIcon's opening <button> tag. Its selection is the group's: each button's own toggle
+// marker comes off, so only the script below flips it, and in a single-select group each becomes
+// a radio. Only those opening tags are read or rewritten, not what's inside them.
+let itemsHtml = "";
 if (isConnected) {
   const rendered = await Astro.slots.render("default");
-  const buttonCount = rendered.match(/\sdata-ac-button-size=/g)?.length ?? 0;
-  const toggleCount =
-    rendered.match(/\saria-pressed="(true|false)"/g)?.length ?? 0;
-  const selectedCount = rendered.match(/\saria-pressed="true"/g)?.length ?? 0;
+  const buttonTags = (rendered.match(/<button\b[^>]*>/g) ?? []).filter((tag) =>
+    /\sdata-ac-button-size=/.test(tag)
+  );
+  const buttonCount = buttonTags.length;
+  const toggleCount = buttonTags.filter((tag) =>
+    /\saria-pressed="(true|false)"/.test(tag)
+  ).length;
+  const selectedCount = buttonTags.filter((tag) =>
+    /\saria-pressed="true"/.test(tag)
+  ).length;
   // M3: connected groups are for selection, so each button is a toggle
   const plainCount = buttonCount - toggleCount;
   if (plainCount > 0) {
@@ -74,16 +87,19 @@ if (isConnected) {
       `ButtonGroup: a group whose selection is required starts with a button selected, but this one has none.`
     );
   }
-  items = rendered.replace(
-    /\sdata-ac-(button-toggle(="")?|icon-toggle="aria-pressed")(?=[\s>])/g,
-    ""
-  );
-  if (selection === "single") {
-    items = items.replace(
-      /\saria-pressed="(true|false)"/g,
-      ' role="radio" aria-checked="$1"'
+  itemsHtml = rendered.replace(/<button\b[^>]*>/g, (tag) => {
+    if (!/\sdata-ac-button-size=/.test(tag)) return tag;
+    const unmarked = tag.replace(
+      /\sdata-ac-(button-toggle(="")?|icon-toggle="aria-pressed")(?=[\s>])/,
+      ""
     );
-  }
+    return selection === "single"
+      ? unmarked.replace(
+          /\saria-pressed="(true|false)"/,
+          ' role="radio" aria-checked="$1"'
+        )
+      : unmarked;
+  });
 }
 ---
 
@@ -96,7 +112,7 @@ if (isConnected) {
     data-ac-button-group-required={isSelectionRequired ? "" : undefined}
     {...attrs}
   >
-    <Fragment set:html={items} />
+    <Fragment set:html={itemsHtml} />
   </div>
 ) : (
   /* M3's space between buttons follows their size: 18px for extra small, 12px for small and 8px
@@ -121,58 +137,59 @@ if (isConnected) {
      with their own utilities. Per their size: a round button's full corners (half its height, in
      px as Button's own are, so they animate), and the inner corners at rest and pressed. */
   [data-ac-button-group="connected"] > :global(*) {
-    --ac-connected-full: 20px;
-    --ac-connected-inner: 8px;
-    --ac-connected-pressed: 4px;
+    --ac-button-group-full: 20px;
+    --ac-button-group-inner: 8px;
+    --ac-button-group-pressed: 4px;
     /* an outer corner: full on a round button, the inner corner's size on a square one */
-    --ac-connected-outer: var(--ac-connected-inner);
-    --ac-connected-corner: var(--ac-connected-inner);
-    --ac-connected-start: var(--ac-connected-corner);
-    --ac-connected-end: var(--ac-connected-corner);
-    border-start-start-radius: var(--ac-connected-start);
-    border-end-start-radius: var(--ac-connected-start);
-    border-start-end-radius: var(--ac-connected-end);
-    border-end-end-radius: var(--ac-connected-end);
-    /* M3: the group spans its surface, its buttons sharing the width, each at least 48px wide */
+    --ac-button-group-outer: var(--ac-button-group-inner);
+    --ac-button-group-corner: var(--ac-button-group-inner);
+    --ac-button-group-start: var(--ac-button-group-corner);
+    --ac-button-group-end: var(--ac-button-group-corner);
+    border-start-start-radius: var(--ac-button-group-start);
+    border-end-start-radius: var(--ac-button-group-start);
+    border-start-end-radius: var(--ac-button-group-end);
+    border-end-end-radius: var(--ac-button-group-end);
+    /* M3: the group spans its surface, its buttons sharing the width, each at least 48px wide.
+         Here rather than as classes, which would tie with Button's own max-w-fit (ADR-0020). */
     flex: 1 0 3rem;
     max-width: none;
   }
   [data-ac-button-group="connected"] > :global([data-ac-button-size="xs"]) {
-    --ac-connected-full: 16px;
+    --ac-button-group-full: 16px;
   }
   [data-ac-button-group="connected"] > :global([data-ac-button-size="md"]) {
-    --ac-connected-full: 28px;
+    --ac-button-group-full: 28px;
   }
   [data-ac-button-group="connected"] > :global([data-ac-button-size="lg"]) {
-    --ac-connected-full: 48px;
-    --ac-connected-inner: 16px;
-    --ac-connected-pressed: 12px;
+    --ac-button-group-full: 48px;
+    --ac-button-group-inner: 16px;
+    --ac-button-group-pressed: 12px;
   }
   [data-ac-button-group="connected"] > :global([data-ac-button-size="xl"]) {
-    --ac-connected-full: 68px;
-    --ac-connected-inner: 20px;
-    --ac-connected-pressed: 16px;
+    --ac-button-group-full: 68px;
+    --ac-button-group-inner: 20px;
+    --ac-button-group-pressed: 16px;
   }
   [data-ac-button-group="connected"] > :global([data-ac-button-shape="round"]) {
-    --ac-connected-outer: var(--ac-connected-full);
+    --ac-button-group-outer: var(--ac-button-group-full);
   }
   /* The first and last buttons' outer sides, less any script Astro puts beside them */
   [data-ac-button-group="connected"]
     > :global(:nth-child(1 of :not(script, style, template))) {
-    --ac-connected-start: var(--ac-connected-outer);
+    --ac-button-group-start: var(--ac-button-group-outer);
   }
   [data-ac-button-group="connected"]
     > :global(:nth-last-child(1 of :not(script, style, template))) {
-    --ac-connected-end: var(--ac-connected-outer);
+    --ac-button-group-end: var(--ac-button-group-outer);
   }
   /* M3: selected, every corner is full. Pressed, which wins, the inner ones narrow. */
   [data-ac-button-group="connected"]
     > :global(:is([aria-pressed="true"], [aria-checked="true"])) {
-    --ac-connected-outer: var(--ac-connected-full);
-    --ac-connected-corner: var(--ac-connected-full);
+    --ac-button-group-outer: var(--ac-button-group-full);
+    --ac-button-group-corner: var(--ac-button-group-full);
   }
   [data-ac-button-group="connected"] > :global(:active:not(:disabled)) {
-    --ac-connected-corner: var(--ac-connected-pressed);
+    --ac-button-group-corner: var(--ac-button-group-pressed);
   }
 </style>
 
@@ -353,8 +370,8 @@ if (isConnected) {
   });
 
   // A connected group's selection, on each click (keyboard activation fires click too): a radio
-  // checks and unchecks the others, a toggle button flips. With selection required, the last
-  // selected button stays selected.
+  // checks and unchecks the others, and stays checked, as a radio does; a toggle button flips.
+  // With selection required, the last pressed toggle button stays pressed.
   document.addEventListener("click", (event) => {
     const item = groupItemOf(event);
     const group = item?.parentElement;
@@ -367,8 +384,8 @@ if (isConnected) {
     );
     if (
       isOn &&
-      "acButtonGroupRequired" in group.dataset &&
-      selected.length === 1
+      (selection === "single" ||
+        ("acButtonGroupRequired" in group.dataset && selected.length === 1))
     )
       return;
     if (selection === "single" && !isOn)

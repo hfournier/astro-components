@@ -88,15 +88,19 @@ test.describe("ButtonGroup connected", () => {
     await expect(radio(view, "Day")).toBeChecked();
     await expect(radio(view, "Week")).not.toBeChecked();
     await expect(radio(view, "Month")).not.toBeChecked();
-    // without selection-required, the checked one unchecks
+    // a radio stays checked when clicked again
     await radio(view, "Day").click();
-    await expect(view.getByRole("radio", { checked: true })).toHaveCount(0);
+    await expect(radio(view, "Day")).toBeChecked();
   });
 
-  test("single-select with selection required keeps one checked", async ({
+  test("single-select can start with none checked, and with selection required starts with one", async ({
     page,
   }) => {
+    await expect(
+      group(page, "sizes", "Small").getByRole("radio", { checked: true })
+    ).toHaveCount(0);
     const sort = group(page, "single", "Sort");
+    await expect(radio(sort, "Newest")).toBeChecked();
     await radio(sort, "Newest").click();
     await expect(radio(sort, "Newest")).toBeChecked();
     await radio(sort, "Oldest").click();
@@ -170,6 +174,19 @@ test.describe("ButtonGroup connected", () => {
     await expect(radio(view, "Week")).not.toBeChecked();
     await page.keyboard.press("Tab");
     await expect(radio(view, "Month")).not.toBeFocused();
+  });
+
+  // M3's Accessibility page: the focused button shows its focus indicator, as a Button does
+  test("a focused button shows its focus ring", async ({ page }) => {
+    const day = radio(group(page, "single", "View"), "Day");
+    await day.focus();
+    await page.keyboard.press("ArrowRight");
+    const week = radio(group(page, "single", "View"), "Week");
+    await expect(week).toBeFocused();
+    await expect(week).toHaveCSS("outline-style", "none");
+    expect(
+      await week.evaluate((el) => getComputedStyle(el).boxShadow)
+    ).not.toBe("none");
   });
 
   // M3's Specs: 2px between buttons at every size, full outer corners and the size's inner ones
