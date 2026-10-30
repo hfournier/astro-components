@@ -127,6 +127,10 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     "button-split-variant": [ButtonSplit, { ...split, variant: "text" }],
     "chip-assist-as": [ChipAssist, { as: "div" }],
     "chip-assist-variant": [ChipAssist, { variant: "tonal" }],
+    "chip-filter-menu-selected": [
+      ChipFilter,
+      { menuId: "price", isSelected: true },
+    ],
     "chip-filter-menu-single": [
       ChipFilter,
       { menuId: "price", selection: "single", name: "price" },
@@ -135,10 +139,6 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     "chip-filter-single-name": [ChipFilter, { selection: "single" }],
     "chip-group-overflow": [ChipGroup, { overflow: "hidden" }],
     "chip-group-selection": [ChipGroup, { selection: "one" }],
-    "chip-filter-menu-selected": [
-      ChipFilter,
-      { menuId: "price", isSelected: true },
-    ],
     "chip-filter-variant": [ChipFilter, { variant: "outlined" }],
     "chip-suggestion-as": [ChipSuggestion, { as: "span" }],
     "chip-suggestion-variant": [ChipSuggestion, { variant: "outlined" }],
