@@ -1,0 +1,37 @@
+---
+name: BaseChip
+description: A primitive that draws Material 3's chip, rendering a native `<button>` (or `<a>`) 32px tall with 8px corners, flat on an outline or elevated, with an optional leading icon, the state layer, the 48px touch target, the focus ring, the disabled look, the dragged state, and arrow keys between the chips in a set, for pattern components like ChipAssist and ChipSuggestion.
+category: Base
+role: primitive
+meta:
+  title: BaseChip | astro-components HenriFournier.dev
+  description: A primitive drawing Material 3's chip (container, leading icon, states, touch target, focus ring, keyboard) for ChipAssist and ChipSuggestion.
+extends:
+  kind: element
+  tag: [button, a]
+props:
+  - name: as
+    type: '"button" | "a"'
+    required: false
+    default: '"button"'
+    description: Which element to render. Any other value fails the build.
+  - name: variant
+    type: '"flat" | "elevated"'
+    required: false
+    default: '"flat"'
+    description: "`flat` has an outline-variant outline, which turns the label's color when focused. `elevated` sits on surface-container-low at elevation 1, rising to 2 on hover. Any other value fails the build."
+  - name: icon
+    type: SvgIconNameTypes
+    required: false
+    description: An 18px icon before the label, in the primary color, by its file name in `src/assets/svgs`. It's decorative, so the label alone names the chip.
+slots:
+  - name: default
+    description: The chip's label.
+    kind: text
+---
+
+## What the caller adds
+
+BaseChip's label is on-surface. A chip whose label is another color, such as ChipSuggestion's on-surface-variant, gives its own `text-*` class, and the state layer and a focused flat outline follow it.
+
+A chip the page makes draggable, with `draggable="true"`, shows M3's dragged state while it's dragged: elevation 4 and a 16% state layer. BaseChip doesn't add drag and drop itself.

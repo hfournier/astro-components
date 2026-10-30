@@ -1,0 +1,23 @@
+---
+title: ChipSuggestion
+description: Tests for the ChipSuggestion component
+---
+
+<Heading level={1}>ChipSuggestion Tests</Heading>
+
+<Section data-testid="chip-suggestion-styles" class="p-4 space-y-4">
+  <Heading level={2}>Styles</Heading>
+  <div class="flex flex-wrap gap-2">
+    <ChipSuggestion>Sounds good</ChipSuggestion>
+    <ChipSuggestion icon="schedule">Later today</ChipSuggestion>
+    <ChipSuggestion variant="elevated">See you there</ChipSuggestion>
+    <ChipSuggestion disabled>Not now</ChipSuggestion>
+  </div>
+</Section>
+
+<Section data-testid="chip-suggestion-link" class="p-4 space-y-4">
+  <Heading level={2}>As a link</Heading>
+  <ChipSuggestion as="a" href="#chip-suggestion-link">
+    Nearby cafés
+  </ChipSuggestion>
+</Section>

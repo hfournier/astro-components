@@ -1,0 +1,8 @@
+An assist chip is a native `<button>`, or an `<a>` with `as="a"`, so it's announced as a button or a link and named by its label. Its icon is decorative and hidden from assistive tech.
+
+- **Keyboard:** Tab reaches each chip, and Space or Enter activates it (Enter only, for a link). The left and right arrow keys also move between the chips in a set, mirrored right to left, skipping disabled chips and stopping at the ends, as M3's Accessibility page asks.
+- **Target size:** each chip keeps a 48px target, which reaches above and below its 32px height.
+- **Showing it's interactive:** M3 asks for a second cue that chips can be pressed, beyond their outline. Introduce the set with a label, such as "Suggested actions", or give each chip a leading icon and a verb.
+- **Disabled:** a disabled chip can't be focused. A link can't be disabled.
+
+Under reduced motion, colors and shadows change at once.

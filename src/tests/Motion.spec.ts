@@ -113,6 +113,23 @@ test.describe("motion", () => {
     });
   });
 
+  test("ChipAssist: colors, outline and shadow on fast effects, its state layer too", async ({
+    page,
+  }) => {
+    await page.goto("/tests/chip-assist");
+    const chip = page
+      .getByTestId("chip-assist-styles")
+      .getByRole("button")
+      .first();
+    await expectTransitions(chip, {
+      color: FAST_EFFECTS,
+      "background-color": FAST_EFFECTS,
+      "border-color": FAST_EFFECTS,
+      "box-shadow": FAST_EFFECTS,
+    });
+    await expectTransitions(chip, { opacity: FAST_EFFECTS }, "::before");
+  });
+
   test("Fab: its shadow on fast effects", async ({ page }) => {
     await page.goto("/tests/fab");
     const fab = page.getByTestId("fab-no-props").getByRole("button").first();

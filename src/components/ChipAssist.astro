@@ -1,0 +1,12 @@
+---
+import type { ComponentProps } from "astro/types";
+import BaseChip from "./BaseChip.astro";
+
+// An M3 assist chip: a smart or contextual action, such as "Add to calendar", as a button or a
+// link. BaseChip draws it: flat or elevated, with an optional leading icon and an on-surface label.
+type Props = ComponentProps<typeof BaseChip>;
+---
+
+<BaseChip {...Astro.props}>
+  <slot />
+</BaseChip>

@@ -1,0 +1,30 @@
+---
+name: ChipAssist
+description: A Material 3 assist chip, extending HTML's `<button>` element (or `<a>`). It's a smart or contextual action, such as "Add to calendar", flat or elevated, with an optional leading icon.
+category: Forms
+role: pattern
+meta:
+  title: ChipAssist | astro-components HenriFournier.dev
+  description: A Material 3 assist chip, a contextual action, flat or elevated, with an optional leading icon.
+extends:
+  kind: component
+  name: BaseChip
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button
+props: []
+slots:
+  - name: default
+    description: The chip's label. Start it with a verb, such as "Add to calendar", and keep it to 20 characters or fewer.
+    kind: text
+---
+
+## Flat or elevated
+
+Use flat chips on plain backgrounds, where the outline marks the chip's edge. Use elevated chips only on an image or another busy background, where an outline would get lost. Don't elevate chips placed directly on the page.
+
+## In a set
+
+Show chips together, in a set, never one alone: put them side by side in one parent, such as a `flex flex-wrap gap-2` div. The arrow keys move between the chips that share a parent.
+
+## Changing the label
+
+An assist chip can show that its action is done by changing its label, such as "Save" becoming "Saved". Keep both labels about the same length, so the chips beside it don't move.

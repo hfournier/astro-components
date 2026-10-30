@@ -1,0 +1,19 @@
+---
+import type { ComponentProps } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import BaseChip from "./BaseChip.astro";
+
+// An M3 suggestion chip: a dynamically generated suggestion, such as a reply, as a button or a
+// link. BaseChip draws it, as an assist chip, but with its label in on-surface-variant, which its
+// state layer and a focused flat outline follow.
+type Props = ComponentProps<typeof BaseChip>;
+
+const { class: classList, ...attrs } = Astro.props;
+---
+
+<BaseChip
+  class={twMerge("text-(--theme-color-on-surface-variant)", classList)}
+  {...attrs}
+>
+  <slot />
+</BaseChip>
