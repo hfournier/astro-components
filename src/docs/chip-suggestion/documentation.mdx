@@ -1,0 +1,26 @@
+---
+name: ChipSuggestion
+description: A Material 3 suggestion chip, extending HTML's `<button>` element (or `<a>`). It offers a suggestion the product generated, such as a reply, flat or elevated, with an optional leading icon.
+category: Forms
+role: pattern
+meta:
+  title: ChipSuggestion | astro-components HenriFournier.dev
+  description: A Material 3 suggestion chip, a generated suggestion such as a reply, flat or elevated.
+extends:
+  kind: component
+  name: BaseChip
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button
+props: []
+slots:
+  - name: default
+    description: The suggestion. Keep it to 20 characters or fewer.
+    kind: text
+---
+
+## Flat or elevated
+
+Use flat chips on plain backgrounds, and elevated ones only on an image or another busy background.
+
+## In a set
+
+Show suggestions together, in a set, never one alone: put them side by side in one parent. The arrow keys move between the chips that share a parent. When the person picks one, act on it, such as sending the reply, and update or remove the set.

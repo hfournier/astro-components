@@ -1,0 +1,7 @@
+A suggestion chip is a native `<button>`, or an `<a>` with `as="a"`, so it's announced as a button or a link and named by its label. A leading icon is decorative and hidden from assistive tech.
+
+- **Keyboard:** Tab reaches each chip, and Space or Enter activates it (Enter only, for a link). The arrow keys also move between the chips in a set, as M3's Accessibility page asks: left and right, mirrored right to left, and up and down, to the previous and next chip in a set that wraps, skipping disabled chips and stopping at the ends.
+- **Target size:** each chip keeps a 48px target, which reaches above and below its 32px height.
+- **Showing it's interactive:** a flat chip's outline-variant outline is under 3:1 contrast, so it isn't enough on its own. Introduce the set with a label, such as "Suggested replies", so people know the chips can be pressed, or give the chips the outline role, with `class="border-(--theme-color-outline)"`, which M3's Accessibility page suggests for 3:1.
+
+Under reduced motion, colors and shadows change at once.

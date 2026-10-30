@@ -17,6 +17,8 @@ We kept two components out:
 
 ## Consequences
 
+- A pattern component over another styling primitive checks the props it passes on in the same way, as ChipAssist and ChipSuggestion do over BaseChip.
+
 - A change to a button's colors, state layer, focus ring or motion is made once, in BaseButton, and reaches Button, ButtonSplit and everything built on Button (FabMenuItem, the dialogs' actions, SkipToContent).
 - One visible change: ButtonSplit's trailing button, hovered while its menu is open, now keeps the pressed 10% state layer rather than showing hover's 8%, as Button already did and as M3 asks of a button whose menu is open.
 - ButtonIcon and ButtonGroupConnected still need a change to BaseButton copied across where it applies to them.

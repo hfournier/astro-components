@@ -1,0 +1,149 @@
+---
+import type { HTMLTag, Polymorphic } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import type { SvgIconNameTypes } from "../svgs";
+import { unwrapParagraph } from "../utils";
+import Icon from "./Icon.astro";
+
+// M3's chip container, drawn once for the chips: 32px tall with 8px corners, flat on an outline or
+// elevated, the label in Label Large, an optional 18px leading icon, the state layer (dragged too),
+// the 48px touch target, the focus ring, disabled, and the arrow keys between chips in a set. The
+// label color is on-surface; a chip that differs gives its own `text-*` in `class`, and the state
+// layer and a focused flat outline follow it.
+type Props<Tag extends Extract<HTMLTag, "a" | "button"> = "button"> =
+  Polymorphic<{
+    as: Tag;
+    // An icon before the label, by its file name in src/assets/svgs
+    icon?: SvgIconNameTypes;
+    variant?: "flat" | "elevated";
+  }>;
+
+// Two-read `Astro.props`, as in Button: the first read grabs `as` untyped
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const { as: Tag = "button" }: any = Astro.props;
+const {
+  // kept out of `attrs`, which would render it as a literal attribute; `Tag` holds it
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  as: _as,
+  icon,
+  variant = "flat",
+  class: classList,
+  type,
+  ...attrs
+}: Props<"a" | "button"> = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["button", "a"].includes(Tag)) {
+  throw new Error(
+    `BaseChip: its elements are "button" and "a", but this one's \`as\` is "${Tag}".`
+  );
+}
+if (!["flat", "elevated"].includes(variant)) {
+  throw new Error(
+    `BaseChip: M3's chip styles are "flat" and "elevated", but this one's \`variant\` is "${variant}".`
+  );
+}
+
+// a real <button> defaults to not submitting; an <a>'s `type` is a MIME hint, left alone
+const resolvedType = Tag === "button" ? (type ?? "button") : type;
+
+const label = unwrapParagraph(await Astro.slots.render("default"));
+
+// M3: flat chips sit on an outline-variant outline, which turns the label's color when focused;
+// elevated ones on surface-container-low at level 1, rising to 2 on hover. Disabled, the outline
+// or the container is on-surface at 12%, with no shadow.
+const variantClasses = {
+  flat: "border-(--theme-color-outline-variant) bg-transparent focus-visible:border-current disabled:border-(--theme-color-on-surface)/12",
+  elevated:
+    "border-transparent bg-(--theme-color-surface-container-low) shadow-theme-elevation-1 not-disabled:hover:shadow-theme-elevation-2 not-disabled:active:shadow-theme-elevation-1 disabled:bg-(--theme-color-on-surface)/12 disabled:shadow-none",
+}[variant];
+---
+
+<Tag
+  class:list={twMerge(
+    // M3's 16px padding is from the container's edge, so 15px inside its 1px outline
+    "group/chip inline-flex h-8 shrink-0 cursor-pointer items-center gap-2 rounded-lg border px-[15px] whitespace-nowrap",
+    "text-sm leading-5 font-medium tracking-[0.1px] text-(--theme-color-on-surface)",
+    // M3: 8px on the icon's side instead of 16
+    "has-[>[data-ac-base-chip-part=leading-icon]]:ps-[7px]",
+    "relative isolate before:absolute before:-inset-px before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0 motion-safe:before:transition-opacity",
+    "not-disabled:hover:before:opacity-8 not-disabled:focus-visible:before:opacity-10 not-disabled:active:before:opacity-10",
+    // M3 dragged: level 4 and a 16% state layer, while the script below marks the chip. A chip
+    // dragged by the pointer is hovered and pressed too, whose more specific variants would
+    // otherwise win, hence the `!`.
+    "data-ac-base-chip-dragged:shadow-theme-elevation-4! data-ac-base-chip-dragged:before:opacity-16!",
+    // M3 touch target: at least 48x48, centered on the chip
+    "after:absolute after:top-1/2 after:left-1/2 after:size-12 after:min-w-full after:-translate-1/2",
+    "disabled:cursor-default disabled:text-(--theme-color-on-surface)/38",
+    // colors, the outline and the shadow all change on fast effects, Tailwind's default (ADR-0018)
+    "motion-safe:transition-[color,background-color,border-color,box-shadow]",
+    "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
+    variantClasses,
+    classList
+  )}
+  type={resolvedType}
+  data-ac-base-chip
+  {...attrs}
+>
+  {icon && (
+    <Icon
+      class="size-[18px] shrink-0 text-(--theme-color-primary) group-disabled/chip:text-current"
+      name={icon}
+      data-ac-base-chip-part="leading-icon"
+    />
+  )}
+  <Fragment set:html={label} />
+</Tag>
+
+<script>
+  // M3's Accessibility page: the arrow keys move focus between the chips in a set (the chips that
+  // share a parent), stopping at the ends and skipping disabled ones. Left and right are mirrored
+  // right to left; up and down move to the previous and next chip, for a set that wraps onto more
+  // rows. Tab still reaches each chip.
+  const steps: Record<string, number> = {
+    ArrowLeft: -1,
+    ArrowRight: 1,
+    ArrowUp: -1,
+    ArrowDown: 1,
+  };
+  document.addEventListener("keydown", (event) => {
+    if (!(event.key in steps)) return;
+    const chip = (event.target as Element).closest?.<HTMLElement>(
+      "[data-ac-base-chip]"
+    );
+    if (!chip?.parentElement) return;
+    const isHorizontal =
+      event.key === "ArrowLeft" || event.key === "ArrowRight";
+    const isMirrored =
+      isHorizontal && getComputedStyle(chip).direction === "rtl";
+    const step = isMirrored ? -steps[event.key] : steps[event.key];
+    const chips = [
+      ...chip.parentElement.querySelectorAll<HTMLElement>(
+        ":scope > [data-ac-base-chip]"
+      ),
+    ];
+    for (
+      let i = chips.indexOf(chip) + step;
+      i >= 0 && i < chips.length;
+      i += step
+    ) {
+      if (chips[i].matches(":disabled")) continue;
+      event.preventDefault();
+      chips[i].focus();
+      return;
+    }
+  });
+
+  // M3's dragged state, for a chip the page makes draggable: marked from dragstart to dragend
+  document.addEventListener("dragstart", (event) => {
+    (event.target as Element)
+      .closest?.("[data-ac-base-chip]")
+      ?.setAttribute("data-ac-base-chip-dragged", "");
+  });
+  document.addEventListener("dragend", (event) => {
+    (event.target as Element)
+      .closest?.("[data-ac-base-chip]")
+      ?.removeAttribute("data-ac-base-chip-dragged");
+  });
+</script>

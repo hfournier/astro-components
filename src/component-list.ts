@@ -9,6 +9,8 @@ export { default as ButtonGroupConnected } from "./components/ButtonGroupConnect
 export { default as ButtonIcon } from "./components/ButtonIcon.astro";
 export { default as ButtonSplit } from "./components/ButtonSplit.astro";
 export { default as Checkbox } from "./components/Checkbox.astro";
+export { default as ChipAssist } from "./components/ChipAssist.astro";
+export { default as ChipSuggestion } from "./components/ChipSuggestion.astro";
 export { default as Details } from "./components/Details.astro";
 export { default as Dialog } from "./components/Dialog.astro";
 export { default as DialogAcknowledge } from "./components/DialogAcknowledge.astro";

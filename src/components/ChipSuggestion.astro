@@ -1,0 +1,33 @@
+---
+import type { ComponentProps } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import BaseChip from "./BaseChip.astro";
+
+// An M3 suggestion chip: a dynamically generated suggestion, such as a reply, as a button or a
+// link. BaseChip draws it, as an assist chip, but with its label in on-surface-variant, which its
+// state layer and a focused flat outline follow.
+type Props = ComponentProps<typeof BaseChip>;
+
+const { class: classList, ...attrs } = Astro.props;
+const { as = "button", variant = "flat" } = attrs;
+
+// Checked here as well as in BaseChip, so a bad prop is reported under the component the author
+// wrote (ADR-0023 §5)
+if (!["button", "a"].includes(as)) {
+  throw new Error(
+    `ChipSuggestion: its elements are "button" and "a", but this one's \`as\` is "${as}".`
+  );
+}
+if (!["flat", "elevated"].includes(variant)) {
+  throw new Error(
+    `ChipSuggestion: M3's chip styles are "flat" and "elevated", but this one's \`variant\` is "${variant}".`
+  );
+}
+---
+
+<BaseChip
+  class={twMerge("text-(--theme-color-on-surface-variant)", classList)}
+  {...attrs}
+>
+  <slot />
+</BaseChip>
