@@ -1,8 +1,11 @@
 import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "./support/a11y-fixture";
 import {
+  alpha,
   box,
   castsNoShadow,
+  css,
+  elevation,
   expectFocusRing,
   resolvedColor,
   settled,
@@ -17,53 +20,16 @@ const chip = (page: Page, caseId: ChipCaseId, name: string) =>
     .getByRole(caseId === "link" ? "link" : "button", { name, exact: true });
 
 const leadingIcon = (target: Locator) =>
-  target.locator("[data-ac-chip-part=leading-icon]");
+  target.locator("[data-ac-base-chip-part=leading-icon]");
 
 const stateLayerOpacity = (target: Locator) =>
   target.evaluate((el) => getComputedStyle(el, "::before").opacity);
 
-// The theme's M3 elevation levels (theme.css), whose tokens Tailwind inlines rather than defining
-// on the page, so they're resolved from their values
-const ELEVATION: Record<number, string> = {
-  1: "0 1px 2px 0 S30, 0 1px 3px 1px S15",
-  2: "0 1px 2px 0 S30, 0 2px 6px 2px S15",
-  4: "0 2px 3px 0 S30, 0 6px 10px 4px S15",
-};
-const elevation = (page: Page, level: number) =>
-  page.evaluate((value) => {
-    const probe = document.createElement("div");
-    probe.style.boxShadow = value
-      .replace(
-        "S30",
-        "color-mix(in srgb, var(--theme-color-shadow) 30%, transparent)"
-      )
-      .replace(
-        "S15",
-        "color-mix(in srgb, var(--theme-color-shadow) 15%, transparent)"
-      );
-    document.body.appendChild(probe);
-    const resolved = getComputedStyle(probe).boxShadow;
-    probe.remove();
-    return resolved;
-  }, ELEVATION[level]);
-
-// The alpha of a computed color: M3's disabled colors are on-surface at 38% / 12%, which
-// Tailwind's `/38` and `/12` modifiers mix in oklab, so they're compared by alpha only
-const alpha = (color: string): number => {
-  const match =
-    color.match(/\/\s*([\d.]+)\)$/) ?? color.match(/rgba\(.*,\s*([\d.]+)\)$/);
-  return match ? parseFloat(match[1]!) : 1;
-};
-const css = (target: Locator, property: string) =>
-  target.evaluate(
-    (el, p) => getComputedStyle(el).getPropertyValue(p),
-    property
-  );
-
 const shadowOf = (target: Locator) =>
   target.evaluate((el) => getComputedStyle(el).boxShadow);
 
-// The chip's padding from its start edge to the content, and from the content to its end edge
+// The chip's padding from its start edge to the content, and from the content to its end edge,
+// rounded: Firefox and WebKit measure text to a fraction of a pixel
 const insets = async (target: Locator) => {
   const outer = await box(target);
   const inner = await target.evaluate((el) => {
@@ -74,7 +40,7 @@ const insets = async (target: Locator) => {
   });
   const left = inner.left - outer.x;
   const right = outer.x + outer.width - inner.right;
-  return inner.rtl ? [right, left] : [left, right];
+  return (inner.rtl ? [right, left] : [left, right]).map(Math.round);
 };
 
 test.describe("ChipAssist", () => {
@@ -209,13 +175,28 @@ test.describe("ChipAssist", () => {
     );
   });
 
-  // M3's Specs: an elevated chip rises from level 1 to 2 on hover
-  test("an elevated chip rises to level 2 on hover", async ({ page }) => {
+  // M3's Specs: an elevated chip rises from level 1 to 2 on hover, and is back at 1 pressed or
+  // focused
+  test("an elevated chip rises to level 2 on hover, at level 1 pressed or focused", async ({
+    page,
+  }) => {
     const elevated = chip(page, "styles", "Share trip");
     await elevated.hover();
     await expect
       .poll(() => shadowOf(elevated))
       .toContain(await elevation(page, 2));
+    await page.mouse.down();
+    await expect
+      .poll(() => shadowOf(elevated))
+      .toContain(await elevation(page, 1));
+    await page.mouse.up();
+    await page.mouse.move(0, 0);
+    await chip(page, "styles", "Check in").focus();
+    await page.keyboard.press("Shift+Tab");
+    await expect(elevated).toBeFocused();
+    await expect
+      .poll(() => shadowOf(elevated))
+      .toContain(await elevation(page, 1));
   });
 
   // M3's Specs: a dragged chip rises to level 4 with a 16% state layer
@@ -225,14 +206,31 @@ test.describe("ChipAssist", () => {
     for (const name of ["Flat drag", "Elevated drag"]) {
       const target = chip(page, "dragged", name);
       await target.dispatchEvent("dragstart");
-      await expect(target).toHaveAttribute("data-ac-chip-dragged", "");
+      await expect(target).toHaveAttribute("data-ac-base-chip-dragged", "");
       await expect
         .poll(() => shadowOf(target), name)
         .toContain(await elevation(page, 4));
       await expect.poll(() => stateLayerOpacity(target), name).toBe("0.16");
       await target.dispatchEvent("dragend");
-      await expect(target).not.toHaveAttribute("data-ac-chip-dragged");
+      await expect(target).not.toHaveAttribute("data-ac-base-chip-dragged");
     }
+  });
+
+  // A drag holds the pointer down over the chip, so it's also hovered and pressed: the dragged
+  // state still wins. Playwright can't start a native drag from a button, so the chip is marked
+  // as dragstart would, and then hovered and pressed.
+  test("dragged while hovered and pressed, the dragged state still wins", async ({
+    page,
+  }) => {
+    const target = chip(page, "dragged", "Elevated drag");
+    await target.dispatchEvent("dragstart");
+    await target.hover();
+    await page.mouse.down();
+    await expect
+      .poll(() => shadowOf(target))
+      .toContain(await elevation(page, 4));
+    await expect.poll(() => stateLayerOpacity(target)).toBe("0.16");
+    await page.mouse.up();
   });
 
   // M3's Accessibility page: a 48px target, for every chip
@@ -270,6 +268,11 @@ test.describe("ChipAssist", () => {
     await expect(one).toBeFocused();
     await page.keyboard.press("Tab");
     await expect(three).toBeFocused();
+    // in a set that wraps onto more rows, up and down move the same way, as left and right
+    await page.keyboard.press("ArrowDown");
+    await expect(four).toBeFocused();
+    await page.keyboard.press("ArrowUp");
+    await expect(three).toBeFocused();
   });
 
   test("right to left, the icon leads on the right, and the arrow keys are mirrored", async ({
@@ -280,7 +283,10 @@ test.describe("ChipAssist", () => {
       await box(withIcon),
       await box(leadingIcon(withIcon)),
     ];
-    expect(chipBox.x + chipBox.width - (iconBox.x + iconBox.width)).toBe(8);
+    expect(chipBox.x + chipBox.width - (iconBox.x + iconBox.width)).toBeCloseTo(
+      8,
+      0
+    );
     expect(await insets(withIcon)).toEqual([8, 16]);
     await withIcon.focus();
     await page.keyboard.press("ArrowLeft");

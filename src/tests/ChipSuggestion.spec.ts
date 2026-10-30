@@ -1,6 +1,12 @@
 import type { Page } from "@playwright/test";
 import { test, expect } from "./support/a11y-fixture";
-import { castsNoShadow, resolvedColor, settled } from "./support/helpers";
+import {
+  alpha,
+  castsNoShadow,
+  css,
+  resolvedColor,
+  settled,
+} from "./support/helpers";
 
 // Each case on /tests/chip-suggestion is a Section with data-testid="chip-suggestion-<caseId>".
 // ChipSuggestion is drawn by BaseChip, as ChipAssist is, so ChipAssist's spec covers the states,
@@ -34,7 +40,9 @@ test.describe("ChipSuggestion", () => {
         await resolvedColor(page, "var(--theme-color-outline-variant)")
       );
       await expect(
-        chip(page, "Later today").locator("[data-ac-chip-part=leading-icon]")
+        chip(page, "Later today").locator(
+          "[data-ac-base-chip-part=leading-icon]"
+        )
       ).toHaveCSS(
         "color",
         await resolvedColor(page, "var(--theme-color-primary)")
@@ -51,10 +59,7 @@ test.describe("ChipSuggestion", () => {
 
   // Tailwind's `/38` mixes in oklab, so the label is compared by alpha
   test("disabled, its label is on-surface at 38%", async ({ page }) => {
-    const color = await chip(page, "Not now").evaluate(
-      (el) => getComputedStyle(el).color
-    );
-    expect(parseFloat(color.match(/\/\s*([\d.]+)\)$/)![1]!)).toBeCloseTo(
+    expect(alpha(await css(chip(page, "Not now"), "color"))).toBeCloseTo(
       0.38,
       2
     );
@@ -72,6 +77,37 @@ test.describe("ChipSuggestion", () => {
       "border-top-color",
       await resolvedColor(page, "var(--theme-color-on-surface-variant)")
     );
+  });
+
+  test("an elevated chip with an icon keeps its colors; disabled, its container fades and loses its shadow", async ({
+    page,
+  }) => {
+    const withIcon = chip(page, "Next week");
+    await expect(withIcon).toHaveCSS(
+      "color",
+      await resolvedColor(page, "var(--theme-color-on-surface-variant)")
+    );
+    expect(await castsNoShadow(withIcon)).toBe(false);
+    const disabled = chip(page, "Never");
+    expect(alpha(await css(disabled, "background-color"))).toBeCloseTo(0.12, 2);
+    expect(await castsNoShadow(disabled)).toBe(true);
+  });
+
+  test("right to left, the icon leads on the right, and the arrow keys are mirrored", async ({
+    page,
+  }) => {
+    const rtl = page.getByTestId("chip-suggestion-rtl");
+    const withIcon = rtl.getByRole("button", { name: "لاحقًا اليوم" });
+    const [chipBox, iconBox] = await Promise.all([
+      withIcon.boundingBox(),
+      withIcon.locator("[data-ac-base-chip-part=leading-icon]").boundingBox(),
+    ]);
+    expect(
+      chipBox!.x + chipBox!.width - (iconBox!.x + iconBox!.width)
+    ).toBeCloseTo(8, 0);
+    await withIcon.focus();
+    await page.keyboard.press("ArrowLeft");
+    await expect(rtl.getByRole("button", { name: "يبدو جيدًا" })).toBeFocused();
   });
 
   test("works as a link, 32px tall", async ({ page }) => {

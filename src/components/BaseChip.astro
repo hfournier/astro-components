@@ -66,11 +66,13 @@ const variantClasses = {
     "group/chip inline-flex h-8 shrink-0 cursor-pointer items-center gap-2 rounded-lg border px-[15px] whitespace-nowrap",
     "text-sm leading-5 font-medium tracking-[0.1px] text-(--theme-color-on-surface)",
     // M3: 8px on the icon's side instead of 16
-    "has-[>[data-ac-chip-part=leading-icon]]:ps-[7px]",
+    "has-[>[data-ac-base-chip-part=leading-icon]]:ps-[7px]",
     "relative isolate before:absolute before:-inset-px before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0 motion-safe:before:transition-opacity",
     "not-disabled:hover:before:opacity-8 not-disabled:focus-visible:before:opacity-10 not-disabled:active:before:opacity-10",
-    // M3 dragged: level 4 and a 16% state layer, while the script below marks the chip
-    "data-ac-chip-dragged:shadow-theme-elevation-4 data-ac-chip-dragged:before:opacity-16",
+    // M3 dragged: level 4 and a 16% state layer, while the script below marks the chip. A chip
+    // dragged by the pointer is hovered and pressed too, whose more specific variants would
+    // otherwise win, hence the `!`.
+    "data-ac-base-chip-dragged:shadow-theme-elevation-4! data-ac-base-chip-dragged:before:opacity-16!",
     // M3 touch target: at least 48x48, centered on the chip
     "after:absolute after:top-1/2 after:left-1/2 after:size-12 after:min-w-full after:-translate-1/2",
     "disabled:cursor-default disabled:text-(--theme-color-on-surface)/38",
@@ -81,14 +83,14 @@ const variantClasses = {
     classList
   )}
   type={resolvedType}
-  data-ac-chip
+  data-ac-base-chip
   {...attrs}
 >
   {icon && (
     <Icon
       class="size-[18px] shrink-0 text-(--theme-color-primary) group-disabled/chip:text-current"
       name={icon}
-      data-ac-chip-part="leading-icon"
+      data-ac-base-chip-part="leading-icon"
     />
   )}
   <Fragment set:html={label} />
@@ -96,19 +98,29 @@ const variantClasses = {
 
 <script>
   // M3's Accessibility page: the arrow keys move focus between the chips in a set (the chips that
-  // share a parent), mirrored right to left, stopping at the ends and skipping disabled ones. Tab
-  // still reaches each chip.
+  // share a parent), stopping at the ends and skipping disabled ones. Left and right are mirrored
+  // right to left; up and down move to the previous and next chip, for a set that wraps onto more
+  // rows. Tab still reaches each chip.
+  const steps: Record<string, number> = {
+    ArrowLeft: -1,
+    ArrowRight: 1,
+    ArrowUp: -1,
+    ArrowDown: 1,
+  };
   document.addEventListener("keydown", (event) => {
-    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    if (!(event.key in steps)) return;
     const chip = (event.target as Element).closest?.<HTMLElement>(
-      "[data-ac-chip]"
+      "[data-ac-base-chip]"
     );
     if (!chip?.parentElement) return;
-    const isRtl = getComputedStyle(chip).direction === "rtl";
-    const step = (event.key === "ArrowRight") !== isRtl ? 1 : -1;
+    const isHorizontal =
+      event.key === "ArrowLeft" || event.key === "ArrowRight";
+    const isMirrored =
+      isHorizontal && getComputedStyle(chip).direction === "rtl";
+    const step = isMirrored ? -steps[event.key] : steps[event.key];
     const chips = [
       ...chip.parentElement.querySelectorAll<HTMLElement>(
-        ":scope > [data-ac-chip]"
+        ":scope > [data-ac-base-chip]"
       ),
     ];
     for (
@@ -126,12 +138,12 @@ const variantClasses = {
   // M3's dragged state, for a chip the page makes draggable: marked from dragstart to dragend
   document.addEventListener("dragstart", (event) => {
     (event.target as Element)
-      .closest?.("[data-ac-chip]")
-      ?.setAttribute("data-ac-chip-dragged", "");
+      .closest?.("[data-ac-base-chip]")
+      ?.setAttribute("data-ac-base-chip-dragged", "");
   });
   document.addEventListener("dragend", (event) => {
     (event.target as Element)
-      .closest?.("[data-ac-chip]")
-      ?.removeAttribute("data-ac-chip-dragged");
+      .closest?.("[data-ac-base-chip]")
+      ?.removeAttribute("data-ac-base-chip-dragged");
   });
 </script>

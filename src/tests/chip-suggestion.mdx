@@ -12,6 +12,20 @@ description: Tests for the ChipSuggestion component
     <ChipSuggestion icon="schedule">Later today</ChipSuggestion>
     <ChipSuggestion variant="elevated">See you there</ChipSuggestion>
     <ChipSuggestion disabled>Not now</ChipSuggestion>
+    <ChipSuggestion variant="elevated" icon="schedule">
+      Next week
+    </ChipSuggestion>
+    <ChipSuggestion variant="elevated" disabled>
+      Never
+    </ChipSuggestion>
+  </div>
+</Section>
+
+<Section data-testid="chip-suggestion-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <div class="flex flex-wrap gap-2">
+    <ChipSuggestion icon="schedule">لاحقًا اليوم</ChipSuggestion>
+    <ChipSuggestion>يبدو جيدًا</ChipSuggestion>
   </div>
 </Section>
 

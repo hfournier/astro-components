@@ -101,3 +101,44 @@ export async function expectFocusRing(
     )
     .toContain(expected);
 }
+
+/**
+ * The alpha of a computed color. M3's disabled colors are on-surface at 38%, 12% or 10%, which
+ * Tailwind's `/38`-style modifiers mix in oklab, so specs compare them by alpha only.
+ */
+export const alpha = (color: string): number => {
+  const match =
+    color.match(/\/\s*([\d.]+)\)$/) ?? color.match(/rgba\(.*,\s*([\d.]+)\)$/);
+  return match ? parseFloat(match[1]!) : 1;
+};
+
+/** One computed CSS property of an element. */
+export const css = (target: Locator, property: string) =>
+  target.evaluate(
+    (el, p) => getComputedStyle(el).getPropertyValue(p),
+    property
+  );
+
+// The theme's M3 elevation levels (theme.css). Tailwind inlines their tokens rather than defining
+// them on the page, so a level is resolved from its value.
+const ELEVATION = {
+  1: "0 1px 2px 0 S30, 0 1px 3px 1px S15",
+  2: "0 1px 2px 0 S30, 0 2px 6px 2px S15",
+  3: "0 1px 3px 0 S30, 0 4px 8px 3px S15",
+  4: "0 2px 3px 0 S30, 0 6px 10px 4px S15",
+} as const;
+
+/** An M3 elevation level's shadow as the browser resolves it, to find in an element's box-shadow. */
+export const elevation = (page: Page, level: keyof typeof ELEVATION) =>
+  page.evaluate((value) => {
+    const tint = (percent: number) =>
+      `color-mix(in srgb, var(--theme-color-shadow) ${percent}%, transparent)`;
+    const probe = document.createElement("div");
+    probe.style.boxShadow = value
+      .replace("S30", tint(30))
+      .replace("S15", tint(15));
+    document.body.appendChild(probe);
+    const resolved = getComputedStyle(probe).boxShadow;
+    probe.remove();
+    return resolved;
+  }, ELEVATION[level]);
