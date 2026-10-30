@@ -71,9 +71,6 @@ const variantClasses = {
   class={twMerge(
     "bg-(--ac-chip-filter-container) text-(--ac-chip-filter-label)",
     variantClasses,
-    // M3's menu button: the pressed state layer while its menu is open, hovered or not, so it beats
-    // BaseChip's hover
-    "aria-expanded:before:opacity-10!",
     classList
   )}
   data-ac-chip-filter={variant}

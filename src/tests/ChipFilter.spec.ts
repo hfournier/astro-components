@@ -352,6 +352,24 @@ test.describe("ChipFilter", () => {
     await page.keyboard.press("Escape");
   });
 
+  // The menu button pattern: ArrowDown and ArrowUp open the menu on its first and last item, and
+  // the chips' arrow keys leave them to it
+  for (const [key, item] of [
+    ["ArrowDown", "Under $50"],
+    ["ArrowUp", "Over $100"],
+  ] as const) {
+    test(`with a menu, ${key} opens it on the ${key === "ArrowDown" ? "first" : "last"} item, rather than moving to the next chip`, async ({
+      page,
+    }) => {
+      await chip(page, "menu", "Price").focus();
+      await page.keyboard.press(key);
+      await expect(page.locator("#price-menu")).toBeVisible();
+      await expect(
+        page.getByRole("menuitemradio", { name: item })
+      ).toBeFocused();
+    });
+  }
+
   test("a disabled menu chip doesn't open its menu", async ({ page }) => {
     const target = chip(page, "menu", "Type");
     await expect(target).toBeDisabled();

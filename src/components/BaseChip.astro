@@ -75,6 +75,9 @@ const variantClasses = {
     // dragged by the pointer is hovered and pressed too, whose more specific variants would
     // otherwise win, hence the `!`.
     "data-ac-base-chip-dragged:shadow-theme-elevation-4! data-ac-base-chip-dragged:before:opacity-16!",
+    // M3's menu button: a chip whose menu is open keeps the pressed state layer, hovered or not,
+    // so it beats hover's
+    "aria-expanded:before:opacity-10!",
     // M3 touch target: at least 48x48, centered on the chip
     "after:absolute after:top-1/2 after:left-1/2 after:size-12 after:min-w-full after:-translate-1/2",
     "disabled:cursor-default disabled:text-(--theme-color-on-surface)/38",
@@ -113,7 +116,8 @@ const variantClasses = {
   // M3's Accessibility page: the arrow keys move focus between the chips in a set (the chips that
   // share a parent), stopping at the ends and skipping disabled ones. Left and right are mirrored
   // right to left; up and down move to the previous and next chip, for a set that wraps onto more
-  // rows. Tab still reaches each chip.
+  // rows. Tab still reaches each chip. A key the chip already handled, such as ArrowDown opening a
+  // menu chip's menu, is left alone.
   const steps: Record<string, number> = {
     ArrowLeft: -1,
     ArrowRight: 1,
@@ -121,7 +125,7 @@ const variantClasses = {
     ArrowDown: 1,
   };
   document.addEventListener("keydown", (event) => {
-    if (!(event.key in steps)) return;
+    if (event.defaultPrevented || !(event.key in steps)) return;
     const chip = (event.target as Element).closest?.<HTMLElement>(
       "[data-ac-base-chip]"
     );
