@@ -9,6 +9,20 @@ import BaseChip from "./BaseChip.astro";
 type Props = ComponentProps<typeof BaseChip>;
 
 const { class: classList, ...attrs } = Astro.props;
+const { as = "button", variant = "flat" } = attrs;
+
+// Checked here as well as in BaseChip, so a bad prop is reported under the component the author
+// wrote (ADR-0023 §5)
+if (!["button", "a"].includes(as)) {
+  throw new Error(
+    `ChipSuggestion: its elements are "button" and "a", but this one's \`as\` is "${as}".`
+  );
+}
+if (!["flat", "elevated"].includes(variant)) {
+  throw new Error(
+    `ChipSuggestion: M3's chip styles are "flat" and "elevated", but this one's \`variant\` is "${variant}".`
+  );
+}
 ---
 
 <BaseChip

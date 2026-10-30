@@ -12,7 +12,8 @@ import {
 } from "./support/helpers";
 
 // Each case on /tests/chip-assist is a Section with data-testid="chip-assist-<caseId>"
-type ChipCaseId = "styles" | "disabled" | "link" | "set" | "dragged" | "rtl";
+type ChipCaseId =
+  "styles" | "outline" | "disabled" | "link" | "set" | "dragged" | "rtl";
 
 const chip = (page: Page, caseId: ChipCaseId, name: string) =>
   page
@@ -115,6 +116,25 @@ test.describe("ChipAssist", () => {
       await expect(leadingIcon(elevated)).toHaveCSS("color", primary);
       expect(await shadowOf(elevated)).toContain(await elevation(page, 1));
     }
+  });
+
+  // The docs' tip for M3's Accessibility page: the outline role instead, for 3:1 contrast. The
+  // class replaces only the outline's color, which still turns the label's color when focused.
+  test("a flat chip given the outline role keeps its 1px outline, in that color", async ({
+    page,
+  }) => {
+    const target = chip(page, "outline", "Turn on lights");
+    await expect(target).toHaveCSS(
+      "border-top-color",
+      await resolvedColor(page, "var(--theme-color-outline)")
+    );
+    await expect(target).toHaveCSS("border-top-width", "1px");
+    await chip(page, "outline", "Lock doors").focus();
+    await page.keyboard.press("Shift+Tab");
+    await expect(target).toHaveCSS(
+      "border-top-color",
+      await resolvedColor(page, "var(--theme-color-on-surface)")
+    );
   });
 
   // M3's Specs: the label and icon on-surface at 38%, a flat outline or an elevated container

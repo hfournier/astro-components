@@ -50,7 +50,10 @@ const expected: Record<string, string | RegExp> = {
   "button-split-size": `ButtonSplit: M3's sizes are ${sizes}, but this one's \`size\` is "medium".`,
   "button-split-variant": `ButtonSplit: M3's split buttons are "elevated", "filled", "tonal" and "outlined", but this one's \`variant\` is "text".`,
   // checked where it's used, in BaseChip (ADR-0021 §5)
-  "chip-assist-variant": `BaseChip: M3's chip styles are "flat" and "elevated", but this one's \`variant\` is "tonal".`,
+  "chip-assist-as": `ChipAssist: its elements are "button" and "a", but this one's \`as\` is "div".`,
+  "chip-assist-variant": `ChipAssist: M3's chip styles are "flat" and "elevated", but this one's \`variant\` is "tonal".`,
+  "chip-suggestion-as": `ChipSuggestion: its elements are "button" and "a", but this one's \`as\` is "span".`,
+  "chip-suggestion-variant": `ChipSuggestion: M3's chip styles are "flat" and "elevated", but this one's \`variant\` is "outlined".`,
   "details-size": `Details: its sizes are "md" and "lg", but this one's \`size\` is "sm".`,
   "details-variant": `Details: its variants are "outlined" and "plain", but this one's \`variant\` is "filled".`,
   "divider-inset": `Divider: M3's insets are "none", "start" and "middle", but this one's \`inset\` is "end".`,

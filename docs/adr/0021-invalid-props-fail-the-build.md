@@ -1,6 +1,6 @@
 # Props outside their set fail the build
 
-> **Point 5 has an exception in ADR-0023**: Button and ButtonSplit check the props they pass to BaseButton themselves, so the error names the component the author wrote.
+> **Point 5 has an exception in ADR-0023**: Button and ButtonSplit check the props they pass to BaseButton themselves, so the error names the component the author wrote. ChipAssist and ChipSuggestion do the same for BaseChip.
 
 Most components map a union prop to classes through a lookup, such as `{ sm: "…", md: "…" }[size]`. An unknown value finds nothing and renders the component without those classes, with no warning: `size="medium"`, a typo in MDX, or a number out of range draws something other than was asked for. TypeScript doesn't catch these. MDX pages, like the docs examples, aren't type-checked and pass every attribute as text, and TypeScript can't express a numeric range. The progress indicators (#193, #194, #195) were the first to check their props and throw. #241 extends that to every component.
 

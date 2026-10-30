@@ -5,6 +5,21 @@ import BaseChip from "./BaseChip.astro";
 // An M3 assist chip: a smart or contextual action, such as "Add to calendar", as a button or a
 // link. BaseChip draws it: flat or elevated, with an optional leading icon and an on-surface label.
 type Props = ComponentProps<typeof BaseChip>;
+
+const { as = "button", variant = "flat" } = Astro.props;
+
+// Checked here as well as in BaseChip, so a bad prop is reported under the component the author
+// wrote (ADR-0023 §5)
+if (!["button", "a"].includes(as)) {
+  throw new Error(
+    `ChipAssist: its elements are "button" and "a", but this one's \`as\` is "${as}".`
+  );
+}
+if (!["flat", "elevated"].includes(variant)) {
+  throw new Error(
+    `ChipAssist: M3's chip styles are "flat" and "elevated", but this one's \`variant\` is "${variant}".`
+  );
+}
 ---
 
 <BaseChip {...Astro.props}>
