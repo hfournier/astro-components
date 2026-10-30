@@ -40,12 +40,16 @@ _Avoid_: parent background, surface (a surface is one specific role)
 The [[Primitive component]] that renders one of a fixed set of sectioning/grouping elements (`as`: `div`, `section`, `header`, `footer`, `aside`, `main`, `article`, `figure`) and applies a [[Background role]]. `Section`, `Header`, `Footer` and `Aside` are thin [[Pattern component]]s over it, each fixing `as` to its own element; BaseOverlay's panel is one too.
 _Avoid_: container, box, surface
 
+**BaseButton**:
+The [[Primitive component]] that draws M3's button container on a native `<button>` or `<a>`: each style's colors (a toggle's resting and selected ones too), the elevation, the outline width per size, the state layer, the 48px touch target, the focus ring, the disabled look and the motion. `Button` and `ButtonSplit` render through it and add the corners, height, padding and content. `ButtonIcon` and `ButtonGroupConnected` keep their own copies (ADR-0023).
+_Avoid_: button base, button container (the container is what it draws, not its name)
+
 **Primitive component**:
-A component that supplies structural or interactive behavior (focus handling, open/close state, positioning) with little to no visual styling of its own, meant to be composed inside a pattern component rather than used directly. It's still an independently meaningful building block — generic enough that more than one [[Pattern component]] can compose it, and worth documenting on its own terms. `BaseOverlay` is the current example, composed by both `Dialog` and `Popover`. Declared on a component's [[Component documentation file]] as `role: primitive`. Contrast with [[Internal component]], which isn't independently reusable at all.
+A component meant to be composed inside a pattern component rather than used directly, supplying either structural or interactive behavior (focus handling, open/close state, positioning) or a piece of M3 styling that several pattern components share (a [[Background role]], the button container). It's still an independently meaningful building block — generic enough that more than one [[Pattern component]] can compose it, and worth documenting on its own terms. `BaseOverlay` supplies behavior, composed by both `Dialog` and `Popover`; [[BaseWrapper]] and [[BaseButton]] supply styling. Declared on a component's [[Component documentation file]] as `role: primitive`. Contrast with [[Internal component]], which isn't independently reusable at all.
 _Avoid_: base component, headless component
 
 **Pattern component**:
-The public, consumer-facing component a consumer reaches for and copy-pastes directly into their own markup (`Button`, `Dialog`, `Popover`, `Tab`, `Tabs`). Composing one or more primitives is common (`Dialog`/`Popover` build on `BaseOverlay`) but not required — `Button` is a pattern component with no primitive underneath it, just a styled native element. What makes a component a pattern component is that it's meant to be used directly, not that it's built on something else. Declared on a component's [[Component documentation file]] as `role: pattern`.
+The public, consumer-facing component a consumer reaches for and copy-pastes directly into their own markup (`Button`, `Dialog`, `Popover`, `Tab`, `Tabs`). Composing one or more primitives is common (`Dialog`/`Popover` build on `BaseOverlay`) but not required — `ButtonIcon` is a pattern component with no primitive underneath it, just a styled native element. What makes a component a pattern component is that it's meant to be used directly, not that it's built on something else. Declared on a component's [[Component documentation file]] as `role: pattern`.
 _Avoid_: composite component, styled component
 
 **Internal component**:

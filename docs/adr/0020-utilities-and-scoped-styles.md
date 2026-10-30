@@ -1,5 +1,7 @@
 # Tailwind utilities for static styles, a scoped `<style>` for state across parts
 
+> **Point 2's mixed-spring transitions refined by ADR-0023**: where a caller must be able to replace a component's transition with a class, the `<style>` block defines it as a custom property, and a `motion-safe:` class reads it, in place of a `transition` rule inside `@media (prefers-reduced-motion: no-preference)`.
+
 The form controls (Checkbox, RadioButton, Switch, TextField) have large scoped `<style>` blocks, while the rest of the library is styled almost entirely with Tailwind classes. Nothing recorded where the line falls, so rules that style one element ended up in the `<style>` block just because the component already had one. TextField (#192) had many: the textarea's `resize`, `field-sizing` and height, the input's color, caret and placeholder, the legend's type and size, and each part's resting color and single-spring transition. All of them moved to classes in review, and its `<style>` block went from 369 lines to 214.
 
 The form controls still need a `<style>` block, because each one is a native `<input>` whose state (`:checked`, `:focus`, `:disabled`, `:user-invalid`) styles other elements: the state layer, the label, the indicator, the outline, the handle. Tailwind can reach those through `group-has-[…]:` and `peer-*:` variants, but the variant has to be repeated on every part, and combined states become unreadable as class names, such as "the container hovered while the input is enabled and not focused".
