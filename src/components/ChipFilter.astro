@@ -1,0 +1,171 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import type { SvgIconNameTypes } from "../svgs";
+import BaseChip from "./BaseChip.astro";
+import Icon from "./Icon.astro";
+
+// An M3 filter chip: a tag or descriptive word that narrows content, selected and deselected by a
+// click, as a toggle button (aria-pressed). Selected, it turns secondary-container and gains a
+// leading check mark, in place of its icon if it has one. With `menuId`, the whole chip is instead
+// the button for the Menu that id names, with a trailing dropdown icon; its selection is
+// `isSelected`, the filter the menu has set. BaseChip draws the rest: flat or elevated, the state
+// layer, the touch target, the focus ring, disabled, and the arrow keys between chips in a set.
+type Props = HTMLAttributes<"button"> & {
+  // An icon before the label, by its file name in src/assets/svgs, which the check mark replaces
+  // while the chip is selected
+  icon?: SvgIconNameTypes;
+  // A toggle's initial state, or a menu chip's state: whether its menu has set a filter
+  isSelected?: boolean;
+  // the id of the Menu the chip opens, in place of toggling
+  menuId?: string;
+  variant?: "flat" | "elevated";
+};
+
+const {
+  icon,
+  isSelected = false,
+  menuId,
+  variant = "flat",
+  class: classList,
+  ...attrs
+} = Astro.props;
+
+// Checked here as well as in BaseChip, so a bad prop is reported under the component the author
+// wrote (ADR-0023 §5)
+if (!["flat", "elevated"].includes(variant)) {
+  throw new Error(
+    `ChipFilter: M3's chip styles are "flat" and "elevated", but this one's \`variant\` is "${variant}".`
+  );
+}
+
+// A toggle's selection is its aria-pressed; a menu chip, which can't be pressed, carries it as
+// data-ac-chip-filter-selected, for the page to set or remove as its menu changes the filter
+const stateAttrs = menuId
+  ? {
+      commandfor: menuId,
+      command: "toggle-popover" as const,
+      "data-ac-chip-filter-selected": isSelected ? "" : undefined,
+    }
+  : {
+      "aria-pressed": isSelected ? ("true" as const) : ("false" as const),
+      "data-ac-chip-filter-toggle": "",
+    };
+
+// The colors read the role set in the <style> block below, which swaps it while selected. A flat
+// chip's outline, focused outline and disabled outline and container, and its selected rise to
+// level 1 on hover, replace BaseChip's; an elevated chip keeps BaseChip's outline, disabled
+// container and shadows.
+const variantClasses = {
+  flat: [
+    "border-(--ac-chip-filter-outline) focus-visible:border-(--ac-chip-filter-focus-outline)",
+    "disabled:border-(--ac-chip-filter-disabled-outline) disabled:bg-(--ac-chip-filter-disabled-container)",
+    "[&:is([aria-pressed=true],[data-ac-chip-filter-selected])]:not-disabled:hover:shadow-theme-elevation-1 [&:is([aria-pressed=true],[data-ac-chip-filter-selected])]:not-disabled:active:shadow-none",
+  ],
+  elevated: [],
+}[variant];
+---
+
+<BaseChip
+  variant={variant}
+  class={twMerge(
+    "bg-(--ac-chip-filter-container) text-(--ac-chip-filter-label)",
+    variantClasses,
+    // M3's menu button: the pressed state layer while its menu is open, hovered or not, so it beats
+    // BaseChip's hover
+    "aria-expanded:before:opacity-10!",
+    classList
+  )}
+  data-ac-chip-filter={variant}
+  {...stateAttrs}
+  {...attrs}
+>
+  {/* M3's leading space: as wide as an icon while there's one to show, 0 for a chip with no icon
+       while unselected, so the check mark widens the chip as it appears */}
+  <span
+    slot="leading-icon"
+    class:list={[
+      "relative h-[18px] shrink-0 overflow-hidden",
+      icon ? "w-[18px]" : "w-(--ac-chip-filter-leading-width)",
+      "motion-safe:transition-[width] motion-safe:duration-(--theme-duration-spring-fast-spatial) motion-safe:ease-spring-fast-spatial",
+    ]}
+    data-ac-chip-filter-part="leading"
+  >
+    {icon && (
+      <Icon
+        class="absolute inset-s-0 top-0 size-[18px] text-(--theme-color-primary) opacity-(--ac-chip-filter-icon-opacity) group-disabled/chip:text-current motion-safe:transition-opacity"
+        name={icon}
+        data-ac-chip-filter-part="icon"
+      />
+    )}
+    <Icon
+      class="absolute inset-s-0 top-0 size-[18px] opacity-(--ac-chip-filter-check-opacity) motion-safe:transition-opacity"
+      name="check"
+      data-ac-chip-filter-part="check"
+    />
+  </span>
+  <slot />
+  {menuId && (
+    <Icon slot="trailing-icon" class="size-[18px]" name="arrow_drop_down" />
+  )}
+</BaseChip>
+
+<style>
+  /* M3's filter chip roles, from its Specs page and Compose's FilterChipTokens: unselected, the
+     label is on-surface-variant, a flat chip sits on an outline-variant outline that turns the
+     label's color when focused, and an elevated one on surface-container-low. Selected, both are
+     secondary-container with no outline, the label on-secondary-container, and the check mark
+     shows in the leading space; disabled, a selected flat chip's container is on-surface at 12%.
+     Global, as the chip is BaseChip's element, not this template's. */
+  :global([data-ac-chip-filter]) {
+    --ac-chip-filter-label: var(--theme-color-on-surface-variant);
+    --ac-chip-filter-container: transparent;
+    --ac-chip-filter-outline: var(--theme-color-outline-variant);
+    --ac-chip-filter-focus-outline: currentColor;
+    --ac-chip-filter-disabled-outline: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 12%,
+      transparent
+    );
+    --ac-chip-filter-disabled-container: transparent;
+    --ac-chip-filter-leading-width: 0px;
+    --ac-chip-filter-icon-opacity: 1;
+    --ac-chip-filter-check-opacity: 0;
+  }
+  :global([data-ac-chip-filter="elevated"]) {
+    --ac-chip-filter-container: var(--theme-color-surface-container-low);
+  }
+  :global(
+    [data-ac-chip-filter]:is(
+      [aria-pressed="true"],
+      [data-ac-chip-filter-selected]
+    )
+  ) {
+    --ac-chip-filter-label: var(--theme-color-on-secondary-container);
+    --ac-chip-filter-container: var(--theme-color-secondary-container);
+    --ac-chip-filter-outline: transparent;
+    --ac-chip-filter-focus-outline: transparent;
+    --ac-chip-filter-disabled-outline: transparent;
+    --ac-chip-filter-disabled-container: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 12%,
+      transparent
+    );
+    --ac-chip-filter-leading-width: 18px;
+    --ac-chip-filter-icon-opacity: 0;
+    --ac-chip-filter-check-opacity: 1;
+  }
+</style>
+
+<script>
+  // Each click flips a toggle chip's aria-pressed (keyboard activation fires click too). A menu
+  // chip has no aria-pressed: its button opens the menu instead.
+  document.addEventListener("click", (event) => {
+    const chip = (event.target as Element).closest?.<HTMLButtonElement>(
+      "[data-ac-chip-filter-toggle]"
+    );
+    if (!chip || chip.disabled) return;
+    const isPressed = chip.getAttribute("aria-pressed") === "true";
+    chip.setAttribute("aria-pressed", String(!isPressed));
+  });
+</script>

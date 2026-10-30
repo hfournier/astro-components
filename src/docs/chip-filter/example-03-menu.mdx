@@ -1,0 +1,20 @@
+---
+title: With a menu
+description: 'With `menuId`, the chip opens a Menu of options for its filter, and shows a trailing dropdown icon. Selected, it shows the option the menu set.'
+---
+
+<div class="flex flex-wrap gap-2">
+  <ChipFilter menuId="example-price-menu">Price</ChipFilter>
+  <ChipFilter menuId="example-rooms-menu" isSelected>2+ bedrooms</ChipFilter>
+  <ChipFilter>Pets allowed</ChipFilter>
+</div>
+<Menu id="example-price-menu">
+  <MenuItemRadio name="example-price" label="Under $50" />
+  <MenuItemRadio name="example-price" label="$50 to $100" />
+  <MenuItemRadio name="example-price" label="Over $100" />
+</Menu>
+<Menu id="example-rooms-menu">
+  <MenuItemRadio name="example-rooms" label="1+ bedrooms" />
+  <MenuItemRadio name="example-rooms" label="2+ bedrooms" isChecked />
+  <MenuItemRadio name="example-rooms" label="3+ bedrooms" />
+</Menu>

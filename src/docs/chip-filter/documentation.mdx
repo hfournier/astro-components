@@ -1,0 +1,52 @@
+---
+name: ChipFilter
+description: A Material 3 filter chip, extending HTML's `<button>` element. It's a tag or descriptive word that narrows content, toggled on and off, showing a leading check mark while selected, flat or elevated, or the button for a Menu of filter options.
+category: Forms
+role: pattern
+meta:
+  title: ChipFilter | astro-components HenriFournier.dev
+  description: A Material 3 filter chip, a toggle that narrows content with a check mark when selected, or a chip that opens a menu of options.
+extends:
+  kind: component
+  name: BaseChip
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button
+props:
+  - name: isSelected
+    type: boolean
+    required: false
+    default: "false"
+    description: "Whether the chip starts selected: secondary-container, with a leading check mark. A toggle chip then flips on each click, through its `aria-pressed`. A menu chip has no pressed state, so this is the filter its menu has set; the page sets or removes its `data-ac-chip-filter-selected` attribute when the menu changes it."
+  - name: menuId
+    type: string
+    required: false
+    description: The id of the Menu the chip opens. The whole chip becomes the menu's button, with a trailing dropdown icon, and no longer toggles.
+  - name: icon
+    type: SvgIconNameTypes
+    required: false
+    description: An 18px icon before the label, in the primary color, by its file name in `src/assets/svgs`. The check mark takes its place while the chip is selected. It's decorative, so the label alone names the chip.
+  - name: variant
+    type: '"flat" | "elevated"'
+    required: false
+    default: '"flat"'
+    description: "`flat` has an outline-variant outline while unselected. `elevated` sits on surface-container-low at elevation 1. Selected, both are secondary-container. Any other value fails the build."
+slots:
+  - name: default
+    description: The filter, a noun naming what to include, such as "Images". Avoid negatives such as "Exclude images".
+    kind: text
+---
+
+## Flat or elevated
+
+Use flat chips on plain backgrounds, where the outline marks the chip's edge. Use elevated chips only on an image or another busy background, where an outline would get lost.
+
+## In a set
+
+Show filters together, in a set, never one alone: put them side by side in one parent, such as a `flex flex-wrap gap-2` div, below a label such as "Filter results" or under a search field. The arrow keys move between the chips that share a parent. A set can wrap onto a second row; past two rows, let it scroll sideways instead, or move the chips into a side sheet.
+
+Each chip toggles on its own, so any number can be selected. Listen for `click` and read each chip's `aria-pressed` to apply the filters. M3 also allows a set where selecting one chip deselects the others; ChipFilter doesn't do that itself, so for one choice from a few, ButtonGroupConnected's single select or radio buttons say so to assistive tech.
+
+## With a menu
+
+Give a chip `menuId` to open a Menu of options for one filter, such as a price range. The whole chip opens it, as M3 asks for compact windows, where a trailing icon alone is too small a target. Use MenuItemRadio items for one choice, or MenuItemCheckbox items for several.
+
+When the person picks an option, show it as the chip's label, such as "Under $50", and add `data-ac-chip-filter-selected` to the chip, so it takes the selected look. Remove both when the filter is cleared.

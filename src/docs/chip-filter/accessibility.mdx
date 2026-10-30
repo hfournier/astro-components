@@ -1,0 +1,9 @@
+A filter chip is a native `<button>` with `aria-pressed`, so it's announced as a toggle button, pressed or not, and named by its label. Its icon and check mark are decorative and hidden from assistive tech. A chip with `menuId` is a menu button instead: it's announced with its popup and whether the menu is open, and it has no pressed state, so its label must name the filter its menu set, such as "Under $50".
+
+- **Keyboard:** Tab reaches each chip, and Space or Enter selects or deselects it, or opens its menu. The arrow keys also move between the chips in a set, as M3's Accessibility page asks: left and right, mirrored right to left, and up and down, to the previous and next chip in a set that wraps, skipping disabled chips and stopping at the ends. In an open menu, the arrow keys move between its items and Escape closes it, returning focus to the chip.
+- **Target size:** each chip keeps a 48px target, which reaches above and below its 32px height. A menu chip opens its menu from anywhere on the chip, not only its dropdown icon, which is too small a target alone.
+- **Showing it's interactive:** M3 asks for a second cue that chips can be selected. An unselected flat chip's outline is outline-variant, as M3's tokens give it, which is under 3:1 contrast against the background, so it doesn't count as that cue. Introduce the set with a label, such as "Filter results", or with page context that says the chips narrow what's below.
+- **Selected:** the check mark shows selection by shape, not only by the container's color.
+- **Disabled:** a disabled chip can't be focused.
+
+Under reduced motion, the check mark, the colors and the chip's width change at once.

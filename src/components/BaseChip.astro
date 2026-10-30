@@ -9,7 +9,9 @@ import Icon from "./Icon.astro";
 // elevated, the label in Label Large, an optional 18px leading icon, the state layer (dragged too),
 // the 48px touch target, the focus ring, disabled, and the arrow keys between chips in a set. The
 // label color is on-surface; a chip that differs gives its own `text-*` in `class`, and the state
-// layer and a focused flat outline follow it.
+// layer and a focused flat outline follow it. A chip whose icons change, such as a filter chip's
+// check mark, gives them in the `leading-icon` and `trailing-icon` slots instead, and BaseChip
+// sets the padding on their side to M3's 8px.
 type Props<Tag extends Extract<HTMLTag, "a" | "button"> = "button"> =
   Polymorphic<{
     as: Tag;
@@ -65,8 +67,8 @@ const variantClasses = {
     // M3's 16px padding is from the container's edge, so 15px inside its 1px outline
     "group/chip inline-flex h-8 shrink-0 cursor-pointer items-center gap-2 rounded-lg border px-[15px] whitespace-nowrap",
     "text-sm leading-5 font-medium tracking-[0.1px] text-(--theme-color-on-surface)",
-    // M3: 8px on the icon's side instead of 16
-    "has-[>[data-ac-base-chip-part=leading-icon]]:ps-[7px]",
+    // M3: 8px on an icon's side instead of 16
+    "has-[>[data-ac-base-chip-part=leading-icon]]:ps-[7px] has-[>[data-ac-base-chip-part=trailing-icon]]:pe-[7px]",
     "relative isolate before:absolute before:-inset-px before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0 motion-safe:before:transition-opacity",
     "not-disabled:hover:before:opacity-8 not-disabled:focus-visible:before:opacity-10 not-disabled:active:before:opacity-10",
     // M3 dragged: level 4 and a 16% state layer, while the script below marks the chip. A chip
@@ -86,14 +88,25 @@ const variantClasses = {
   data-ac-base-chip
   {...attrs}
 >
-  {icon && (
+  {icon ? (
     <Icon
       class="size-[18px] shrink-0 text-(--theme-color-primary) group-disabled/chip:text-current"
       name={icon}
       data-ac-base-chip-part="leading-icon"
     />
+  ) : (
+    Astro.slots.has("leading-icon") && (
+      <span class="flex shrink-0" data-ac-base-chip-part="leading-icon">
+        <slot name="leading-icon" />
+      </span>
+    )
   )}
   <Fragment set:html={label} />
+  {Astro.slots.has("trailing-icon") && (
+    <span class="flex shrink-0" data-ac-base-chip-part="trailing-icon">
+      <slot name="trailing-icon" />
+    </span>
+  )}
 </Tag>
 
 <script>

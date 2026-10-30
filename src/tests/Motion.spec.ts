@@ -130,6 +130,26 @@ test.describe("motion", () => {
     await expectTransitions(chip, { opacity: FAST_EFFECTS }, "::before");
   });
 
+  test("ChipFilter: the leading space widening on fast spatial, the check mark and icon fading on fast effects", async ({
+    page,
+  }) => {
+    await page.goto("/tests/chip-filter");
+    const chip = page
+      .getByTestId("chip-filter-icon")
+      .getByRole("button", { name: "Images" });
+    const part = (name: string) =>
+      chip.locator(`[data-ac-chip-filter-part=${name}]`);
+    await expectTransitions(part("leading"), { width: FAST_SPATIAL });
+    await expectTransitions(part("check"), { opacity: FAST_EFFECTS });
+    await expectTransitions(part("icon"), { opacity: FAST_EFFECTS });
+    await expectTransitions(chip, {
+      color: FAST_EFFECTS,
+      "background-color": FAST_EFFECTS,
+      "border-color": FAST_EFFECTS,
+      "box-shadow": FAST_EFFECTS,
+    });
+  });
+
   test("Fab: its shadow on fast effects", async ({ page }) => {
     await page.goto("/tests/fab");
     const fab = page.getByTestId("fab-no-props").getByRole("button").first();
