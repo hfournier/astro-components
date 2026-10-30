@@ -40,7 +40,9 @@ const shadowOf = (target: Locator) =>
 const labelInsets = async (target: Locator) => {
   await settled(target.page());
   const outer = await box(target);
-  const text = await textBox(target);
+  const text = await textBox(
+    target.locator("[data-ac-chip-filter-part=label]")
+  );
   const rtl = await target.evaluate(
     (el) => getComputedStyle(el).direction === "rtl"
   );
@@ -322,15 +324,32 @@ test.describe("ChipFilter", () => {
     await page.mouse.move(0, 0);
     await expect.poll(() => stateLayer(target, "opacity")).toBe("0.1");
     await expect(
-      page.getByRole("menuitemradio", { name: "Under $50" })
+      page.getByRole("menuitemradio", { name: "Any price" })
     ).toBeFocused();
     await page.keyboard.press("Escape");
     await expect(page.locator("#price-menu")).toBeHidden();
     await expect(target).toBeFocused();
   });
 
-  // A menu chip's selection is the filter its menu set, given by `isSelected`, as it has no
-  // pressed state of its own
+  // M3's filter chip with a menu shows the option chosen; an option with an empty value clears it
+  test("with a menu, choosing an option makes it the label and selects the chip, and clearing puts the filter's name back", async ({
+    page,
+  }) => {
+    const target = chip(page, "menu", "Price");
+    await expect(target).not.toHaveAttribute("data-ac-chip-filter-selected");
+    await target.click();
+    await page.getByRole("menuitemradio", { name: "Under $50" }).click();
+    await expect(page.locator("#price-menu")).toBeHidden();
+    const chosen = chip(page, "menu", "Under $50");
+    await expect(chosen).toHaveAttribute("data-ac-chip-filter-selected", "");
+    await expect(part(chosen, "check")).toHaveCSS("opacity", "1");
+    await chosen.click();
+    await page.getByRole("menuitemradio", { name: "Any price" }).click();
+    await expect(target).not.toHaveAttribute("data-ac-chip-filter-selected");
+  });
+
+  // A menu chip's selection is the filter its menu's checked option sets, as it has no pressed
+  // state of its own: "Bedrooms" shows its checked "2+ bedrooms" from the start
   test("with a menu and selected, it takes the selected colors and check mark", async ({
     page,
   }) => {
@@ -355,7 +374,7 @@ test.describe("ChipFilter", () => {
   // The menu button pattern: ArrowDown and ArrowUp open the menu on its first and last item, and
   // the chips' arrow keys leave them to it
   for (const [key, item] of [
-    ["ArrowDown", "Under $50"],
+    ["ArrowDown", "Any price"],
     ["ArrowUp", "Over $100"],
   ] as const) {
     test(`with a menu, ${key} opens it on the ${key === "ArrowDown" ? "first" : "last"} item, rather than moving to the next chip`, async ({

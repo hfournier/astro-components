@@ -15,7 +15,7 @@ props:
     type: boolean
     required: false
     default: "false"
-    description: "Whether the chip starts selected: secondary-container, with a leading check mark. A toggle chip then flips on each click, through its `aria-pressed`. A menu chip has no pressed state, so this is the filter its menu has set; the page sets or removes its `data-ac-chip-filter-selected` attribute when the menu changes it."
+    description: "Whether the chip starts selected: secondary-container, with a leading check mark. A toggle chip then flips on each click, through its `aria-pressed`. Not for a menu chip, whose menu selects it, and the build fails if both are given."
   - name: menuId
     type: string
     required: false
@@ -49,4 +49,4 @@ Each chip toggles on its own, so any number can be selected. Listen for `click` 
 
 Give a chip `menuId` to open a Menu of options for one filter, such as a price range. The whole chip opens it, as M3 asks for compact windows, where a trailing icon alone is too small a target. Use MenuItemRadio items for one choice, or MenuItemCheckbox items for several.
 
-When the person picks an option, show it as the chip's label, such as "Under $50", and add `data-ac-chip-filter-selected` to the chip, so it takes the selected look. Remove both when the filter is cleared.
+The chip's label names the filter, such as "Price". With MenuItemRadio items, once an option is checked, from the start or by the person, the chip shows that option as its label, such as "Under $50", and takes the selected look. Give the option that clears the filter, such as "Any price", an empty `value`: checking it puts the filter's name back. With MenuItemCheckbox items, the label stays the filter's name, and the chip is selected while any option is checked. Listen for the menu's `change` event to apply the filter.

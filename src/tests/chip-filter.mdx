@@ -44,19 +44,19 @@ description: Tests for the ChipFilter component
   <Heading level={2}>With a menu</Heading>
   <div class="flex flex-wrap gap-2">
     <ChipFilter menuId="price-menu">Price</ChipFilter>
-    <ChipFilter menuId="rooms-menu" isSelected>
-      2+ bedrooms
-    </ChipFilter>
+    <ChipFilter menuId="rooms-menu">Bedrooms</ChipFilter>
     <ChipFilter menuId="type-menu" disabled>
       Type
     </ChipFilter>
   </div>
   <Menu id="price-menu">
+    <MenuItemRadio name="price" label="Any price" value="" isChecked />
     <MenuItemRadio name="price" label="Under $50" />
     <MenuItemRadio name="price" label="$50 to $100" />
     <MenuItemRadio name="price" label="Over $100" />
   </Menu>
   <Menu id="rooms-menu">
+    <MenuItemRadio name="rooms" label="Any bedrooms" value="" />
     <MenuItemRadio name="rooms" label="1+ bedrooms" />
     <MenuItemRadio name="rooms" label="2+ bedrooms" isChecked />
   </Menu>

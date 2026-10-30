@@ -2,20 +2,22 @@
 import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import type { SvgIconNameTypes } from "../svgs";
+import { unwrapParagraph } from "../utils";
 import BaseChip from "./BaseChip.astro";
 import Icon from "./Icon.astro";
 
 // An M3 filter chip: a tag or descriptive word that narrows content, selected and deselected by a
 // click, as a toggle button (aria-pressed). Selected, it turns secondary-container and gains a
 // leading check mark, in place of its icon if it has one. With `menuId`, the whole chip is instead
-// the button for the Menu that id names, with a trailing dropdown icon; its selection is
-// `isSelected`, the filter the menu has set. BaseChip draws the rest: flat or elevated, the state
+// the button for the Menu that id names, with a trailing dropdown icon. Its label is then the
+// filter's name until the menu sets the filter, when it shows the checked option and is selected
+// (see the script below). BaseChip draws the rest: flat or elevated, the state
 // layer, the touch target, the focus ring, disabled, and the arrow keys between chips in a set.
 type Props = HTMLAttributes<"button"> & {
   // An icon before the label, by its file name in src/assets/svgs, which the check mark replaces
   // while the chip is selected
   icon?: SvgIconNameTypes;
-  // A toggle's initial state, or a menu chip's state: whether its menu has set a filter
+  // A toggle's initial state; a menu chip's comes from its menu
   isSelected?: boolean;
   // the id of the Menu the chip opens, in place of toggling
   menuId?: string;
@@ -38,14 +40,21 @@ if (!["flat", "elevated"].includes(variant)) {
     `ChipFilter: M3's chip styles are "flat" and "elevated", but this one's \`variant\` is "${variant}".`
   );
 }
+if (menuId && isSelected) {
+  throw new Error(
+    `ChipFilter: a menu chip is selected by its menu's checked option, but this one, for "${menuId}", has \`isSelected\` too.`
+  );
+}
 
-// A toggle's selection is its aria-pressed; a menu chip, which can't be pressed, carries it as
-// data-ac-chip-filter-selected, for the page to set or remove as its menu changes the filter
+const label = unwrapParagraph(await Astro.slots.render("default"));
+
+// A toggle's selection is its aria-pressed; a menu chip, a menu button that can't be pressed,
+// carries it as data-ac-chip-filter-selected, which the script sets from its menu
 const stateAttrs = menuId
   ? {
       commandfor: menuId,
       command: "toggle-popover" as const,
-      "data-ac-chip-filter-selected": isSelected ? "" : undefined,
+      "data-ac-chip-filter-menu": "",
     }
   : {
       "aria-pressed": isSelected ? ("true" as const) : ("false" as const),
@@ -101,7 +110,7 @@ const variantClasses = {
       data-ac-chip-filter-part="check"
     />
   </span>
-  <slot />
+  <span data-ac-chip-filter-part="label" set:html={label} />
   {menuId && (
     <Icon slot="trailing-icon" class="size-[18px]" name="arrow_drop_down" />
   )}
@@ -164,5 +173,39 @@ const variantClasses = {
     if (!chip || chip.disabled) return;
     const isPressed = chip.getAttribute("aria-pressed") === "true";
     chip.setAttribute("aria-pressed", String(!isPressed));
+  });
+
+  // A menu chip shows the filter its menu sets, as M3's filter chip with a menu does: its label
+  // becomes the checked radio item's, which also names it for assistive tech, and it's selected.
+  // A radio item with an empty `value` (such as "Any price") clears the filter, putting back the
+  // chip's own label. With checkbox items, the label stays and the chip is selected while any is
+  // checked. Run on load, and on each `change` the menu fires.
+  const filterNames = new WeakMap<Element, string>();
+  const showFilter = (chip: HTMLElement) => {
+    const menu = document.getElementById(chip.getAttribute("commandfor") ?? "");
+    const label = chip.querySelector("[data-ac-chip-filter-part=label]");
+    if (!menu || !label) return;
+    if (!filterNames.has(chip)) filterNames.set(chip, label.innerHTML);
+    const radio = menu.querySelector<HTMLElement>(
+      "[role=menuitemradio][aria-checked=true]:not([data-ac-menu-value=''])"
+    );
+    const isSelected =
+      !!radio ||
+      !!menu.querySelector("[role=menuitemcheckbox][aria-checked=true]");
+    if (radio) label.textContent = radio.dataset.acMenuItem ?? "";
+    else label.innerHTML = filterNames.get(chip) ?? "";
+    chip.toggleAttribute("data-ac-chip-filter-selected", isSelected);
+  };
+  document
+    .querySelectorAll<HTMLElement>("[data-ac-chip-filter-menu]")
+    .forEach(showFilter);
+  document.addEventListener("change", (event) => {
+    const menu = event.target as Element;
+    if (!menu.id) return;
+    document
+      .querySelectorAll<HTMLElement>(
+        `[data-ac-chip-filter-menu][commandfor="${CSS.escape(menu.id)}"]`
+      )
+      .forEach(showFilter);
   });
 </script>

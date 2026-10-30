@@ -52,6 +52,7 @@ const expected: Record<string, string | RegExp> = {
   // checked where it's used, in BaseChip (ADR-0021 §5)
   "chip-assist-as": `ChipAssist: its elements are "button" and "a", but this one's \`as\` is "div".`,
   "chip-assist-variant": `ChipAssist: M3's chip styles are "flat" and "elevated", but this one's \`variant\` is "tonal".`,
+  "chip-filter-menu-selected": `ChipFilter: a menu chip is selected by its menu's checked option, but this one, for "price", has \`isSelected\` too.`,
   "chip-filter-variant": `ChipFilter: M3's chip styles are "flat" and "elevated", but this one's \`variant\` is "outlined".`,
   "chip-suggestion-as": `ChipSuggestion: its elements are "button" and "a", but this one's \`as\` is "span".`,
   "chip-suggestion-variant": `ChipSuggestion: M3's chip styles are "flat" and "elevated", but this one's \`variant\` is "outlined".`,
