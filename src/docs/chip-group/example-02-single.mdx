@@ -1,0 +1,10 @@
+---
+title: Single select
+description: 'With `selection="single"`, the group is a radiogroup and its filter chips are radios sharing a `name`: selecting one deselects the others.'
+---
+
+<ChipGroup aria-label="Departure" selection="single">
+  <ChipFilter selection="single" name="example-departure" value="any" isSelected>Any time</ChipFilter>
+  <ChipFilter selection="single" name="example-departure" value="morning">Morning</ChipFilter>
+  <ChipFilter selection="single" name="example-departure" value="evening">Evening</ChipFilter>
+</ChipGroup>

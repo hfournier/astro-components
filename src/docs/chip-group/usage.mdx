@@ -1,0 +1,12 @@
+---
+title: ChipGroup
+description: The following example shows a set of filter chips under a visible label, which names the group through `aria-labelledby`.
+---
+
+<p id="chip-group-usage-label" class="mb-2 text-sm text-(--theme-color-on-surface-variant)">Filter results</p>
+<ChipGroup aria-labelledby="chip-group-usage-label">
+  <ChipFilter>Docs</ChipFilter>
+  <ChipFilter isSelected>Slides</ChipFilter>
+  <ChipFilter>Sheets</ChipFilter>
+  <ChipFilter>Images</ChipFilter>
+</ChipGroup>

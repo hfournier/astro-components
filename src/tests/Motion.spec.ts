@@ -136,7 +136,7 @@ test.describe("motion", () => {
     await page.goto("/tests/chip-filter");
     const chip = page
       .getByTestId("chip-filter-icon")
-      .getByRole("button", { name: "Images" });
+      .locator("label", { hasText: "Images" });
     const part = (name: string) =>
       chip.locator(`[data-ac-chip-filter-part=${name}]`);
     await expectTransitions(part("leading"), { width: FAST_SPATIAL });

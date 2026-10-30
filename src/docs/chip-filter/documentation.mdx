@@ -1,25 +1,30 @@
 ---
 name: ChipFilter
-description: A Material 3 filter chip, extending HTML's `<button>` element. It's a tag or descriptive word that narrows content, toggled on and off, showing a leading check mark while selected, flat or elevated, or the button for a Menu of filter options.
+description: A Material 3 filter chip, extending HTML's `<input>` element as a checkbox, or a radio in a single-select set, inside a `<label>` drawn as the chip. It's a tag or descriptive word that narrows content, selected and deselected, showing a leading check mark while selected, flat or elevated, or the `<button>` for a Menu of filter options.
 category: Forms
 role: pattern
 meta:
   title: ChipFilter | astro-components HenriFournier.dev
-  description: A Material 3 filter chip, a toggle that narrows content with a check mark when selected, or a chip that opens a menu of options.
+  description: A Material 3 filter chip, a native checkbox or radio that narrows content with a check mark when selected, or a chip that opens a menu of options.
 extends:
   kind: component
   name: BaseChip
-mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/checkbox
 props:
   - name: isSelected
     type: boolean
     required: false
     default: "false"
-    description: "Whether the chip starts selected: secondary-container, with a leading check mark. A toggle chip then flips on each click, through its `aria-pressed`. Not for a menu chip, whose menu selects it, and the build fails if both are given."
+    description: "Whether the chip starts selected: secondary-container, with a leading check mark. It's the input's `checked`. Not for a menu chip, whose menu selects it, and the build fails if both are given."
   - name: menuId
     type: string
     required: false
-    description: The id of the Menu the chip opens. The whole chip becomes the menu's button, with a trailing dropdown icon, and no longer toggles.
+    description: The id of the Menu the chip opens. The whole chip becomes the menu's `<button>`, with a trailing dropdown icon, and has no input.
+  - name: selection
+    type: '"single" | "multi"'
+    required: false
+    default: '"multi"'
+    description: "`multi` makes the chip a checkbox, selected on its own. `single` makes it a radio, for a ChipGroup with `selection=\"single\"`, and needs a `name` shared with the set's other chips. The build fails on a `single` chip with no `name` or with `menuId`, and on any other value."
   - name: icon
     type: SvgIconNameTypes
     required: false
@@ -35,15 +40,31 @@ slots:
     kind: text
 ---
 
+## Attributes
+
+Every attribute but `class` goes on the input, such as `name`, `value`, `disabled`, `form` and `aria-*`, so the chip submits with a form as any checkbox or radio does. On a menu chip, they go on its `<button>`. `class` goes on the chip.
+
 ## Flat or elevated
 
 Use flat chips on plain backgrounds, where the outline marks the chip's edge. Use elevated chips only on an image or another busy background, where an outline would get lost.
 
 ## In a set
 
-Show filters together, in a set, never one alone: put them side by side in one parent, such as a `flex flex-wrap gap-2` div, below a label such as "Filter results" or under a search field. The arrow keys move between the chips that share a parent. A set can wrap onto a second row; past two rows, let it scroll sideways instead, or move the chips into a side sheet.
+Show filters together, in a set, never one alone: put them in a [ChipGroup](/components/chip-group), below a label such as "Filter results" or under a search field, and name the group by that label with `aria-labelledby`. A set can wrap onto a second row; past two rows, give the group `overflow="scroll"` so it scrolls sideways, or move the chips into a side sheet.
 
-Each chip toggles on its own, so any number can be selected. Listen for `click` and read each chip's `aria-pressed` to apply the filters. M3 also allows a set where selecting one chip deselects the others; ChipFilter doesn't do that itself, so for one choice from a few, ButtonGroupConnected's single select or radio buttons say so to assistive tech.
+Each chip is a checkbox, so any number can be selected. Listen for `change` and read the checked inputs, or let a form submit them.
+
+## Single select
+
+M3 also allows a set where selecting one chip deselects the others. Give the ChipGroup `selection="single"`, which makes it a radiogroup, and each ChipFilter in it `selection="single"` and the same `name`, which make them radios. Keep every set on a page one kind, all single-select or all multi-select, as M3 asks.
+
+```astro
+<ChipGroup aria-label="Size" selection="single">
+  <ChipFilter selection="single" name="size" value="s">Small</ChipFilter>
+  <ChipFilter selection="single" name="size" value="m" isSelected>Medium</ChipFilter>
+  <ChipFilter selection="single" name="size" value="l">Large</ChipFilter>
+</ChipGroup>
+```
 
 ## With a menu
 

@@ -2,11 +2,11 @@ Use filter chips to narrow a collection, such as search results or a list, by ta
 
 - Name what to include, with a noun, and keep it short. Avoid negatives such as "Exclude images".
 - Show chips in a set, never one alone, introduced by a label such as "Filter results".
-- Keep every set on a page multi-select.
+- Keep every set on a page one kind: all multi-select, or all single-select.
 
 ### When not to use it
 
 - **An action, such as "Add to calendar":** use ChipAssist.
 - **A suggestion the product made, such as a reply:** use ChipSuggestion.
-- **One required choice among a few:** use ButtonGroupConnected's single select or radio buttons, which say there's one choice.
+- **One choice that must always be made, in a form:** use ButtonGroupConnected's single select with `isSelectionRequired`, or radio buttons. A single-select ChipGroup suits one optional filter among a few.
 - **A setting that applies at once, outside any list:** use a Switch.

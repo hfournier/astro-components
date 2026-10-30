@@ -3,11 +3,11 @@ title: With a menu
 description: 'With `menuId`, the chip opens a Menu of options for its filter, and shows a trailing dropdown icon. Choosing an option shows it as the chip''s label and selects the chip; an option with an empty `value`, such as "Any price", clears the filter.'
 ---
 
-<div class="flex flex-wrap gap-2">
+<ChipGroup aria-label="Stay filters">
   <ChipFilter menuId="example-price-menu">Price</ChipFilter>
   <ChipFilter menuId="example-rooms-menu">Bedrooms</ChipFilter>
   <ChipFilter>Pets allowed</ChipFilter>
-</div>
+</ChipGroup>
 <Menu id="example-price-menu">
   <MenuItemRadio name="example-price" label="Any price" value="" isChecked />
   <MenuItemRadio name="example-price" label="Under $50" />

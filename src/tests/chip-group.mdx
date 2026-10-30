@@ -1,0 +1,39 @@
+---
+title: ChipGroup
+description: Tests for the ChipGroup component
+---
+
+<Heading level={1}>ChipGroup Tests</Heading>
+
+<Section data-testid="chip-group-wrap" class="p-4 space-y-4">
+  <Heading level={2} id="chip-group-wrap-label">Wrapping</Heading>
+  <div class="w-64">
+    <ChipGroup aria-labelledby="chip-group-wrap-label">
+      <ChipAssist>Directions</ChipAssist>
+      <ChipAssist>Calendar</ChipAssist>
+      <ChipAssist>Share trip</ChipAssist>
+      <ChipAssist>Check in</ChipAssist>
+    </ChipGroup>
+  </div>
+</Section>
+
+<Section data-testid="chip-group-scroll" class="p-4 space-y-4">
+  <Heading level={2}>Scrolling</Heading>
+  <div class="w-64" data-testid="chip-group-scroll-frame">
+    <ChipGroup aria-label="Scrolling" overflow="scroll">
+      <ChipFilter>Docs</ChipFilter>
+      <ChipFilter>Slides</ChipFilter>
+      <ChipFilter>Sheets</ChipFilter>
+      <ChipFilter>Forms</ChipFilter>
+      <ChipFilter>Images</ChipFilter>
+    </ChipGroup>
+  </div>
+</Section>
+
+<Section data-testid="chip-group-loose" class="p-4 space-y-4">
+  <Heading level={2}>Outside a group</Heading>
+  <div class="flex gap-2">
+    <ChipAssist>Loose one</ChipAssist>
+    <ChipAssist>Loose two</ChipAssist>
+  </div>
+</Section>

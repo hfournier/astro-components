@@ -17,6 +17,7 @@ import ButtonIcon from "../../components/ButtonIcon.astro";
 import ButtonSplit from "../../components/ButtonSplit.astro";
 import ChipAssist from "../../components/ChipAssist.astro";
 import ChipFilter from "../../components/ChipFilter.astro";
+import ChipGroup from "../../components/ChipGroup.astro";
 import ChipSuggestion from "../../components/ChipSuggestion.astro";
 import Details from "../../components/Details.astro";
 import Divider from "../../components/Divider.astro";
@@ -126,6 +127,14 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     "button-split-variant": [ButtonSplit, { ...split, variant: "text" }],
     "chip-assist-as": [ChipAssist, { as: "div" }],
     "chip-assist-variant": [ChipAssist, { variant: "tonal" }],
+    "chip-filter-menu-single": [
+      ChipFilter,
+      { menuId: "price", selection: "single", name: "price" },
+    ],
+    "chip-filter-selection": [ChipFilter, { selection: "one" }],
+    "chip-filter-single-name": [ChipFilter, { selection: "single" }],
+    "chip-group-overflow": [ChipGroup, { overflow: "hidden" }],
+    "chip-group-selection": [ChipGroup, { selection: "one" }],
     "chip-filter-menu-selected": [
       ChipFilter,
       { menuId: "price", isSelected: true },

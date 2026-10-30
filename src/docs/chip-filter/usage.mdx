@@ -3,10 +3,10 @@ title: ChipFilter
 description: The following example shows a set of flat filter chips below a label, two of them selected.
 ---
 
-<p class="mb-2 text-sm text-(--theme-color-on-surface-variant)">Filter results</p>
-<div class="flex flex-wrap gap-2">
+<p id="chip-filter-usage-label" class="mb-2 text-sm text-(--theme-color-on-surface-variant)">Filter results</p>
+<ChipGroup aria-labelledby="chip-filter-usage-label">
   <ChipFilter>Docs</ChipFilter>
   <ChipFilter isSelected>Slides</ChipFilter>
   <ChipFilter isSelected>Sheets</ChipFilter>
   <ChipFilter>Images</ChipFilter>
-</div>
+</ChipGroup>

@@ -13,12 +13,26 @@ import {
 } from "./support/helpers";
 
 // Each case on /tests/chip-filter is a Section with data-testid="chip-filter-<caseId>"
-type ChipCaseId = "styles" | "icon" | "disabled" | "menu" | "rtl";
+type ChipCaseId =
+  "styles" | "icon" | "disabled" | "menu" | "rtl" | "single" | "form";
 
+// The chip as drawn: a toggle's <label>, or a menu chip's <button>
 const chip = (page: Page, caseId: ChipCaseId, name: string) =>
   page
     .getByTestId(`chip-filter-${caseId}`)
-    .getByRole("button", { name, exact: true });
+    .locator("[data-ac-base-chip]")
+    .filter({ has: page.getByText(name, { exact: true }) });
+
+// A toggle's input: a checkbox, or a radio in a single-select set
+const input = (
+  page: Page,
+  caseId: ChipCaseId,
+  name: string,
+  role: "checkbox" | "radio" = "checkbox"
+) =>
+  page
+    .getByTestId(`chip-filter-${caseId}`)
+    .getByRole(role, { name, exact: true });
 
 const part = (target: Locator, name: "leading" | "icon" | "check") =>
   target.locator(`[data-ac-chip-filter-part=${name}]`);
@@ -56,18 +70,18 @@ test.describe("ChipFilter", () => {
     await page.goto("/tests/chip-filter");
   });
 
-  // M3's Accessibility page: a selectable chip; the web's toggle button, with its pressed state
-  test("is a toggle button named by its label, its icons hidden", async ({
+  // M3's Accessibility page: a selectable chip is a checkbox, or a radio button (ADR-0024)
+  test("is a native checkbox in its label, named by the label, its icons hidden", async ({
     page,
   }) => {
-    const unselected = chip(page, "styles", "Docs");
-    await expect(unselected).toHaveJSProperty("tagName", "BUTTON");
-    await expect(unselected).toHaveAttribute("type", "button");
-    await expect(unselected).toHaveAttribute("aria-pressed", "false");
-    await expect(chip(page, "styles", "Slides")).toHaveAttribute(
-      "aria-pressed",
-      "true"
+    await expect(chip(page, "styles", "Docs")).toHaveJSProperty(
+      "tagName",
+      "LABEL"
     );
+    const unselected = input(page, "styles", "Docs");
+    await expect(unselected).toHaveJSProperty("tagName", "INPUT");
+    await expect(unselected).not.toBeChecked();
+    await expect(input(page, "styles", "Slides")).toBeChecked();
     const withIcon = chip(page, "icon", "Images");
     await expect(part(withIcon, "icon")).toHaveAttribute("aria-hidden", "true");
     await expect(part(withIcon, "check")).toHaveAttribute(
@@ -79,22 +93,72 @@ test.describe("ChipFilter", () => {
   // M3's Accessibility page: Space or Enter selects or deselects the focused chip
   test("a click, Space or Enter selects and deselects it", async ({ page }) => {
     const target = chip(page, "styles", "Docs");
+    const checkbox = input(page, "styles", "Docs");
     await target.click();
-    await expect(target).toHaveAttribute("aria-pressed", "true");
+    await expect(checkbox).toBeChecked();
     await target.click();
-    await expect(target).toHaveAttribute("aria-pressed", "false");
-    await target.focus();
+    await expect(checkbox).not.toBeChecked();
+    await checkbox.focus();
     await page.keyboard.press("Space");
-    await expect(target).toHaveAttribute("aria-pressed", "true");
+    await expect(checkbox).toBeChecked();
     await page.keyboard.press("Enter");
-    await expect(target).toHaveAttribute("aria-pressed", "false");
+    await expect(checkbox).not.toBeChecked();
   });
 
   test("a disabled chip can't be selected", async ({ page }) => {
-    const target = chip(page, "disabled", "Flat disabled");
-    await expect(target).toBeDisabled();
-    await target.click({ force: true });
-    await expect(target).toHaveAttribute("aria-pressed", "false");
+    const checkbox = input(page, "disabled", "Flat disabled");
+    await expect(checkbox).toBeDisabled();
+    await chip(page, "disabled", "Flat disabled").click({ force: true });
+    await expect(checkbox).not.toBeChecked();
+  });
+
+  // ADR-0024: the chips are a form's checkboxes, and Enter selects rather than submitting
+  test("its input submits with a form, and Enter doesn't submit it", async ({
+    page,
+  }) => {
+    const form = page.locator("#chip-filter-form");
+    const values = () =>
+      form.evaluate((el) =>
+        new FormData(el as HTMLFormElement).getAll("amenity")
+      );
+    expect(await values()).toEqual(["wifi"]);
+    await input(page, "form", "Pool").focus();
+    await page.keyboard.press("Enter");
+    expect(await values()).toEqual(["wifi", "pool"]);
+    await expect(page).toHaveURL(/\/tests\/chip-filter$/);
+  });
+
+  // M3's Guidelines: selecting one chip of a single-select set deselects the others. The set is
+  // a radiogroup, keeping the browser's radio keys (ADR-0024).
+  test("in a single-select set, it's a radio: one is selected, and the arrow keys move the selection", async ({
+    page,
+  }) => {
+    await expect(
+      page.getByRole("radiogroup", { name: "Size", exact: true })
+    ).toBeVisible();
+    const medium = input(page, "single", "Medium", "radio");
+    await expect(medium).toBeChecked();
+    await chip(page, "single", "Small").click();
+    await expect(input(page, "single", "Small", "radio")).toBeChecked();
+    await expect(medium).not.toBeChecked();
+    await expect(chip(page, "single", "Small")).toHaveCSS(
+      "background-color",
+      await resolvedColor(page, "var(--theme-color-secondary-container)")
+    );
+    await expect(part(chip(page, "single", "Medium"), "check")).toHaveCSS(
+      "opacity",
+      "0"
+    );
+    // WebKit doesn't focus a radio it clicks
+    await input(page, "single", "Small", "radio").focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(medium).toBeChecked();
+    await expect(medium).toBeFocused();
+    // the disabled chip is skipped
+    await page.keyboard.press("ArrowRight");
+    const extraLarge = input(page, "single", "Extra large", "radio");
+    await expect(extraLarge).toBeChecked();
+    await expect(extraLarge).toBeFocused();
   });
 
   // M3's Guidelines: selecting a filter chip appends a leading check mark. M3's Specs: 32dp tall,
@@ -246,7 +310,7 @@ test.describe("ChipFilter", () => {
     page,
   }) => {
     const unselected = chip(page, "styles", "Docs");
-    await chip(page, "styles", "Slides").focus();
+    await input(page, "styles", "Slides").focus();
     await page.keyboard.press("Shift+Tab");
     await expectFocusRing(unselected);
     await expect(unselected).toHaveCSS(
@@ -408,9 +472,9 @@ test.describe("ChipFilter", () => {
 
   // M3's Accessibility page: the arrow keys move between the chips in a set, menu chips too
   test("the arrow keys move between the chips in a set", async ({ page }) => {
-    await chip(page, "styles", "Docs").focus();
+    await input(page, "styles", "Docs").focus();
     await page.keyboard.press("ArrowRight");
-    await expect(chip(page, "styles", "Slides")).toBeFocused();
+    await expect(input(page, "styles", "Slides")).toBeFocused();
     await chip(page, "menu", "Price").focus();
     await page.keyboard.press("ArrowRight");
     await expect(chip(page, "menu", "2+ bedrooms")).toBeFocused();
