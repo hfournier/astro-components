@@ -17,7 +17,9 @@ test.describe("ChipGroup", () => {
 
   // M3's Guidelines: chips inline as a row of options, at least 8dp apart, overflowing onto the
   // next line, which its placement diagram sets 16dp below, so the 48dp targets don't overlap
-  test("sets its chips 8px apart, wrapping onto new rows 16px apart", async ({ page }) => {
+  test("sets its chips 8px apart, wrapping onto new rows 16px apart", async ({
+    page,
+  }) => {
     const group = page.getByRole("group", { name: "Wrapping", exact: true });
     const chips = group.getByRole("button");
     const [first, second, third, fourth] = await Promise.all(
