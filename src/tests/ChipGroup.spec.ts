@@ -16,8 +16,8 @@ test.describe("ChipGroup", () => {
   });
 
   // M3's Guidelines: chips inline as a row of options, at least 8dp apart, overflowing onto the
-  // next line
-  test("sets its chips 8px apart, wrapping onto new rows", async ({ page }) => {
+  // next line, which its placement diagram sets 16dp below, so the 48dp targets don't overlap
+  test("sets its chips 8px apart, wrapping onto new rows 16px apart", async ({ page }) => {
     const group = page.getByRole("group", { name: "Wrapping", exact: true });
     const chips = group.getByRole("button");
     const [first, second, third, fourth] = await Promise.all(
@@ -27,7 +27,7 @@ test.describe("ChipGroup", () => {
     expect(second.y).toBe(first.y);
     const wrapped = [third, fourth].find((b) => b.y > first.y);
     expect(wrapped).toBeDefined();
-    expect(wrapped!.y - (first.y + first.height)).toBeCloseTo(8, 0);
+    expect(wrapped!.y - (first.y + first.height)).toBeCloseTo(16, 0);
   });
 
   // M3's Guidelines: a set in one row can scroll sideways instead

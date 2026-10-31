@@ -3,10 +3,11 @@ import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
 
 // M3's chip set: the chips of one kind, inline as a row of options 8px apart, wrapping onto new
-// rows, or scrolling sideways in one row. It moves focus between them with the arrow keys, as M3's
+// rows 16px apart, or scrolling sideways in one row. It moves focus between them with the arrow keys, as M3's
 // Accessibility page asks. A single-select set of filter chips is a radiogroup, its chips radios
-// (ADR-0024); give each ChipFilter in it `selection="single"` too. Name it with `aria-label`, or
-// `aria-labelledby` pointing at the visible label M3 asks for before a set of selectable chips.
+// (ADR-0024); give each ChipFilter in it `selection="single"` too. Name it with `aria-labelledby`
+// pointing at the visible label M3 asks for before a set of selectable chips, or `aria-label`; the
+// build fails on a group with neither.
 type Props = HTMLAttributes<"div"> & {
   // Wrapping onto new rows, or one row that scrolls sideways
   overflow?: "wrap" | "scroll";
@@ -33,12 +34,20 @@ if (!["single", "multi"].includes(selection)) {
     `ChipGroup: its selections are "single" and "multi", but this one's \`selection\` is "${selection}".`
   );
 }
+// An unnamed group is announced as just "group", with nothing to say what its chips are for
+if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
+  throw new Error(
+    "ChipGroup: a set of chips needs a name, from an `aria-label` or `aria-labelledby`, but this one has neither."
+  );
+}
 
-// M3: at least 8px between chips. A scrolling row pads its scroll box by 8px, the room each
+// M3: at least 8px between chips, and 16px between wrapped rows, as its placement diagram shows,
+// so each chip's 48px target, 8px beyond it above and below, meets the next row's without
+// overlapping. A scrolling row pads its scroll box by 8px, the room each
 // chip's 48px target and focus ring take beyond its edges, and gives it back with a negative
 // margin, so the chips still line up with what's around them.
 const overflowClasses = {
-  wrap: "flex-wrap",
+  wrap: "flex-wrap gap-y-4",
   scroll: "-m-2 overflow-x-auto p-2",
 }[overflow];
 ---

@@ -1,6 +1,6 @@
 ---
 name: ChipGroup
-description: A Material 3 chip set, extending HTML's `<div>` element with the `group` role, or `radiogroup` for single-select filter chips. It sets its chips inline, 8px apart, wrapping onto new rows or scrolling sideways in one, and moves between them with the arrow keys. It has no color or shape of its own.
+description: A Material 3 chip set, extending HTML's `<div>` element with the `group` role, or `radiogroup` for single-select filter chips. It sets its chips inline, 8px apart, wrapping onto new rows 16px apart or scrolling sideways in one, and moves between them with the arrow keys. It has no color or shape of its own.
 category: Forms
 role: pattern
 meta:
@@ -33,7 +33,7 @@ Every attribute goes on the `<div>`. Name the group with `aria-labelledby`, poin
 
 ## Anatomy
 
-- **Container:** invisible. It sets its chips inline as a row of options, 8px apart, M3's minimum space between chips, on both axes when they wrap.
+- **Container:** invisible. It sets its chips inline as a row of options, 8px apart, M3's minimum space between chips, with wrapped rows 16px apart, as M3's placement diagram shows, so each chip's 48px target clears the rows above and below.
 
 A scrolling group pads its scroll box by 8px, the room each chip's 48px target and focus ring take beyond its edges, and takes it back with a negative margin, so its chips line up with what's around it.
 

@@ -137,8 +137,15 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     ],
     "chip-filter-selection": [ChipFilter, { selection: "one" }],
     "chip-filter-single-name": [ChipFilter, { selection: "single" }],
-    "chip-group-overflow": [ChipGroup, { overflow: "hidden" }],
-    "chip-group-selection": [ChipGroup, { selection: "one" }],
+    "chip-group-name": [ChipGroup, {}],
+    "chip-group-overflow": [
+      ChipGroup,
+      { overflow: "hidden", "aria-label": "Filters" },
+    ],
+    "chip-group-selection": [
+      ChipGroup,
+      { selection: "one", "aria-label": "Filters" },
+    ],
     "chip-filter-variant": [ChipFilter, { variant: "outlined" }],
     "chip-suggestion-as": [ChipSuggestion, { as: "span" }],
     "chip-suggestion-variant": [ChipSuggestion, { variant: "outlined" }],

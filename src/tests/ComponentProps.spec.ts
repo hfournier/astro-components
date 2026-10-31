@@ -56,6 +56,7 @@ const expected: Record<string, string | RegExp> = {
   "chip-filter-menu-single": `ChipFilter: a menu chip can't be one of a single-select set's radios, but this one, for "price", has \`selection="single"\`.`,
   "chip-filter-selection": `ChipFilter: its selections are "single" and "multi", but this one's \`selection\` is "one".`,
   "chip-filter-single-name": `ChipFilter: a single-select chip is a radio, grouped with the others by a shared \`name\`, but this one has none.`,
+  "chip-group-name": `ChipGroup: a set of chips needs a name, from an \`aria-label\` or \`aria-labelledby\`, but this one has neither.`,
   "chip-group-overflow": `ChipGroup: its overflows are "wrap" and "scroll", but this one's \`overflow\` is "hidden".`,
   "chip-group-selection": `ChipGroup: its selections are "single" and "multi", but this one's \`selection\` is "one".`,
   "chip-filter-variant": `ChipFilter: M3's chip styles are "flat" and "elevated", but this one's \`variant\` is "outlined".`,
