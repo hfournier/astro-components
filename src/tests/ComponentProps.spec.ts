@@ -6,7 +6,7 @@ const sizes = `"xs", "sm", "md", "lg" and "xl"`;
 const fabSizes = `"default", "md" and "lg"`;
 const expected: Record<string, string | RegExp> = {
   "badge-placement": `Badge: its placements are "anchored" and "inline", but this one's \`placement\` is "floating".`,
-  "base-chip-as": `BaseChip: its elements are "button" and "a", but this one's \`as\` is "div".`,
+  "base-chip-as": `BaseChip: its elements are "button", "a" and "label", but this one's \`as\` is "div".`,
   "base-chip-variant": `BaseChip: M3's chip styles are "flat" and "elevated", but this one's \`variant\` is "outlined".`,
   "base-overlay-as": `BaseOverlay: its elements are "dialog" and "div", but this one's \`as\` is "section".`,
   "base-overlay-bg-color": `BaseOverlay: M3's overlay surfaces are "surface", "surface-container-low", "surface-container", "surface-container-high", "inverse-surface" and "tertiary-container", but this one's \`bgColor\` is "primary-container".`,
@@ -52,6 +52,14 @@ const expected: Record<string, string | RegExp> = {
   // checked where it's used, in BaseChip (ADR-0021 §5)
   "chip-assist-as": `ChipAssist: its elements are "button" and "a", but this one's \`as\` is "div".`,
   "chip-assist-variant": `ChipAssist: M3's chip styles are "flat" and "elevated", but this one's \`variant\` is "tonal".`,
+  "chip-filter-menu-selected": `ChipFilter: a menu chip is selected by its menu's checked option, but this one, for "price", has \`isSelected\` too.`,
+  "chip-filter-menu-single": `ChipFilter: a menu chip can't be one of a single-select set's radios, but this one, for "price", has \`selection="single"\`.`,
+  "chip-filter-selection": `ChipFilter: its selections are "single" and "multi", but this one's \`selection\` is "one".`,
+  "chip-filter-single-name": `ChipFilter: a single-select chip is a radio, grouped with the others by a shared \`name\`, but this one has none.`,
+  "chip-group-name": `ChipGroup: a set of chips needs a name, from an \`aria-label\` or \`aria-labelledby\`, but this one has neither.`,
+  "chip-group-overflow": `ChipGroup: its overflows are "wrap" and "scroll", but this one's \`overflow\` is "hidden".`,
+  "chip-group-selection": `ChipGroup: its selections are "single" and "multi", but this one's \`selection\` is "one".`,
+  "chip-filter-variant": `ChipFilter: M3's chip styles are "flat" and "elevated", but this one's \`variant\` is "outlined".`,
   "chip-suggestion-as": `ChipSuggestion: its elements are "button" and "a", but this one's \`as\` is "span".`,
   "chip-suggestion-variant": `ChipSuggestion: M3's chip styles are "flat" and "elevated", but this one's \`variant\` is "outlined".`,
   "details-size": `Details: its sizes are "md" and "lg", but this one's \`size\` is "sm".`,

@@ -1,0 +1,73 @@
+---
+name: ChipFilter
+description: A Material 3 filter chip, extending HTML's `<input>` element as a checkbox, or a radio in a single-select set, inside a `<label>` drawn as the chip. It's a tag or descriptive word that narrows content, selected and deselected, showing a leading check mark while selected, flat or elevated, or the `<button>` for a Menu of filter options.
+category: Forms
+role: pattern
+meta:
+  title: ChipFilter | astro-components HenriFournier.dev
+  description: A Material 3 filter chip, a native checkbox or radio that narrows content with a check mark when selected, or a chip that opens a menu of options.
+extends:
+  kind: component
+  name: BaseChip
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/checkbox
+props:
+  - name: isSelected
+    type: boolean
+    required: false
+    default: "false"
+    description: "Whether the chip starts selected: secondary-container, with a leading check mark. It's the input's `checked`. Not for a menu chip, whose menu selects it, and the build fails if both are given."
+  - name: menuId
+    type: string
+    required: false
+    description: The id of the Menu the chip opens. The whole chip becomes the menu's `<button>`, with a trailing dropdown icon, and has no input.
+  - name: selection
+    type: '"single" | "multi"'
+    required: false
+    default: '"multi"'
+    description: "`multi` makes the chip a checkbox, selected on its own. `single` makes it a radio, for a ChipGroup with `selection=\"single\"`, and needs a `name` shared with the set's other chips. The build fails on a `single` chip with no `name` or with `menuId`, and on any other value."
+  - name: icon
+    type: SvgIconNameTypes
+    required: false
+    description: An 18px icon before the label, in the primary color, by its file name in `src/assets/svgs`. The check mark takes its place while the chip is selected. It's decorative, so the label alone names the chip.
+  - name: variant
+    type: '"flat" | "elevated"'
+    required: false
+    default: '"flat"'
+    description: "`flat` has an outline-variant outline while unselected. `elevated` sits on surface-container-low at elevation 1. Selected, both are secondary-container. Any other value fails the build."
+slots:
+  - name: default
+    description: The filter, a noun naming what to include, such as "Images". Avoid negatives such as "Exclude images".
+    kind: text
+---
+
+## Attributes
+
+Every attribute but `class` goes on the input, such as `name`, `value`, `disabled`, `form` and `aria-*`, so the chip submits with a form as any checkbox or radio does. On a menu chip, they go on its `<button>`. `class` goes on the chip.
+
+## Flat or elevated
+
+Use flat chips on plain backgrounds, where the outline marks the chip's edge. Use elevated chips only on an image or another busy background, where an outline would get lost.
+
+## In a set
+
+Show filters together, in a set, never one alone: put them in a [ChipGroup](/components/chip-group), below a label such as "Filter results" or under a search field, and name the group by that label with `aria-labelledby`. A set can wrap onto a second row; past two rows, give the group `overflow="scroll"` so it scrolls sideways, or move the chips into a side sheet.
+
+Each chip is a checkbox, so any number can be selected. Listen for `change` and read the checked inputs, or let a form submit them.
+
+## Single select
+
+M3 also allows a set where selecting one chip deselects the others. Give the ChipGroup `selection="single"`, which makes it a radiogroup, and each ChipFilter in it `selection="single"` and the same `name`, which make them radios. Keep every set on a page one kind, all single-select or all multi-select, as M3 asks.
+
+```astro
+<ChipGroup aria-label="Size" selection="single">
+  <ChipFilter selection="single" name="size" value="s">Small</ChipFilter>
+  <ChipFilter selection="single" name="size" value="m" isSelected>Medium</ChipFilter>
+  <ChipFilter selection="single" name="size" value="l">Large</ChipFilter>
+</ChipGroup>
+```
+
+## With a menu
+
+Give a chip `menuId` to open a Menu of options for one filter, such as a price range. The whole chip opens it, as M3 asks for compact windows, where a trailing icon alone is too small a target. Use MenuItemRadio items for one choice, or MenuItemCheckbox items for several.
+
+The chip's label names the filter, such as "Price". With MenuItemRadio items, once an option is checked, from the start or by the person, the chip shows that option as its label, such as "Under $50", and takes the selected look. Give the option that clears the filter, such as "Any price", an empty `value`: checking it puts the filter's name back. With MenuItemCheckbox items, the label stays the filter's name, and the chip is selected while any option is checked. Listen for the menu's `change` event to apply the filter.

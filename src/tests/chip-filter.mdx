@@ -1,0 +1,109 @@
+---
+title: ChipFilter
+description: Tests for the ChipFilter component
+---
+
+<Heading level={1}>ChipFilter Tests</Heading>
+
+<Section data-testid="chip-filter-styles" class="p-4 space-y-4">
+  <Heading level={2}>Styles</Heading>
+  <ChipGroup aria-label="Styles">
+    <ChipFilter>Docs</ChipFilter>
+    <ChipFilter isSelected>Slides</ChipFilter>
+    <ChipFilter variant="elevated">Sheets</ChipFilter>
+    <ChipFilter variant="elevated" isSelected>
+      Forms
+    </ChipFilter>
+  </ChipGroup>
+</Section>
+
+<Section data-testid="chip-filter-icon" class="p-4 space-y-4">
+  <Heading level={2}>With a leading icon</Heading>
+  <ChipGroup aria-label="With a leading icon">
+    <ChipFilter icon="image">Images</ChipFilter>
+    <ChipFilter icon="flight" isSelected>
+      Flights
+    </ChipFilter>
+  </ChipGroup>
+</Section>
+
+<Section data-testid="chip-filter-disabled" class="p-4 space-y-4">
+  <Heading level={2}>Disabled</Heading>
+  <ChipGroup aria-label="Disabled">
+    <ChipFilter disabled>Flat disabled</ChipFilter>
+    <ChipFilter isSelected disabled>
+      Selected disabled
+    </ChipFilter>
+    <ChipFilter variant="elevated" isSelected disabled>
+      Elevated selected disabled
+    </ChipFilter>
+  </ChipGroup>
+</Section>
+
+<Section data-testid="chip-filter-menu" class="p-4 space-y-4">
+  <Heading level={2}>With a menu</Heading>
+  <ChipGroup aria-label="With a menu">
+    <ChipFilter menuId="price-menu">Price</ChipFilter>
+    <ChipFilter menuId="rooms-menu">Bedrooms</ChipFilter>
+    <ChipFilter menuId="type-menu" disabled>
+      Type
+    </ChipFilter>
+  </ChipGroup>
+  <Menu id="price-menu">
+    <MenuItemRadio name="price" label="Any price" value="" isChecked />
+    <MenuItemRadio name="price" label="Under $50" />
+    <MenuItemRadio name="price" label="$50 to $100" />
+    <MenuItemRadio name="price" label="Over $100" />
+  </Menu>
+  <Menu id="rooms-menu">
+    <MenuItemRadio name="rooms" label="Any bedrooms" value="" />
+    <MenuItemRadio name="rooms" label="1+ bedrooms" />
+    <MenuItemRadio name="rooms" label="2+ bedrooms" isChecked />
+  </Menu>
+  <Menu id="type-menu">
+    <MenuItemRadio name="type" label="House" />
+  </Menu>
+</Section>
+
+<Section data-testid="chip-filter-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <ChipGroup aria-label="Right to left">
+    <ChipFilter isSelected>مستندات</ChipFilter>
+    <ChipFilter menuId="rtl-menu">السعر</ChipFilter>
+  </ChipGroup>
+  <Menu id="rtl-menu">
+    <MenuItemRadio name="rtl-price" label="أقل من ٥٠" />
+  </Menu>
+</Section>
+
+<Section data-testid="chip-filter-single" class="p-4 space-y-4">
+  <Heading level={2}>Single select</Heading>
+  <ChipGroup aria-label="Size" selection="single">
+    <ChipFilter selection="single" name="size" value="s">
+      Small
+    </ChipFilter>
+    <ChipFilter selection="single" name="size" value="m" isSelected>
+      Medium
+    </ChipFilter>
+    <ChipFilter selection="single" name="size" value="l" disabled>
+      Large
+    </ChipFilter>
+    <ChipFilter selection="single" name="size" value="xl">
+      Extra large
+    </ChipFilter>
+  </ChipGroup>
+</Section>
+
+<Section data-testid="chip-filter-form" class="p-4 space-y-4">
+  <Heading level={2}>In a form</Heading>
+  <form id="chip-filter-form">
+    <ChipGroup aria-label="Amenities">
+      <ChipFilter name="amenity" value="wifi" isSelected>
+        Wi-Fi
+      </ChipFilter>
+      <ChipFilter name="amenity" value="pool">
+        Pool
+      </ChipFilter>
+    </ChipGroup>
+  </form>
+</Section>

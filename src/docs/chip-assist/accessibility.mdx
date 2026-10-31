@@ -1,6 +1,6 @@
 An assist chip is a native `<button>`, or an `<a>` with `as="a"`, so it's announced as a button or a link and named by its label. Its icon is decorative and hidden from assistive tech.
 
-- **Keyboard:** Tab reaches each chip, and Space or Enter activates it (Enter only, for a link). The arrow keys also move between the chips in a set, as M3's Accessibility page asks: left and right, mirrored right to left, and up and down, to the previous and next chip in a set that wraps, skipping disabled chips and stopping at the ends.
+- **Keyboard:** Tab reaches each chip, and Space or Enter activates it (Enter only, for a link). In a ChipGroup, the arrow keys also move between the chips, as M3's Accessibility page asks: left and right, mirrored right to left, and up and down, to the previous and next chip in a set that wraps, skipping disabled chips and stopping at the ends.
 - **Target size:** each chip keeps a 48px target, which reaches above and below its 32px height.
 - **Showing it's interactive:** M3 asks for a second cue that chips can be pressed. A flat chip's outline is outline-variant, as M3's tokens give it, which is under 3:1 contrast against the background, so it doesn't count as that cue. Introduce the set with a label, such as "Suggested actions", or give each chip a leading icon and a verb. Or give the chips the outline role, with `class="border-(--theme-color-outline)"`, which M3's Accessibility page suggests for 3:1.
 - **Disabled:** a disabled chip can't be focused. A link can't be disabled.

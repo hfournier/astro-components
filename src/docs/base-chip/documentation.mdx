@@ -1,20 +1,20 @@
 ---
 name: BaseChip
-description: A primitive that draws Material 3's chip, rendering a native `<button>` (or `<a>`) 32px tall with 8px corners, flat on an outline or elevated, with an optional leading icon, the state layer, the 48px touch target, the focus ring, the disabled look, the dragged state, and arrow keys between the chips in a set, for pattern components like ChipAssist and ChipSuggestion.
+description: A primitive that draws Material 3's chip, rendering a native `<button>` (or `<a>`, or a `<label>` around a checkbox or radio) 32px tall with 8px corners, flat on an outline or elevated, with an optional leading icon, leading and trailing icon slots, the state layer, the 48px touch target, the focus ring, the disabled look and the dragged state, for pattern components like ChipAssist, ChipSuggestion and ChipFilter.
 category: Base
 role: primitive
 meta:
   title: BaseChip | astro-components HenriFournier.dev
-  description: A primitive drawing Material 3's chip (container, leading icon, states, touch target, focus ring, keyboard) for ChipAssist and ChipSuggestion.
+  description: A primitive drawing Material 3's chip (container, icons, states, touch target, focus ring) for ChipAssist, ChipSuggestion and ChipFilter.
 extends:
   kind: element
-  tag: [button, a]
+  tag: [button, a, label]
 props:
   - name: as
-    type: '"button" | "a"'
+    type: '"button" | "a" | "label"'
     required: false
     default: '"button"'
-    description: Which element to render. Any other value fails the build.
+    description: Which element to render. A `label` holds a native checkbox or radio as a direct child of its default slot, and the chip takes that input's disabled, focus and pressed states, through the `chip-*` variants in `theme.css`. Any other value fails the build.
   - name: variant
     type: '"flat" | "elevated"'
     required: false
@@ -23,11 +23,17 @@ props:
   - name: icon
     type: SvgIconNameTypes
     required: false
-    description: An 18px icon before the label, in the primary color, by its file name in `src/assets/svgs`. It's decorative, so the label alone names the chip.
+    description: An 18px icon before the label, in the primary color, by its file name in `src/assets/svgs`. It's decorative, so the label alone names the chip. It takes the place of the `leading-icon` slot.
 slots:
   - name: default
     description: The chip's label.
     kind: text
+  - name: leading-icon
+    description: What goes before the label, for a chip whose leading icon changes, such as ChipFilter's check mark. BaseChip sets the padding on its side to 8px.
+    kind: any
+  - name: trailing-icon
+    description: An 18px icon after the label, such as ChipFilter's dropdown icon. BaseChip sets the padding on its side to 8px.
+    kind: any
 ---
 
 ## What the caller adds

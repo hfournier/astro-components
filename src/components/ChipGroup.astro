@@ -1,0 +1,108 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+
+// M3's chip set: the chips of one kind, inline as a row of options 8px apart, wrapping onto new
+// rows 16px apart, or scrolling sideways in one row. It moves focus between them with the arrow keys, as M3's
+// Accessibility page asks. A single-select set of filter chips is a radiogroup, its chips radios
+// (ADR-0024); give each ChipFilter in it `selection="single"` too. Name it with `aria-labelledby`
+// pointing at the visible label M3 asks for before a set of selectable chips, or `aria-label`; the
+// build fails on a group with neither.
+type Props = HTMLAttributes<"div"> & {
+  // Wrapping onto new rows, or one row that scrolls sideways
+  overflow?: "wrap" | "scroll";
+  // A set of filter chips where one at a time is selected, a radiogroup, or any number, a group
+  selection?: "single" | "multi";
+};
+
+const {
+  overflow = "wrap",
+  selection = "multi",
+  class: classList,
+  ...attrs
+}: Props = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["wrap", "scroll"].includes(overflow)) {
+  throw new Error(
+    `ChipGroup: its overflows are "wrap" and "scroll", but this one's \`overflow\` is "${overflow}".`
+  );
+}
+if (!["single", "multi"].includes(selection)) {
+  throw new Error(
+    `ChipGroup: its selections are "single" and "multi", but this one's \`selection\` is "${selection}".`
+  );
+}
+// An unnamed group is announced as just "group", with nothing to say what its chips are for
+if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
+  throw new Error(
+    "ChipGroup: a set of chips needs a name, from an `aria-label` or `aria-labelledby`, but this one has neither."
+  );
+}
+
+// M3: at least 8px between chips, and 16px between wrapped rows, as its placement diagram shows,
+// so each chip's 48px target, 8px beyond it above and below, meets the next row's without
+// overlapping. A scrolling row pads its scroll box by 8px, the room each
+// chip's 48px target and focus ring take beyond its edges, and gives it back with a negative
+// margin, so the chips still line up with what's around them.
+const overflowClasses = {
+  wrap: "flex-wrap gap-y-4",
+  scroll: "-m-2 overflow-x-auto p-2",
+}[overflow];
+---
+
+<div
+  class:list={twMerge("flex items-center gap-2", overflowClasses, classList)}
+  role={selection === "single" ? "radiogroup" : "group"}
+  data-ac-chip-group={selection}
+  {...attrs}
+>
+  <slot />
+</div>
+
+<script>
+  // M3's Accessibility page: the arrow keys move focus between the chips in a set, stopping at
+  // the ends and skipping disabled ones. Left and right are mirrored right to left; up and down
+  // move to the previous and next chip, for a set that wraps onto more rows. Tab still reaches
+  // each chip. A single-select set's radios keep the browser's own arrow keys, which move the
+  // selection (ADR-0024), and a key the chip already handled, such as ArrowDown opening a menu
+  // chip's menu, is left alone.
+  const steps: Record<string, number> = {
+    ArrowLeft: -1,
+    ArrowRight: 1,
+    ArrowUp: -1,
+    ArrowDown: 1,
+  };
+  // the element that takes focus: the chip, or a filter chip's input inside its label
+  const focusable = (chip: Element) =>
+    chip.matches("label")
+      ? chip.querySelector<HTMLInputElement>(":scope > input")
+      : (chip as HTMLElement);
+
+  document.addEventListener("keydown", (event) => {
+    if (event.defaultPrevented || !(event.key in steps)) return;
+    const target = event.target as Element;
+    if (target instanceof HTMLInputElement && target.type === "radio") return;
+    const chip = target.closest?.("[data-ac-base-chip]");
+    const group = chip?.parentElement;
+    if (!chip || !group?.matches("[data-ac-chip-group]")) return;
+    const isHorizontal =
+      event.key === "ArrowLeft" || event.key === "ArrowRight";
+    const isMirrored =
+      isHorizontal && getComputedStyle(chip).direction === "rtl";
+    const step = isMirrored ? -steps[event.key] : steps[event.key];
+    const chips = [...group.querySelectorAll(":scope > [data-ac-base-chip]")];
+    for (
+      let i = chips.indexOf(chip) + step;
+      i >= 0 && i < chips.length;
+      i += step
+    ) {
+      const next = focusable(chips[i]);
+      if (!next || next.matches(":disabled")) continue;
+      event.preventDefault();
+      next.focus();
+      return;
+    }
+  });
+</script>

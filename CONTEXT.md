@@ -45,8 +45,12 @@ The [[Primitive component]] that draws M3's button container on a native `<butto
 _Avoid_: button base, button container (the container is what it draws, not its name)
 
 **BaseChip**:
-The [[Primitive component]] that draws M3's chip on a native `<button>` or `<a>`: 32px tall with 8px corners, flat on an outline or elevated, an optional leading icon, the state layer (dragged too), the 48px touch target, the focus ring, the disabled look, and the arrow keys between the chips in a set. `ChipAssist` and `ChipSuggestion` render through it, a suggestion chip giving its own label color; the filter and input chips will too.
+The [[Primitive component]] that draws M3's chip on a native `<button>` or `<a>`, or on a `<label>` around a native checkbox or radio, whose states it takes: 32px tall with 8px corners, flat on an outline or elevated, an optional leading icon or leading and trailing icon slots, the state layer (dragged too), the 48px touch target, the focus ring and the disabled look. `ChipAssist`, `ChipSuggestion` and `ChipFilter` render through it, a suggestion or filter chip giving its own label color, and a filter chip its own icons in its leading and trailing icon slots and its input; the input chip will too (ADR-0024).
 _Avoid_: chip base, chip container (the container is what it draws, not its name)
+
+**ChipGroup**:
+M3's chip set: the [[Pattern component]] that holds a set of chips, spaces them, wraps or scrolls them, and moves between them with the arrow keys; a radiogroup for single-select filter chips (ADR-0024). Named like `ButtonGroup`, noun first.
+_Avoid_: chip set (M3's term for what it is, not the component's name)
 
 **Primitive component**:
 A component meant to be composed inside a pattern component rather than used directly, supplying either structural or interactive behavior (focus handling, open/close state, positioning) or a piece of M3 styling that several pattern components share (a [[Background role]], the button container). It's still an independently meaningful building block — generic enough that more than one [[Pattern component]] can compose it, and worth documenting on its own terms. `BaseOverlay` supplies behavior, composed by both `Dialog` and `Popover`; [[BaseWrapper]], [[BaseButton]] and [[BaseChip]] supply styling. Declared on a component's [[Component documentation file]] as `role: primitive`. Contrast with [[Internal component]], which isn't independently reusable at all.

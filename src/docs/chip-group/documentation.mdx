@@ -1,0 +1,42 @@
+---
+name: ChipGroup
+description: A Material 3 chip set, extending HTML's `<div>` element with the `group` role, or `radiogroup` for single-select filter chips. It sets its chips inline, 8px apart, wrapping onto new rows 16px apart or scrolling sideways in one, and moves between them with the arrow keys. It has no color or shape of its own.
+category: Forms
+role: pattern
+meta:
+  title: ChipGroup | astro-components HenriFournier.dev
+  description: A Material 3 chip set that spaces chips 8px apart, wraps or scrolls them, and moves between them with the arrow keys.
+extends:
+  kind: element
+  tag: [div]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/div
+props:
+  - name: overflow
+    type: '"wrap" | "scroll"'
+    required: false
+    default: '"wrap"'
+    description: "`wrap` lets the chips break onto new rows. `scroll` keeps them in one row that scrolls sideways, for a set in a field one row high, or a filter set past two rows. Any other value fails the build."
+  - name: selection
+    type: '"single" | "multi"'
+    required: false
+    default: '"multi"'
+    description: "`single` makes the group a radiogroup, for filter chips one of which is selected at a time; give each ChipFilter in it `selection=\"single\"` and the same `name` too. `multi`, a plain group, suits every other set. Any other value fails the build."
+slots:
+  - name: default
+    description: The set's chips, all of one kind, such as ChipAssist, ChipSuggestion or ChipFilter. A Menu a filter chip opens goes outside the group.
+    kind: any
+---
+
+## Attributes
+
+Every attribute goes on the `<div>`. Name the group with `aria-labelledby`, pointing at the visible label M3 asks for before a set of selectable chips, such as "Filter results", or with `aria-label`.
+
+## Anatomy
+
+- **Container:** invisible. It sets its chips inline as a row of options, 8px apart, M3's minimum space between chips, with wrapped rows 16px apart, as M3's placement diagram shows, so each chip's 48px target clears the rows above and below.
+
+A scrolling group pads its scroll box by 8px, the room each chip's 48px target and focus ring take beyond its edges, and takes it back with a negative margin, so its chips line up with what's around it.
+
+## Keyboard
+
+The arrow keys move between the chips that are the group's own children, so chips outside a ChipGroup don't get them. A single-select group's radios keep the browser's arrow keys instead, which move the selection.

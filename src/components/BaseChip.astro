@@ -7,10 +7,13 @@ import Icon from "./Icon.astro";
 
 // M3's chip container, drawn once for the chips: 32px tall with 8px corners, flat on an outline or
 // elevated, the label in Label Large, an optional 18px leading icon, the state layer (dragged too),
-// the 48px touch target, the focus ring, disabled, and the arrow keys between chips in a set. The
-// label color is on-surface; a chip that differs gives its own `text-*` in `class`, and the state
-// layer and a focused flat outline follow it.
-type Props<Tag extends Extract<HTMLTag, "a" | "button"> = "button"> =
+// the 48px touch target, the focus ring and disabled. The label color is on-surface; a chip that
+// differs gives its own `text-*` in `class`, and the state layer and a focused flat outline follow
+// it. A chip whose icons change, such as a filter chip's check mark, gives them in the
+// `leading-icon` and `trailing-icon` slots instead, and BaseChip sets the padding on their side to
+// M3's 8px. On a `<label>`, the default slot holds a native checkbox or radio as a direct child,
+// as a filter chip's does, and the chip takes its states (the chip-* variants in theme.css).
+type Props<Tag extends Extract<HTMLTag, "a" | "button" | "label"> = "button"> =
   Polymorphic<{
     as: Tag;
     // An icon before the label, by its file name in src/assets/svgs
@@ -30,13 +33,13 @@ const {
   class: classList,
   type,
   ...attrs
-}: Props<"a" | "button"> = Astro.props;
+}: Props<"a" | "button" | "label"> & { type?: string } = Astro.props;
 
 // Values outside these fail the build, rather than drawing something other than was asked for
 // (ADR-0021)
-if (!["button", "a"].includes(Tag)) {
+if (!["button", "a", "label"].includes(Tag)) {
   throw new Error(
-    `BaseChip: its elements are "button" and "a", but this one's \`as\` is "${Tag}".`
+    `BaseChip: its elements are "button", "a" and "label", but this one's \`as\` is "${Tag}".`
   );
 }
 if (!["flat", "elevated"].includes(variant)) {
@@ -45,18 +48,22 @@ if (!["flat", "elevated"].includes(variant)) {
   );
 }
 
-// a real <button> defaults to not submitting; an <a>'s `type` is a MIME hint, left alone
+// a real <button> defaults to not submitting; an <a>'s `type` is a MIME hint, left alone, and a
+// <label> has none
 const resolvedType = Tag === "button" ? (type ?? "button") : type;
 
 const label = unwrapParagraph(await Astro.slots.render("default"));
+// An icon slot counts only when it renders something, so a chip can fill it conditionally
+const leadingIcon = (await Astro.slots.render("leading-icon"))?.trim();
+const trailingIcon = (await Astro.slots.render("trailing-icon"))?.trim();
 
 // M3: flat chips sit on an outline-variant outline, which turns the label's color when focused;
 // elevated ones on surface-container-low at level 1, rising to 2 on hover. Disabled, the outline
 // or the container is on-surface at 12%, with no shadow.
 const variantClasses = {
-  flat: "border-(--theme-color-outline-variant) bg-transparent focus-visible:border-current disabled:border-(--theme-color-on-surface)/12",
+  flat: "border-(--theme-color-outline-variant) bg-transparent chip-focus-visible:border-current chip-disabled:border-(--theme-color-on-surface)/12",
   elevated:
-    "border-transparent bg-(--theme-color-surface-container-low) shadow-theme-elevation-1 not-disabled:hover:shadow-theme-elevation-2 not-disabled:active:shadow-theme-elevation-1 disabled:bg-(--theme-color-on-surface)/12 disabled:shadow-none",
+    "border-transparent bg-(--theme-color-surface-container-low) shadow-theme-elevation-1 chip-enabled:hover:shadow-theme-elevation-2 chip-enabled:chip-active:shadow-theme-elevation-1 chip-disabled:bg-(--theme-color-on-surface)/12 chip-disabled:shadow-none",
 }[variant];
 ---
 
@@ -65,20 +72,23 @@ const variantClasses = {
     // M3's 16px padding is from the container's edge, so 15px inside its 1px outline
     "group/chip inline-flex h-8 shrink-0 cursor-pointer items-center gap-2 rounded-lg border px-[15px] whitespace-nowrap",
     "text-sm leading-5 font-medium tracking-[0.1px] text-(--theme-color-on-surface)",
-    // M3: 8px on the icon's side instead of 16
-    "has-[>[data-ac-base-chip-part=leading-icon]]:ps-[7px]",
+    // M3: 8px on an icon's side instead of 16
+    "has-[>[data-ac-base-chip-part=leading-icon]]:ps-[7px] has-[>[data-ac-base-chip-part=trailing-icon]]:pe-[7px]",
     "relative isolate before:absolute before:-inset-px before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0 motion-safe:before:transition-opacity",
-    "not-disabled:hover:before:opacity-8 not-disabled:focus-visible:before:opacity-10 not-disabled:active:before:opacity-10",
+    "chip-enabled:hover:before:opacity-8 chip-enabled:chip-focus-visible:before:opacity-10 chip-enabled:chip-active:before:opacity-10",
     // M3 dragged: level 4 and a 16% state layer, while the script below marks the chip. A chip
     // dragged by the pointer is hovered and pressed too, whose more specific variants would
     // otherwise win, hence the `!`.
     "data-ac-base-chip-dragged:shadow-theme-elevation-4! data-ac-base-chip-dragged:before:opacity-16!",
+    // M3's menu button: a chip whose menu is open keeps the pressed state layer, hovered or not,
+    // so it beats hover's
+    "aria-expanded:before:opacity-10!",
     // M3 touch target: at least 48x48, centered on the chip
     "after:absolute after:top-1/2 after:left-1/2 after:size-12 after:min-w-full after:-translate-1/2",
-    "disabled:cursor-default disabled:text-(--theme-color-on-surface)/38",
+    "chip-disabled:cursor-default chip-disabled:text-(--theme-color-on-surface)/38",
     // colors, the outline and the shadow all change on fast effects, Tailwind's default (ADR-0018)
     "motion-safe:transition-[color,background-color,border-color,box-shadow]",
-    "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
+    "outline-none chip-focus-visible:ring-3 chip-focus-visible:ring-(--theme-color-focus-ring-on-bg) chip-focus-visible:ring-offset-2 chip-focus-visible:ring-offset-(--theme-color-wrapper-bg)",
     variantClasses,
     classList
   )}
@@ -86,54 +96,64 @@ const variantClasses = {
   data-ac-base-chip
   {...attrs}
 >
-  {icon && (
+  {icon ? (
     <Icon
-      class="size-[18px] shrink-0 text-(--theme-color-primary) group-disabled/chip:text-current"
+      class="size-[18px] shrink-0 text-(--theme-color-primary) group-chip-disabled/chip:text-current"
       name={icon}
       data-ac-base-chip-part="leading-icon"
     />
+  ) : (
+    leadingIcon && (
+      <span
+        class="flex shrink-0"
+        data-ac-base-chip-part="leading-icon"
+        set:html={leadingIcon}
+      />
+    )
   )}
   <Fragment set:html={label} />
+  {trailingIcon && (
+    <span
+      class="flex shrink-0"
+      data-ac-base-chip-part="trailing-icon"
+      set:html={trailingIcon}
+    />
+  )}
 </Tag>
 
 <script>
-  // M3's Accessibility page: the arrow keys move focus between the chips in a set (the chips that
-  // share a parent), stopping at the ends and skipping disabled ones. Left and right are mirrored
-  // right to left; up and down move to the previous and next chip, for a set that wraps onto more
-  // rows. Tab still reaches each chip.
-  const steps: Record<string, number> = {
-    ArrowLeft: -1,
-    ArrowRight: 1,
-    ArrowUp: -1,
-    ArrowDown: 1,
-  };
-  document.addEventListener("keydown", (event) => {
-    if (!(event.key in steps)) return;
-    const chip = (event.target as Element).closest?.<HTMLElement>(
-      "[data-ac-base-chip]"
+  // M3's pressed state on a <label> chip, from the pointer pressing it, or Space held on its input,
+  // to its release, which Firefox doesn't give :active; see the chip-active variant in theme.css.
+  // A <button> or <a> chip has :active in every browser.
+  const pressed = "data-ac-base-chip-pressed";
+  document.addEventListener("pointerdown", (event) => {
+    if (!event.isPrimary || event.button !== 0) return;
+    const chip = (event.target as Element).closest?.(
+      "label[data-ac-base-chip]"
     );
-    if (!chip?.parentElement) return;
-    const isHorizontal =
-      event.key === "ArrowLeft" || event.key === "ArrowRight";
-    const isMirrored =
-      isHorizontal && getComputedStyle(chip).direction === "rtl";
-    const step = isMirrored ? -steps[event.key] : steps[event.key];
-    const chips = [
-      ...chip.parentElement.querySelectorAll<HTMLElement>(
-        ":scope > [data-ac-base-chip]"
-      ),
-    ];
-    for (
-      let i = chips.indexOf(chip) + step;
-      i >= 0 && i < chips.length;
-      i += step
-    ) {
-      if (chips[i].matches(":disabled")) continue;
-      event.preventDefault();
-      chips[i].focus();
-      return;
-    }
+    if (!chip) return;
+    chip.setAttribute(pressed, "");
+    const end = () => {
+      chip.removeAttribute(pressed);
+      document.removeEventListener("pointerup", end);
+      document.removeEventListener("pointercancel", end);
+    };
+    document.addEventListener("pointerup", end);
+    document.addEventListener("pointercancel", end);
   });
+  const labelChipOf = (target: EventTarget | null) =>
+    target instanceof HTMLInputElement
+      ? target.closest("label[data-ac-base-chip]")
+      : null;
+  document.addEventListener("keydown", (event) => {
+    if (event.key === " " && !event.repeat)
+      labelChipOf(event.target)?.setAttribute(pressed, "");
+  });
+  for (const type of ["keyup", "focusout"] as const) {
+    document.addEventListener(type, (event) => {
+      labelChipOf(event.target)?.removeAttribute(pressed);
+    });
+  }
 
   // M3's dragged state, for a chip the page makes draggable: marked from dragstart to dragend
   document.addEventListener("dragstart", (event) => {

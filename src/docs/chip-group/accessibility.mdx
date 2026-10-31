@@ -1,0 +1,6 @@
+ChipGroup is a `<div>` with `role="group"`, or `role="radiogroup"` with `selection="single"`, so assistive tech announces its chips as one set. Name it with `aria-labelledby` pointing at a visible label, such as "Filter results", which is also the second cue M3 asks for that the chips can be selected.
+
+- **Keyboard:** Tab reaches each chip, and the arrow keys move between them, as M3's Accessibility page asks: left and right, mirrored right to left, and up and down, to the previous and next chip in a set that wraps, skipping disabled chips and stopping at the ends. A menu chip's ArrowDown and ArrowUp open its menu instead. In a single-select group, the chips are radios and keep the browser's keys: Tab reaches the selected chip and leaves the set, and the arrow keys move the selection (ADR-0024).
+- **Target size:** the 8px between chips keeps each chip's 48px target clear of its neighbours' sides, and the 16px between wrapped rows keeps it clear of the chips above and below.
+- **Name:** the build fails on a group with neither `aria-label` nor `aria-labelledby`, which would be announced as just "group". Point `aria-labelledby` at the visible label M3 asks for before the set, such as "Filter results".
+- **Scrolling:** a scrolling group keeps every chip reachable by Tab and the arrow keys, which scroll it into view.

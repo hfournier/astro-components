@@ -33,6 +33,15 @@
 @custom-variant scrollable-top (@container scroll-state(scrollable: top));
 @custom-variant scrollable-bottom (@container scroll-state(scrollable: bottom));
 
+/* chip state: BaseChip draws a chip on a <button> or <a>, or on the <label> around a filter chip's
+   native checkbox or radio, which takes its input's state. These match either: the element's own
+   state, or its input's. Pressed is BaseChip's script's mark on a pressed label, as Firefox gives
+   :active to neither the label nor its input. */
+@custom-variant chip-disabled (&:is(:disabled, :has(> input:disabled)));
+@custom-variant chip-enabled (&:not(:disabled, :has(> input:disabled)));
+@custom-variant chip-focus-visible (&:is(:focus-visible, :has(> input:focus-visible)));
+@custom-variant chip-active (&:is(:active, [data-ac-base-chip-pressed]));
+
 /* M3's enter and exit pattern, the timing of an overlay (BaseOverlay, the modal sheets) entering
    and leaving the screen: in on emphasized decelerate over medium 4, out on emphasized accelerate
    over short 4 (ADR-0018). A transition takes the timing of the state it goes to, so the open

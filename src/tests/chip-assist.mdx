@@ -7,32 +7,32 @@ description: Tests for the ChipAssist component
 
 <Section data-testid="chip-assist-styles" class="p-4 space-y-4">
   <Heading level={2}>Styles</Heading>
-  <div class="flex flex-wrap gap-2">
+  <ChipGroup aria-label="Styles">
     <ChipAssist>Get directions</ChipAssist>
     <ChipAssist icon="calendar_month">Add to calendar</ChipAssist>
     <ChipAssist variant="elevated">Share trip</ChipAssist>
     <ChipAssist variant="elevated" icon="flight">Check in</ChipAssist>
-  </div>
+  </ChipGroup>
 </Section>
 
 <Section data-testid="chip-assist-outline" class="p-4 space-y-4">
   <Heading level={2}>Outline role, for 3:1</Heading>
-  <div class="flex flex-wrap gap-2">
+  <ChipGroup aria-label="Outline role, for 3:1">
     <ChipAssist class="border-(--theme-color-outline)">Turn on lights</ChipAssist>
     <ChipAssist class="border-(--theme-color-outline)">Lock doors</ChipAssist>
-  </div>
+  </ChipGroup>
 </Section>
 
 <Section data-testid="chip-assist-disabled" class="p-4 space-y-4">
   <Heading level={2}>Disabled</Heading>
-  <div class="flex flex-wrap gap-2">
+  <ChipGroup aria-label="Disabled">
     <ChipAssist icon="calendar_month" disabled>
       Flat disabled
     </ChipAssist>
     <ChipAssist variant="elevated" disabled>
       Elevated disabled
     </ChipAssist>
-  </div>
+  </ChipGroup>
 </Section>
 
 <Section data-testid="chip-assist-link" class="p-4 space-y-4">
@@ -44,30 +44,30 @@ description: Tests for the ChipAssist component
 
 <Section data-testid="chip-assist-set" class="p-4 space-y-4">
   <Heading level={2}>A set</Heading>
-  <div class="flex flex-wrap gap-2">
+  <ChipGroup aria-label="A set">
     <ChipAssist>One</ChipAssist>
     <ChipAssist disabled>Two</ChipAssist>
     <ChipAssist>Three</ChipAssist>
     <ChipAssist as="a" href="#chip-assist-set">
       Four
     </ChipAssist>
-  </div>
+  </ChipGroup>
 </Section>
 
 <Section data-testid="chip-assist-dragged" class="p-4 space-y-4">
   <Heading level={2}>Draggable</Heading>
-  <div class="flex flex-wrap gap-2">
+  <ChipGroup aria-label="Draggable">
     <ChipAssist draggable="true">Flat drag</ChipAssist>
     <ChipAssist variant="elevated" draggable="true">
       Elevated drag
     </ChipAssist>
-  </div>
+  </ChipGroup>
 </Section>
 
 <Section data-testid="chip-assist-rtl" class="p-4 space-y-4" dir="rtl">
   <Heading level={2}>Right to left</Heading>
-  <div class="flex flex-wrap gap-2">
+  <ChipGroup aria-label="Right to left">
     <ChipAssist icon="calendar_month">أضف إلى التقويم</ChipAssist>
     <ChipAssist>شارك</ChipAssist>
-  </div>
+  </ChipGroup>
 </Section>
