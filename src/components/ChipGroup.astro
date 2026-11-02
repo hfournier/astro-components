@@ -66,25 +66,33 @@ const overflowClasses = {
   // the ends and skipping disabled ones. Left and right are mirrored right to left; up and down
   // move to the previous and next chip, for a set that wraps onto more rows. Tab still reaches
   // each chip. A single-select set's radios keep the browser's own arrow keys, which move the
-  // selection (ADR-0024), and a key the chip already handled, such as ArrowDown opening a menu
-  // chip's menu, is left alone.
+  // selection (ADR-0024), an input chip's edit field keeps them for its text, and a key the chip
+  // already handled, such as ArrowDown opening a menu chip's menu, is left alone. An input chip
+  // is its wrapper, around its body and remove button (ADR-0025).
   const steps: Record<string, number> = {
     ArrowLeft: -1,
     ArrowRight: 1,
     ArrowUp: -1,
     ArrowDown: 1,
   };
-  // the element that takes focus: the chip, or a filter chip's input inside its label
+  const chipSelector = "[data-ac-chip-input], [data-ac-base-chip]";
+  // the element that takes focus: the chip, a filter chip's input inside its label, or an input
+  // chip's body
   const focusable = (chip: Element) =>
-    chip.matches("label")
-      ? chip.querySelector<HTMLInputElement>(":scope > input")
-      : (chip as HTMLElement);
+    chip.matches("[data-ac-chip-input]")
+      ? chip.querySelector<HTMLElement>("[data-ac-chip-input-part=body]")
+      : chip.matches("label")
+        ? chip.querySelector<HTMLInputElement>(":scope > input")
+        : (chip as HTMLElement);
 
   document.addEventListener("keydown", (event) => {
     if (event.defaultPrevented || !(event.key in steps)) return;
     const target = event.target as Element;
-    if (target instanceof HTMLInputElement && target.type === "radio") return;
-    const chip = target.closest?.("[data-ac-base-chip]");
+    if (target instanceof HTMLInputElement && target.type !== "checkbox")
+      return;
+    const chip =
+      target.closest?.("[data-ac-chip-input]") ??
+      target.closest?.("[data-ac-base-chip]");
     const group = chip?.parentElement;
     if (!chip || !group?.matches("[data-ac-chip-group]")) return;
     const isHorizontal =
@@ -92,7 +100,7 @@ const overflowClasses = {
     const isMirrored =
       isHorizontal && getComputedStyle(chip).direction === "rtl";
     const step = isMirrored ? -steps[event.key] : steps[event.key];
-    const chips = [...group.querySelectorAll(":scope > [data-ac-base-chip]")];
+    const chips = [...group.children].filter((el) => el.matches(chipSelector));
     for (
       let i = chips.indexOf(chip) + step;
       i >= 0 && i < chips.length;
