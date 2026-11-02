@@ -88,6 +88,7 @@ type RecordedAnimation = {
   opacity?: number[];
   delay: number;
   duration: number;
+  easing: string;
 };
 const recordAnimations = (page: Page) =>
   page.evaluate(() => {
@@ -107,21 +108,23 @@ const recordAnimations = (page: Page) =>
           opacity: (frames.opacity as number[] | undefined)?.map(Number),
           delay: Number(timing?.delay ?? 0),
           duration: Number(timing?.duration ?? 0),
+          easing: String(timing?.easing ?? "linear"),
         });
       return animate.call(this, keyframes, options);
     };
   });
+const recordedSoFar = (page: Page) =>
+  page.evaluate(
+    () =>
+      (window as unknown as { __animations: RecordedAnimation[] }).__animations
+  );
 // The animations recorded, once there are some: opening, they start on the frame after the
 // popover opens
 const animations = async (page: Page) => {
-  const read = () =>
-    page.evaluate(
-      () =>
-        (window as unknown as { __animations: RecordedAnimation[] })
-          .__animations
-    );
-  await expect.poll(async () => (await read()).length).toBeGreaterThan(0);
-  return read();
+  await expect
+    .poll(async () => (await recordedSoFar(page)).length)
+    .toBeGreaterThan(0);
+  return recordedSoFar(page);
 };
 
 // A clip-path inset() as its top, right, bottom and left insets, and its corner radius
@@ -584,6 +587,10 @@ test.describe("ChipInput", () => {
     expectInsets(grow.from, insetsOf(chipBox, popoverBox));
     expect(grow.from.radius).toBe(8);
     expectInsets(grow.to, [0, 0, 0, 0]);
+    // M3's emphasized decelerate: fast, then slowing to a stop without overshooting, as the
+    // chips Guidelines video shows
+    const container = (await animations(page)).find((a) => a.clip);
+    expect(container?.easing).toBe("cubic-bezier(0.05, 0.7, 0.1, 1)");
     const content = (await animations(page)).find(
       (animation) => animation.part === "content"
     );
@@ -646,6 +653,9 @@ test.describe("ChipInput", () => {
     const container = recordedAnimations.find((a) => a.clip);
     expect(content?.opacity).toEqual([1, 0]);
     expect(container?.delay).toBeGreaterThanOrEqual(content?.duration ?? 0);
+    // M3's emphasized accelerate, over 200ms, half the time it took to grow
+    expect(container?.easing).toBe("cubic-bezier(0.3, 0, 0.8, 0.15)");
+    expect(container?.duration).toBe(200);
     await expect(popover).toBeHidden();
     await expect(body).toBeFocused();
   });
@@ -669,16 +679,64 @@ test.describe("ChipInput", () => {
       .toBe("1");
   });
 
-  test("its popover, under reduced motion, only fades", async ({ page }) => {
+  // As other overlays, it doesn't move under reduced motion; the chips pages say nothing of it
+  test("its popover, under reduced motion, opens and closes at once", async ({
+    page,
+  }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await recordAnimations(page);
-    await part(chip(page, "popover", "Ziad Aouad"), "body").click();
-    await expect(page.locator("#chip-input-contact")).toBeVisible();
-    const recordedAnimations = await animations(page);
-    expect(recordedAnimations.some((a) => a.clip)).toBe(false);
-    expect(
-      recordedAnimations.find((a) => a.part === "container")?.opacity
-    ).toEqual([0, 1]);
+    const body = part(chip(page, "popover", "Ziad Aouad"), "body");
+    await body.click();
+    const popover = page.locator("#chip-input-contact");
+    await expect(popover).toBeVisible();
+    expect(await popover.evaluate((el) => getComputedStyle(el).opacity)).toBe(
+      "1"
+    );
+    await popover.getByRole("button", { name: "Close", exact: true }).focus();
+    await page.keyboard.press("Enter");
+    await expect(popover).toBeHidden();
+    await expect(body).toBeFocused();
+    expect(await recordedSoFar(page)).toEqual([]);
+  });
+
+  // A page's own showPopover() names the button it grows from as its source
+  test("its popover, opened by script from the chip, opens over the chip and grows out of it", async ({
+    page,
+  }) => {
+    await recordAnimations(page);
+    const body = part(chip(page, "popover", "Ziad Aouad"), "body");
+    const popover = page.locator("#chip-input-contact");
+    await body.evaluate((el) => el.scrollIntoView({ block: "center" }));
+    await body.evaluate((el) =>
+      (
+        document.getElementById("chip-input-contact") as HTMLElement & {
+          showPopover(options: { source: Element }): void;
+        }
+      ).showPopover({ source: el })
+    );
+    await expect(popover).toBeVisible();
+    const chipBox = await box(body);
+    const popoverBox = await box(popover);
+    expect(Math.round(popoverBox.x)).toBe(Math.round(chipBox.x));
+    expect(Math.round(popoverBox.y)).toBe(Math.round(chipBox.y));
+    expectInsets((await clipFrom(page)).from, insetsOf(chipBox, popoverBox));
+  });
+
+  // Opened by the page's own showPopover(), with no button to grow from, it's centred and fades
+  test("its popover, opened by script, is centred in the window", async ({
+    page,
+  }) => {
+    const popover = page.locator("#chip-input-contact");
+    await popover.evaluate((el) => (el as HTMLElement).showPopover());
+    await expect(popover).toBeVisible();
+    const { width, height } = page.viewportSize()!;
+    const popoverBox = await box(popover);
+    expect(Math.round(popoverBox.x + popoverBox.width / 2)).toBe(
+      Math.round(width / 2)
+    );
+    expect(Math.round(popoverBox.y + popoverBox.height / 2)).toBe(
+      Math.round(height / 2)
+    );
   });
 
   // M3's Specs: the dragged state, level 4 with a 16% state layer, for a chip the page makes

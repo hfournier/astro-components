@@ -82,8 +82,11 @@ description: Tests for the ChipInput component
     <ChipInput>بينغ</ChipInput>
     <ChipInput popoverId="chip-input-contact-rtl">سارة</ChipInput>
   </ChipGroup>
-  <Popover id="chip-input-contact-rtl" transition="container-transform">
-    <p>سارة</p>
-    <p>{"sara@example.com"}</p>
-  </Popover>
 </Section>
+
+{/* Outside the right-to-left section: the popover opens in its chip's direction */}
+
+<Popover id="chip-input-contact-rtl" transition="container-transform">
+  <p>سارة</p>
+  <p>{"sara@example.com"}</p>
+</Popover>
