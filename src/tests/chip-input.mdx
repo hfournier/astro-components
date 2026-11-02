@@ -68,7 +68,11 @@ description: Tests for the ChipInput component
       Ziad Aouad
     </ChipInput>
   </ChipGroup>
-  <Popover id="chip-input-contact">{"ziad@example.com"}</Popover>
+  <Popover id="chip-input-contact" transition="container-transform" showCloseX>
+    <p>Ziad Aouad</p>
+    <p>{"ziad@example.com"}</p>
+    <p>{"ziad.aouad@work.example.com"}</p>
+  </Popover>
 </Section>
 
 <Section data-testid="chip-input-rtl" class="p-4 space-y-4" dir="rtl">
@@ -76,5 +80,10 @@ description: Tests for the ChipInput component
   <ChipGroup aria-label="Right to left">
     <ChipInput icon="person">زياد</ChipInput>
     <ChipInput>بينغ</ChipInput>
+    <ChipInput popoverId="chip-input-contact-rtl">سارة</ChipInput>
   </ChipGroup>
+  <Popover id="chip-input-contact-rtl" transition="container-transform">
+    <p>سارة</p>
+    <p>{"sara@example.com"}</p>
+  </Popover>
 </Section>

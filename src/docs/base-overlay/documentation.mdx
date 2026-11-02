@@ -35,10 +35,10 @@ props:
     default: "false"
     description: Whether to blur the page content behind the overlay's `::backdrop`. Material 3 doesn't blur, so it's off by default.
   - name: transition
-    type: '"fade" | "fade-down" | "fade-scale"'
+    type: '"fade" | "fade-down" | "fade-scale" | "container-transform"'
     required: false
     default: '"fade"'
-    description: Which enter/exit transition to apply when the overlay opens and closes. The `fade` transition is a simple fade-in/fade-out, `fade-down` also slides the overlay down into place, and `fade-scale` adds a scaling animation. Any other value fails the build.
+    description: "Which enter/exit transition to apply when the overlay opens and closes. The `fade` transition is a simple fade-in/fade-out, `fade-down` also slides the overlay down into place, and `fade-scale` adds a scaling animation. `container-transform` approximates M3's container transform for a popover opened by a `commandfor` button, such as an input chip's: the overlay opens over the button, top start corner to top start corner, or the corner it flips to near the window's edge, and grows out of the button's box, its content fading in after; closing, it shrinks back into the button, which takes focus back. Under reduced motion it only fades. Any other value fails the build."
 slots:
   - name: default
     description: The content to display inside the overlay.

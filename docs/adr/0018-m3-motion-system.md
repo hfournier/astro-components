@@ -31,4 +31,4 @@ We decided:
 
 - ADR-0006's tokens are removed. New components pick a spring or, when they enter or leave the screen, an easing pair, by M3's rules above. They don't pick a duration step.
 - The spatial curves overshoot. A Details panel or a NavRail's width briefly passes its final size, as M3's springs do.
-- Dialog still slides down from above as it fades in, BaseOverlay's `fade-down`. Only its timing is M3's. M3's Android pattern expands a component along one axis instead, and a full-screen dialog opened from a FAB uses a container transform. Changing the shape of these transitions is separate work.
+- Dialog still slides down from above as it fades in, BaseOverlay's `fade-down`. Only its timing is M3's. M3's Android pattern expands a component along one axis instead, and a full-screen dialog opened from a FAB uses a container transform. Changing the shape of these transitions is separate work. An input chip's popover has one (#252), BaseOverlay's `container-transform`: its container grows on default spatial, as it covers part of the screen, and its fades are on fast effects, run by its script, which alone knows the chip's box within the popover's.

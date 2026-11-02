@@ -1,6 +1,6 @@
 ---
 title: Expanding
-description: With `popoverId`, a tap opens a Popover with more about the chip.
+description: With `popoverId`, a tap opens a Popover with more about the chip, which grows out of it with the `container-transform` transition.
 ---
 
 <ChipGroup aria-label="Guests">
@@ -8,4 +8,7 @@ description: With `popoverId`, a tap opens a Popover with more about the chip.
     Ziad Aouad
   </ChipInput>
 </ChipGroup>
-<Popover id="example-chip-input-contact">{"ziad@example.com"}</Popover>
+<Popover id="example-chip-input-contact" transition="container-transform" showCloseX>
+  <p>Ziad Aouad</p>
+  <p>{"ziad@example.com"}</p>
+</Popover>
