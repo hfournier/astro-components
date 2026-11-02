@@ -650,6 +650,25 @@ test.describe("ChipInput", () => {
     await expect(body).toBeFocused();
   });
 
+  test("its popover, closed as soon as it opened, opens again as it should", async ({
+    page,
+  }) => {
+    const body = part(chip(page, "popover", "Ziad Aouad"), "body");
+    const popover = page.locator("#chip-input-contact");
+    await body.evaluate((el) => {
+      (el as HTMLElement).click();
+      document.getElementById("chip-input-contact")?.hidePopover();
+    });
+    await expect(popover).toBeHidden();
+    await expect
+      .poll(() => popover.evaluate((el) => el.style.opacity))
+      .toBe("");
+    await body.click();
+    await expect
+      .poll(() => popover.evaluate((el) => getComputedStyle(el).opacity))
+      .toBe("1");
+  });
+
   test("its popover, under reduced motion, only fades", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await recordAnimations(page);

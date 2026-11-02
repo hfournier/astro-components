@@ -68,15 +68,15 @@ const transitionClasses = {
   // M3's container transform, approximated (#252): over the button that opened it, top start
   // corner to top start corner, or the corner a flip moves it to when there isn't room. The
   // script grows it out of the button's box; here it only stays drawn for as long as the
-  // script's exit takes. Anchor insets rather than position-area, as Menu's. The container moves
-  // on default spatial, as it covers part of the screen, and the fades are on fast effects
+  // script's exit takes. Anchor insets rather than position-area, as Menu's. It covers part of
+  // the screen, so it's on the default springs: spatial for the container, effects for the fades
   // (ADR-0018).
   "container-transform": [
     "inset-auto m-0 top-[anchor(top)] left-[anchor(left)] rtl:right-[anchor(right)] rtl:left-auto",
     "[position-try-fallbacks:flip-block,flip-inline,flip-block_flip-inline]",
     "[transition:display_var(--ac-overlay-exit,0s)_allow-discrete,overlay_var(--ac-overlay-exit,0s)_allow-discrete]",
     "[--ac-overlay-grow-duration:var(--theme-duration-spring-default-spatial)] [--ac-overlay-grow-ease:var(--ease-spring-default-spatial)]",
-    "[--ac-overlay-fade-duration:var(--theme-duration-spring-fast-effects)] [--ac-overlay-fade-ease:var(--ease-spring-fast-effects)]",
+    "[--ac-overlay-fade-duration:var(--theme-duration-spring-default-effects)] [--ac-overlay-fade-ease:var(--ease-spring-default-effects)]",
   ].join(" "),
 }[transition];
 const isContainerTransform = transition === "container-transform";
@@ -133,52 +133,56 @@ const randomId = crypto.randomUUID();
   const isContainerTransform = (el: unknown): el is HTMLElement =>
     el instanceof HTMLElement &&
     el.matches("[data-ac-overlay-transition=container-transform]");
+  const transformOf = (overlay: HTMLElement) => {
+    const transform = transforms.get(overlay) ?? { animations: [] };
+    transforms.set(overlay, transform);
+    return transform;
+  };
 
-  // The button that opens it anchors it as it's pressed, before the browser opens it. Its close
-  // button, also a commandfor button, doesn't.
+  // The button that opens it anchors it as it's pressed, before the browser opens it. Buttons
+  // inside it, such as its close button, don't.
   document.addEventListener(
     "click",
     (event) => {
       const opener = (event.target as Element).closest?.<HTMLElement>(
-        "[commandfor]:not([command=hide-popover])"
+        "[commandfor]:is([command=toggle-popover], [command=show-popover])"
       );
       const overlay =
         opener && document.getElementById(opener.getAttribute("commandfor")!);
-      if (!opener || !isContainerTransform(overlay)) return;
-      const transform = transforms.get(overlay) ?? { animations: [] };
+      if (!opener || !isContainerTransform(overlay) || overlay.contains(opener))
+        return;
+      const transform = transformOf(overlay);
       if (transform.opener && transform.opener !== opener)
         transform.opener.style.anchorName = "";
       opener.style.anchorName = `--ac-overlay-opener-${overlay.id}`;
       transform.opener = opener;
-      transforms.set(overlay, transform);
     },
     true
   );
 
   // The opener's box within the overlay's, with its corners, as a clip-path
-  const clipTo = (overlay: HTMLElement, opener: HTMLElement) => {
+  const openerClip = (overlay: HTMLElement, opener: HTMLElement) => {
     const outer = overlay.getBoundingClientRect();
     const inner = opener.getBoundingClientRect();
     const corner = getComputedStyle(opener).borderStartStartRadius;
     return `inset(${inner.top - outer.top}px ${outer.right - inner.right}px ${outer.bottom - inner.bottom}px ${inner.left - outer.left}px round ${corner})`;
   };
 
-  const run = (overlay: HTMLElement, isOpening: boolean) => {
-    const transform = transforms.get(overlay) ?? { animations: [] };
-    transforms.set(overlay, transform);
+  const animateTransform = (overlay: HTMLElement, isOpening: boolean) => {
+    const transform = transformOf(overlay);
     transform.animations.forEach((animation) => animation.cancel());
     const style = getComputedStyle(overlay);
-    const token = (name: string) => style.getPropertyValue(name).trim();
-    const grow = parseFloat(token("--ac-overlay-grow-duration")) || 0;
-    const fade = parseFloat(token("--ac-overlay-fade-duration")) || 0;
-    const growEase = token("--ac-overlay-grow-ease") || "ease";
-    const fadeEase = token("--ac-overlay-fade-ease") || "ease";
+    const timing = (name: string) => style.getPropertyValue(name).trim();
+    const grow = parseFloat(timing("--ac-overlay-grow-duration"));
+    const fade = parseFloat(timing("--ac-overlay-fade-duration"));
+    const growEase = timing("--ac-overlay-grow-ease");
+    const fadeEase = timing("--ac-overlay-fade-ease");
     const opacity = isOpening ? [0, 1] : [1, 0];
     const panel = overlay.firstElementChild;
     const opener = transform.opener;
     const isMoving =
       !!panel &&
-      !!opener &&
+      !!opener?.isConnected &&
       !matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (!isMoving) {
@@ -190,13 +194,15 @@ const randomId = crypto.randomUUID();
       ];
       overlay.style.setProperty("--ac-overlay-exit", `${fade}ms`);
     } else {
-      const chip = clipTo(overlay, opener);
+      const fromOpener = openerClip(overlay, opener);
       const full = `inset(0px 0px 0px 0px round ${getComputedStyle(panel).borderStartStartRadius})`;
       // Opening, the container fades in as it grows, and its content once it has mostly grown;
       // closing, the content fades out first, then the container shrinks, fading out at the end
       transform.animations = [
         overlay.animate(
-          { clipPath: isOpening ? [chip, full] : [full, chip] },
+          {
+            clipPath: isOpening ? [fromOpener, full] : [full, fromOpener],
+          },
           {
             duration: grow,
             delay: isOpening ? 0 : fade,
@@ -240,7 +246,8 @@ const randomId = crypto.randomUUID();
   };
 
   // `beforetoggle` doesn't bubble, hence the capture. Opening, the overlay's box is known only
-  // once it's open, so it's transparent until the next frame, before it's first drawn.
+  // once it's open, so it's transparent until the next frame, before it's first drawn, unless
+  // it's closed again by then, or something stopped it opening.
   document.addEventListener(
     "beforetoggle",
     (event) => {
@@ -248,10 +255,13 @@ const randomId = crypto.randomUUID();
       if (!isContainerTransform(overlay)) return;
       if ((event as ToggleEvent).newState === "open") {
         overlay.style.opacity = "0";
-        requestAnimationFrame(() => run(overlay, true));
+        requestAnimationFrame(() => {
+          if (overlay.matches(":popover-open")) animateTransform(overlay, true);
+          else overlay.style.opacity = "";
+        });
         return;
       }
-      run(overlay, false);
+      animateTransform(overlay, false);
       // Focus goes back to the button it grew from, which WebKit leaves to the page
       const opener = transforms.get(overlay)?.opener;
       if (opener && overlay.contains(document.activeElement)) opener.focus();
