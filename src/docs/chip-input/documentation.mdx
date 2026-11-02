@@ -68,4 +68,4 @@ With `popoverId`, a tap opens that [Popover](/components/popover), to show more 
 
 ## In a set
 
-Put input chips in a [ChipGroup](/components/chip-group), which spaces them and moves between them with the arrow keys. Typing text that becomes a chip, and Backspace from a field's cursor selecting the chip before it, belong to a text field that holds chips, still to come.
+Put input chips in a [ChipGroup](/components/chip-group), which spaces them and moves between them with the arrow keys, or in a [TextField](/components/text-field)'s `chips` slot, inline with the cursor: text typed there becomes a chip, Backspace from the cursor selects the chip before it, chips move by dragging and with Shift and the arrow keys, and each chip submits with the form, its `value` attribute or else its label. An edit commits the new text to the `value` attribute too, when the chip has one.

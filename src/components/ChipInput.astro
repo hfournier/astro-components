@@ -300,6 +300,9 @@ const bodyClasses = twMerge(
       });
       if (!chip.dispatchEvent(event)) return;
       label.textContent = value;
+      // a value the chip stood for, such as one a TextField submits, is now the text
+      const body = partOf(chip, "body");
+      if (body?.hasAttribute("value")) body.setAttribute("value", value);
     }
     stopEditing(chip);
   };

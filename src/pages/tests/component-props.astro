@@ -213,14 +213,32 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
       TextField,
       { ...field, maxlength: "long" },
     ],
+    "text-field-chips-textarea": [TextField, { ...field, type: "textarea" }],
+    "text-field-chip-overflow": [
+      TextField,
+      { ...field, chipOverflow: "hidden" },
+    ],
+    "text-field-chip-overflow-no-chips": [
+      TextField,
+      { ...field, chipOverflow: "scroll" },
+    ],
+    "text-field-chips-name": [TextField, {}],
     "tooltip-placement": [Tooltip, { placement: "left" }],
     "tooltip-variant": [Tooltip, { variant: "tooltip" }],
   };
-// The cases whose slot isn't "Text": an icon-only button's is empty
-const slots: Record<string, string> = { "button-split-name": "" };
-// The cases that fill a named slot too: an input chip's avatar
+// The cases whose slot isn't "Text": an icon-only button's is empty, and so is an unlabelled
+// field's
+const slots: Record<string, string> = {
+  "button-split-name": "",
+  "text-field-chips-name": "",
+};
+// The cases that fill a named slot too: an input chip's avatar, a text field's chips
+const chipsSlot = { chips: "<span>Chip</span>" };
 const namedSlots: Record<string, Record<string, string>> = {
   "chip-input-icon-avatar": { avatar: '<img src="" alt="" />' },
+  "text-field-chips-textarea": chipsSlot,
+  "text-field-chip-overflow": chipsSlot,
+  "text-field-chips-name": chipsSlot,
 };
 const outcomes = await Promise.all(
   Object.entries(cases).map(async ([name, [Component, props]]) => {

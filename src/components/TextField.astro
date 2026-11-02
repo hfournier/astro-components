@@ -3,11 +3,14 @@ import type { HTMLAttributes } from "astro/types";
 import crypto from "node:crypto";
 import { twMerge } from "tailwind-merge";
 import { unwrapParagraph } from "../utils";
+import TextFieldChips from "./TextFieldChips.astro";
 
 // A native text input, or a textarea for `type="textarea"`, so it submits, resets and validates
 // with its form. Every attribute but `class` and `maxlength` goes on the input (`name`, `value`,
 // `placeholder`, `required`, `disabled`, `aria-*`), and `class` on the element around the whole
-// field. The default slot is the label's text.
+// field. The default slot is the label's text. The `chips` slot holds input chips (ChipInput),
+// inline with the cursor, as M3's Guidelines page shows for contacts in a "To" field: text typed
+// there becomes a chip, and the chips, not the text, submit under `name` (ADR-0026).
 type Props = (
   | (Omit<HTMLAttributes<"input">, "type"> & {
       type?:
@@ -21,6 +24,8 @@ type Props = (
 ) & {
   variant?: "filled" | "outlined";
   maxlength?: number;
+  // With chips: wrapping onto new rows, so all of them show, or one row that scrolls sideways
+  chipOverflow?: "wrap" | "scroll";
 };
 
 const {
@@ -31,6 +36,8 @@ const {
   value,
   rows,
   maxlength,
+  chipOverflow,
+  name,
   "aria-describedby": describedBy,
   class: classList,
   ...attrs
@@ -75,6 +82,22 @@ if (limit !== undefined && !(Number.isInteger(limit) && limit >= 0)) {
     `TextField: a character limit is a whole number, from 0, but this one's \`maxlength\` is ${shown(maxlength)}.`
   );
 }
+const hasChips = Astro.slots.has("chips");
+if (hasChips && type === "textarea") {
+  throw new Error(
+    'TextField: M3 puts input chips inline with the cursor of a single-line field, but this one has the `chips` slot with `type="textarea"`.'
+  );
+}
+if (chipOverflow !== undefined && !hasChips) {
+  throw new Error(
+    `TextField: \`chipOverflow\` lays out the chips in the \`chips\` slot, but this one, "${chipOverflow}", has none.`
+  );
+}
+if (chipOverflow !== undefined && !["wrap", "scroll"].includes(chipOverflow)) {
+  throw new Error(
+    `TextField: its chip overflows are "wrap" and "scroll", but this one's \`chipOverflow\` is "${chipOverflow}".`
+  );
+}
 
 // A multi-line field is a textarea. Without `rows`, it starts one line tall and grows with its
 // content; with `rows`, it's M3's text area, that many lines tall, and scrolls.
@@ -86,6 +109,20 @@ const label = Astro.slots.has("default")
   : "";
 // M3: a required field's label ends with an asterisk, which its accessible name includes
 const labelText = label && attrs.required ? `${label}*` : label;
+const labelId = `${id}-label`;
+
+// The chips are a group named as the field is: by its label, or the input's own aria name
+const chipsName = label
+  ? { "aria-labelledby": labelId }
+  : {
+      "aria-label": attrs["aria-label"] ?? undefined,
+      "aria-labelledby": attrs["aria-labelledby"] ?? undefined,
+    };
+if (hasChips && !label && !attrs["aria-label"] && !attrs["aria-labelledby"]) {
+  throw new Error(
+    "TextField: its chips are a group named by the field's label, but this one has no label, `aria-label` or `aria-labelledby`."
+  );
+}
 
 const hasLeadingIcon = Astro.slots.has("leading-icon");
 const hasTrailingIcon = Astro.slots.has("trailing-icon");
@@ -119,15 +156,22 @@ const ariaDescribedBy =
     .join(" ") || undefined;
 
 // The placeholder fades in on slow effects as the field is focused, and out on fast effects
-const controlClass = [
+const controlClass = twMerge(
   "min-w-0 flex-1 bg-transparent p-0 text-(--ac-text-field-input) caret-(--ac-text-field-accent) outline-none disabled:cursor-default",
   "placeholder:text-(--ac-text-field-icon) placeholder:opacity-100 motion-safe:placeholder:transition-opacity",
   "motion-safe:focus:placeholder:duration-(--theme-duration-spring-slow-effects) motion-safe:focus:placeholder:ease-spring-slow-effects",
   // While the label rests in the field, it takes the placeholder's place
-  label && "not-focus:placeholder:opacity-0",
-];
+  label && "not-focus:placeholder:opacity-0"
+);
+const inputClass = twMerge(
+  controlClass,
+  "h-6",
+  // M3 uses a trailing icon to clear a field, rather than the browser's own button
+  "[&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none"
+);
 const controlAttrs = {
   id,
+  "data-ac-text-field-part": "input",
   placeholder: placeholder ?? (label ? " " : undefined),
   "aria-describedby": ariaDescribedBy,
   "data-ac-text-field-limit": limit,
@@ -149,7 +193,8 @@ const controlAttrs = {
   <div
     class:list={[
       "relative flex cursor-text motion-safe:transition-colors",
-      isMultiLine ? "min-h-14" : "h-14",
+      // a field of chips grows with their rows, and with a filled field's floated label
+      isMultiLine || hasChips ? "min-h-14" : "h-14",
       variant === "filled"
         ? // The filled container is its own surface: a ButtonIcon in it, and its focus ring,
           // take the surface's colors whatever the background around the field
@@ -203,8 +248,15 @@ const controlAttrs = {
     )}
     <div
       class:list={[
-        "relative flex min-w-0 flex-1 items-baseline",
-        variant === "filled" && label ? "pt-6 pb-2" : "py-4",
+        "relative flex min-w-0 flex-1",
+        // Chips are 32px tall: 12px above and below them make the 56px field, and below a
+        // filled field's floated label, 24px above and 8px below
+        hasChips ? "items-center" : "items-baseline",
+        variant === "filled" && label
+          ? "pt-6 pb-2"
+          : hasChips
+            ? "py-3"
+            : "py-4",
         hasLeadingIcon ? "ps-1" : "ps-4",
         hasTrailingIcon ? "pe-1" : "pe-4",
       ]}
@@ -233,20 +285,34 @@ const controlAttrs = {
           rows={rowCount ?? 1}
           style={hasFixedRows ? `--ac-text-field-rows: ${rowCount}` : undefined}
           data-ac-text-field-grows={hasFixedRows ? undefined : ""}
+          name={name}
           {...attrs}
           set:text={value}
         ></textarea>
+      ) : hasChips ? (
+        // The chips submit under the field's name, rather than the text, which is what's
+        // still to become one (ADR-0026)
+        <TextFieldChips
+          overflow={chipOverflow ?? "wrap"}
+          name={name ?? undefined}
+          {...chipsName}
+        >
+          <slot name="chips" slot="chips" />
+          <input
+            class:list={twMerge(inputClass, "min-w-20")}
+            {...controlAttrs}
+            type={type}
+            value={value}
+            {...attrs}
+          />
+        </TextFieldChips>
       ) : (
         <input
-          class:list={[
-            controlClass,
-            "h-6",
-            // M3 uses a trailing icon to clear a field, rather than the browser's own button
-            "[&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none",
-          ]}
+          class:list={inputClass}
           {...controlAttrs}
           type={type}
           value={value}
+          name={name}
           {...attrs}
         />
       )}
@@ -263,10 +329,13 @@ const controlAttrs = {
     {label && (
       <label
         class:list={[
-          "pointer-events-none absolute top-4 truncate text-(--ac-text-field-label)",
+          "pointer-events-none absolute truncate text-(--ac-text-field-label)",
+          // resting, in line with the text, or centered in a filled field of chips
+          hasChips && variant === "filled" ? "top-5" : "top-4",
           hasLeadingIcon ? "inset-s-13" : "inset-s-4",
           hasTrailingIcon ? "inset-e-13" : "inset-e-4",
         ]}
+        id={labelId}
         for={id}
         data-ac-text-field-part="label"
         set:html={labelText}
@@ -340,7 +409,7 @@ const controlAttrs = {
   /* An error is set by aria-invalid, which also announces it, by the browser's own validation,
      once the person has interacted with the form, or by a value past the counter's limit */
   [data-ac-text-field]:has(
-    :is(input, textarea):is([aria-invalid="true"], :user-invalid)
+    [data-ac-text-field-part="input"]:is([aria-invalid="true"], :user-invalid)
   ),
   [data-ac-text-field][data-ac-text-field-over-limit] {
     --ac-text-field-accent: var(--theme-color-error);
@@ -354,13 +423,23 @@ const controlAttrs = {
   }
 
   /* Hovered, unless focused: a focused field keeps its focused colors under the pointer */
-  [data-ac-text-field]:has(:is(input, textarea):enabled:not(:focus))
+  [data-ac-text-field]:has([data-ac-text-field-part="input"]:enabled):not(
+      :has(
+        [data-ac-text-field-part="input"]:focus,
+        [data-ac-text-field-part="chips"] :focus
+      )
+    )
     [data-ac-text-field-part="container"]:hover
     [data-ac-text-field-part="state-layer"] {
     opacity: 0.08;
   }
 
-  [data-ac-text-field]:has(:is(input, textarea):enabled:not(:focus))
+  [data-ac-text-field]:has([data-ac-text-field-part="input"]:enabled):not(
+      :has(
+        [data-ac-text-field-part="input"]:focus,
+        [data-ac-text-field-part="chips"] :focus
+      )
+    )
     [data-ac-text-field-part="container"]:hover
     :is(
       [data-ac-text-field-part="active-indicator"],
@@ -369,13 +448,23 @@ const controlAttrs = {
     --ac-text-field-indicator: var(--ac-text-field-indicator-hover);
   }
 
-  [data-ac-text-field]:has(:is(input, textarea):enabled:not(:focus))
+  [data-ac-text-field]:has([data-ac-text-field-part="input"]:enabled):not(
+      :has(
+        [data-ac-text-field-part="input"]:focus,
+        [data-ac-text-field-part="chips"] :focus
+      )
+    )
     [data-ac-text-field-part="container"]:hover
     [data-ac-text-field-part="label"] {
     color: var(--ac-text-field-label-hover);
   }
 
-  [data-ac-text-field]:has(:is(input, textarea):enabled:not(:focus))
+  [data-ac-text-field]:has([data-ac-text-field-part="input"]:enabled):not(
+      :has(
+        [data-ac-text-field-part="input"]:focus,
+        [data-ac-text-field-part="chips"] :focus
+      )
+    )
     [data-ac-text-field-part="container"]:hover
     [data-ac-text-field-part="trailing-icon"] {
     --ac-text-field-trailing: var(--ac-text-field-trailing-hover);
@@ -384,19 +473,28 @@ const controlAttrs = {
   /* Focused: the thicker indicator in the accent color is M3's focus indicator for a text
      field. The Specs page's tokens give the filled one both a 2dp height and a 3dp thickness
      (md.sys.state.focus-indicator.thickness); its state diagram draws 3dp, as the outline's */
-  [data-ac-text-field]:has(:is(input, textarea):focus)
+  [data-ac-text-field]:has(
+      [data-ac-text-field-part="input"]:focus,
+      [data-ac-text-field-part="chips"] :focus
+    )
     [data-ac-text-field-part="active-indicator"] {
     height: 3px;
     background-color: var(--ac-text-field-accent);
   }
 
-  [data-ac-text-field]:has(:is(input, textarea):focus)
+  [data-ac-text-field]:has(
+      [data-ac-text-field-part="input"]:focus,
+      [data-ac-text-field-part="chips"] :focus
+    )
     [data-ac-text-field-part="outline"] {
     --ac-text-field-outline-width: 3px;
     border-color: var(--ac-text-field-accent);
   }
 
-  [data-ac-text-field]:has(:is(input, textarea):focus)
+  [data-ac-text-field]:has(
+      [data-ac-text-field-part="input"]:focus,
+      [data-ac-text-field-part="chips"] :focus
+    )
     [data-ac-text-field-part="label"] {
     color: var(--ac-text-field-accent);
   }
@@ -406,7 +504,12 @@ const controlAttrs = {
      top of the container, in line with the input. Outlined, it sits on the outline, at the
      field's start even past a leading icon, as in Compose. */
   [data-ac-text-field]:has(
-      :is(input, textarea):is(:focus, :not(:placeholder-shown), :autofill)
+      [data-ac-text-field-part="input"]:is(
+        :focus,
+        :not(:placeholder-shown),
+        :autofill
+      ),
+      [data-ac-text-field-part="chips"] :is(:focus, [data-ac-chip-input])
     )
     [data-ac-text-field-part="label"] {
     font-size: 12px;
@@ -415,7 +518,12 @@ const controlAttrs = {
   }
 
   [data-ac-text-field]:has(
-      :is(input, textarea):is(:focus, :not(:placeholder-shown), :autofill)
+      [data-ac-text-field-part="input"]:is(
+        :focus,
+        :not(:placeholder-shown),
+        :autofill
+      ),
+      [data-ac-text-field-part="chips"] :is(:focus, [data-ac-chip-input])
     )
     [data-ac-text-field-part="outline"]
     legend {
@@ -423,14 +531,24 @@ const controlAttrs = {
   }
 
   [data-ac-text-field="filled"]:has(
-      :is(input, textarea):is(:focus, :not(:placeholder-shown), :autofill)
+      [data-ac-text-field-part="input"]:is(
+        :focus,
+        :not(:placeholder-shown),
+        :autofill
+      ),
+      [data-ac-text-field-part="chips"] :is(:focus, [data-ac-chip-input])
     )
     [data-ac-text-field-part="label"] {
     top: 8px;
   }
 
   [data-ac-text-field="outlined"]:has(
-      :is(input, textarea):is(:focus, :not(:placeholder-shown), :autofill)
+      [data-ac-text-field-part="input"]:is(
+        :focus,
+        :not(:placeholder-shown),
+        :autofill
+      ),
+      [data-ac-text-field-part="chips"] :is(:focus, [data-ac-chip-input])
     )
     [data-ac-text-field-part="label"] {
     top: -8px;
@@ -440,7 +558,14 @@ const controlAttrs = {
   /* While the label rests in the field, the prefix and suffix wait for it to float, as in
      Compose */
   [data-ac-text-field][data-ac-text-field-labelled]:not(
-      :has(:is(input, textarea):is(:focus, :not(:placeholder-shown), :autofill))
+      :has(
+        [data-ac-text-field-part="input"]:is(
+          :focus,
+          :not(:placeholder-shown),
+          :autofill
+        ),
+        [data-ac-text-field-part="chips"] :is(:focus, [data-ac-chip-input])
+      )
     )
     :is(
       [data-ac-text-field-part="prefix"],
@@ -450,7 +575,7 @@ const controlAttrs = {
   }
 
   /* Disabled: everything on-surface at 38%, the filled container at 4% and the outline at 12% */
-  [data-ac-text-field]:has(:is(input, textarea):disabled) {
+  [data-ac-text-field]:has([data-ac-text-field-part="input"]:disabled) {
     --ac-text-field-disabled: color-mix(
       in oklab,
       var(--theme-color-on-surface) 38%,
@@ -464,12 +589,12 @@ const controlAttrs = {
     --ac-text-field-supporting: var(--ac-text-field-disabled);
   }
 
-  [data-ac-text-field]:has(:is(input, textarea):disabled)
+  [data-ac-text-field]:has([data-ac-text-field-part="input"]:disabled)
     [data-ac-text-field-part="container"] {
     cursor: default;
   }
 
-  [data-ac-text-field="filled"]:has(:is(input, textarea):disabled)
+  [data-ac-text-field="filled"]:has([data-ac-text-field-part="input"]:disabled)
     [data-ac-text-field-part="container"] {
     background-color: color-mix(
       in oklab,
@@ -478,7 +603,9 @@ const controlAttrs = {
     );
   }
 
-  [data-ac-text-field="outlined"]:has(:is(input, textarea):disabled) {
+  [data-ac-text-field="outlined"]:has(
+    [data-ac-text-field-part="input"]:disabled
+  ) {
     --ac-text-field-indicator: color-mix(
       in oklab,
       var(--theme-color-on-surface) 12%,
@@ -539,7 +666,7 @@ const controlAttrs = {
       return;
     const input = container.querySelector<
       HTMLInputElement | HTMLTextAreaElement
-    >("input, textarea");
+    >("[data-ac-text-field-part=input]");
     if (!input || input.disabled) return;
     event.preventDefault();
     input.focus();
@@ -580,7 +707,7 @@ const controlAttrs = {
   // or :user-invalid once the person has interacted with the form)
   const sync = (field: Element) => {
     const input = field.querySelector<HTMLInputElement | HTMLTextAreaElement>(
-      "input, textarea"
+      "[data-ac-text-field-part=input]"
     );
     if (!input) return;
     grow(input);
