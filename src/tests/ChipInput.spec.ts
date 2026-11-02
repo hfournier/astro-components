@@ -409,6 +409,20 @@ test.describe("ChipInput", () => {
     ]);
   });
 
+  // `size` counts average characters, too few for an address's @ and m
+  test("the edit field shows its whole text, as it opens and as it grows", async ({
+    page,
+  }) => {
+    const target = chip(page, "edit", "ziad@example.com");
+    await part(target, "body").click();
+    const field = part(target, "edit");
+    const clipped = () =>
+      field.evaluate((el) => el.scrollWidth - el.clientWidth);
+    expect(await clipped()).toBeLessThanOrEqual(0);
+    await field.pressSequentially("mmmmmmmmmm@@@@@@@@@@WWWWWWWWWW");
+    expect(await clipped()).toBeLessThanOrEqual(0);
+  });
+
   test("a page can refuse an edit, keeping the field open, and an emptied chip is removed", async ({
     page,
   }) => {

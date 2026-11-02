@@ -247,14 +247,29 @@ const bodyClasses = twMerge(
     const field = partOf(chip, "edit");
     if (field) field.hidden = !isEditing;
   };
+  // The field is as wide as its text, measured in its own font: `size` counts average
+  // characters, too few for an address's @ and m. A pixel more leaves room for the caret.
+  let measure: CanvasRenderingContext2D | null = null;
+  const fit = (field: HTMLInputElement) => {
+    const style = getComputedStyle(field);
+    measure ??= document.createElement("canvas").getContext("2d");
+    if (!measure) return;
+    measure.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+    const text =
+      measure.measureText(field.value).width +
+      (parseFloat(style.letterSpacing) || 0) * field.value.length;
+    const padding =
+      parseFloat(style.paddingInlineStart) + parseFloat(style.paddingInlineEnd);
+    field.style.width = `${Math.ceil(text + padding) + 1}px`;
+  };
   const startEditing = (chip: Element) => {
     const field = partOf(chip, "edit") as HTMLInputElement | null;
     const label = partOf(chip, "label");
     if (!field || !label) return;
     field.value = label.textContent ?? "";
-    field.size = Math.max(field.value.length, 1);
     chip.setAttribute("data-ac-chip-input-editing", "");
     showField(chip, true);
+    fit(field);
     field.focus();
     field.select();
   };
@@ -343,8 +358,7 @@ const bodyClasses = twMerge(
 
   document.addEventListener("input", (event) => {
     const field = event.target as HTMLInputElement;
-    if (field.matches?.("[data-ac-chip-input-part=edit]"))
-      field.size = Math.max(field.value.length, 1);
+    if (field.matches?.("[data-ac-chip-input-part=edit]")) fit(field);
   });
 
   document.addEventListener("focusout", (event) => {
