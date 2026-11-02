@@ -1,0 +1,354 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import type { SvgIconNameTypes } from "../svgs";
+import { unwrapParagraph } from "../utils";
+import BaseChip from "./BaseChip.astro";
+import Icon from "./Icon.astro";
+
+// An M3 input chip: a piece of information a person entered, such as a contact, with an optional
+// leading icon or avatar and a trailing remove button. It's two controls side by side, as M3's
+// states show, since a button can't hold another: the body, a <button> BaseChip draws, and the
+// remove button over the body's trailing end, each with its own focus ring and state layer
+// (ADR-0025). A tap on the body selects the chip (aria-pressed), ready for Backspace or Delete to
+// remove it; with `isEditable` it turns the chip back into text to edit, and with `popoverId` it
+// opens that popover, to show more. Removing it, by its button, Backspace or Delete, moves focus
+// to the next chip, or the previous one. Every attribute but `class` goes on the body; `class`
+// on the chip.
+type Props = HTMLAttributes<"button"> & {
+  // An icon before the label, by its file name in src/assets/svgs. For a circular image, such as
+  // a contact's photo, fill the `avatar` slot instead.
+  icon?: SvgIconNameTypes;
+  // A tap turns the chip back into text to edit, in place of selecting it
+  isEditable?: boolean;
+  // Whether the chip starts selected; a chip that edits or opens a popover isn't selected
+  isSelected?: boolean;
+  // The id of the popover a tap opens, to show more about the chip, in place of selecting it
+  popoverId?: string;
+};
+
+const {
+  icon,
+  isEditable = false,
+  isSelected = false,
+  popoverId,
+  class: classList,
+  ...attrs
+}: Props = Astro.props;
+
+// A tap does one thing, so a chip takes one of these, and only a chip a tap selects starts
+// selected (ADR-0021)
+if (isEditable && popoverId) {
+  throw new Error(
+    `ChipInput: a tap on a chip either edits it or opens its popover, but this one, for "${popoverId}", has \`isEditable\` too.`
+  );
+}
+if (isSelected && (isEditable || popoverId)) {
+  throw new Error(
+    `ChipInput: a tap selects a chip unless it edits it or opens its popover, but this one has \`isSelected\` with \`${isEditable ? "isEditable" : "popoverId"}\`.`
+  );
+}
+if (icon && Astro.slots.has("avatar")) {
+  throw new Error(
+    `ChipInput: M3's input chip leads with an icon or an avatar, but this one has both, \`icon\` "${icon}" and the \`avatar\` slot.`
+  );
+}
+
+const label = unwrapParagraph(await Astro.slots.render("default"));
+const avatar = (await Astro.slots.render("avatar"))?.trim();
+
+// The remove button and the edit field are named from the label, so an edit renames them too
+const idPrefix = `ac-chip-input-${crypto.randomUUID()}`;
+const labelId = `${idPrefix}-label`;
+
+// What the body's tap does: select (aria-pressed), edit, or open the popover
+const modeAttrs = popoverId
+  ? {
+      commandfor: popoverId,
+      command: "toggle-popover" as const,
+      "aria-expanded": "false" as const,
+    }
+  : isEditable
+    ? {}
+    : { "aria-pressed": isSelected ? ("true" as const) : ("false" as const) };
+const mode = popoverId ? "popover" : isEditable ? "edit" : "select";
+
+// M3's padding from the container's edge, 1px inside the outline: 12px before the label, 4px
+// before an avatar, 8px before an icon (BaseChip's), and, at the end, 8px, the remove icon's 18px
+// and 8px, which the remove button sits over. At least 88px wide, so the remove button's 48px
+// target leaves the body some of its own (M3's Guidelines).
+const bodyClasses = twMerge(
+  "min-w-22 ps-[11px] pe-[33px]",
+  avatar && "has-[>[data-ac-base-chip-part=leading-icon]]:ps-[3px]",
+  "bg-(--ac-chip-input-container) text-(--ac-chip-input-label)",
+  "border-(--ac-chip-input-outline) chip-focus-visible:border-(--ac-chip-input-focus-outline)",
+  "chip-disabled:border-(--ac-chip-input-disabled-outline) chip-disabled:bg-(--ac-chip-input-disabled-container)"
+);
+---
+
+<span
+  class:list={twMerge(
+    "relative inline-flex shrink-0 align-middle data-ac-chip-input-editing:[&>[data-ac-chip-input-part=body]]:hidden data-ac-chip-input-editing:[&>[data-ac-chip-input-part=remove]]:hidden",
+    classList
+  )}
+  data-ac-chip-input={mode}
+>
+  <BaseChip
+    as="button"
+    class={bodyClasses}
+    data-ac-chip-input-part="body"
+    {...modeAttrs}
+    {...attrs}
+  >
+    {avatar ? (
+      <span
+        slot="leading-icon"
+        class="block size-6 overflow-hidden rounded-full group-chip-disabled/chip:opacity-38 [&>img]:size-full [&>img]:object-cover"
+        data-ac-chip-input-part="avatar"
+        set:html={avatar}
+      />
+    ) : (
+      icon && (
+        <Icon
+          slot="leading-icon"
+          class="size-[18px] text-(--ac-chip-input-icon) group-chip-disabled/chip:text-current"
+          name={icon}
+        />
+      )
+    )}
+    <span id={labelId} data-ac-chip-input-part="label" set:html={label} />
+  </BaseChip>
+  {/* M3: the remove icon, 18px, 8px from the end, with a circular state layer and a target of at
+      least 48px, above the body's */}
+  <button
+    class:list={[
+      "absolute end-[5px] top-1 z-1 grid size-6 cursor-pointer place-items-center rounded-full text-(--ac-chip-input-label)",
+      "before:absolute before:inset-0 before:rounded-full before:bg-current before:opacity-0 motion-safe:before:transition-opacity",
+      "enabled:hover:before:opacity-8 enabled:focus-visible:before:opacity-10 enabled:active:before:opacity-10",
+      "after:absolute after:top-1/2 after:left-1/2 after:size-12 after:-translate-1/2",
+      "disabled:cursor-default disabled:text-(--theme-color-on-surface)/38",
+      "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg)",
+      "motion-safe:transition-[color,box-shadow]",
+    ]}
+    type="button"
+    disabled={attrs.disabled}
+    aria-labelledby={`${idPrefix}-remove ${labelId}`}
+    data-ac-chip-input-part="remove"
+  >
+    <span id={`${idPrefix}-remove`} hidden>
+      Remove
+    </span>
+    <Icon class="size-[18px]" name="close" />
+  </button>
+  {isEditable && (
+    <input
+      class="h-8 min-w-22 rounded-lg bg-transparent px-3 text-sm leading-5 font-medium tracking-[0.1px] text-(--theme-color-on-surface) outline-none"
+      type="text"
+      hidden
+      aria-labelledby={`${idPrefix}-edit ${labelId}`}
+      data-ac-chip-input-part="edit"
+    />
+  )}
+  {isEditable && (
+    <span id={`${idPrefix}-edit`} hidden>
+      Edit
+    </span>
+  )}
+</span>
+
+<style>
+  /* M3's input chip roles, from its Specs page and Compose's InputChipTokens: unselected, the label
+     and icons are on-surface-variant on an outline-variant outline, which turns on-surface-variant
+     when focused, and the leading icon is on-surface-variant. Selected, the container is
+     secondary-container with no outline, the label and remove icon on-secondary-container and the
+     leading icon primary; disabled, a selected chip's container is on-surface at 12%. Global, as
+     the body is BaseChip's element, not this template's. */
+  :global([data-ac-chip-input]) {
+    --ac-chip-input-label: var(--theme-color-on-surface-variant);
+    --ac-chip-input-icon: var(--theme-color-on-surface-variant);
+    --ac-chip-input-container: transparent;
+    --ac-chip-input-outline: var(--theme-color-outline-variant);
+    --ac-chip-input-focus-outline: currentColor;
+    --ac-chip-input-disabled-outline: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 12%,
+      transparent
+    );
+    --ac-chip-input-disabled-container: transparent;
+  }
+  :global([data-ac-chip-input]:has(> [aria-pressed="true"])) {
+    --ac-chip-input-label: var(--theme-color-on-secondary-container);
+    --ac-chip-input-icon: var(--theme-color-primary);
+    --ac-chip-input-container: var(--theme-color-secondary-container);
+    --ac-chip-input-outline: transparent;
+    --ac-chip-input-focus-outline: transparent;
+    --ac-chip-input-disabled-outline: transparent;
+    --ac-chip-input-disabled-container: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 12%,
+      transparent
+    );
+  }
+</style>
+
+<script>
+  // The chip's controls are its body and its remove button; the edit field replaces both
+  const chipOf = (target: EventTarget | null) =>
+    target instanceof Element ? target.closest("[data-ac-chip-input]") : null;
+  const partOf = (chip: Element, name: "body" | "remove" | "edit" | "label") =>
+    chip.querySelector<HTMLElement>(`[data-ac-chip-input-part=${name}]`);
+  const isDisabled = (chip: Element) =>
+    !!partOf(chip, "body")?.matches(":disabled");
+
+  // The chip focus moves to once one is removed: the next enabled chip beside it, else the
+  // previous one
+  const neighbourOf = (chip: Element) => {
+    const chips = [...(chip.parentElement?.children ?? [])].filter((el) =>
+      el.matches("[data-ac-chip-input], [data-ac-base-chip]")
+    );
+    const focusable = (el: Element) =>
+      el.matches("[data-ac-chip-input]")
+        ? isDisabled(el)
+          ? null
+          : partOf(el, "body")
+        : el.matches(":disabled")
+          ? null
+          : el.matches("label")
+            ? el.querySelector<HTMLElement>(":scope > input")
+            : (el as HTMLElement);
+    const index = chips.indexOf(chip);
+    const after = chips
+      .slice(index + 1)
+      .map(focusable)
+      .find(Boolean);
+    const before = chips.slice(0, index).reverse().map(focusable).find(Boolean);
+    return after ?? before;
+  };
+
+  // M3: the remove button, or Backspace or Delete on the chip, removes it. The chip fires a
+  // cancelable `remove` first, so the page can keep it, then focus moves on.
+  const remove = (chip: Element) => {
+    if (isDisabled(chip)) return;
+    const event = new CustomEvent("remove", {
+      bubbles: true,
+      cancelable: true,
+    });
+    if (!chip.dispatchEvent(event)) return;
+    neighbourOf(chip)?.focus();
+    chip.remove();
+  };
+
+  // Editing: the chip turns back into its text, in a field that grows with it. Enter or leaving
+  // the field commits, firing a cancelable `change` with the new text, which the page can refuse
+  // to keep the field open; an empty field removes the chip. Escape puts the chip back as it was.
+  const startEditing = (chip: Element) => {
+    const field = partOf(chip, "edit") as HTMLInputElement | null;
+    const label = partOf(chip, "label");
+    if (!field || !label) return;
+    field.value = label.textContent ?? "";
+    field.size = Math.max(field.value.length, 1);
+    chip.setAttribute("data-ac-chip-input-editing", "");
+    field.hidden = false;
+    field.focus();
+    field.select();
+  };
+  const stopEditing = (chip: Element) => {
+    const field = partOf(chip, "edit");
+    if (!field || !chip.hasAttribute("data-ac-chip-input-editing")) return;
+    // unmarked first, so the field's blur as it hides doesn't commit it again
+    chip.removeAttribute("data-ac-chip-input-editing");
+    field.hidden = true;
+    partOf(chip, "body")?.focus();
+  };
+  const commit = (chip: Element) => {
+    const field = partOf(chip, "edit") as HTMLInputElement | null;
+    const label = partOf(chip, "label");
+    if (!field || !label || !chip.hasAttribute("data-ac-chip-input-editing"))
+      return;
+    const value = field.value.trim();
+    if (!value) {
+      stopEditing(chip);
+      remove(chip);
+      return;
+    }
+    if (value !== label.textContent) {
+      const event = new CustomEvent("change", {
+        bubbles: true,
+        cancelable: true,
+        detail: { value },
+      });
+      if (!chip.dispatchEvent(event)) return;
+      label.textContent = value;
+    }
+    stopEditing(chip);
+  };
+
+  document.addEventListener("click", (event) => {
+    const target = event.target as Element;
+    const chip = chipOf(target);
+    if (!chip) return;
+    if (target.closest("[data-ac-chip-input-part=remove]")) {
+      remove(chip);
+      return;
+    }
+    const body = target.closest<HTMLElement>("[data-ac-chip-input-part=body]");
+    if (!body) return;
+    if (chip.matches("[data-ac-chip-input=edit]")) startEditing(chip);
+    else if (body.hasAttribute("aria-pressed"))
+      body.setAttribute(
+        "aria-pressed",
+        String(body.getAttribute("aria-pressed") !== "true")
+      );
+  });
+
+  document.addEventListener("keydown", (event) => {
+    const target = event.target as Element;
+    const chip = chipOf(target);
+    if (!chip) return;
+    if (target.matches("[data-ac-chip-input-part=edit]")) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        commit(chip);
+      } else if (event.key === "Escape") {
+        event.preventDefault();
+        stopEditing(chip);
+      }
+      return;
+    }
+    if (event.key === "Backspace" || event.key === "Delete") {
+      event.preventDefault();
+      remove(chip);
+    }
+  });
+
+  document.addEventListener("input", (event) => {
+    const field = event.target as HTMLInputElement;
+    if (field.matches?.("[data-ac-chip-input-part=edit]"))
+      field.size = Math.max(field.value.length, 1);
+  });
+
+  document.addEventListener("focusout", (event) => {
+    const field = event.target as Element;
+    if (field.matches?.("[data-ac-chip-input-part=edit]")) {
+      const chip = chipOf(field);
+      if (chip) commit(chip);
+    }
+  });
+
+  // A chip that opens a popover is its button, expanded while the popover is open, which keeps
+  // BaseChip's pressed state layer on it. `toggle` doesn't bubble, hence the capture.
+  document.addEventListener(
+    "toggle",
+    (event) => {
+      const popover = event.target as HTMLElement;
+      if (!popover.id) return;
+      const isOpen = (event as ToggleEvent).newState === "open";
+      document
+        .querySelectorAll(
+          `[data-ac-chip-input=popover] > [commandfor="${CSS.escape(popover.id)}"]`
+        )
+        .forEach((body) => body.setAttribute("aria-expanded", String(isOpen)));
+    },
+    true
+  );
+</script>

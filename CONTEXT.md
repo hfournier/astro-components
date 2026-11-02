@@ -45,7 +45,7 @@ The [[Primitive component]] that draws M3's button container on a native `<butto
 _Avoid_: button base, button container (the container is what it draws, not its name)
 
 **BaseChip**:
-The [[Primitive component]] that draws M3's chip on a native `<button>` or `<a>`, or on a `<label>` around a native checkbox or radio, whose states it takes: 32px tall with 8px corners, flat on an outline or elevated, an optional leading icon or leading and trailing icon slots, the state layer (dragged too), the 48px touch target, the focus ring and the disabled look. `ChipAssist`, `ChipSuggestion` and `ChipFilter` render through it, a suggestion or filter chip giving its own label color, and a filter chip its own icons in its leading and trailing icon slots and its input; the input chip will too (ADR-0024).
+The [[Primitive component]] that draws M3's chip on a native `<button>` or `<a>`, or on a `<label>` around a native checkbox or radio, whose states it takes: 32px tall with 8px corners, flat on an outline or elevated, an optional leading icon or leading and trailing icon slots, the state layer (dragged too), the 48px touch target, the focus ring and the disabled look. `ChipAssist`, `ChipSuggestion` and `ChipFilter` render through it, a suggestion or filter chip giving its own label color, and a filter chip its own icons in its leading and trailing icon slots and its input (ADR-0024). `ChipInput` draws its body through it, its avatar in the leading icon slot, beside its own remove button (ADR-0025).
 _Avoid_: chip base, chip container (the container is what it draws, not its name)
 
 **ChipGroup**:

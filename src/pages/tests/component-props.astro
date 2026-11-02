@@ -18,6 +18,7 @@ import ButtonSplit from "../../components/ButtonSplit.astro";
 import ChipAssist from "../../components/ChipAssist.astro";
 import ChipFilter from "../../components/ChipFilter.astro";
 import ChipGroup from "../../components/ChipGroup.astro";
+import ChipInput from "../../components/ChipInput.astro";
 import ChipSuggestion from "../../components/ChipSuggestion.astro";
 import Details from "../../components/Details.astro";
 import Divider from "../../components/Divider.astro";
@@ -137,6 +138,7 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     ],
     "chip-filter-selection": [ChipFilter, { selection: "one" }],
     "chip-filter-single-name": [ChipFilter, { selection: "single" }],
+    "chip-filter-variant": [ChipFilter, { variant: "outlined" }],
     "chip-group-name": [ChipGroup, {}],
     "chip-group-overflow": [
       ChipGroup,
@@ -146,7 +148,19 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
       ChipGroup,
       { selection: "one", "aria-label": "Filters" },
     ],
-    "chip-filter-variant": [ChipFilter, { variant: "outlined" }],
+    "chip-input-edit-popover": [
+      ChipInput,
+      { isEditable: true, popoverId: "contact" },
+    ],
+    "chip-input-icon-avatar": [ChipInput, { icon: "person" }],
+    "chip-input-selected-edit": [
+      ChipInput,
+      { isEditable: true, isSelected: true },
+    ],
+    "chip-input-selected-popover": [
+      ChipInput,
+      { popoverId: "contact", isSelected: true },
+    ],
     "chip-suggestion-as": [ChipSuggestion, { as: "span" }],
     "chip-suggestion-variant": [ChipSuggestion, { variant: "outlined" }],
     "details-size": [Details, { label: "More", size: "sm" }],
@@ -204,6 +218,10 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
   };
 // The cases whose slot isn't "Text": an icon-only button's is empty
 const slots: Record<string, string> = { "button-split-name": "" };
+// The cases that fill a named slot too: an input chip's avatar
+const namedSlots: Record<string, Record<string, string>> = {
+  "chip-input-icon-avatar": { avatar: '<img src="" alt="" />' },
+};
 const outcomes = await Promise.all(
   Object.entries(cases).map(async ([name, [Component, props]]) => {
     const slot = slots[name] ?? "Text";
@@ -211,7 +229,7 @@ const outcomes = await Promise.all(
       // some components render their slot as text, so each gets one
       const html = await container.renderToString(Component, {
         props,
-        slots: slot ? { default: slot } : {},
+        slots: { ...(slot ? { default: slot } : {}), ...namedSlots[name] },
       });
       // what a valid case drew: a heading's element, a text area's rows, a counter's limit
       const drawn = [

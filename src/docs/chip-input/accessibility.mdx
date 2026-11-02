@@ -1,0 +1,9 @@
+An input chip is two controls, as M3's Accessibility page asks for a chip with a second action: its body, a native `<button>` named by its label, and a remove `<button>` named "Remove" and the label, such as "Remove Ziad Aouad". By default the body is a toggle button, announced pressed while the chip is selected; an editable chip's body is a plain button, and a chip with a popover is that popover's button, announced expanded while it's open. The icon and avatar are decorative and hidden from assistive tech (ADR-0025).
+
+- **Keyboard:** Tab reaches the body, then the remove button. Space or Enter selects or deselects the chip, edits it, or opens its popover; on the remove button, it removes the chip. Backspace or Delete on either removes the chip, as M3's Accessibility page asks, and focus moves to the next chip, or the previous one. In a ChipGroup, the arrow keys move between the chips' bodies; in the edit field, they move the cursor instead, Enter commits and Escape cancels.
+- **Focus:** the body's focus ring goes around the chip, and the remove button's around its icon alone, as M3's states show.
+- **Target size:** the body keeps a 48px target, and the remove button its own 48px one. The chip is at least 88px wide, as M3 asks, so the remove button's target doesn't cover the body's.
+- **Selected:** a selected chip's container changes color, and its pressed state is announced, so selection isn't shown by color alone to assistive tech.
+- **Disabled:** neither control can be focused.
+
+Under reduced motion, the colors change at once.
