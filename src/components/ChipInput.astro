@@ -299,10 +299,12 @@ const bodyClasses = twMerge(
         detail: { value },
       });
       if (!chip.dispatchEvent(event)) return;
-      label.textContent = value;
-      // a value the chip stood for, such as one a TextField submits, is now the text
+      // a value that was the chip's text, such as one a TextField submits, follows the edit; a
+      // value of its own, such as a contact's address under their name, stays
       const body = partOf(chip, "body");
-      if (body?.hasAttribute("value")) body.setAttribute("value", value);
+      if (body && body.getAttribute("value") === label.textContent)
+        body.setAttribute("value", value);
+      label.textContent = value;
     }
     stopEditing(chip);
   };

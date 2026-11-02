@@ -82,6 +82,11 @@ if (limit !== undefined && !(Number.isInteger(limit) && limit >= 0)) {
     `TextField: a character limit is a whole number, from 0, but this one's \`maxlength\` is ${shown(maxlength)}.`
   );
 }
+if (chipOverflow !== undefined && !["wrap", "scroll"].includes(chipOverflow)) {
+  throw new Error(
+    `TextField: its chip overflows are "wrap" and "scroll", but this one's \`chipOverflow\` is "${chipOverflow}".`
+  );
+}
 const hasChips = Astro.slots.has("chips");
 if (hasChips && type === "textarea") {
   throw new Error(
@@ -90,12 +95,7 @@ if (hasChips && type === "textarea") {
 }
 if (chipOverflow !== undefined && !hasChips) {
   throw new Error(
-    `TextField: \`chipOverflow\` lays out the chips in the \`chips\` slot, but this one, "${chipOverflow}", has none.`
-  );
-}
-if (chipOverflow !== undefined && !["wrap", "scroll"].includes(chipOverflow)) {
-  throw new Error(
-    `TextField: its chip overflows are "wrap" and "scroll", but this one's \`chipOverflow\` is "${chipOverflow}".`
+    `TextField: \`chipOverflow\` lays out the chips in the \`chips\` slot, but this one has \`chipOverflow\` "${chipOverflow}" and no chips.`
   );
 }
 

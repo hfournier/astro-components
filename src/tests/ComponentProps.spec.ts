@@ -100,7 +100,7 @@ const expected: Record<string, string | RegExp> = {
   "text-field-maxlength-not-a-number": `TextField: a character limit is a whole number, from 0, but this one's \`maxlength\` is "long".`,
   "text-field-chips-textarea": `TextField: M3 puts input chips inline with the cursor of a single-line field, but this one has the \`chips\` slot with \`type="textarea"\`.`,
   "text-field-chip-overflow": `TextField: its chip overflows are "wrap" and "scroll", but this one's \`chipOverflow\` is "hidden".`,
-  "text-field-chip-overflow-no-chips": `TextField: \`chipOverflow\` lays out the chips in the \`chips\` slot, but this one, "scroll", has none.`,
+  "text-field-chip-overflow-no-chips": `TextField: \`chipOverflow\` lays out the chips in the \`chips\` slot, but this one has \`chipOverflow\` "scroll" and no chips.`,
   "text-field-chips-name":
     "TextField: its chips are a group named by the field's label, but this one has no label, `aria-label` or `aria-labelledby`.",
   "tooltip-placement": `Tooltip: its placements are "above" and "below", but this one's \`placement\` is "left".`,

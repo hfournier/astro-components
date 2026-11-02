@@ -16,6 +16,6 @@ We rejected a separate pattern component (a "chip field"), which would duplicate
 ## Consequences
 
 - ChipGroup now ignores arrow keys with a modifier, leaving them to whatever handles them, such as moving a chip.
-- ChipInput's edit commits its text to the body's `value` attribute too, when it has one, so an edited chip submits what it now says.
+- ChipInput's edit commits its text to the body's `value` attribute too, when the value was its text, so an edited chip submits what it now says; a value of its own, such as a contact's address under their name, stays.
 - A filled field of chips with a label is 64px tall for one row: the floated label's 24px above a 32px chip, and 8px below. Unlabelled or outlined, it's M3's 56px. Each wrapped row adds ChipGroup's 16px gap and a 32px chip.
 - A form's reset doesn't bring back removed chips.

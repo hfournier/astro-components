@@ -364,9 +364,7 @@ const {
       return;
     if (
       event.shiftKey &&
-      !event.altKey &&
-      !event.ctrlKey &&
-      !event.metaKey &&
+      !(event.altKey || event.ctrlKey || event.metaKey) &&
       event.key.startsWith("Arrow")
     ) {
       event.preventDefault();
@@ -376,9 +374,8 @@ const {
     if (hasModifier(event)) return;
     // past the last chip, the arrow keys go back to the text
     if (event.key === forward || event.key === "ArrowDown") {
-      const later = chipsOf(field)
-        .slice(chipsOf(field).indexOf(chip) + 1)
-        .some(isEnabled);
+      const chips = chipsOf(field);
+      const later = chips.slice(chips.indexOf(chip) + 1).some(isEnabled);
       if (!later) {
         event.preventDefault();
         input.focus();
@@ -488,7 +485,12 @@ const {
 
   // Where a chip dropped at x, y lands in a field: before the first chip on a later row, or
   // past the middle of a chip on its row, else at the end
-  const landing = (field: Element, chip: Element, x: number, y: number) => {
+  const landingBefore = (
+    field: Element,
+    chip: Element,
+    x: number,
+    y: number
+  ) => {
     const rtl = isRtl(field);
     for (const other of chipsOf(field)) {
       if (other === chip) continue;
@@ -571,7 +573,7 @@ const {
     const under = document.elementFromPoint(event.clientX, event.clientY);
     const field = fieldOf(under);
     if (field && fieldsBeside(from).includes(field)) {
-      const next = landing(field, chip, event.clientX, event.clientY);
+      const next = landingBefore(field, chip, event.clientX, event.clientY);
       if (
         chip.parentElement !== groupOf(field) ||
         chip.nextElementSibling !== next
@@ -606,11 +608,16 @@ const {
   const cancel = () => {
     if (!drag?.isDragging || drag.isCancelled) return;
     const { chip, from } = drag;
+    // it slides back from where the pointer let go of it
+    const was = chip.getBoundingClientRect();
     rearrange(
       [fieldOf(chip)!, from.field],
       () => place(chip, from.field, from.next),
       chip
     );
+    chip.style.translate = "";
+    const now = chip.getBoundingClientRect();
+    chip.style.translate = `${was.left - now.left}px ${was.top - now.top}px`;
     endDrag();
     drag.isCancelled = true;
   };

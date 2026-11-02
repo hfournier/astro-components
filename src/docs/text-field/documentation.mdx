@@ -52,7 +52,7 @@ slots:
     description: Optional text at the end of the input, such as a unit or an email domain, in `on-surface-variant`. It shows once the label floats, and describes the input.
     kind: any
   - name: chips
-    description: Optional input chips, inline with the cursor, such as the contacts in an email's "To" field. Text typed in the field becomes a chip when committed with Enter. The chips' values, not the text, submit under the field's `name`. Not for `type="textarea"`. See Chips.
+    description: Optional input chips, inline with the cursor, such as the contacts in an email's "To" field. Text typed in the field becomes a chip when committed with Enter. The chips' values, not the text, submit under the field's `name`. See Chips. The chips are a group named by the field's label, so chips in a field with no label, `aria-label` or `aria-labelledby` fail the build, as do chips with `type="textarea"`.
     kind: component
     component: ChipInput
     multiple: true
