@@ -87,10 +87,7 @@ const bodyClasses = twMerge(
 ---
 
 <span
-  class:list={twMerge(
-    "relative inline-flex shrink-0 align-middle data-ac-chip-input-editing:[&>[data-ac-chip-input-part=body]]:hidden data-ac-chip-input-editing:[&>[data-ac-chip-input-part=remove]]:hidden",
-    classList
-  )}
+  class:list={twMerge("relative inline-flex shrink-0 align-middle", classList)}
   data-ac-chip-input={mode}
 >
   <BaseChip
@@ -241,6 +238,15 @@ const bodyClasses = twMerge(
   // Editing: the chip turns back into its text, in a field that grows with it. Enter or leaving
   // the field commits, firing a cancelable `change` with the new text, which the page can refuse
   // to keep the field open; an empty field removes the chip. Escape puts the chip back as it was.
+  // While editing, the field stands in for the body and the remove button
+  const showField = (chip: Element, isEditing: boolean) => {
+    for (const name of ["body", "remove"] as const) {
+      const control = partOf(chip, name);
+      if (control) control.hidden = isEditing;
+    }
+    const field = partOf(chip, "edit");
+    if (field) field.hidden = !isEditing;
+  };
   const startEditing = (chip: Element) => {
     const field = partOf(chip, "edit") as HTMLInputElement | null;
     const label = partOf(chip, "label");
@@ -248,7 +254,7 @@ const bodyClasses = twMerge(
     field.value = label.textContent ?? "";
     field.size = Math.max(field.value.length, 1);
     chip.setAttribute("data-ac-chip-input-editing", "");
-    field.hidden = false;
+    showField(chip, true);
     field.focus();
     field.select();
   };
@@ -257,7 +263,7 @@ const bodyClasses = twMerge(
     if (!field || !chip.hasAttribute("data-ac-chip-input-editing")) return;
     // unmarked first, so the field's blur as it hides doesn't commit it again
     chip.removeAttribute("data-ac-chip-input-editing");
-    field.hidden = true;
+    showField(chip, false);
     partOf(chip, "body")?.focus();
   };
   const commit = (chip: Element) => {
@@ -320,6 +326,20 @@ const bodyClasses = twMerge(
       remove(chip);
     }
   });
+
+  // The field's own `change`, as it blurs, would reach the page beside the chip's, with no
+  // `detail`; the chip's is the only one it gets
+  document.addEventListener(
+    "change",
+    (event) => {
+      if (
+        !(event instanceof CustomEvent) &&
+        (event.target as Element).matches?.("[data-ac-chip-input-part=edit]")
+      )
+        event.stopPropagation();
+    },
+    true
+  );
 
   document.addEventListener("input", (event) => {
     const field = event.target as HTMLInputElement;

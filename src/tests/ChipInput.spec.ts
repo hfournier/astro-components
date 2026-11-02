@@ -59,6 +59,11 @@ const recordEvents = (page: Page) =>
     (window as unknown as { __chipEvents: string[] }).__chipEvents = events;
     for (const type of ["remove", "change"])
       document.addEventListener(type, (event) => {
+        // the edit field's own change shouldn't reach the page
+        if (!(event instanceof CustomEvent)) {
+          events.push(`native:${type}`);
+          return;
+        }
         const label = (event.target as Element).querySelector?.(
           "[data-ac-chip-input-part=label]"
         );
