@@ -59,33 +59,63 @@ if (!(overlayTransitions as readonly string[]).includes(transition)) {
   );
 }
 
+const isContainerTransform = transition === "container-transform";
 const transitionClasses = {
   fade: "opacity-0 motion-safe:transition-[display,opacity,overlay] open:opacity-100 motion-safe:starting:open:opacity-0",
   "fade-down":
     "opacity-0 -translate-y-full motion-safe:transition-[display,opacity,overlay,translate] open:opacity-100 open:translate-y-0 motion-safe:starting:open:opacity-0 motion-safe:starting:open:-translate-y-full",
   "fade-scale":
     "opacity-0 scale-80 motion-safe:transition-[display,opacity,overlay,scale] open:opacity-100 open:scale-100 motion-safe:starting:open:opacity-0 motion-safe:starting:open:scale-80",
+  // M3's container transform, approximated (#252): over the button that opened it, top start
+  // corner to top start corner in the button's direction, or the corner a flip moves it to when
+  // there isn't room; centred, as other overlays, without one. The script grows it out of the
+  // button's box; here it only stays drawn for as long as the script's exit takes. Anchor insets
+  // rather than position-area, as Menu's. The container grows and shrinks on M3's enter and exit
+  // pair, which slows to a stop without overshooting, as the chips Guidelines video shows, and
+  // the fades are on default effects, as it covers part of the screen (ADR-0018).
+  "container-transform": [
+    "data-ac-overlay-opener-dir:inset-auto data-ac-overlay-opener-dir:m-0 data-ac-overlay-opener-dir:top-[anchor(top)]",
+    "data-[ac-overlay-opener-dir=ltr]:left-[anchor(left)] data-[ac-overlay-opener-dir=rtl]:right-[anchor(right)]",
+    "[position-try-fallbacks:flip-block,flip-inline,flip-block_flip-inline]",
+    "motion-safe:[transition:display_var(--ac-overlay-exit)_allow-discrete,overlay_var(--ac-overlay-exit)_allow-discrete]",
+    "[--ac-overlay-grow-duration:var(--theme-duration-medium-4)] [--ac-overlay-grow-ease:var(--ease-emphasized-decelerate)]",
+    "[--ac-overlay-shrink-duration:var(--theme-duration-short-4)] [--ac-overlay-shrink-ease:var(--ease-emphasized-accelerate)]",
+    "[--ac-overlay-fade-duration:var(--theme-duration-spring-default-effects)] [--ac-overlay-fade-ease:var(--ease-spring-default-effects)]",
+    "[--ac-overlay-exit:calc(var(--ac-overlay-fade-duration)+var(--ac-overlay-shrink-duration))]",
+  ].join(" "),
 }[transition];
-
 const randomId = crypto.randomUUID();
 ---
 
 <Tag
   class:list={twMerge(
     "m-auto overscroll-contain bg-transparent outline-none",
-    // M3's enter and exit pattern (ADR-0018), for the overlay and its scrim
-    "motion-safe:transition-discrete motion-safe:motion-enter-exit",
+    // M3's enter and exit pattern (ADR-0018), for the overlay and its scrim; a container
+    // transform has its own timing
+    !isContainerTransform &&
+      "motion-safe:transition-discrete motion-safe:motion-enter-exit",
     showBackdrop &&
       "backdrop:bg-(--theme-color-scrim)/32 backdrop:opacity-0 open:backdrop:opacity-100 motion-safe:starting:open:backdrop:opacity-0",
     showBackdrop &&
-      "motion-safe:motion-enter-exit-backdrop motion-safe:backdrop:transition-[display,opacity,overlay] motion-safe:backdrop:transition-discrete",
+      "motion-safe:backdrop:transition-[display,opacity,overlay] motion-safe:backdrop:transition-discrete",
+    // A container transform's scrim fades out over its whole exit
+    showBackdrop &&
+      (isContainerTransform
+        ? "motion-safe:backdrop:duration-(--ac-overlay-exit) motion-safe:backdrop:ease-emphasized-accelerate motion-safe:open:backdrop:duration-(--theme-duration-medium-4) motion-safe:open:backdrop:ease-emphasized-decelerate"
+        : "motion-safe:motion-enter-exit-backdrop"),
     showBlur && "backdrop:backdrop-blur-xs",
     showBlur && showBackdrop && "backdrop:bg-(--theme-color-scrim)/16",
     transitionClasses,
     overlayClass
   )}
   {id}
-  style={`--ac-anchorname-overlay: --anchorname-${randomId}-overlay`}
+  style={[
+    `--ac-anchorname-overlay: --anchorname-${randomId}-overlay`,
+    isContainerTransform && `position-anchor: --ac-overlay-opener-${id}`,
+  ]
+    .filter(Boolean)
+    .join("; ")}
+  data-ac-overlay-transition={transition}
   {...attrs}
 >
   {/* The panel is a BaseWrapper so it resets the per-background custom properties (focus-ring,
@@ -98,3 +128,165 @@ const randomId = crypto.randomUUID();
     <slot />
   </BaseWrapper>
 </Tag>
+
+<script>
+  // M3's container transform, approximated over an overlay (#252): it opens over the button that
+  // opened it and grows out of the button's box, clipped to it and its corners at first. Its
+  // content fades in once it has mostly grown, so no frame cross-fades, as M3's Applying
+  // transitions page asks. Closing, the content fades out first, then the container shrinks back
+  // into the button, which takes focus back. Opened without a button, it only fades, and under
+  // reduced motion it doesn't move, as other overlays.
+  type Transform = { opener?: HTMLElement; animations: Animation[] };
+  const transforms = new WeakMap<HTMLElement, Transform>();
+  const isContainerTransform = (el: unknown): el is HTMLElement =>
+    el instanceof HTMLElement &&
+    el.matches("[data-ac-overlay-transition=container-transform]");
+  const transformOf = (overlay: HTMLElement) => {
+    const transform = transforms.get(overlay) ?? { animations: [] };
+    transforms.set(overlay, transform);
+    return transform;
+  };
+
+  // The button that opens it anchors it, in the button's direction, wherever the overlay sits in
+  // the page: its toggle's source, a commandfor button or the one a page passes to
+  // showPopover({ source }). Without one, it's centred, as other overlays.
+  const anchorTo = (overlay: HTMLElement, opener: HTMLElement | undefined) => {
+    const transform = transformOf(overlay);
+    if (transform.opener && transform.opener !== opener)
+      transform.opener.style.anchorName = "";
+    transform.opener = opener;
+    if (!opener) {
+      delete overlay.dataset.acOverlayOpenerDir;
+      return;
+    }
+    opener.style.anchorName = `--ac-overlay-opener-${overlay.id}`;
+    overlay.dataset.acOverlayOpenerDir = getComputedStyle(opener).direction;
+  };
+
+  // The opener's box within the overlay's, with its corners, as a clip-path
+  const openerClip = (overlay: HTMLElement, opener: HTMLElement) => {
+    const outer = overlay.getBoundingClientRect();
+    const inner = opener.getBoundingClientRect();
+    const corner = getComputedStyle(opener).borderStartStartRadius;
+    return `inset(${inner.top - outer.top}px ${outer.right - inner.right}px ${outer.bottom - inner.bottom}px ${inner.left - outer.left}px round ${corner})`;
+  };
+
+  const animateTransform = (overlay: HTMLElement, isOpening: boolean) => {
+    const transform = transformOf(overlay);
+    transform.animations.forEach((animation) => animation.cancel());
+    const style = getComputedStyle(overlay);
+    const timing = (name: string) => style.getPropertyValue(name).trim();
+    const [size, sizeEase] = isOpening
+      ? [timing("--ac-overlay-grow-duration"), timing("--ac-overlay-grow-ease")]
+      : [
+          timing("--ac-overlay-shrink-duration"),
+          timing("--ac-overlay-shrink-ease"),
+        ];
+    const resize = parseFloat(size);
+    const fade = parseFloat(timing("--ac-overlay-fade-duration"));
+    const fadeEase = timing("--ac-overlay-fade-ease");
+    const opacity = isOpening ? [0, 1] : [1, 0];
+    const panel = overlay.firstElementChild;
+    const opener = transform.opener;
+
+    if (!panel || !opener?.isConnected) {
+      transform.animations = [
+        overlay.animate(
+          { opacity },
+          { duration: fade, easing: fadeEase, fill: "both" }
+        ),
+      ];
+    } else {
+      const fromOpener = openerClip(overlay, opener);
+      const full = `inset(0px 0px 0px 0px round ${getComputedStyle(panel).borderStartStartRadius})`;
+      // Opening, the container fades in as it grows, and its content once it has mostly grown;
+      // closing, the content fades out first, then the container shrinks, fading out as it ends
+      transform.animations = [
+        overlay.animate(
+          {
+            clipPath: isOpening ? [fromOpener, full] : [full, fromOpener],
+          },
+          {
+            duration: resize,
+            delay: isOpening ? 0 : fade,
+            easing: sizeEase,
+            fill: "both",
+          }
+        ),
+        overlay.animate(
+          { opacity },
+          {
+            duration: isOpening ? fade : resize / 2,
+            delay: isOpening ? 0 : fade + resize / 2,
+            easing: fadeEase,
+            fill: "both",
+          }
+        ),
+        ...[...panel.children].map((child) =>
+          child.animate(
+            { opacity },
+            {
+              duration: fade,
+              delay: isOpening ? resize / 2 : 0,
+              easing: fadeEase,
+              fill: "both",
+            }
+          )
+        ),
+      ];
+    }
+    overlay.style.opacity = "";
+    // Done opening, the overlay is drawn as it is, so it follows a change in size; done closing,
+    // it's hidden anyway
+    if (isOpening)
+      transform.animations.forEach((animation) =>
+        animation.finished.then(
+          () => animation.cancel(),
+          () => {}
+        )
+      );
+  };
+
+  // Closing, focus goes back to the button it grew from, which WebKit leaves to the page
+  const focusOpener = (overlay: HTMLElement) => {
+    const opener = transforms.get(overlay)?.opener;
+    if (opener?.isConnected && overlay.contains(document.activeElement))
+      opener.focus();
+  };
+
+  // `beforetoggle` doesn't bubble, hence the capture. Opening, the overlay's box is known only
+  // once it's open, so it's transparent until the next frame, before it's first drawn, unless
+  // it's closed again by then, or something stopped it opening.
+  document.addEventListener(
+    "beforetoggle",
+    (event) => {
+      const overlay = event.target;
+      if (!isContainerTransform(overlay)) return;
+      const isOpening = (event as ToggleEvent).newState === "open";
+      if (isOpening) {
+        const { source } = event as ToggleEvent & { source?: Element | null };
+        anchorTo(
+          overlay,
+          source instanceof HTMLElement && !overlay.contains(source)
+            ? source
+            : undefined
+        );
+      }
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        if (!isOpening) focusOpener(overlay);
+        return;
+      }
+      if (isOpening) {
+        overlay.style.opacity = "0";
+        requestAnimationFrame(() => {
+          if (overlay.matches(":popover-open")) animateTransform(overlay, true);
+          else overlay.style.opacity = "";
+        });
+        return;
+      }
+      animateTransform(overlay, false);
+      focusOpener(overlay);
+    },
+    true
+  );
+</script>

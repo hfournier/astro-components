@@ -10,7 +10,7 @@ const expected: Record<string, string | RegExp> = {
   "base-chip-variant": `BaseChip: M3's chip styles are "flat" and "elevated", but this one's \`variant\` is "outlined".`,
   "base-overlay-as": `BaseOverlay: its elements are "dialog" and "div", but this one's \`as\` is "section".`,
   "base-overlay-bg-color": `BaseOverlay: M3's overlay surfaces are "surface", "surface-container-low", "surface-container", "surface-container-high", "inverse-surface" and "tertiary-container", but this one's \`bgColor\` is "primary-container".`,
-  "base-overlay-transition": `BaseOverlay: its transitions are "fade", "fade-scale" and "fade-down", but this one's \`transition\` is "slide".`,
+  "base-overlay-transition": `BaseOverlay: its transitions are "fade", "fade-scale", "fade-down" and "container-transform", but this one's \`transition\` is "slide".`,
   "base-wrapper-as": `BaseWrapper: its elements are "article", "aside", "div", "figure", "footer", "header", "main" and "section", but this one's \`as\` is "span".`,
   "base-wrapper-bg-color":
     /^BaseWrapper: its backgrounds are "primary-container", .+ and "transparent", but this one's `bgColor` is "primary"\.$/,

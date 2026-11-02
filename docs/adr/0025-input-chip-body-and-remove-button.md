@@ -15,4 +15,4 @@ We rejected the native checkbox of ADR-0024 for the reasons above, and a single 
 
 - ChipGroup's arrow keys treat an input chip's wrapper as one chip, moving to its body, and leave an edit field's arrow keys to its text.
 - The selected state is the body's `aria-pressed`, set by the script, unlike a filter chip's, which needs none.
-- A chip that expands shows BaseChip's pressed state while its popover is open, through the `aria-expanded` the script mirrors from the popover's `toggle` event. Where the popover appears, and the container transform M3 draws it with, are the popover's.
+- A chip that expands shows BaseChip's pressed state while its popover is open, through the `aria-expanded` the script mirrors from the popover's `toggle` event. Where the popover appears, and the container transform M3 draws it with, are the popover's: BaseOverlay's `container-transform` transition anchors it over the button that opened it and grows it out of that button's box (#252).

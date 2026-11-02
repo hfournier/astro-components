@@ -91,7 +91,12 @@ export type NavSubItemType = {
   badgeLabel?: string | number;
 };
 
-export const overlayTransitions = ["fade", "fade-scale", "fade-down"] as const;
+export const overlayTransitions = [
+  "fade",
+  "fade-scale",
+  "fade-down",
+  "container-transform",
+] as const;
 export type OverlayTransitionType = (typeof overlayTransitions)[number];
 
 // A prop/slot paired with the heading id already assigned to it in the table
