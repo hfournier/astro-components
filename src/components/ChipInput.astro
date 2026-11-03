@@ -235,10 +235,14 @@ const bodyClasses = twMerge(
     chip.remove();
   };
 
-  // Editing: the chip turns back into its text, in a field that grows with it. Enter or leaving
-  // the field commits, firing a cancelable `change` with the new text, which the page can refuse
-  // to keep the field open; an empty field removes the chip. Escape puts the chip back as it was.
-  // While editing, the field stands in for the body and the remove button
+  // Editing: the chip turns back into the text it stands for, in a field that grows with it. Like
+  // an <option>, a chip shows its label and stands for its body's `value`, or its label when it
+  // has none. The chip fires a cancelable `edit` first, with `detail.text`, its value, which the
+  // page can rewrite, such as "Name <address>" for a contact. Enter or leaving the field commits,
+  // firing a cancelable `change` with the new text as `detail.value` and `detail.label`, which the
+  // page can refuse, keeping the field open, or split, such as "Name <address>" back into the
+  // two; an empty field removes the chip. Escape puts the chip back as it was. While editing, the
+  // field stands in for the body and the remove button
   const showField = (chip: Element, isEditing: boolean) => {
     for (const name of ["body", "remove"] as const) {
       const control = partOf(chip, name);
@@ -262,11 +266,22 @@ const bodyClasses = twMerge(
       parseFloat(style.paddingInlineStart) + parseFloat(style.paddingInlineEnd);
     field.style.width = `${Math.ceil(text + padding) + 1}px`;
   };
+  // The text each open edit started from, so committing it unchanged changes nothing
+  const openedWith = new WeakMap<Element, string>();
   const startEditing = (chip: Element) => {
     const field = partOf(chip, "edit") as HTMLInputElement | null;
-    const label = partOf(chip, "label");
-    if (!field || !label) return;
-    field.value = label.textContent ?? "";
+    const label = partOf(chip, "label")?.textContent ?? "";
+    if (!field) return;
+    const value = partOf(chip, "body")?.getAttribute("value") ?? label;
+    const detail = { text: value, value, label };
+    const event = new CustomEvent("edit", {
+      bubbles: true,
+      cancelable: true,
+      detail,
+    });
+    if (!chip.dispatchEvent(event)) return;
+    field.value = String(detail.text);
+    openedWith.set(chip, field.value);
     chip.setAttribute("data-ac-chip-input-editing", "");
     showField(chip, true);
     fit(field);
@@ -286,25 +301,26 @@ const bodyClasses = twMerge(
     const label = partOf(chip, "label");
     if (!field || !label || !chip.hasAttribute("data-ac-chip-input-editing"))
       return;
-    const value = field.value.trim();
-    if (!value) {
+    const text = field.value.trim();
+    if (!text) {
       stopEditing(chip);
       remove(chip);
       return;
     }
-    if (value !== label.textContent) {
+    if (text !== openedWith.get(chip)) {
+      const detail = { value: text, label: text };
       const event = new CustomEvent("change", {
         bubbles: true,
         cancelable: true,
-        detail: { value },
+        detail,
       });
       if (!chip.dispatchEvent(event)) return;
-      // a value that was the chip's text, such as one a TextField submits, follows the edit; a
-      // value of its own, such as a contact's address under their name, stays
+      // a value the same as the label is no value of its own, as for an <option>
       const body = partOf(chip, "body");
-      if (body && body.getAttribute("value") === label.textContent)
-        body.setAttribute("value", value);
-      label.textContent = value;
+      if (String(detail.value) !== String(detail.label))
+        body?.setAttribute("value", String(detail.value));
+      else body?.removeAttribute("value");
+      label.textContent = String(detail.label);
     }
     stopEditing(chip);
   };

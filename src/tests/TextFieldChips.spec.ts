@@ -252,7 +252,7 @@ test.describe("TextField with chips", () => {
     ]);
   });
 
-  test("editing a chip shown by a contact's name keeps the address it submits", async ({
+  test("editing a chip shown by a contact's name opens its address, and submits the edit", async ({
     page,
   }) => {
     await page.evaluate(() => {
@@ -266,14 +266,15 @@ test.describe("TextField with chips", () => {
     const sara = chips(to).nth(3);
     await body(sara).click();
     const edit = sara.locator("[data-ac-chip-input-part=edit]");
-    await edit.fill("Sara H.");
+    await expect(edit).toHaveValue("sara@example.com");
+    await edit.fill("sara.haddad@example.com");
     await edit.press("Enter");
     await expect(sara.locator("[data-ac-chip-input-part=label]")).toHaveText(
-      "Sara H."
+      "sara.haddad@example.com"
     );
     expect(
       (await submitted(page, "text-field-chips-wrap-form", "to")).at(-1)
-    ).toBe("sara@example.com");
+    ).toBe("sara.haddad@example.com");
   });
 
   test("the label floats while the field holds chips, and rests in an empty field", async ({

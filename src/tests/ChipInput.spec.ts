@@ -524,9 +524,77 @@ test.describe("ChipInput", () => {
     await field.fill("");
     await page.keyboard.press("Enter");
     await expect(target).toHaveCount(0);
+    await expect(part(chip(page, "edit", "Fabian Reza"), "body")).toBeFocused();
+  });
+
+  // Like an <option>, a chip shows its label and stands for its value, the label when it has
+  // none: an edit opens on the value, and the text committed is both, as for typed text
+  test("an edit opens on the chip's value, and the committed text becomes its label and value", async ({
+    page,
+  }) => {
+    // by place, as the edit renames it
+    const target = page
+      .getByTestId("chip-input-edit")
+      .locator("[data-ac-chip-input]")
+      .nth(2);
+    const body = part(target, "body");
+    await body.click();
+    const field = part(target, "edit");
+    await expect(field).toHaveValue("fabian@example.com");
+    await field.fill("fabian.reza@example.com");
+    await page.keyboard.press("Enter");
+    await expect(part(target, "label")).toHaveText("fabian.reza@example.com");
+    await expect(body).not.toHaveAttribute("value");
+  });
+
+  // M3's Guidelines show a contact's chip opening as "Name <address>": the page writes the text
+  // an edit opens with on `edit`, and reads the label and value back from it on `change`
+  test("a page can write the text an edit opens with, and split the committed text into label and value", async ({
+    page,
+  }) => {
+    await page.evaluate(() => {
+      document.addEventListener("edit", (event) => {
+        const detail = (
+          event as CustomEvent<{ text: string; value: string; label: string }>
+        ).detail;
+        if (detail.value !== detail.label)
+          detail.text = `${detail.label} <${detail.value}>`;
+      });
+      document.addEventListener("change", (event) => {
+        const detail = (event as CustomEvent<{ value: string; label: string }>)
+          .detail;
+        const match = detail.value.match(/^(.+?)\s*<(.+)>$/);
+        if (match) [, detail.label, detail.value] = match;
+      });
+    });
+    // by place, as the edit renames it
+    const target = page
+      .getByTestId("chip-input-edit")
+      .locator("[data-ac-chip-input]")
+      .nth(2);
+    const body = part(target, "body");
+    await body.click();
+    const field = part(target, "edit");
+    await expect(field).toHaveValue("Fabian Reza <fabian@example.com>");
+    await field.fill("Fabian R. <fabian.reza@example.com>");
+    await page.keyboard.press("Enter");
+    await expect(part(target, "label")).toHaveText("Fabian R.");
+    await expect(body).toHaveAttribute("value", "fabian.reza@example.com");
+
+    // a plain chip edits as its text
+    await part(chip(page, "edit", "ping@example.com"), "body").click();
     await expect(
-      part(chip(page, "edit", "ziad@example.com"), "body")
-    ).toBeFocused();
+      part(chip(page, "edit", "ping@example.com"), "edit")
+    ).toHaveValue("ping@example.com");
+  });
+
+  test("a page can keep a chip from opening its edit", async ({ page }) => {
+    await page.evaluate(() =>
+      document.addEventListener("edit", (event) => event.preventDefault())
+    );
+    const target = chip(page, "edit", "Fabian Reza");
+    await part(target, "body").click();
+    await expect(part(target, "edit")).toBeHidden();
   });
 
   // ChipGroup's arrow keys stay out of the edit field, which keeps them for its text

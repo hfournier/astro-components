@@ -16,6 +16,6 @@ We rejected a separate pattern component (a "chip field"), which would duplicate
 ## Consequences
 
 - ChipGroup now ignores arrow keys with a modifier, leaving them to whatever handles them, such as moving a chip.
-- ChipInput's edit commits its text to the body's `value` attribute too, when the value was its text, so an edited chip submits what it now says; a value of its own, such as a contact's address under their name, stays.
+- A chip is like an `<option>`: it shows its label and stands for its body's `value`, or its label when it has none. So ChipInput's edit opens on the value, such as a contact's address rather than their name, and the text committed becomes both, the `value` attribute dropped when they're the same. Editing a shown name while the address stays would change nothing the form submits. M3's Guidelines show a contact opening as "Fabian Reza <rezzian120@gmail.com>": a page does that with ChipInput's cancelable `edit` event, whose `detail.text` it can rewrite, and splits the text back on `change`, whose `detail.label` and `detail.value` it can set, as on `add`. This stays the page's job rather than an email chip's, since M3 has only the generic input chip, and only the page knows what its chips stand for.
 - A filled field of chips with a label is 64px tall for one row: the floated label's 24px above a 32px chip, and 8px below. Unlabelled or outlined, it's M3's 56px. Each wrapped row adds ChipGroup's 16px gap and a 32px chip.
 - A form's reset doesn't bring back removed chips.
