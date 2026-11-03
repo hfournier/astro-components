@@ -24,6 +24,16 @@ export default defineConfig({
     },
   ],
 
+  // Fenced code blocks in Markdown and MDX take the site's code themes, as Example and Usage
+  // do, following the colour scheme. Astro's default, github-dark in both schemes, draws
+  // comments at 3.05:1, short of AA's 4.5:1 (#256).
+  markdown: {
+    shikiConfig: {
+      themes: { light: "github-light-default", dark: "github-dark-default" },
+      defaultColor: "light-dark()",
+    },
+  },
+
   integrations: [mdx()],
 
   vite: {

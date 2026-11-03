@@ -1,0 +1,11 @@
+---
+// A fenced code block, as Shiki renders it: drawn as an Example's or Usage's code is, on
+// surface-container-lowest with 16px of padding, in place of the theme's own background, which
+// Shiki sets inline, hence the `!`
+const { class: classList, ...props } = Astro.props;
+---
+
+<pre
+  class:list={[classList, "bg-(--theme-color-surface-container-lowest)! p-4"]}
+  {...props}
+><slot /></pre>
