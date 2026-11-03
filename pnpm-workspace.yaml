@@ -2,14 +2,9 @@ allowBuilds:
   esbuild: false
   sharp: false
 
-minimumReleaseAge: 43200
+minimumReleaseAge: 10080
 trustPolicy: no-downgrade
 trustPolicyExclude:
   - "chokidar@4.0.3"
 strictDepBuilds: true
 blockExoticSubdeps: true
-minimumReleaseAgeExclude:
-  - '@astrojs/internal-helpers@0.12.0'
-  - '@astrojs/markdown-satteri@0.4.3'
-  - '@astrojs/mdx@8.0.3'
-  - astro@7.3.8
