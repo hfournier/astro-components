@@ -117,21 +117,18 @@ A filled field with a label is 64px tall for a row of chips, the floated label a
   const contacts: Record<string, string> = { "ping@example.com": "Ping Qiang" };
   const to = document.getElementById("to");
 
-  // Typed text: refuse what isn't an address, and show a known contact by name
   to?.addEventListener("add", (event) => {
     const detail = (event as CustomEvent<Detail>).detail;
     if (!detail.value.includes("@")) event.preventDefault();
     else detail.label = contacts[detail.value] ?? detail.value;
   });
 
-  // Editing a contact: open it as "Name <address>"…
   to?.addEventListener("edit", (event) => {
     const detail = (event as CustomEvent<EditDetail>).detail;
     if (detail.label !== detail.value)
       detail.text = `${detail.label} <${detail.value}>`;
   });
 
-  // …and read the name and the address back from the edit. A bare address may be a contact's.
   to?.addEventListener("change", (event) => {
     const detail = (event as CustomEvent<Detail>).detail;
     const [, name, address] = detail.value.match(/^(.+?)\s*<(.+)>$/) ?? [];
@@ -141,6 +138,8 @@ A filled field with a label is 64px tall for a row of chips, the floated label a
   });
 </script>
 ```
+
+Here, `add` refuses text that isn't an address and shows a known contact by name; `edit` opens a contact as `Name <address>`; and `change` reads the name and the address back, a bare address getting a known contact's name, as on `add`.
 
 The `edit` event's `detail` has the chip's `label` and `value`, and the `text` the edit opens with, its value by default. The `change` event's `detail.value` and `detail.label` both start as the committed text; whatever you set them to, the chip shows and submits. Call `preventDefault()` on `edit` to keep a chip from opening, or on `change` to refuse the text and keep the edit open.
 

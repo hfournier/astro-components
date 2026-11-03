@@ -55,7 +55,7 @@ A chip works like an `<option>`: it shows its label and stands for its `value` a
 - **`edit`**, as the chip opens, with `detail.label`, `detail.value` and `detail.text`, the text the edit opens with, the value by default. Set `detail.text` to open on something else, or call `preventDefault()` to keep the chip from opening.
 - **`change`**, as a changed text is committed, with `detail.value` and `detail.label`, both the text at first. Set them to show and keep something else, or call `preventDefault()` to refuse the text, which keeps the edit open, such as an address without an `@`.
 
-M3's Guidelines page shows a contact's chip opening as `Name <address>`, so both can be changed in one edit. The page writes that text on `edit` and splits it back into the name and the address on `change`:
+M3's Guidelines page shows a contact's chip opening as `Name <address>`, so both can be changed in one edit. The page writes that text on `edit` and splits it back into the name and the address on `change`. Below, `Fabian Reza` opens as `Fabian Reza <fabian@example.com>`, and a bare address as itself; committing `Fabian R. <fabian.r@example.com>` shows `Fabian R.` and keeps the new address:
 
 ```astro
 <ChipGroup aria-label="To" id="recipients">
@@ -66,14 +66,12 @@ M3's Guidelines page shows a contact's chip opening as `Name <address>`, so both
   type Detail = { value: string; label: string };
   const recipients = document.getElementById("recipients");
 
-  // "Fabian Reza" opens as "Fabian Reza <fabian@example.com>"; a bare address, as itself
   recipients?.addEventListener("edit", (event) => {
     const detail = (event as CustomEvent<Detail & { text: string }>).detail;
     if (detail.label !== detail.value)
       detail.text = `${detail.label} <${detail.value}>`;
   });
 
-  // "Fabian R. <fabian.r@example.com>" shows "Fabian R." and keeps the address
   recipients?.addEventListener("change", (event) => {
     const detail = (event as CustomEvent<Detail>).detail;
     const [, name, address] = detail.value.match(/^(.+?)\s*<(.+)>$/) ?? [];
