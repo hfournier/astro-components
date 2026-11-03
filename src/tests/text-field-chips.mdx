@@ -1,0 +1,112 @@
+---
+title: TextField with chips
+description: Tests for a TextField holding input chips
+---
+
+<Heading level={1}>TextField with chips Tests</Heading>
+
+<Section data-testid="text-field-chips-wrap" class="p-4 space-y-4">
+  <Heading level={2}>Wrapping</Heading>
+  <form id="text-field-chips-wrap-form">
+    <TextField name="to" class="w-90" id="text-field-chips-to">
+      To
+
+      <Fragment slot="chips">
+        <ChipInput value="ziad@example.com">Ziad Aouad</ChipInput>
+        <ChipInput value="ping@example.com" isSelected>
+          Ping Qiang
+        </ChipInput>
+        <ChipInput isEditable>{"lily@example.com"}</ChipInput>
+      </Fragment>
+    </TextField>
+  </form>
+</Section>
+
+<Section data-testid="text-field-chips-empty" class="p-4 space-y-4">
+  <Heading level={2}>Empty and required</Heading>
+  <form id="text-field-chips-empty-form">
+    <TextField name="tags" required class="w-90" id="text-field-chips-tags">
+      Tags
+
+      <Fragment slot="chips" />
+
+      <span slot="supporting-text">Press Enter to add a tag</span>
+    </TextField>
+  </form>
+</Section>
+
+<Section data-testid="text-field-chips-outlined" class="p-4 space-y-4">
+  <Heading level={2}>Outlined</Heading>
+  <TextField variant="outlined" name="search" class="w-90">
+    Search
+
+    <Fragment slot="chips">
+      <ChipInput icon="image">Photos</ChipInput>
+    </Fragment>
+
+    <span slot="supporting-text">Filter by type</span>
+  </TextField>
+  <TextField
+    variant="outlined"
+    name="invalid"
+    aria-invalid="true"
+    class="w-90"
+  >
+    Invalid
+
+    <Fragment slot="chips">
+      <ChipInput>Unknown</ChipInput>
+    </Fragment>
+
+    <span slot="supporting-text">Not a contact</span>
+  </TextField>
+</Section>
+
+<Section data-testid="text-field-chips-scroll" class="p-4 space-y-4">
+  <Heading level={2}>Scrolling</Heading>
+  <TextField name="guests" chipOverflow="scroll" class="w-80">
+    Guests
+
+    <Fragment slot="chips">
+      <ChipInput>Ziad Aouad</ChipInput>
+      <ChipInput>Ping Qiang</ChipInput>
+      <ChipInput>Lily MacDonald</ChipInput>
+      <ChipInput>Sara Haddad</ChipInput>
+      <ChipInput>Kenji Watanabe</ChipInput>
+    </Fragment>
+  </TextField>
+</Section>
+
+<Section data-testid="text-field-chips-move" class="p-4 space-y-4">
+  <Heading level={2}>Moving between fields</Heading>
+  <form id="text-field-chips-move-form" class="flex flex-col gap-4">
+    <TextField name="to" class="w-90">
+      To
+
+      <Fragment slot="chips">
+        <ChipInput>Alex</ChipInput>
+        <ChipInput>Blake</ChipInput>
+        <ChipInput>Casey</ChipInput>
+      </Fragment>
+    </TextField>
+    <TextField name="cc" class="w-90">
+      Cc
+
+      <Fragment slot="chips">
+        <ChipInput>Drew</ChipInput>
+      </Fragment>
+    </TextField>
+  </form>
+</Section>
+
+<Section data-testid="text-field-chips-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <TextField name="rtl" class="w-90">
+    إلى
+
+    <Fragment slot="chips">
+      <ChipInput>زياد</ChipInput>
+      <ChipInput>بينغ</ChipInput>
+    </Fragment>
+  </TextField>
+</Section>

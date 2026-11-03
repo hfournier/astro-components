@@ -20,7 +20,7 @@ props:
     type: boolean
     required: false
     default: "false"
-    description: A tap turns the chip back into its text, in a field to edit, instead of selecting it. Enter commits, Escape cancels. The build fails if it's given with `popoverId`.
+    description: A tap turns the chip back into the text it stands for, its `value` or else its label, in a field to edit, instead of selecting it. Enter commits, Escape cancels. See Editing. The build fails if it's given with `popoverId`.
   - name: popoverId
     type: string
     required: false
@@ -48,19 +48,40 @@ By default, a tap selects the chip and a second tap deselects it, as M3's Guidel
 
 ## Editing
 
-With `isEditable`, a tap turns the chip back into its text, in a field that grows with it, as M3's Guidelines page shows for a mistyped email address. Enter, or leaving the field, commits the text; Escape puts the chip back as it was. A changed text fires a `change` event with `detail.value`, which bubbles and is cancelable: call `preventDefault()` to refuse it, such as an address without an `@`, which keeps the field open. Committing an empty field removes the chip.
+With `isEditable`, a tap turns the chip back into text, in a field that grows with it, as M3's Guidelines page shows for a mistyped email address. Enter, or leaving the field, commits the text; Escape puts the chip back as it was. Committing an empty field removes the chip.
+
+A chip works like an `<option>`: it shows its label and stands for its `value` attribute, or for its label when it has no `value`. The edit opens on what the chip stands for, so `<ChipInput value="ziad@example.com" isEditable>Ziad Aouad</ChipInput>` opens on the address, which is what someone fixing a recipient changes. The text committed becomes both the label and the value, as for an `<option>` with no `value`. Two events, which bubble and are cancelable, let the page change that:
+
+- **`edit`**, as the chip opens, with `detail.label`, `detail.value` and `detail.text`, the text the edit opens with, the value by default. Set `detail.text` to open on something else, or call `preventDefault()` to keep the chip from opening.
+- **`change`**, as a changed text is committed, with `detail.value` and `detail.label`, both the text at first. Set them to show and keep something else, or call `preventDefault()` to refuse the text, which keeps the edit open, such as an address without an `@`.
+
+M3's Guidelines page shows a contact's chip opening as `Name <address>`, so both can be changed in one edit. The page writes that text on `edit` and splits it back into the name and the address on `change`. Below, `Fabian Reza` opens as `Fabian Reza <fabian@example.com>`, and a bare address as itself; committing `Fabian R. <fabian.r@example.com>` shows `Fabian R.` and keeps the new address:
 
 ```astro
 <ChipGroup aria-label="To" id="recipients">
-  <ChipInput isEditable>{"ziad@example.com"}</ChipInput>
+  <ChipInput value="fabian@example.com" isEditable>Fabian Reza</ChipInput>
+  <ChipInput isEditable>{"ping@example.com"}</ChipInput>
 </ChipGroup>
 <script>
-  document.getElementById("recipients")?.addEventListener("change", (event) => {
-    const { value } = (event as CustomEvent<{ value: string }>).detail;
-    if (!value.includes("@")) event.preventDefault();
+  type Detail = { value: string; label: string };
+  const recipients = document.getElementById("recipients");
+
+  recipients?.addEventListener("edit", (event) => {
+    const detail = (event as CustomEvent<Detail & { text: string }>).detail;
+    if (detail.label !== detail.value)
+      detail.text = `${detail.label} <${detail.value}>`;
+  });
+
+  recipients?.addEventListener("change", (event) => {
+    const detail = (event as CustomEvent<Detail>).detail;
+    const [, name, address] = detail.value.match(/^(.+?)\s*<(.+)>$/) ?? [];
+    if (address) [detail.label, detail.value] = [name, address];
+    if (!detail.value.includes("@")) event.preventDefault();
   });
 </script>
 ```
+
+The chip keeps the result in its body's `value` attribute, or drops the attribute when the value is the same as the label. A chip doesn't submit with a form by itself, so read the values from the chips, or put them in a [TextField](/components/text-field), whose chips submit theirs.
 
 ## Expanding
 
@@ -68,4 +89,4 @@ With `popoverId`, a tap opens that [Popover](/components/popover), to show more 
 
 ## In a set
 
-Put input chips in a [ChipGroup](/components/chip-group), which spaces them and moves between them with the arrow keys. Typing text that becomes a chip, and Backspace from a field's cursor selecting the chip before it, belong to a text field that holds chips, still to come.
+Put input chips in a [ChipGroup](/components/chip-group), which spaces them and moves between them with the arrow keys, or in a [TextField](/components/text-field)'s `chips` slot, inline with the cursor: text typed there becomes a chip, Backspace from the cursor selects the chip before it, chips move by dragging and with Shift and the arrow keys, and each chip submits with the form, its `value` attribute or else its label, including what an edit changed.

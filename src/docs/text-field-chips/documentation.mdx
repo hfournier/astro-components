@@ -1,0 +1,28 @@
+---
+name: TextFieldChips
+description: Renders a TextField's input chips, inline with its input in one ChipGroup, and the script that turns committed text into a chip, selects the chip before the cursor on Backspace, moves chips by dragging and with Shift and the arrow keys, and submits each chip's value with the form. Not an independently reusable component — TextField renders it for its `chips` slot.
+category: Forms
+role: internal
+meta:
+  title: TextFieldChips | astro-components HenriFournier.dev
+  description: Renders a TextField's input chips inline with its input, and turns text into chips, moves them and submits their values.
+parents: [TextField]
+props:
+  - name: overflow
+    type: '"wrap" | "scroll"'
+    required: true
+    description: TextField's `chipOverflow`, passed down to the ChipGroup.
+  - name: name
+    type: string
+    required: false
+    description: TextField's `name`, which each chip's hidden input submits under, in place of the text input.
+slots:
+  - name: default
+    description: TextField's input.
+    kind: any
+  - name: chips
+    description: The ChipInputs from TextField's `chips` slot.
+    kind: component
+    component: ChipInput
+    multiple: true
+---

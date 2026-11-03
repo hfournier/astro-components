@@ -86,7 +86,11 @@ const overflowClasses = {
         : (chip as HTMLElement);
 
   document.addEventListener("keydown", (event) => {
+    // with a modifier, an arrow key is someone else's, such as a TextField's Shift+arrow moving
+    // a chip
     if (event.defaultPrevented || !(event.key in steps)) return;
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
+      return;
     const target = event.target as Element;
     if (target instanceof HTMLInputElement && target.type !== "checkbox")
       return;

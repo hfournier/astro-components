@@ -25,6 +25,11 @@ props:
     type: number
     required: false
     description: For `type="textarea"` only. Without it, the field starts one line tall and grows a line at a time with its text, as M3's multi-line field does. With it, the field is M3's text area, that many lines tall, and scrolls once its text is longer. M3 recommends a text area over a growing field on the web. A value that isn't a whole number from 1 fails the build.
+  - name: chipOverflow
+    type: '"wrap" | "scroll"'
+    required: false
+    default: '"wrap"'
+    description: For a field with chips only. `wrap` puts them on new rows, so all of them show, and the field grows a row at a time. `scroll` keeps the field one row high and scrolls its chips and text sideways, as text overflowing a field does. M3's Guidelines page shows both. Given without the `chips` slot, or with another value, it fails the build.
   - name: maxlength
     type: number
     required: false
@@ -46,6 +51,11 @@ slots:
   - name: suffix
     description: Optional text at the end of the input, such as a unit or an email domain, in `on-surface-variant`. It shows once the label floats, and describes the input.
     kind: any
+  - name: chips
+    description: Optional input chips, inline with the cursor, such as the contacts in an email's "To" field. Text typed in the field becomes a chip when committed with Enter. The chips' values, not the text, submit under the field's `name`. See Chips. The chips are a group named by the field's label, so chips in a field with no label, `aria-label` or `aria-labelledby` fail the build, as do chips with `type="textarea"`.
+    kind: component
+    component: ChipInput
+    multiple: true
   - name: supporting-text
     description: Optional text below the field, in M3's Body Small, that describes the input, such as how it's used or a note that it's required. In the error state, swap it for the error text, which turns `error` and is announced as an alert.
     kind: any
@@ -77,3 +87,60 @@ Both variants keep these roles on any background, as M3's Specs page maps them, 
 ## Motion
 
 M3's Specs page gives no timing, so TextField follows Compose: the label moves and resizes, the outline's gap opens, and the indicator or outline thickens on the fast spatial spring. Colors, the state layer, the prefix and the suffix fade on fast effects (ADR-0018). A growing multi-line field changes height on fast spatial as well, where Compose changes it at once, so its size moves on the spring M3 gives size changes. The placeholder fades in on slow effects as the field is focused, and out on fast effects. Under reduced motion, every state changes at once.
+
+## Chips
+
+Fill the `chips` slot with [ChipInput](/components/chip-input)s to make the field hold input chips, as M3's Guidelines page shows for the contacts in an email's "To" field, or the terms in a search field. The chips sit inline with the cursor, in a [ChipGroup](/components/chip-group) named by the field's label, and wrap onto new rows or, with `chipOverflow="scroll"`, scroll sideways in one row (ADR-0026). In MDX, wrap the chips in a `<Fragment slot="chips">`.
+
+- **Adding:** Enter turns the typed text into an editable chip, before the cursor. First the input fires an `add` event, which bubbles and is cancelable, with `detail.value` (the text, which the chip submits) and `detail.label` (what it shows). Call `preventDefault()` to refuse the text, which stays in the field, such as an address that isn't a contact; set `aria-invalid="true"` and swap in error text to say why. Set `detail.label` to show something else, such as the contact's name for their address. Enter on an empty field submits its form, as a text field's does.
+- **Removing:** Backspace with the cursor at the start of the text selects the chip before it, and a second Backspace deletes it, as M3's Guidelines page describes. Typing instead goes on in the text, and the chip is deselected. Each chip's remove button, and Backspace or Delete on a chip, remove it too, and fire ChipInput's `remove` event.
+- **Editing:** a tap on an editable chip turns it back into the text it stands for: its value, such as a contact's address, not the name it shows. Enter commits the edit, and the new text becomes the chip's label and value, as typed text does. To edit a contact as M3's Guidelines page shows, as `Name <address>`, write that text on ChipInput's `edit` event and split it back into the name and the address on its `change` event, as in the example below.
+- **Moving:** drag a chip to another place in the field, or into another field of the same form, such as from "To" to "Cc". From the keyboard, Shift with ArrowLeft or ArrowRight moves the focused chip a place, and Shift with ArrowUp or ArrowDown moves it to the end of the previous or next field.
+- **Submitting:** each chip submits its value under the field's `name`: its `value` attribute, such as a contact's address, or else its label, in the chips' order, whether or not it's selected. The typed text, not yet a chip, doesn't. A `required` field is satisfied by one chip.
+- **Overflow:** a scrolling field behaves as text does, as M3 asks: unfocused, it shows the start of its content, and focusing it puts the cursor at the end of the text, scrolled into view.
+
+A filled field with a label is 64px tall for a row of chips, the floated label above them; outlined or unlabelled, it's 56px. The label floats while the field holds a chip, and the field shows its focus indicator while a chip in it is focused.
+
+```astro
+<form>
+  <TextField name="to" type="email" class="w-full" id="to">
+    To
+
+    <Fragment slot="chips">
+      <ChipInput value="ziad@example.com" isEditable>Ziad Aouad</ChipInput>
+    </Fragment>
+  </TextField>
+</form>
+<script>
+  type Detail = { value: string; label: string };
+  type EditDetail = Detail & { text: string };
+  const contacts: Record<string, string> = { "ping@example.com": "Ping Qiang" };
+  const to = document.getElementById("to");
+
+  to?.addEventListener("add", (event) => {
+    const detail = (event as CustomEvent<Detail>).detail;
+    if (!detail.value.includes("@")) event.preventDefault();
+    else detail.label = contacts[detail.value] ?? detail.value;
+  });
+
+  to?.addEventListener("edit", (event) => {
+    const detail = (event as CustomEvent<EditDetail>).detail;
+    if (detail.label !== detail.value)
+      detail.text = `${detail.label} <${detail.value}>`;
+  });
+
+  to?.addEventListener("change", (event) => {
+    const detail = (event as CustomEvent<Detail>).detail;
+    const [, name, address] = detail.value.match(/^(.+?)\s*<(.+)>$/) ?? [];
+    if (address) [detail.label, detail.value] = [name, address];
+    else detail.label = contacts[detail.value] ?? detail.value;
+    if (!detail.value.includes("@")) event.preventDefault();
+  });
+</script>
+```
+
+Here, `add` refuses text that isn't an address and shows a known contact by name; `edit` opens a contact as `Name <address>`; and `change` reads the name and the address back, a bare address getting a known contact's name, as on `add`.
+
+The `edit` event's `detail` has the chip's `label` and `value`, and the `text` the edit opens with, its value by default. The `change` event's `detail.value` and `detail.label` both start as the committed text; whatever you set them to, the chip shows and submits. Call `preventDefault()` on `edit` to keep a chip from opening, or on `change` to refuse the text and keep the edit open.
+
+Chips that change place slide on M3's fast spatial spring; their colors change on fast effects, as ChipInput's do. Under reduced motion, they move at once.

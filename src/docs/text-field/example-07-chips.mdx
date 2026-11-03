@@ -1,0 +1,34 @@
+---
+title: Chips
+description: Fill the `chips` slot with input chips. Type an address and press Enter to add one, Backspace at the start of the text to select the chip before it, and drag a chip, or use Shift and the arrow keys, to move it within a field or between "To" and "Cc". With `chipOverflow="scroll"`, the chips scroll sideways in one row.
+---
+
+<form class="flex flex-col items-start gap-4">
+  <TextField name="to" type="email" class="w-90">
+    To
+
+    <Fragment slot="chips">
+      <ChipInput value="ziad@example.com" isEditable>Ziad Aouad</ChipInput>
+      <ChipInput isEditable>{"ping@example.com"}</ChipInput>
+    </Fragment>
+  </TextField>
+  <TextField name="cc" type="email" variant="outlined" class="w-90">
+    Cc
+
+    <Fragment slot="chips">
+      <ChipInput icon="person">Lily MacDonald</ChipInput>
+    </Fragment>
+
+    <span slot="supporting-text">Press Enter to add an address</span>
+  </TextField>
+  <TextField name="tags" chipOverflow="scroll" class="w-90">
+    Tags
+
+    <Fragment slot="chips">
+      <ChipInput>Design</ChipInput>
+      <ChipInput>Accessibility</ChipInput>
+      <ChipInput>Motion</ChipInput>
+      <ChipInput>Typography</ChipInput>
+    </Fragment>
+  </TextField>
+</form>

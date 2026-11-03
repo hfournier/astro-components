@@ -1,0 +1,646 @@
+---
+import ChipGroup from "./ChipGroup.astro";
+import ChipInput from "./ChipInput.astro";
+
+// TextField's chips, inline with its input in one ChipGroup, as M3's Guidelines page places input
+// chips in a text field (ADR-0026). Rendered by TextField alone: the `chips` slot is the page's
+// ChipInputs, the default slot TextField's input. The script turns committed text into a chip,
+// selects the chip before the cursor on Backspace, moves chips by dragging and with Shift and the
+// arrow keys, and keeps a hidden input per chip, under `name`, for the form.
+type Props = {
+  // Wrapping onto new rows, or one row that scrolls sideways
+  overflow: "wrap" | "scroll";
+  // The name the chips' values submit under
+  name?: string;
+  // The group's name: the field's label, or the input's own
+  "aria-label"?: string;
+  "aria-labelledby"?: string;
+};
+
+const {
+  overflow,
+  name,
+  "aria-label": ariaLabel,
+  "aria-labelledby": ariaLabelledby,
+} = Astro.props;
+---
+
+<div
+  class="flex min-w-0 flex-1"
+  data-ac-text-field-chips={overflow}
+  data-ac-text-field-chips-name={name}
+  data-ac-text-field-part="chips"
+>
+  {/* A scrolling row hides its scrollbar, as text overflowing a field shows none: the field
+      scrolls to its cursor, and to a chip that takes focus */}
+  <ChipGroup
+    class={`min-h-8 min-w-0 flex-1 ${overflow === "scroll" ? "[scrollbar-width:none]" : ""}`}
+    overflow={overflow}
+    aria-label={ariaLabel}
+    aria-labelledby={ariaLabelledby}
+  >
+    <slot name="chips" />
+    <slot />
+  </ChipGroup>
+  {/* The chip committed text becomes: an editable one, as M3 shows for text converted into
+      chips, so a mistyped address can be corrected. The script gives each copy its own ids. */}
+  <template data-ac-text-field-chips-part="template">
+    <ChipInput isEditable>chip</ChipInput>
+  </template>
+  <div hidden data-ac-text-field-chips-part="values"></div>
+  <span
+    class="sr-only"
+    role="status"
+    data-ac-text-field-chips-part="status"
+  ></span>
+</div>
+
+<script>
+  const FIELD = "[data-ac-text-field-chips]";
+  const CHIP = "[data-ac-chip-input]";
+
+  const fieldOf = (target: EventTarget | null) =>
+    target instanceof Element ? target.closest<HTMLElement>(FIELD) : null;
+  const groupOf = (field: Element) =>
+    field.querySelector<HTMLElement>("[data-ac-chip-group]")!;
+  const inputOf = (field: Element) =>
+    field.querySelector<HTMLInputElement>("[data-ac-text-field-part=input]")!;
+  const chipsOf = (field: Element) =>
+    [...groupOf(field).children].filter((el) =>
+      el.matches(CHIP)
+    ) as HTMLElement[];
+  const bodyOf = (chip: Element) =>
+    chip.querySelector<HTMLButtonElement>(
+      ":scope > [data-ac-chip-input-part=body]"
+    )!;
+  const labelOf = (chip: Element) =>
+    chip
+      .querySelector("[data-ac-chip-input-part=label]")
+      ?.textContent?.trim() ?? "";
+  const isEnabled = (chip: Element) => !bodyOf(chip).disabled;
+  const isEditing = (chip: Element) =>
+    chip.hasAttribute("data-ac-chip-input-editing");
+  const isRtl = (el: Element) => getComputedStyle(el).direction === "rtl";
+
+  // The field's name, for announcements: its group's, from the label without a required asterisk
+  const nameOf = (field: Element) => {
+    const group = groupOf(field);
+    const ids = group.getAttribute("aria-labelledby");
+    const text = ids
+      ? ids
+          .split(/\s+/)
+          .map((id) => document.getElementById(id)?.textContent ?? "")
+          .join(" ")
+      : (group.getAttribute("aria-label") ?? "");
+    return text.trim().replace(/\*$/, "");
+  };
+
+  // The fields a chip can move between: those of the same form, in page order
+  const fieldsBeside = (field: Element) => {
+    const form = inputOf(field).form;
+    return [...document.querySelectorAll<HTMLElement>(FIELD)].filter(
+      (other) => inputOf(other).form === form && !inputOf(other).disabled
+    );
+  };
+
+  // A hidden input per chip, under the field's name, in the chips' order: its body's `value`,
+  // or its label. A required field is satisfied by its chips, so its input is required only
+  // while there are none.
+  const sync = (field: HTMLElement) => {
+    const input = inputOf(field);
+    const chips = chipsOf(field);
+    const name = field.dataset.acTextFieldChipsName;
+    const values = field.querySelector(
+      "[data-ac-text-field-chips-part=values]"
+    );
+    if (name && values) {
+      values.replaceChildren(
+        ...chips.map((chip) => {
+          const value = document.createElement("input");
+          value.type = "hidden";
+          value.name = name;
+          value.value = bodyOf(chip).getAttribute("value") ?? labelOf(chip);
+          value.disabled = input.disabled;
+          const form = input.getAttribute("form");
+          if (form) value.setAttribute("form", form);
+          return value;
+        })
+      );
+    }
+    if (!input.hasAttribute("data-ac-text-field-chips-required"))
+      input.setAttribute(
+        "data-ac-text-field-chips-required",
+        String(input.required)
+      );
+    input.required =
+      input.getAttribute("data-ac-text-field-chips-required") === "true" &&
+      chips.length === 0;
+  };
+
+  // Each field follows its chips as they're added, removed, edited, moved or disabled
+  const observed = new WeakSet<Element>();
+  const observe = () => {
+    for (const field of document.querySelectorAll<HTMLElement>(FIELD)) {
+      sync(field);
+      if (observed.has(field)) continue;
+      observed.add(field);
+      new MutationObserver(() => sync(field)).observe(groupOf(field), {
+        subtree: true,
+        childList: true,
+        characterData: true,
+        attributeFilter: ["value", "disabled"],
+      });
+      new MutationObserver(() => sync(field)).observe(inputOf(field), {
+        attributeFilter: ["disabled"],
+      });
+    }
+  };
+  observe();
+  document.addEventListener("astro:page-load", observe);
+
+  const announce = (field: Element, chip: Element) => {
+    const status = field.querySelector(
+      "[data-ac-text-field-chips-part=status]"
+    );
+    const chips = chipsOf(field);
+    if (status)
+      status.textContent = `${labelOf(chip)}, ${chips.indexOf(chip as HTMLElement) + 1} of ${chips.length} in ${nameOf(field)}`;
+  };
+
+  // Motion: chips slide to their new places on the fast spatial spring (ADR-0018), animated from
+  // where they were, as CSS can't transition a change of place. `except` is a chip the pointer
+  // is carrying, which goes where the pointer is.
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  const spring = () => {
+    const root = getComputedStyle(document.documentElement);
+    return {
+      duration: parseFloat(
+        root.getPropertyValue("--theme-duration-spring-fast-spatial")
+      ),
+      easing: root.getPropertyValue("--ease-spring-fast-spatial").trim(),
+    };
+  };
+  const rearrange = (
+    fields: Element[],
+    change: () => void,
+    except?: Element
+  ) => {
+    const chips = [...new Set(fields)].flatMap(chipsOf);
+    const from = new Map(chips.map((c) => [c, c.getBoundingClientRect()]));
+    change();
+    if (reducedMotion.matches) return;
+    const timing = spring();
+    for (const [chip, was] of from) {
+      if (chip === except || !chip.isConnected) continue;
+      for (const animation of chip.getAnimations()) animation.cancel();
+      const now = chip.getBoundingClientRect();
+      const x = was.left - now.left;
+      const y = was.top - now.top;
+      if (Math.abs(x) < 0.5 && Math.abs(y) < 0.5) continue;
+      chip.animate(
+        [{ translate: `${x}px ${y}px` }, { translate: "0 0" }],
+        timing
+      );
+    }
+  };
+
+  // Moves a chip before `next` in a field's group (its input, for the end), keeping focus on it.
+  // moveBefore keeps focus where the browser has it; elsewhere it's put back.
+  type Movable = Element & {
+    moveBefore?: (node: Node, child: Node | null) => void;
+  };
+  const place = (chip: HTMLElement, field: Element, next: Element) => {
+    const group = groupOf(field) as Movable;
+    const hadFocus = chip.contains(document.activeElement);
+    const focused = document.activeElement as HTMLElement | null;
+    try {
+      if (!group.moveBefore) throw new Error("no moveBefore");
+      group.moveBefore(chip, next);
+    } catch {
+      group.insertBefore(chip, next);
+    }
+    if (hadFocus && document.activeElement !== focused)
+      focused?.focus({ preventScroll: true });
+  };
+
+  // Shift and an arrow key: back or forward a place in the field, mirrored right to left, or,
+  // with ArrowUp and ArrowDown, to the end of the previous or next field of the same form
+  const moveByKey = (chip: HTMLElement, key: string) => {
+    const field = fieldOf(chip)!;
+    const chips = chipsOf(field);
+    const index = chips.indexOf(chip);
+    const rtl = isRtl(field);
+    if (key === "ArrowLeft" || key === "ArrowRight") {
+      const step = (key === "ArrowRight") !== rtl ? 1 : -1;
+      const other = chips[index + step];
+      if (!other) return;
+      const next = step > 0 ? other.nextElementSibling! : other;
+      rearrange([field], () => place(chip, field, next));
+      announce(field, chip);
+      return;
+    }
+    const fields = fieldsBeside(field);
+    const target =
+      fields[fields.indexOf(field) + (key === "ArrowDown" ? 1 : -1)];
+    if (!target) return;
+    rearrange([field, target], () => place(chip, target, inputOf(target)));
+    bodyOf(chip).focus();
+    announce(target, chip);
+  };
+
+  // Committed text becomes a chip before the cursor. The field fires a cancelable `add` from its
+  // input first, with the text as `detail.value`, which the chip submits, and `detail.label`,
+  // which it shows: the page can refuse the text, which stays in the field, or show a contact's
+  // name for an address.
+  let copies = 0;
+  const add = (field: HTMLElement) => {
+    const input = inputOf(field);
+    const value = input.value.trim();
+    if (!value) return false;
+    const detail = { value, label: value };
+    const event = new CustomEvent("add", {
+      bubbles: true,
+      cancelable: true,
+      detail,
+    });
+    if (!input.dispatchEvent(event)) return true;
+    const template = field.querySelector<HTMLTemplateElement>(
+      "[data-ac-text-field-chips-part=template]"
+    );
+    const chip = template?.content.firstElementChild?.cloneNode(true);
+    if (!(chip instanceof HTMLElement)) return true;
+    // each copy's ids are its own, and so are the names that point at them
+    const suffix = `-${++copies}-${Date.now().toString(36)}`;
+    for (const el of chip.querySelectorAll("[id]")) el.id += suffix;
+    for (const el of chip.querySelectorAll("[aria-labelledby]"))
+      el.setAttribute(
+        "aria-labelledby",
+        el
+          .getAttribute("aria-labelledby")!
+          .split(/\s+/)
+          .map((id) => id + suffix)
+          .join(" ")
+      );
+    chip.querySelector("[data-ac-chip-input-part=label]")!.textContent = String(
+      detail.label
+    );
+    if (String(detail.value) !== String(detail.label))
+      bodyOf(chip).setAttribute("value", String(detail.value));
+    input.before(chip);
+    input.value = "";
+    // so the counter, and the label resting or floating, follow the empty text
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    return true;
+  };
+
+  // M3's Guidelines: Backspace with the cursor before a chip selects it, ready for a second
+  // Backspace to delete it. The chip takes focus, and a chip a tap selects is marked selected,
+  // until focus leaves it.
+  const selectedByKey = new WeakSet<Element>();
+  const select = (chip: Element) => {
+    const body = bodyOf(chip);
+    body.focus();
+    if (body.getAttribute("aria-pressed") === "false") {
+      body.setAttribute("aria-pressed", "true");
+      selectedByKey.add(body);
+    }
+  };
+  document.addEventListener("focusout", (event) => {
+    const body = event.target as Element;
+    if (!selectedByKey.has(body)) return;
+    selectedByKey.delete(body);
+    body.setAttribute("aria-pressed", "false");
+  });
+
+  const lastEnabled = (field: Element) =>
+    chipsOf(field).filter(isEnabled).at(-1);
+  // Whether the cursor is at the start of the text, with nothing selected. An email field gives
+  // no cursor position, so it's at the start when it's empty.
+  const atStart = (input: HTMLInputElement) =>
+    input.selectionStart === null
+      ? input.value === ""
+      : input.selectionStart === 0 && input.selectionEnd === 0;
+  const hasModifier = (event: KeyboardEvent) =>
+    event.altKey || event.ctrlKey || event.metaKey || event.shiftKey;
+
+  document.addEventListener("keydown", (event) => {
+    if (event.defaultPrevented) return;
+    const target = event.target as HTMLElement;
+    const field = fieldOf(target);
+    if (!field) return;
+    const input = inputOf(field);
+    const rtl = isRtl(field);
+    const back = rtl ? "ArrowRight" : "ArrowLeft";
+    const forward = rtl ? "ArrowLeft" : "ArrowRight";
+
+    if (target === input) {
+      if (event.key === "Enter" && !event.isComposing) {
+        // an empty field's Enter submits its form, as a text field's does
+        if (add(field)) event.preventDefault();
+        return;
+      }
+      if (hasModifier(event) || !atStart(input)) return;
+      const last = lastEnabled(field);
+      if (!last) return;
+      if (event.key === "Backspace") {
+        event.preventDefault();
+        select(last);
+      } else if (event.key === back) {
+        event.preventDefault();
+        bodyOf(last).focus();
+      }
+      return;
+    }
+
+    // the chip's own controls: its body and remove button, not its edit field
+    const chip = target.closest<HTMLElement>(CHIP);
+    if (
+      !chip ||
+      chip.parentElement !== groupOf(field) ||
+      !target.matches(
+        "[data-ac-chip-input-part=body], [data-ac-chip-input-part=remove]"
+      )
+    )
+      return;
+    if (
+      event.shiftKey &&
+      !(event.altKey || event.ctrlKey || event.metaKey) &&
+      event.key.startsWith("Arrow")
+    ) {
+      event.preventDefault();
+      if (isEnabled(chip)) moveByKey(chip, event.key);
+      return;
+    }
+    if (hasModifier(event)) return;
+    // past the last chip, the arrow keys go back to the text
+    if (event.key === forward || event.key === "ArrowDown") {
+      const chips = chipsOf(field);
+      const later = chips.slice(chips.indexOf(chip) + 1).some(isEnabled);
+      if (!later) {
+        event.preventDefault();
+        input.focus();
+      }
+      return;
+    }
+    // typing on a chip goes on in the text, at its end
+    if (event.key.length === 1 && event.key !== " " && !input.disabled) {
+      event.preventDefault();
+      input.focus();
+      const end = input.value.length;
+      try {
+        input.setRangeText(event.key, end, end, "end");
+      } catch {
+        // an email field has no cursor to insert at
+        input.value += event.key;
+      }
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  });
+
+  // Removing the last chip, by Backspace or its remove button, puts the cursor back in the text,
+  // where the chips end, rather than on the chip before it
+  document.addEventListener("remove", (event) => {
+    const chip = event.target as HTMLElement;
+    const field = fieldOf(chip);
+    if (!field || !chip.matches?.(CHIP)) return;
+    const chips = chipsOf(field);
+    if (chips.slice(chips.indexOf(chip) + 1).some(isEnabled)) return;
+    queueMicrotask(() => {
+      if (!chip.isConnected) inputOf(field).focus();
+    });
+  });
+
+  // M3's Guidelines: overflowed chips behave as text does. Unfocused, a scrolling field shows the
+  // start of its content; focusing it puts the cursor at the end of the text, scrolled into view.
+  const scrollTo = (field: Element, end: boolean) => {
+    const group = groupOf(field);
+    const width = group.scrollWidth;
+    group.scrollLeft = end ? (isRtl(field) ? -width : width) : 0;
+  };
+  document.addEventListener("focusin", (event) => {
+    const field = fieldOf(event.target);
+    if (!field || field.dataset.acTextFieldChips !== "scroll") return;
+    if (
+      event.target !== inputOf(field) ||
+      field.contains(event.relatedTarget as Node)
+    )
+      return;
+    const input = inputOf(field);
+    try {
+      input.setSelectionRange(input.value.length, input.value.length);
+    } catch {
+      // an email field has no cursor to place
+    }
+    scrollTo(field, true);
+  });
+  document.addEventListener("focusout", (event) => {
+    const field = fieldOf(event.target);
+    if (!field || field.dataset.acTextFieldChips !== "scroll") return;
+    // after the change, as focus moving to a chip, or a chip moving, passes through the page
+    requestAnimationFrame(() => {
+      if (!field.contains(document.activeElement)) scrollTo(field, false);
+    });
+  });
+  // A press on a scrolling field's text, while it isn't focused, puts the cursor at the end too
+  document.addEventListener("mousedown", (event) => {
+    const input = event.target as HTMLInputElement;
+    const field = fieldOf(input);
+    if (
+      !field ||
+      field.dataset.acTextFieldChips !== "scroll" ||
+      input !== inputOf(field) ||
+      input === document.activeElement
+    )
+      return;
+    event.preventDefault();
+    input.focus();
+  });
+
+  // M3's Guidelines: chips can be reordered in a field, or moved into another, by dragging. The
+  // pointer carries the chip, drawn in M3's dragged state (BaseChip's), and the chips around it
+  // make room where it would land; Escape puts it back. A mouse or a pen drags; touch scrolls.
+  type Drag = {
+    chip: HTMLElement;
+    body: HTMLButtonElement;
+    pointerId: number;
+    x: number;
+    y: number;
+    // where the pointer holds the chip, from its corner
+    grabX: number;
+    grabY: number;
+    from: { field: HTMLElement; next: Element };
+    isDragging: boolean;
+    isCancelled: boolean;
+  };
+  let drag: Drag | null = null;
+
+  // A chip's box where it's laid out, without the translate it's sliding by
+  const layoutBox = (chip: Element) => {
+    const box = chip.getBoundingClientRect();
+    const [x = "0", y = "0"] = getComputedStyle(chip).translate.split(" ");
+    const dx = x === "none" ? 0 : parseFloat(x);
+    const dy = parseFloat(y) || 0;
+    return new DOMRect(box.x - dx, box.y - dy, box.width, box.height);
+  };
+
+  // Where a chip dropped at x, y lands in a field: before the first chip on a later row, or
+  // past the middle of a chip on its row, else at the end
+  const landingBefore = (
+    field: Element,
+    chip: Element,
+    x: number,
+    y: number
+  ) => {
+    const rtl = isRtl(field);
+    for (const other of chipsOf(field)) {
+      if (other === chip) continue;
+      const box = layoutBox(other);
+      if (y < box.top - 8) return other;
+      if (y <= box.bottom + 8) {
+        const middle = box.left + box.width / 2;
+        if (rtl ? x > middle : x < middle) return other;
+      }
+    }
+    return inputOf(field);
+  };
+
+  const follow = (x: number, y: number) => {
+    if (!drag) return;
+    const { chip } = drag;
+    chip.style.translate = "";
+    const box = chip.getBoundingClientRect();
+    chip.style.translate = `${x - drag.grabX - box.left}px ${y - drag.grabY - box.top}px`;
+  };
+
+  const endDrag = () => {
+    if (!drag) return;
+    const { chip, body } = drag;
+    body.removeAttribute("data-ac-base-chip-dragged");
+    chip.style.removeProperty("pointer-events");
+    chip.style.removeProperty("z-index");
+    document.documentElement.style.removeProperty("user-select");
+    // it settles into its place from where it was let go
+    const [x = "0", y = "0"] = chip.style.translate.split(" ");
+    chip.style.removeProperty("translate");
+    if (!reducedMotion.matches && (parseFloat(x) || parseFloat(y)))
+      chip.animate(
+        [{ translate: `${x} ${y}` }, { translate: "0 0" }],
+        spring()
+      );
+  };
+
+  document.addEventListener("pointerdown", (event) => {
+    if (!event.isPrimary || event.button !== 0 || event.pointerType === "touch")
+      return;
+    const body = (event.target as Element).closest?.<HTMLButtonElement>(
+      "[data-ac-chip-input-part=body]"
+    );
+    const chip = body?.parentElement;
+    const field = fieldOf(chip ?? null);
+    if (!body || !chip || !field || chip.parentElement !== groupOf(field))
+      return;
+    if (body.disabled || isEditing(chip) || inputOf(field).disabled) return;
+    const box = chip.getBoundingClientRect();
+    drag = {
+      chip,
+      body,
+      pointerId: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      grabX: event.clientX - box.left,
+      grabY: event.clientY - box.top,
+      from: { field, next: chip.nextElementSibling! },
+      isDragging: false,
+      isCancelled: false,
+    };
+  });
+
+  document.addEventListener("pointermove", (event) => {
+    if (!drag || drag.isCancelled || event.pointerId !== drag.pointerId) return;
+    const { chip, body } = drag;
+    if (!drag.isDragging) {
+      if (Math.hypot(event.clientX - drag.x, event.clientY - drag.y) < 4)
+        return;
+      drag.isDragging = true;
+      body.setAttribute("data-ac-base-chip-dragged", "");
+      // the pointer finds what's under the chip it carries
+      chip.style.pointerEvents = "none";
+      chip.style.zIndex = "2";
+      document.documentElement.style.userSelect = "none";
+    }
+    event.preventDefault();
+    const from = fieldOf(chip)!;
+    const under = document.elementFromPoint(event.clientX, event.clientY);
+    const field = fieldOf(under);
+    if (field && fieldsBeside(from).includes(field)) {
+      const next = landingBefore(field, chip, event.clientX, event.clientY);
+      if (
+        chip.parentElement !== groupOf(field) ||
+        chip.nextElementSibling !== next
+      )
+        rearrange([from, field], () => place(chip, field, next), chip);
+    }
+    follow(event.clientX, event.clientY);
+  });
+
+  // A drag isn't a click: the click after it, which would select the chip, is dropped
+  const dropClick = () => {
+    const stop = (event: Event) => {
+      event.stopPropagation();
+      event.preventDefault();
+    };
+    window.addEventListener("click", stop, { capture: true, once: true });
+    setTimeout(() => window.removeEventListener("click", stop, true));
+  };
+
+  document.addEventListener("pointerup", (event) => {
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    const { chip, body, isDragging, isCancelled } = drag;
+    if (isDragging && !isCancelled) {
+      endDrag();
+      body.focus({ preventScroll: true });
+      announce(fieldOf(chip)!, chip);
+    }
+    if (isDragging) dropClick();
+    drag = null;
+  });
+
+  const cancel = () => {
+    if (!drag?.isDragging || drag.isCancelled) return;
+    const { chip, from } = drag;
+    // it slides back from where the pointer let go of it
+    const was = chip.getBoundingClientRect();
+    rearrange(
+      [fieldOf(chip)!, from.field],
+      () => place(chip, from.field, from.next),
+      chip
+    );
+    chip.style.translate = "";
+    const now = chip.getBoundingClientRect();
+    chip.style.translate = `${was.left - now.left}px ${was.top - now.top}px`;
+    endDrag();
+    drag.isCancelled = true;
+  };
+  document.addEventListener("pointercancel", (event) => {
+    if (drag?.pointerId !== event.pointerId) return;
+    cancel();
+    drag = null;
+  });
+  document.addEventListener(
+    "keydown",
+    (event) => {
+      if (event.key !== "Escape" || !drag?.isDragging || drag.isCancelled)
+        return;
+      event.preventDefault();
+      event.stopPropagation();
+      cancel();
+    },
+    true
+  );
+  // an avatar's image would start the browser's own drag
+  document.addEventListener("dragstart", (event) => {
+    const field = fieldOf(event.target);
+    if (field && (event.target as Element).closest?.(CHIP))
+      event.preventDefault();
+  });
+</script>
