@@ -1,0 +1,21 @@
+---
+title: MDX code block
+description: Tests for the docs site's Markdown code blocks
+---
+
+<Heading level={1}>MDX code block Tests</Heading>
+
+<Section data-testid="mdx-code-block-comment" class="p-4 space-y-4">
+  <Heading level={2}>With a comment</Heading>
+
+```astro
+<ChipGroup aria-label="To" id="recipients">
+  <ChipInput isEditable>{"ziad@example.com"}</ChipInput>
+</ChipGroup>
+<script>
+  // A comment, drawn in the theme's comment colour
+  const recipients = document.getElementById("recipients");
+</script>
+```
+
+</Section>

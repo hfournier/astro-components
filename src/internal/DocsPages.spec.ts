@@ -28,36 +28,6 @@ test.describe("Docs pages", () => {
     });
   }
 
-  // A fenced code block in a docs page's MDX is Markdown's, highlighted by Astro's own Shiki
-  // config: it takes the site's code themes and looks like an Example's code, following the
-  // colour scheme, and the fixture's axe scan then checks its comments' contrast in that scheme
-  // (#256). ChipInput's Editing section has a block with comments.
-  for (const scheme of ["light", "dark"] as const) {
-    test(`a Markdown code block matches an Example's code, ${scheme}`, async ({
-      page,
-    }) => {
-      await page.emulateMedia({ colorScheme: scheme });
-      await page.goto("/components/chip-input");
-      const block = page
-        .locator("pre.astro-code")
-        .filter({ hasText: 'recipients?.addEventListener("edit"' });
-      const example = page
-        .getByTestId("code-preview")
-        .first()
-        .locator("pre.astro-code");
-      const style = (target: typeof block) =>
-        target.evaluate((el) => {
-          const { backgroundColor, padding } = getComputedStyle(el);
-          return { backgroundColor, padding };
-        });
-      expect(await style(block)).toEqual(await style(example));
-      expect((await style(block)).padding).toBe("16px");
-      await expect(
-        block.getByText(/^\s*\/\/ "Fabian Reza" opens/)
-      ).toBeVisible();
-    });
-  }
-
   // SheetBottom's page has every section: When to use it and Accessibility from their own files,
   // Usage, its documentation.mdx body (Anatomy...), Properties, Slots and Examples
   test("sections render in a fixed order, matching the table of contents", async ({
