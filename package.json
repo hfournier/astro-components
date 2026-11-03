@@ -17,11 +17,11 @@
     "test:quick": "playwright test --project=chromium"
   },
   "dependencies": {
-    "@astrojs/markdown-satteri": "^0.4.3",
-    "@astrojs/mdx": "^8.0.3",
+    "@astrojs/markdown-satteri": "^0.4.5",
+    "@astrojs/mdx": "^8.1.1",
     "@poupe/material-color-utilities": "^0.4.1",
     "@tailwindcss/vite": "^4.3.3",
-    "astro": "^7.3.8",
+    "astro": "^7.4.2",
     "github-slugger": "^2.0.0",
     "marked": "^18.0.14",
     "prettier": "^3.9.9",
@@ -33,7 +33,7 @@
     "ultrahtml": "^1.7.0"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.10",
+    "@astrojs/check": "^0.9.12",
     "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.63.0",
