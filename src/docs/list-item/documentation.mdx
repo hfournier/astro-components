@@ -53,13 +53,13 @@ slots:
     description: A 56px square image before the label, with 8px corners, cropped to fill it, for content such as a product.
     kind: any
   - name: video
-    description: A video thumbnail before the label, an `<img>` or a `<video>`, 100 by 56px or 114 by 64px (see `videoSize`), with 8px corners, cropped to fill it.
+    description: A video thumbnail before the label, an `<img>` or a `<video>`, 100 by 56px or 114 by 64px (see `videoSize`), with 8px corners, cropped to fill it. It's decorative, hidden from assistive tech, so give a `<video>` no `controls`, since in a link or button item a control would sit inside another one.
     kind: any
 ---
 
 ## Attributes
 
-Every attribute but `class` goes on the item's `<div>`, `<a>` or `<button>`, such as `href`, `disabled` on a button, and `aria-*`; `class` too. The `<li>` around it takes none.
+Every attribute, `class` too, goes on the item's `<div>`, `<a>` or `<button>`, such as `href`, `disabled` on a button, and `aria-*`. The `<li>` around it takes none.
 
 ## Anatomy
 

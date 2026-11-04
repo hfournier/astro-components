@@ -11,7 +11,7 @@ import Icon from "./Icon.astro";
 // or top-aligned at three lines or 88px. It's static, a link (`as="a"`) or a button
 // (`as="button"`): an interactive item shows M3's state layer and morphs its corners from 4px to
 // 12px hovered and 16px focused or pressed. The <li> holds the item and, in a List with
-// `divider`, the line below it. Every attribute but `class` goes on the item; `class` too.
+// `divider`, the line below it. Every attribute, `class` too, goes on the item.
 type Props<Tag extends Extract<HTMLTag, "div" | "a" | "button"> = "div"> =
   Polymorphic<{
     as: Tag;
@@ -277,8 +277,13 @@ const leadingClasses = leadingSlot
   const observer = new ResizeObserver((entries) => {
     for (const entry of entries) update(entry.target as HTMLElement);
   });
-  for (const item of document.querySelectorAll<HTMLElement>(
-    "[data-ac-list-item]"
-  ))
-    observer.observe(item);
+  // Observed again after each swap, for items brought in by Astro's ClientRouter
+  const observeAll = () => {
+    for (const item of document.querySelectorAll<HTMLElement>(
+      "[data-ac-list-item]"
+    ))
+      observer.observe(item);
+  };
+  observeAll();
+  document.addEventListener("astro:after-swap", observeAll);
 </script>

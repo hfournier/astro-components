@@ -76,18 +76,24 @@ if (!["none", "full-width", "inset"].includes(divider)) {
       ":scope > li > [data-ac-list-item]:is(a[href], button:not(:disabled))"
     ),
   ];
-  const ownList = (item: Element) =>
-    item.parentElement?.parentElement?.matches("[data-ac-list]")
-      ? item.parentElement.parentElement
-      : null;
+  // the list an item is directly in, not one around that list
+  const ownList = (item: Element) => {
+    const list = item.closest("li")?.parentElement;
+    return list?.matches("[data-ac-list]") ? list : null;
+  };
   const makeTabStop = (list: Element, stop: HTMLElement) => {
     for (const item of focusables(list)) item.tabIndex = item === stop ? 0 : -1;
   };
 
-  for (const list of document.querySelectorAll("[data-ac-list]")) {
-    const [first] = focusables(list);
-    if (first) makeTabStop(list, first);
-  }
+  // Set again after each swap, for lists brought in by Astro's ClientRouter
+  const init = () => {
+    for (const list of document.querySelectorAll("[data-ac-list]")) {
+      const [first] = focusables(list);
+      if (first) makeTabStop(list, first);
+    }
+  };
+  init();
+  document.addEventListener("astro:after-swap", init);
 
   document.addEventListener("focusin", (event) => {
     const item = (event.target as Element).closest?.("[data-ac-list-item]");
