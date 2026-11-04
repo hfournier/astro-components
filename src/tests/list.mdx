@@ -1,0 +1,108 @@
+---
+title: List
+description: Tests for the List and ListItem components
+---
+
+export const photo =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' fill='%23f4b400'/%3E%3Ccircle cx='12' cy='9' r='4' fill='%23fff'/%3E%3Cpath d='M4 22a8 8 0 0 1 16 0' fill='%23fff'/%3E%3C/svg%3E";
+
+<Heading level={1}>List Tests</Heading>
+
+<Section data-testid="list-one-line" class="p-4 space-y-4">
+  <Heading level={2}>One line: label text only</Heading>
+  <List aria-label="Fruit">
+    <ListItem>Apples</ListItem>
+    <ListItem>Bananas</ListItem>
+    <ListItem>Cherries</ListItem>
+  </List>
+</Section>
+
+<Section data-testid="list-two-line" class="p-4 space-y-4">
+  <Heading level={2}>Two lines: supporting text, or an overline</Heading>
+  <List aria-label="Contacts">
+    <ListItem supportingText="Product designer">Ali Connors</ListItem>
+    <ListItem overline="Work">Brunch this weekend?</ListItem>
+  </List>
+</Section>
+
+<Section data-testid="list-three-line" class="p-4 space-y-4">
+  <Heading level={2}>Three lines: an overline and supporting text, or supporting text that wraps</Heading>
+  <List aria-label="Messages" class="max-w-80">
+    <ListItem overline="Today" supportingText="I'll be in your neighborhood">Brunch this weekend?</ListItem>
+    <ListItem icon="mail" supportingText="Wish I could come, but I'm out of town this weekend, so let's plan for next time">Summer BBQ</ListItem>
+  </List>
+</Section>
+
+<Section data-testid="list-leading" class="p-4 space-y-4">
+  <Heading level={2}>Leading: icon, avatar with a letter, avatar with a photo, image, small and large video</Heading>
+  <List aria-label="Leading elements">
+    <ListItem icon="folder" supportingText="Jan 9, 2026">Photos</ListItem>
+    <ListItem supportingText="Product designer"><span slot="avatar">A</span>Ali Connors</ListItem>
+    <ListItem supportingText="Engineer">
+      <img slot="avatar" src={photo} alt="" />
+      Lily MacDonald
+    </ListItem>
+    <ListItem supportingText="Monstera deliciosa">
+      <img slot="image" src={photo} alt="" />
+      Swiss cheese plant
+    </ListItem>
+    <ListItem supportingText="2:31">
+      <img slot="video" src={photo} alt="" />
+      Watering basics
+    </ListItem>
+    <ListItem supportingText="12:04" videoSize="lg">
+      <img slot="video" src={photo} alt="" />
+      Repotting a monstera
+    </ListItem>
+  </List>
+</Section>
+
+<Section data-testid="list-trailing" class="p-4 space-y-4">
+  <Heading level={2}>Trailing: icon, text</Heading>
+  <List aria-label="Trailing elements">
+    <ListItem icon="info" trailingIcon="chevron_right">About</ListItem>
+    <ListItem icon="inbox" trailingText="100+">Inbox</ListItem>
+  </List>
+</Section>
+
+<Section data-testid="list-interactive" class="p-4 space-y-4">
+  <Heading level={2}>Interactive: links, buttons, a disabled button, and a static item between them</Heading>
+  <List aria-label="Settings">
+    <ListItem as="a" href="#network" icon="settings" supportingText="Wi-Fi, mobile data">Network</ListItem>
+    <ListItem as="button" icon="person" supportingText="Signed in">Account</ListItem>
+    <ListItem>Version 2.4</ListItem>
+    <ListItem as="button" icon="star" disabled>Favorites</ListItem>
+    <ListItem as="a" href="#help" icon="info" trailingText="New" overline="Support">Help</ListItem>
+  </List>
+  <Button>After the list</Button>
+</Section>
+
+<Section data-testid="list-dividers" class="p-4 space-y-4">
+  <Heading level={2}>Dividers: full width, then inset</Heading>
+  <List aria-label="Cities, full-width dividers" divider="full-width">
+    <ListItem>Lisbon</ListItem>
+    <ListItem>Porto</ListItem>
+    <ListItem>Faro</ListItem>
+  </List>
+  <List aria-label="Cities, inset dividers" divider="inset">
+    <ListItem>Madrid</ListItem>
+    <ListItem>Seville</ListItem>
+    <ListItem>Valencia</ListItem>
+  </List>
+</Section>
+
+<Section data-testid="list-ordered" class="p-4 space-y-4">
+  <Heading level={2}>Ordered</Heading>
+  <List as="ol" aria-label="Steps">
+    <ListItem>Preheat the oven</ListItem>
+    <ListItem>Mix the dough</ListItem>
+  </List>
+</Section>
+
+<Section data-testid="list-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <List aria-label="الإعدادات">
+    <ListItem as="a" href="#network-rtl" icon="settings" trailingText="١٠٠">الشبكة</ListItem>
+    <ListItem as="button" icon="person" trailingIcon="chevron_right">الحساب</ListItem>
+  </List>
+</Section>

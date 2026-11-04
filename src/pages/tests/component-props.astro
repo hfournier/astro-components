@@ -25,6 +25,8 @@ import Divider from "../../components/Divider.astro";
 import Fab from "../../components/Fab.astro";
 import FabMenu from "../../components/FabMenu.astro";
 import Heading from "../../components/Heading.astro";
+import List from "../../components/List.astro";
+import ListItem from "../../components/ListItem.astro";
 import Menu from "../../components/Menu.astro";
 import NavDrawer from "../../components/NavDrawer.astro";
 import NavRail from "../../components/NavRail.astro";
@@ -168,6 +170,15 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     "divider-inset": [Divider, { inset: "end" }],
     "divider-orientation": [Divider, { orientation: "diagonal" }],
     "fab-size": [Fab, { ...add, size: "sm" }],
+    "list-as": [List, { as: "menu" }],
+    "list-divider": [List, { divider: "middle" }],
+    "list-item-as": [ListItem, { as: "li" }],
+    "list-item-video-size": [ListItem, { videoSize: "md" }],
+    "list-item-leading": [ListItem, { icon: "person" }],
+    "list-item-trailing": [
+      ListItem,
+      { trailingIcon: "chevron_right", trailingText: "100+" },
+    ],
     "fab-color": [Fab, { ...add, color: "surface" }],
     "fab-menu-size": [FabMenu, { ...fabMenu, size: "sm" }],
     "fab-menu-color": [FabMenu, { ...fabMenu, color: "primary-container" }],
@@ -236,6 +247,7 @@ const slots: Record<string, string> = {
 const chipsSlot = { chips: "<span>Chip</span>" };
 const namedSlots: Record<string, Record<string, string>> = {
   "chip-input-icon-avatar": { avatar: '<img src="" alt="" />' },
+  "list-item-leading": { avatar: "A" },
   "text-field-chips-textarea": chipsSlot,
   "text-field-chip-overflow": chipsSlot,
   "text-field-chips-name": chipsSlot,

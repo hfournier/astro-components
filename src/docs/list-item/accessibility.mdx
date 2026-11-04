@@ -1,0 +1,9 @@
+Each ListItem is a `<li>`, so screen readers announce its position in the list. Its content is a `<div>`, a link or a button:
+
+- **Names:** as M3's Accessibility page asks, a link or button item is named by its label and supporting text, such as "Display" followed by "Dark theme, font size", through `aria-labelledby`. The overline and trailing text describe it, through `aria-describedby`, so they're read after the name. An `aria-label` or `aria-labelledby` you give replaces the name.
+- **Leading and trailing elements:** decorative, hidden from assistive tech. Give a photo an empty `alt`; if it shows something the label doesn't say, put that in the supporting text.
+- **Target size:** a link or button item is the full width of the list and at least 56px tall, above M3's 48px target.
+- **Focus:** a 3px focus ring inside the item's edges, so a list in a scrolling container doesn't clip it.
+- **Disabled:** a disabled button item can't be focused, and its content fades to 38%.
+
+Under reduced motion, the colors, corners and state layer change at once.

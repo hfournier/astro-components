@@ -1,0 +1,5 @@
+A List is a native `<ul>` or `<ol>` with `role="list"`, which Safari otherwise drops from a list whose markers are styled away. Screen readers announce it as a list and count its items. A list with no selection has no other role, as M3's Accessibility page says: its links and buttons are announced as links and buttons.
+
+- **Keyboard:** as M3's Accessibility page asks, Tab moves focus to the list's first link or button, or to the one focused last, and Tab again leaves the list, so a long list is one Tab stop. The Down and Right arrow keys move to the next item, Up and Left to the previous one, wrapping from the last item to the first and back; right to left, Left and Right swap. Static and disabled items are skipped. Space or Enter activates the focused item, a link's too.
+- **Names:** an item is named by its label and supporting text, and its overline and trailing text describe it. See ListItem.
+- **Dividers:** decorative, so screen readers don't announce a separator between every item.

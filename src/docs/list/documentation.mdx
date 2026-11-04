@@ -1,0 +1,43 @@
+---
+name: List
+description: A Material 3 Expressive list, in the standard style, a continuous vertical index of text and images. It extends HTML's `<ul>` element, or `<ol>` for items in an order that matters, holds ListItems, draws M3's dividers between them, full width or inset, and moves between its links and buttons with the arrow keys.
+category: Text content
+role: pattern
+meta:
+  title: List | astro-components HenriFournier.dev
+  description: A Material 3 Expressive list of items on a <ul> or <ol>, with full-width or inset dividers and arrow-key navigation.
+extends:
+  kind: element
+  tag: [ul, ol]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/ul
+props:
+  - name: as
+    type: '"ul" | "ol"'
+    required: false
+    default: '"ul"'
+    description: Which element List renders. Use `ol` when the order of the items matters, such as the steps of a recipe or a ranking. Any other value fails the build.
+  - name: divider
+    type: '"none" | "full-width" | "inset"'
+    required: false
+    default: '"none"'
+    description: M3's dividers between items, 1px of `outline-variant` with no space above or below. `full-width` runs from edge to edge, `inset` stops 16px short of each end. No line goes below the last item. Any other value fails the build.
+slots:
+  - name: default
+    description: The list's items.
+    kind: component
+    component: ListItem
+    multiple: true
+---
+
+## Attributes
+
+Every attribute goes on the `<ul>` or `<ol>`. Name a list with `aria-label` or `aria-labelledby` where a page has several and the name tells them apart, such as "Settings".
+
+## Anatomy
+
+- **Container:** invisible, with no padding. Its items paint M3's `surface` container, so a list on `surface` reads as one block, as M3's standard style shows.
+- **Dividers:** between items, never below the last one. Each ListItem draws its own, hidden from assistive tech, as a `<hr>` can't go inside a `<ul>`.
+
+## Gaps and dividers
+
+M3's Guidelines limit dividers to uncontained lists, or lists complex enough to need a stronger separation than spacing. Use a full-width divider between items that stand apart, and an inset one between items of the same kind, so the line starts with the content.

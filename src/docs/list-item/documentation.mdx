@@ -1,0 +1,77 @@
+---
+name: ListItem
+description: A Material 3 Expressive list item, in the standard style, for a List. It renders a `<li>` holding a `<div>`, or a `<a>` or `<button>` for an item that does something, with a label, an optional overline and supporting text, a leading icon, avatar, image or video, and a trailing icon or text. It's 56px tall for one line, 72px for two and 88px for three, and an interactive item shows M3's state layer and morphs its corners as it's hovered, focused and pressed.
+category: Text content
+role: pattern
+meta:
+  title: ListItem | astro-components HenriFournier.dev
+  description: A Material 3 Expressive list item with a label, overline, supporting text, leading media and trailing icon or text, static or a link or button.
+extends:
+  kind: element
+  tag: [div, a, button]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/li
+parents: [List]
+props:
+  - name: as
+    type: '"div" | "a" | "button"'
+    required: false
+    default: '"div"'
+    description: "Which element the item is. `div`, a static item, only shows information. `a` (with `href`) makes the item a link, and `button` a button, for a single-action list: the whole item is one target. Any other value fails the build."
+  - name: overline
+    type: string
+    required: false
+    description: A line of text above the label, in Label Small and `on-surface-variant`, such as a category or a date.
+  - name: supportingText
+    type: string
+    required: false
+    description: Text below the label, in Body Medium and `on-surface-variant`. It can wrap; past one line, the item is a three-line item.
+  - name: icon
+    type: SvgIconNameTypes
+    required: false
+    description: A 20px icon before the label, by its file name in `src/assets/svgs`, in `on-surface-variant`. It's decorative, so the label names the item. The build fails if the `avatar`, `image` or `video` slot is filled too.
+  - name: trailingIcon
+    type: SvgIconNameTypes
+    required: false
+    description: A 20px icon at the end, in `on-surface-variant`, such as a chevron for an item that leads somewhere. It's decorative. The build fails if `trailingText` is given too.
+  - name: trailingText
+    type: string
+    required: false
+    description: Text at the end, in Label Small and `on-surface-variant`, for meta information such as a count, a price or a date. The build fails if `trailingIcon` is given too.
+  - name: videoSize
+    type: '"sm" | "lg"'
+    required: false
+    default: '"sm"'
+    description: The size of the `video` slot, M3's small video at 100 by 56px or large at 114 by 64px. Any other value fails the build.
+slots:
+  - name: default
+    description: The label, in Body Large and `on-surface`.
+    kind: text
+  - name: avatar
+    description: A 40px circle on `primary-container` before the label, for a person or an entity, holding a letter, in Title Medium and `on-primary-container`, or a photo, cropped to fill it. In MDX, put a letter's element on the same line as the label, or MDX wraps both in a paragraph and the slot is lost.
+    kind: any
+  - name: image
+    description: A 56px square image before the label, with 8px corners, cropped to fill it, for content such as a product.
+    kind: any
+  - name: video
+    description: A video thumbnail before the label, an `<img>` or a `<video>`, 100 by 56px or 114 by 64px (see `videoSize`), with 8px corners, cropped to fill it.
+    kind: any
+---
+
+## Attributes
+
+Every attribute but `class` goes on the item's `<div>`, `<a>` or `<button>`, such as `href`, `disabled` on a button, and `aria-*`; `class` too. The `<li>` around it takes none.
+
+## Anatomy
+
+- **Container:** `surface`, with 4px corners, 16px of padding at each end and 10px above and below, and 12px between the leading element, the text and the trailing element.
+- **Text:** an optional overline, the label, and optional supporting text, stacked.
+- **Leading element:** one of an icon, an avatar, an image or a video. The media are decorative and hidden from assistive tech, since the label names the item.
+- **Trailing element:** an icon or text.
+
+## Heights and alignment
+
+M3's heights follow the lines of text: 56px for the label alone, 72px with an overline or supporting text, and 88px with both, or with supporting text that wraps past one line. A taller leading element makes the item taller. The parts are middle-aligned, and top-aligned once the item has three lines or is 88px or taller, as M3's Specs ask. A script keeps the line count up to date as the item's width changes the wrapping.
+
+## States
+
+A static item has no states. A link or button item, on hover, focus and press, shows M3's `on-surface` state layer, 8% hovered and 10% focused or pressed, and morphs its corners, as M3 Expressive's shape morphing does: 12px hovered and 16px focused or pressed. Focused, it shows a 3px `secondary` focus ring inside its edges. A disabled button item shows its content in `on-surface` at 38%, and no state layer.
