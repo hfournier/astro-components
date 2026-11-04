@@ -11,6 +11,7 @@ import H6 from "./internal/mdx/H6.astro";
 import Li from "./internal/mdx/Li.astro";
 import Ol from "./internal/mdx/Ol.astro";
 import P from "./internal/mdx/P.astro";
+import Pre from "./internal/mdx/Pre.astro";
 import Ul from "./internal/mdx/Ul.astro";
 
 import * as componentList from "./component-list.js";
@@ -27,6 +28,7 @@ export const components = {
   li: Li,
   ol: Ol,
   p: P,
+  pre: Pre,
   ul: Ul,
   ...componentList,
 };
