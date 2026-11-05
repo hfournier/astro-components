@@ -1,11 +1,11 @@
 ---
 import type { ComponentProps } from "astro/types";
-import MenuItemBase from "./MenuItemBase.astro";
+import BaseMenuItem from "./BaseMenuItem.astro";
 
 // A choice in a multi-select Menu (role menuitemcheckbox, as Compose's CheckableDropdownMenuItem).
 // Choosing it toggles it and fires `change` on the menu, which stays open.
 type Props = Omit<
-  ComponentProps<typeof MenuItemBase>,
+  ComponentProps<typeof BaseMenuItem>,
   "role" | "href" | "isChecked" | "submenu"
 > & {
   isChecked?: boolean;
@@ -13,4 +13,4 @@ type Props = Omit<
 const { isChecked = false, ...attrs } = Astro.props;
 ---
 
-<MenuItemBase role="menuitemcheckbox" isChecked={isChecked} {...attrs} />
+<BaseMenuItem role="menuitemcheckbox" isChecked={isChecked} {...attrs} />
