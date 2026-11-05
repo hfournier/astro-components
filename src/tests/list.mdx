@@ -181,6 +181,20 @@ export const photo =
   </List>
 </Section>
 
+<Section data-testid="list-segmented-selection" class="p-4 space-y-4">
+  <Heading level={2}>Segmented selection: adjacent checked items, radios, a trailing icon and wrapping text</Heading>
+  <List variant="segmented" aria-label="Toppings" class="max-w-80">
+    <ListItemCheckbox label="Basil" name="topping" value="basil" checked />
+    <ListItemCheckbox label="Olives" name="topping" value="olives" checked />
+    <ListItemCheckbox label="Anchovies" name="topping" value="anchovies" supportingText="Salted in the shop, rinsed before they go on the pizza" />
+  </List>
+  <List variant="segmented" aria-label="Crust">
+    <ListItemRadio label="Thin" name="crust" value="thin" checked />
+    <ListItemRadio label="Deep dish" name="crust" value="deep" />
+    <ListItem label="More options" as="a" href="#more-crusts" trailingIcon="chevron_right" />
+  </List>
+</Section>
+
 <Section data-testid="list-segmented-rtl" class="p-4 space-y-4" dir="rtl">
   <Heading level={2}>Segmented, right to left</Heading>
   <List variant="segmented" aria-label="الإعدادات">

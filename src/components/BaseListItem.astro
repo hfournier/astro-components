@@ -230,7 +230,8 @@ const controlProps = control === "switch" && icons ? { icons } : {};
       "flex w-full min-h-14 items-center gap-3 px-4 py-2.5 text-start",
       "data-[ac-list-item-lines=2]:min-h-18 data-[ac-list-item-lines=3]:min-h-22 data-[ac-list-item-lines=3]:items-start data-ac-list-item-top:items-start",
       // On M3's surface container, its corners 4px; a segmented List fills it in surface-container
-      // and rounds its group's ends. What it holds reads the container's roles.
+      // and rounds its group's ends, through --ac-list-item-container and --ac-list-item-corners,
+      // internal to List rather than for callers (ADR-0029). What it holds reads the container's roles.
       "rounded-[var(--ac-list-item-corners,4px)] bg-(--theme-color-wrapper-bg) text-(--theme-color-on-surface)",
       "[--theme-color-focus-ring-on-bg:var(--theme-color-secondary)] [--theme-color-link-text:var(--theme-color-primary)] [--theme-color-on-bg-variant:var(--theme-color-on-surface-variant)] [--theme-color-wrapper-bg:var(--ac-list-item-container,var(--theme-color-surface))]",
       Tag !== "div" && [

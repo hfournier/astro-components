@@ -20,7 +20,7 @@ props:
     type: '"none" | "full-width" | "inset"'
     required: false
     default: '"none"'
-    description: M3's dividers between items, 1px of `outline-variant` with no space above or below. `full-width` runs from edge to edge, `inset` stops 16px short of each end. No line goes below the last item. A segmented list takes none, as its gaps separate its items. Any other value fails the build.
+    description: M3's dividers between items, 1px of `outline-variant` with no space above or below. `full-width` runs from edge to edge, `inset` stops 16px short of each end. No line goes below the last item. Any other value fails the build, and so does any divider on a segmented list, whose gaps separate its items.
   - name: variant
     type: '"standard" | "segmented"'
     required: false

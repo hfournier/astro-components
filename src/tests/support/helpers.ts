@@ -112,6 +112,18 @@ export const alpha = (color: string): number => {
   return match ? parseFloat(match[1]!) : 1;
 };
 
+/** An element's four corner radii: top-left, top-right, bottom-right, bottom-left. */
+export const radii = (target: Locator) =>
+  target.evaluate((el) => {
+    const style = getComputedStyle(el);
+    return [
+      style.borderTopLeftRadius,
+      style.borderTopRightRadius,
+      style.borderBottomRightRadius,
+      style.borderBottomLeftRadius,
+    ];
+  });
+
 /** One computed CSS property of an element. */
 export const css = (target: Locator, property: string) =>
   target.evaluate(
