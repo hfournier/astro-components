@@ -223,14 +223,18 @@ test.describe("Card", () => {
     await expect.poll(() => stateLayerOpacity(card)).toBe("0.1");
     await page.mouse.up();
     await page.mouse.move(0, 0);
-    await page.evaluate(() => history.replaceState(null, "", "#"));
-    await action(page, "interactive", "link", "Lisbon").focus();
+    // keyboard focus, on the button card: WebKit's Tab skips links by default
+    const button = action(page, "interactive", "button", "Open Faro");
+    const buttonCard = cardOf(button);
+    await link.focus();
     await page.keyboard.press("Tab");
-    await expect(link).toBeFocused();
-    await expect.poll(() => stateLayerOpacity(card)).toBe("0.1");
+    await expect(button).toBeFocused();
+    await expect.poll(() => stateLayerOpacity(buttonCard)).toBe("0.1");
     await expect
       .poll(() =>
-        card.evaluate((el) => getComputedStyle(el, "::before").backgroundColor)
+        buttonCard.evaluate(
+          (el) => getComputedStyle(el, "::before").backgroundColor
+        )
       )
       .toBe(await resolvedColor(page, "var(--theme-color-on-surface)"));
   });
@@ -262,8 +266,9 @@ test.describe("Card", () => {
       // pressed, M3 brings it back to its resting level
       await page.mouse.down();
       await expectLevel(rest, "pressed");
-      await page.mouse.move(0, 0);
+      // released before leaving: WebKit starts dragging a link the pointer leaves pressed
       await page.mouse.up();
+      await page.mouse.move(0, 0);
       await expectLevel(rest, "left");
     }
   });

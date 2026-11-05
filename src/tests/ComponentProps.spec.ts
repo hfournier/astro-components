@@ -49,12 +49,12 @@ const expected: Record<string, string | RegExp> = {
     "ButtonSplit: its leading button needs a name, from its label or an `aria-label`, but this one has neither.",
   "button-split-size": `ButtonSplit: M3's sizes are ${sizes}, but this one's \`size\` is "medium".`,
   "button-split-variant": `ButtonSplit: M3's split buttons are "elevated", "filled", "tonal" and "outlined", but this one's \`variant\` is "text".`,
-  // checked where it's used, in BaseChip (ADR-0021 §5)
   "card-as": `Card: its elements are "div", "article", "a" and "button", but this one's \`as\` is "section".`,
   "card-variant": `Card: M3's card styles are "elevated", "filled" and "outlined", but this one's \`variant\` is "tonal".`,
   "card-name":
     "Card: a link or button card is named through `aria-label` or `aria-labelledby`, but this one has neither.",
   "card-disabled-link": `Card: only a button card can be disabled, as a link can't be, but this one's \`as\` is "a" with \`disabled\`.`,
+  // checked where it's used, in BaseChip (ADR-0021 §5)
   "checkbox-as": `Checkbox: its elements are "label" and "span", but this one's \`as\` is "div".`,
   "chip-assist-as": `ChipAssist: its elements are "button" and "a", but this one's \`as\` is "div".`,
   "chip-assist-variant": `ChipAssist: M3's chip styles are "flat" and "elevated", but this one's \`variant\` is "tonal".`,

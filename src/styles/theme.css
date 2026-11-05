@@ -44,8 +44,7 @@
 
 /* card state: an interactive Card's primary action is a link or button covering the card
    (ADR-0030), and the card shows its states: its elevation, state layer, outline and focus
-   indicator. Hover is only for devices that hover, as Tailwind's hover: is. Dragged is Card's
-   script's mark on a card the page makes draggable. */
+   indicator. Hover is only for devices that hover, as Tailwind's hover: is. */
 @custom-variant card-hover {
   @media (hover: hover) {
     &:has(> [data-ac-card-part="action"]:not(:disabled):hover) {
@@ -56,7 +55,6 @@
 @custom-variant card-focus-visible (&:has(> [data-ac-card-part="action"]:focus-visible));
 @custom-variant card-active (&:has(> [data-ac-card-part="action"]:not(:disabled):active));
 @custom-variant card-disabled (&:has(> [data-ac-card-part="action"]:disabled));
-@custom-variant card-dragged (&[data-ac-card-dragged]);
 
 /* M3's enter and exit pattern, the timing of an overlay (BaseOverlay, the modal sheets) entering
    and leaving the screen: in on emphasized decelerate over medium 4, out on emphasized accelerate

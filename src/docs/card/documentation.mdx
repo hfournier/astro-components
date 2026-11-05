@@ -18,6 +18,11 @@ props:
     required: false
     default: '"div"'
     description: "Which kind of card it is. `div`, or `article` for content that stands on its own, is a static card, a container whose buttons and links are the tab stops. `a` (with `href`) makes the card a link and `button` a button, a primary action covering the whole card, which needs `aria-label` or `aria-labelledby`. Any other value fails the build, and so does an `a` or `button` card with no name."
+  - name: draggable
+    type: 'boolean | "true" | "false"'
+    required: false
+    default: "undefined"
+    description: "Makes the whole card draggable and shows M3's dragged state while it's dragged. On a link card, it also stops the link dragging its URL on its own. Card adds no drag and drop itself."
 slots:
   - name: default
     description: The card's content, laid out by you, in any of M3's content blocks, such as media, a headline, a subhead, supporting text and actions. Card adds no padding, so full-width media can reach its edges; give the text blocks M3's 16px.
@@ -31,7 +36,7 @@ On a static card, every attribute goes on its `<div>` or `<article>`. On an inte
 ## Anatomy
 
 - **Container:** the only part M3 requires, with 12px corners. Its size follows its content, and it clips the content to its corners.
-- **Content:** whatever you put in it, often media, a headline, a subhead, supporting text and buttons, in that order. Lay it out with your own classes, with 16px of padding at each side, as M3's Specs ask.
+- **Content:** whatever you put in it, often media, a headline, a subhead, supporting text and buttons, in that order. Lay it out with your own classes, with 16px of padding at each side, as M3's Specs ask. M3's card icons are 24px, in `primary`.
 
 Use a headline that names the card, such as an `<h3>` in the page's heading order, and point an interactive card's `aria-labelledby` at it.
 
@@ -39,7 +44,7 @@ Use a headline that names the card, such as an `<h3>` in the page's heading orde
 
 An interactive card has one primary action, a link or button covering the whole card, which M3 calls the primary action area. A click anywhere on the card is the action's. Buttons, links and form controls inside the card keep their own clicks and are separate tab stops after the card, so a card can have an overflow menu or a Play button beside its own action without one sitting inside the other. Position them with your own classes, such as `absolute end-2 top-2` for an overflow menu, since Card is `relative`.
 
-A disabled button card doesn't disable the buttons inside it. Disable them too.
+A disabled button card doesn't disable the buttons inside it. Disable them too. Its content fades to `on-surface` at 38% through the card's text color, so text you give its own color, such as `on-surface-variant` supporting text, needs the faded color too.
 
 ## States
 

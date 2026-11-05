@@ -68,11 +68,11 @@ const bgColor = (
 // at 12%, as Compose's CardDefaults draw them.
 const variantClasses = {
   elevated:
-    "shadow-theme-elevation-1 card-hover:shadow-theme-elevation-2 card-active:shadow-theme-elevation-1 card-dragged:shadow-theme-elevation-4! card-disabled:bg-(--theme-color-surface)",
+    "shadow-theme-elevation-1 card-hover:shadow-theme-elevation-2 card-active:shadow-theme-elevation-1 data-ac-card-dragged:shadow-theme-elevation-4! card-disabled:bg-(--theme-color-surface)",
   filled:
-    "card-hover:shadow-theme-elevation-1 card-active:shadow-none card-dragged:shadow-theme-elevation-3! card-disabled:bg-[color-mix(in_srgb,var(--theme-color-surface-variant)_38%,var(--theme-color-surface-container-highest))]",
+    "card-hover:shadow-theme-elevation-1 card-active:shadow-none data-ac-card-dragged:shadow-theme-elevation-3! card-disabled:bg-[color-mix(in_srgb,var(--theme-color-surface-variant)_38%,var(--theme-color-surface-container-highest))]",
   outlined:
-    "border border-(--theme-color-outline-variant) card-hover:shadow-theme-elevation-1 card-active:shadow-none card-dragged:shadow-theme-elevation-3! card-focus-visible:border-(--theme-color-on-surface) card-disabled:border-(--theme-color-outline)/12",
+    "border border-(--theme-color-outline-variant) card-hover:shadow-theme-elevation-1 card-active:shadow-none data-ac-card-dragged:shadow-theme-elevation-3! card-focus-visible:border-(--theme-color-on-surface) card-disabled:border-(--theme-color-outline)/12",
 }[variant];
 
 // An interactive card lets clicks on its content through to its action, beneath it, but not
@@ -99,7 +99,7 @@ const actionAttrs = {
     // M3's state layer, on-surface: 8% hovered, 10% focused or pressed, 16% dragged. It covers
     // the content, as M3 draws it, and takes no clicks.
     "before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:bg-(--theme-color-on-surface) before:opacity-0 motion-safe:before:transition-opacity",
-    "card-hover:before:opacity-8 card-focus-visible:before:opacity-10 card-active:before:opacity-10 card-dragged:before:opacity-16!",
+    "card-hover:before:opacity-8 card-focus-visible:before:opacity-10 card-active:before:opacity-10 data-ac-card-dragged:before:opacity-16!",
     // M3's focus indicator: 3px, 2px outside the card
     "card-focus-visible:outline-3 card-focus-visible:outline-offset-2 card-focus-visible:outline-(--theme-color-focus-ring-on-bg)",
     // M3 disabled: the content on-surface at 38%
@@ -126,15 +126,14 @@ const actionAttrs = {
 <script>
   // M3's dragged state, for a card the page makes draggable: marked from dragstart to dragend.
   // Only the card itself counts, not a link or image in it dragged on its own.
+  const draggedCard = (event: DragEvent) =>
+    event.target instanceof Element && event.target.matches("[data-ac-card]")
+      ? event.target
+      : null;
   document.addEventListener("dragstart", (event) => {
-    if (
-      event.target instanceof Element &&
-      event.target.matches("[data-ac-card]")
-    )
-      event.target.setAttribute("data-ac-card-dragged", "");
+    draggedCard(event)?.setAttribute("data-ac-card-dragged", "");
   });
   document.addEventListener("dragend", (event) => {
-    if (event.target instanceof Element)
-      event.target.removeAttribute("data-ac-card-dragged");
+    draggedCard(event)?.removeAttribute("data-ac-card-dragged");
   });
 </script>

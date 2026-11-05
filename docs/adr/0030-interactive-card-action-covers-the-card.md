@@ -6,7 +6,7 @@ HTML can't do that. A `<button>` can't hold another button, and an `<a>` can't h
 
 We decided:
 
-1. **`as` picks the kind:** `"div"` (the default) or `"article"` for a static card, and `"a"` or `"button"` for an interactive one. ListItem uses the same `as` values.
+1. **`as` picks the kind:** `"div"` (the default) or `"article"` for a static card, and `"a"` or `"button"` for an interactive one. ListItem picks a static, link or button item with `as` the same way.
 2. **An interactive card's action is its own element, a sibling of the content, covering the card.** The card is a `<div>` whose first child is an empty `<a>` or `<button>` (`data-ac-card-part="action"`), absolutely positioned over the whole card, below the content. It's first, so Tab reaches the card before the buttons in it, as M3's Accessibility page orders them.
 3. **The content lets clicks through to the action, except its own controls.** An interactive card sets `pointer-events: none`, and the links, buttons, form controls and other focusable elements in it set `pointer-events: auto`. A click on the card's text or image hits the action. A click on a button inside the card hits that button, and the card shows no state for it.
 4. **The action is named through `aria-label` or `aria-labelledby`.** It has no text of its own, so a card without either fails the build (ADR-0021). The usual name is the card's headline, through `aria-labelledby`. Every attribute other than `class` and `draggable` goes on the action, so `href`, `disabled`, `aria-*` and `id` are the link's or button's. Only a button card can be `disabled`. A disabled link card fails the build, since HTML has no disabled link.
