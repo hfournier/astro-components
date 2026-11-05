@@ -6,6 +6,7 @@ import {
   expectFocusRing,
   resolvedColor,
   settled,
+  radii,
 } from "./support/helpers";
 
 // Each case on /tests/menu is a Section with data-testid="menu-<caseId>", holding a trigger and the
@@ -68,17 +69,6 @@ const open = async (page: Page, caseId: MenuCaseId) => {
   await expect(menu(page, caseId)).toBeVisible();
   await settled(page);
 };
-
-const radii = (target: Locator) =>
-  target.evaluate((el) => {
-    const style = getComputedStyle(el);
-    return [
-      style.borderTopLeftRadius,
-      style.borderTopRightRadius,
-      style.borderBottomRightRadius,
-      style.borderBottomLeftRadius,
-    ];
-  });
 
 const changes = (page: Page, caseId: MenuCaseId) =>
   page.evaluate((id) => {

@@ -2,8 +2,9 @@
 import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
 
-// An M3 Expressive list, in the standard style: a <ul>, or an <ol> for items in an order that
-// matters, of ListItems, with M3's dividers between them where `divider` asks. It moves focus
+// An M3 Expressive list: a <ul>, or an <ol> for items in an order that matters, of ListItems. In
+// the standard style its items sit edge to edge, with M3's dividers between them where `divider`
+// asks; in the segmented style they're a group, filled and 2px apart, with rounded ends. It moves focus
 // between its links and buttons with the arrow keys, as M3's Accessibility page asks: Tab
 // reaches the first item (or the one focused last), the arrow keys move through the rest,
 // wrapping at the ends, and Tab leaves the list. Space activates a link as well as Enter.
@@ -12,11 +13,15 @@ type Props = HTMLAttributes<"ul"> & {
   as?: "ul" | "ol";
   // M3's dividers between items: none, full width, or inset 16px at each end
   divider?: "none" | "full-width" | "inset";
+  // M3's list styles: standard, its items edge to edge, or segmented, a group of filled items
+  // 2px apart, 16px corners at its ends and 4px between (ADR-0029)
+  variant?: "standard" | "segmented";
 };
 
 const {
   as: Tag = "ul",
   divider = "none",
+  variant = "standard",
   class: classList,
   ...attrs
 }: Props = Astro.props;
@@ -33,20 +38,53 @@ if (!["none", "full-width", "inset"].includes(divider)) {
     `List: M3's list dividers are "none", "full-width" and "inset", but this one's \`divider\` is "${divider}".`
   );
 }
+if (!["standard", "segmented"].includes(variant)) {
+  throw new Error(
+    `List: M3's list styles are "standard" and "segmented", but this one's \`variant\` is "${variant}".`
+  );
+}
+// M3's Guidelines: gaps separate a contained list's items, dividers an uncontained one's
+if (variant === "segmented" && divider !== "none") {
+  throw new Error(
+    `List: M3 separates a segmented list's items with gaps, not dividers, but this one's \`divider\` is "${divider}".`
+  );
+}
 ---
 
 {/* role="list": Safari drops a list's role once its markers are styled away */}
 <Tag
-  class:list={twMerge("flex list-none flex-col p-0", classList)}
+  class:list={twMerge(
+    "flex list-none flex-col p-0",
+    // Compose's SegmentedGap
+    variant === "segmented" && "gap-0.5",
+    classList
+  )}
   role="list"
   data-ac-list
   data-ac-list-divider={divider === "none" ? undefined : divider}
+  data-ac-list-variant={variant}
   {...attrs}
 >
   <slot />
 </Tag>
 
 <style>
+  /* A segmented list's items, in the surface-container M3's Specs draw (ADR-0029), take Compose's
+     segmentedShapes: 16px at the group's ends, 4px between items, and 16px all around an only
+     item. An item's hovered, focused, pressed and selected corners replace these. */
+  [data-ac-list-variant="segmented"] > :global(li) {
+    --ac-list-item-container: var(--theme-color-surface-container);
+  }
+  [data-ac-list-variant="segmented"] > :global(li:first-child) {
+    --ac-list-item-corners: 16px 16px 4px 4px;
+  }
+  [data-ac-list-variant="segmented"] > :global(li:last-child) {
+    --ac-list-item-corners: 4px 4px 16px 16px;
+  }
+  [data-ac-list-variant="segmented"] > :global(li:only-child) {
+    --ac-list-item-corners: 16px;
+  }
+
   /* M3's dividers sit between items, with no space above or below them: each ListItem draws
      one below itself, which shows in a list with dividers, except below the last item. An inset
      one stops 16px short of each end. */

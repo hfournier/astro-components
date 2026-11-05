@@ -158,3 +158,47 @@ export const photo =
     <ListItemSwitch label="الإشعارات" icon="notifications" name="notifications-rtl" />
   </List>
 </Section>
+
+<Section data-testid="list-segmented" class="p-4 space-y-4">
+  <Heading level={2} id="segmented-today">Segmented: a group of every layout, then a group of one</Heading>
+  <List variant="segmented" aria-labelledby="segmented-today">
+    <ListItem label="Ali Connors" as="a" href="#ali" supportingText="Brunch this weekend?">
+      <span slot="avatar">A</span>
+    </ListItem>
+    <ListItem label="Swiss cheese plant" as="button" supportingText="Monstera deliciosa" trailingText="$24">
+      <img slot="image" src={photo} alt="" />
+    </ListItem>
+    <ListItem label="Watering basics" overline="Video" supportingText="2:31">
+      <img slot="video" src={photo} alt="" />
+    </ListItem>
+    <ListItemCheckbox label="Pin to top" name="pin" checked />
+    <ListItemSwitch label="Notifications" icon="notifications" name="segmented-notifications" />
+    <ListItem label="Archive" as="button" icon="inbox" disabled />
+  </List>
+  <Heading level={3} id="segmented-yesterday">Yesterday</Heading>
+  <List variant="segmented" aria-labelledby="segmented-yesterday">
+    <ListItem label="Version 2.4" icon="info" />
+  </List>
+</Section>
+
+<Section data-testid="list-segmented-selection" class="p-4 space-y-4">
+  <Heading level={2}>Segmented selection: adjacent checked items, radios, a trailing icon and wrapping text</Heading>
+  <List variant="segmented" aria-label="Toppings" class="max-w-80">
+    <ListItemCheckbox label="Basil" name="topping" value="basil" checked />
+    <ListItemCheckbox label="Olives" name="topping" value="olives" checked />
+    <ListItemCheckbox label="Anchovies" name="topping" value="anchovies" supportingText="Salted in the shop, rinsed before they go on the pizza" />
+  </List>
+  <List variant="segmented" aria-label="Crust">
+    <ListItemRadio label="Thin" name="crust" value="thin" checked />
+    <ListItemRadio label="Deep dish" name="crust" value="deep" />
+    <ListItem label="More options" as="a" href="#more-crusts" trailingIcon="chevron_right" />
+  </List>
+</Section>
+
+<Section data-testid="list-segmented-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Segmented, right to left</Heading>
+  <List variant="segmented" aria-label="الإعدادات">
+    <ListItem label="الشبكة" as="a" href="#network-segmented-rtl" icon="settings" trailingText="١٠٠" />
+    <ListItemCheckbox label="خبز" name="side-segmented-rtl" value="bread" />
+  </List>
+</Section>
