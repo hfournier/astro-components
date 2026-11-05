@@ -185,6 +185,11 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     "heading-level-as-text": [Heading, { level: "2" }],
     "list-as": [List, { as: "menu" }],
     "list-divider": [List, { divider: "middle" }],
+    "list-variant": [List, { variant: "contained" }],
+    "list-segmented-divider": [
+      List,
+      { variant: "segmented", divider: "inset" },
+    ],
     "list-item-as": [ListItem, { label: "Inbox", as: "li" }],
     "list-item-video-size": [ListItem, { label: "Inbox", videoSize: "md" }],
     "list-item-leading": [ListItem, { label: "Inbox", icon: "person" }],

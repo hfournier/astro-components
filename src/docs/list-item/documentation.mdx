@@ -1,6 +1,6 @@
 ---
 name: ListItem
-description: A Material 3 Expressive list item, in the standard style, for a List. It renders a `<li>` holding a `<div>`, or a `<a>` or `<button>` for an item that does something, with a label, an optional overline and supporting text, a leading icon, avatar, image or video, and a trailing icon or text. It's 56px tall for one line, 72px for two and 88px for three, and an interactive item shows M3's state layer and morphs its corners as it's hovered, focused and pressed.
+description: A Material 3 Expressive list item, for a List in the standard or segmented style. It renders a `<li>` holding a `<div>`, or a `<a>` or `<button>` for an item that does something, with a label, an optional overline and supporting text, a leading icon, avatar, image or video, and a trailing icon or text. It's 56px tall for one line, 72px for two and 88px for three, and an interactive item shows M3's state layer and morphs its corners as it's hovered, focused and pressed.
 category: Text content
 role: pattern
 meta:
@@ -39,7 +39,7 @@ Every attribute, `class` too, goes on the item's `<div>`, `<a>` or `<button>`, s
 
 ## Anatomy
 
-- **Container:** `surface`, with 4px corners, 16px of padding at each end and 10px above and below, and 12px between the leading element, the text and the trailing element.
+- **Container:** `surface`, with 4px corners, or `surface-container` in a segmented List, which rounds its group's ends to 16px. It has 16px of padding at each end and 10px above and below, and 12px between the leading element, the text and the trailing element.
 - **Text:** an optional overline, the label, and optional supporting text, stacked.
 - **Leading element:** one of an icon, an avatar, an image or a video. The media are decorative and hidden from assistive tech, since the label names the item.
 - **Trailing element:** an icon or text.

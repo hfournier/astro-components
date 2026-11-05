@@ -1,0 +1,22 @@
+---
+title: Segmented
+description: Set `variant="segmented"` for a contained list, its items filled and 2px apart, with rounded ends. Each List is one group, so give each group its own List and heading.
+---
+
+<div class="space-y-2">
+  <Heading level={3} id="example-segmented-today">Today</Heading>
+  <List variant="segmented" aria-labelledby="example-segmented-today">
+    <ListItem label="Pre-sale concert tickets" as="a" href="#tickets" supportingText="I just saw there are a couple left">
+      <span slot="avatar">A</span>
+    </ListItem>
+    <ListItem label="Good healthy lunch idea" as="a" href="#lunch" supportingText="My coworker just sent this recipe">
+      <span slot="avatar">L</span>
+    </ListItem>
+  </List>
+  <Heading level={3} id="example-segmented-yesterday">Yesterday</Heading>
+  <List variant="segmented" aria-labelledby="example-segmented-yesterday">
+    <ListItem label="Cumpleaños de mamá" as="a" href="#birthday" supportingText="With mamá's birthday around the corner">
+      <span slot="avatar">M</span>
+    </ListItem>
+  </List>
+</div>

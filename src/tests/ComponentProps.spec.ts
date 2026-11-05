@@ -81,6 +81,8 @@ const expected: Record<string, string | RegExp> = {
   "heading-level-as-text": "rendered h2",
   "list-as": `List: its elements are "ul" and "ol", but this one's \`as\` is "menu".`,
   "list-divider": `List: M3's list dividers are "none", "full-width" and "inset", but this one's \`divider\` is "middle".`,
+  "list-variant": `List: M3's list styles are "standard" and "segmented", but this one's \`variant\` is "contained".`,
+  "list-segmented-divider": `List: M3 separates a segmented list's items with gaps, not dividers, but this one's \`divider\` is "inset".`,
   "list-item-as": `ListItem: its elements are "div", "a" and "button", but this one's \`as\` is "li".`,
   "list-item-video-size": `ListItem: M3's leading video sizes are "sm" and "lg", but this one's \`videoSize\` is "md".`,
   "list-item-leading": `ListItem: M3's list item leads with one icon, avatar, image, video or control, but this one has \`icon\` "person" and the \`avatar\` slot.`,

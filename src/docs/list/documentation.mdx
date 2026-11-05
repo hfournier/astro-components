@@ -1,11 +1,11 @@
 ---
 name: List
-description: A Material 3 Expressive list, in the standard style, a continuous vertical index of text and images. It extends HTML's `<ul>` element, or `<ol>` for items in an order that matters, holds ListItems, or selection items, draws M3's dividers between them, full width or inset, and moves between its links and buttons with the arrow keys.
+description: A Material 3 Expressive list, a continuous vertical index of text and images, in the standard or segmented style. It extends HTML's `<ul>` element, or `<ol>` for items in an order that matters, holds ListItems, or selection items, draws M3's dividers between standard items, full width or inset, groups segmented ones with gaps and rounded ends, and moves between its links and buttons with the arrow keys.
 category: Text content
 role: pattern
 meta:
   title: List | astro-components HenriFournier.dev
-  description: A Material 3 Expressive list of items on a <ul> or <ol>, with full-width or inset dividers and arrow-key navigation.
+  description: A Material 3 Expressive list of items on a <ul> or <ol>, standard with full-width or inset dividers, or segmented with gaps, and arrow-key navigation.
 extends:
   kind: element
   tag: [ul, ol]
@@ -20,7 +20,12 @@ props:
     type: '"none" | "full-width" | "inset"'
     required: false
     default: '"none"'
-    description: M3's dividers between items, 1px of `outline-variant` with no space above or below. `full-width` runs from edge to edge, `inset` stops 16px short of each end. No line goes below the last item. Any other value fails the build.
+    description: M3's dividers between items, 1px of `outline-variant` with no space above or below. `full-width` runs from edge to edge, `inset` stops 16px short of each end. No line goes below the last item. A segmented list takes none, as its gaps separate its items. Any other value fails the build.
+  - name: variant
+    type: '"standard" | "segmented"'
+    required: false
+    default: '"standard"'
+    description: M3's list styles, a visual choice that doesn't change how the list behaves. `standard` sets the items edge to edge on `surface`. `segmented` makes the list a group, its items filled in `surface-container` and 2px apart, with 16px corners at the group's ends and 4px between items. Any other value fails the build.
 slots:
   - name: default
     description: "The list's items: ListItems, or ListItemCheckbox, ListItemRadio or ListItemSwitch items for a selection."
@@ -35,9 +40,13 @@ Every attribute goes on the `<ul>` or `<ol>`. Name a list with `aria-label` or `
 
 ## Anatomy
 
-- **Container:** invisible, with no padding. Its items paint M3's `surface` container, so a list on `surface` reads as one block, as M3's standard style shows.
-- **Dividers:** between items, never below the last one. Each ListItem draws its own, hidden from assistive tech, so screen readers don't announce a separator between every item.
+- **Container:** invisible, with no padding. In the standard style its items paint M3's `surface` container, so a list on `surface` reads as one block. In the segmented style each item is its own `surface-container` container, 2px from the next.
+- **Dividers:** between standard items, never below the last one. Each ListItem draws its own, hidden from assistive tech, so screen readers don't announce a separator between every item.
 
 ## Gaps and dividers
 
-M3's Guidelines limit dividers to uncontained lists, or lists complex enough to need a stronger separation than spacing. Use a full-width divider between items that stand apart, and an inset one between items of the same kind, so the line starts with the content.
+M3's Guidelines separate items and groups with gaps or dividers. Use gaps, the segmented style, for a contained list: its filled items and rounded ends mark it as one group. Limit dividers to uncontained lists, or lists complex enough to need a stronger separation than spacing. Use a full-width divider between items that stand apart, and an inset one between items of the same kind, so the line starts with the content.
+
+## Segmented groups
+
+A segmented List is one group. Its first item's top corners and its last item's bottom corners are 16px, the corners between items 4px, and an only item is 16px all around, as Compose's `segmentedShapes` rounds them. For several groups, such as messages by day, use a List for each, with a heading before it that names it through `aria-labelledby`. An item's own corners replace the group's while it's hovered (12px), focused or pressed (16px), or selected (16px). Put the list on `surface`, so its `surface-container` items stand out, as M3 draws them.

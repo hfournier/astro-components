@@ -7,7 +7,7 @@ import RadioButton from "./RadioButton.astro";
 import Switch from "./Switch.astro";
 
 // The markup ListItem, ListItemCheckbox, ListItemRadio and ListItemSwitch share: an M3 Expressive
-// list item, in the standard style, for a List. A label, with an overline above it and
+// list item, for a List in either style. A label, with an overline above it and
 // supporting text below, a leading icon, avatar, image or video, and a trailing icon or text. It's
 // 56px tall for one line, 72px for two and 88px for three, its parts middle-aligned, or
 // top-aligned at three lines or 88px. The <li> holds the item and, in a List with `divider`, the
@@ -229,9 +229,10 @@ const controlProps = control === "switch" && icons ? { icons } : {};
       // script finds it 88px tall.
       "flex w-full min-h-14 items-center gap-3 px-4 py-2.5 text-start",
       "data-[ac-list-item-lines=2]:min-h-18 data-[ac-list-item-lines=3]:min-h-22 data-[ac-list-item-lines=3]:items-start data-ac-list-item-top:items-start",
-      // On M3's surface container, its corners 4px. What it holds reads the surface's roles.
-      "rounded-sm bg-(--theme-color-surface) text-(--theme-color-on-surface)",
-      "[--theme-color-focus-ring-on-bg:var(--theme-color-secondary)] [--theme-color-link-text:var(--theme-color-primary)] [--theme-color-on-bg-variant:var(--theme-color-on-surface-variant)] [--theme-color-wrapper-bg:var(--theme-color-surface)]",
+      // On M3's surface container, its corners 4px; a segmented List fills it in surface-container
+      // and rounds its group's ends. What it holds reads the container's roles.
+      "rounded-[var(--ac-list-item-corners,4px)] bg-(--theme-color-wrapper-bg) text-(--theme-color-on-surface)",
+      "[--theme-color-focus-ring-on-bg:var(--theme-color-secondary)] [--theme-color-link-text:var(--theme-color-primary)] [--theme-color-on-bg-variant:var(--theme-color-on-surface-variant)] [--theme-color-wrapper-bg:var(--ac-list-item-container,var(--theme-color-surface))]",
       Tag !== "div" && [
         "group/item relative isolate cursor-pointer disabled:cursor-default has-disabled:cursor-default",
         // M3's on-surface state layer, shown by the <style> block below for a selection item
