@@ -2,7 +2,6 @@
 import type { HTMLTag, Polymorphic } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import type { SvgIconNameTypes } from "../svgs";
-import { unwrapParagraph } from "../utils";
 import Icon from "./Icon.astro";
 
 // An M3 Expressive list item, in the standard style, for a List: a label, with an overline above
@@ -15,6 +14,8 @@ import Icon from "./Icon.astro";
 type Props<Tag extends Extract<HTMLTag, "div" | "a" | "button"> = "div"> =
   Polymorphic<{
     as: Tag;
+    // The item's Body Large text, which names it
+    label: string;
     // A 20px icon before the label, by its file name in src/assets/svgs. For an avatar, an image
     // or a video, fill the slot of that name instead.
     icon?: SvgIconNameTypes;
@@ -37,6 +38,7 @@ const {
   // kept out of `attrs`, which would render it as a literal attribute; `Tag` holds it
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   as: _as,
+  label,
   icon,
   overline,
   supportingText,
@@ -78,7 +80,6 @@ if (trailingIcon && trailingText) {
   );
 }
 
-const label = unwrapParagraph(await Astro.slots.render("default"));
 const leadingSlot = leadingSlots[0];
 const leadingMedia = leadingSlot
   ? (await Astro.slots.render(leadingSlot)).trim()
@@ -201,8 +202,9 @@ const leadingClasses = leadingSlot
         class:list={["text-base leading-6 tracking-[0.5px]", disabledContent]}
         id={ids.label}
         data-ac-list-item-part="label"
-        set:html={label}
-      />
+      >
+        {label}
+      </span>
       {supportingText && (
         <span
           class:list={["text-sm leading-5 tracking-[0.25px]", variantContent]}
@@ -274,8 +276,12 @@ const leadingClasses = leadingSlot
     item.dataset.acListItemLines = String(lines);
     item.toggleAttribute("data-ac-list-item-top", item.offsetHeight >= 88);
   };
+  // A frame later, since a new line count resizes the item, which inside the callback would be a
+  // ResizeObserver loop
   const observer = new ResizeObserver((entries) => {
-    for (const entry of entries) update(entry.target as HTMLElement);
+    requestAnimationFrame(() => {
+      for (const entry of entries) update(entry.target as HTMLElement);
+    });
   });
   // Observed again after each swap, for items brought in by Astro's ClientRouter
   const observeAll = () => {
