@@ -64,7 +64,9 @@ if (!["none", "full-width", "inset"].includes(divider)) {
   // M3's Accessibility page: one Tab stop per list, its first item, or the one focused last; the
   // Down and Right arrow keys move to the next item and Up and Left to the previous one,
   // wrapping at the ends, and mirrored right to left. Static and disabled items are skipped.
-  // Space or Enter activates an item, so Space activates a link too (ADR-0027).
+  // Space or Enter activates an item, so Space activates a link too, and Enter toggles a
+  // checkbox item (ADR-0027). A checkbox or switch item's stop is its input. Radio items keep
+  // the browser's radio keyboard, so the list leaves them alone (ADR-0028).
   const steps: Record<string, number> = {
     ArrowUp: -1,
     ArrowLeft: -1,
@@ -73,7 +75,7 @@ if (!["none", "full-width", "inset"].includes(divider)) {
   };
   const focusables = (list: Element) => [
     ...list.querySelectorAll<HTMLElement>(
-      ":scope > li > [data-ac-list-item]:is(a[href], button:not(:disabled))"
+      ":scope > li > [data-ac-list-item]:is(a[href], button:not(:disabled)), :scope > li > label[data-ac-list-item] input[type=checkbox]:not(:disabled)"
     ),
   ];
   // the list an item is directly in, not one around that list
@@ -96,28 +98,36 @@ if (!["none", "full-width", "inset"].includes(divider)) {
   document.addEventListener("astro:after-swap", init);
 
   document.addEventListener("focusin", (event) => {
-    const item = (event.target as Element).closest?.("[data-ac-list-item]");
-    const list = item && ownList(item);
-    if (list && focusables(list).includes(item as HTMLElement))
-      makeTabStop(list, item as HTMLElement);
+    const target = event.target as HTMLElement;
+    const list = target.closest?.("[data-ac-list-item]") && ownList(target);
+    if (list && focusables(list).includes(target)) makeTabStop(list, target);
   });
 
   document.addEventListener("keydown", (event) => {
     if (event.defaultPrevented) return;
     if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
       return;
-    const item = event.target as HTMLElement;
-    if (!item.matches?.("[data-ac-list-item]")) return;
-    const list = ownList(item);
+    const target = event.target as HTMLElement;
+    if (!target.closest?.("[data-ac-list-item]")) return;
+    const list = ownList(target);
     if (!list) return;
-    if (event.key === " " && item instanceof HTMLAnchorElement) {
+    if (event.key === " " && target instanceof HTMLAnchorElement) {
       event.preventDefault();
-      item.click();
+      target.click();
+      return;
+    }
+    // Enter would submit the checkbox's form; Switch answers Enter itself
+    if (
+      event.key === "Enter" &&
+      target.matches("input[type=checkbox]:not([role=switch])")
+    ) {
+      event.preventDefault();
+      if (!event.repeat) target.click();
       return;
     }
     if (!(event.key in steps)) return;
     const items = focusables(list);
-    const index = items.indexOf(item);
+    const index = items.indexOf(target);
     if (index < 0) return;
     const isMirrored =
       (event.key === "ArrowLeft" || event.key === "ArrowRight") &&

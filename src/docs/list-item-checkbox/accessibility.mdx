@@ -1,0 +1,8 @@
+Each item is a native checkbox inside a `<label>`, so screen readers announce a checkbox, checked or not, in a list:
+
+- **Names:** as M3's Accessibility page asks, the checkbox is named by the item's label and supporting text, such as "Bread" followed by "Sourdough or wheat", and described by its overline and trailing text. An `aria-label` or `aria-labelledby` you give replaces the name.
+- **The list's name:** give the List an `aria-label` that describes the selection, such as "Choose your sides", as M3 asks of a selection list's container.
+- **Keyboard:** the list is one Tab stop, on its first item or the one focused last. The arrow keys move between items, wrapping at the ends and skipping disabled ones, and Space or Enter toggles the focused one.
+- **Target size:** the whole item is the target, at least 56px tall.
+
+Under reduced motion, the highlight, corners and state layer change at once.

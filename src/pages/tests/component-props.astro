@@ -15,6 +15,7 @@ import Button from "../../components/Button.astro";
 import ButtonGroupConnected from "../../components/ButtonGroupConnected.astro";
 import ButtonIcon from "../../components/ButtonIcon.astro";
 import ButtonSplit from "../../components/ButtonSplit.astro";
+import Checkbox from "../../components/Checkbox.astro";
 import ChipAssist from "../../components/ChipAssist.astro";
 import ChipFilter from "../../components/ChipFilter.astro";
 import ChipGroup from "../../components/ChipGroup.astro";
@@ -27,10 +28,14 @@ import FabMenu from "../../components/FabMenu.astro";
 import Heading from "../../components/Heading.astro";
 import List from "../../components/List.astro";
 import ListItem from "../../components/ListItem.astro";
+import ListItemCheckbox from "../../components/ListItemCheckbox.astro";
+import ListItemRadio from "../../components/ListItemRadio.astro";
+import ListItemSwitch from "../../components/ListItemSwitch.astro";
 import Menu from "../../components/Menu.astro";
 import NavDrawer from "../../components/NavDrawer.astro";
 import NavRail from "../../components/NavRail.astro";
 import Popover from "../../components/Popover.astro";
+import RadioButton from "../../components/RadioButton.astro";
 import SheetSide from "../../components/SheetSide.astro";
 import Switch from "../../components/Switch.astro";
 import Tab from "../../components/Tab.astro";
@@ -128,6 +133,7 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     "button-split-name": [ButtonSplit, { ...split, icon: "add" }],
     "button-split-size": [ButtonSplit, { ...split, size: "medium" }],
     "button-split-variant": [ButtonSplit, { ...split, variant: "text" }],
+    "checkbox-as": [Checkbox, { as: "div" }],
     "chip-assist-as": [ChipAssist, { as: "div" }],
     "chip-assist-variant": [ChipAssist, { variant: "tonal" }],
     "chip-filter-menu-selected": [
@@ -186,6 +192,18 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
       ListItem,
       { label: "Inbox", trailingIcon: "chevron_right", trailingText: "100+" },
     ],
+    "list-item-checkbox-leading": [
+      ListItemCheckbox,
+      { label: "Bread", icon: "person" },
+    ],
+    "list-item-radio-control-position": [
+      ListItemRadio,
+      { label: "Small", controlPosition: "start" },
+    ],
+    "list-item-switch-trailing": [
+      ListItemSwitch,
+      { label: "Wi-Fi", trailingText: "On" },
+    ],
     "menu-color": [Menu, { id: "menu", color: "tonal" }],
     "menu-layout": [Menu, { id: "menu", layout: "list" }],
     "nav-drawer-width": [NavDrawer, { width: "medium" }],
@@ -195,7 +213,9 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
       Popover,
       { id: "popover", bgColor: "surface-container-low" },
     ],
+    "radio-button-as": [RadioButton, { as: "div" }],
     "sheet-side-edge": [SheetSide, { edge: "left" }],
+    "switch-as": [Switch, { as: "div" }],
     "switch-icons": [Switch, { icons: "unselected" }],
     "tab-transition": [Tab, { label: "One", transition: "slide" }],
     "tabs-align": [Tabs, { align: "end" }],

@@ -104,3 +104,54 @@ export const photo =
     <ListItem label="الحساب" as="button" icon="person" trailingIcon="chevron_right" />
   </List>
 </Section>
+
+<Section data-testid="list-checkbox" class="p-4 space-y-4">
+  <Heading level={2}>Checkboxes: multi-select, leading, with a disabled item and a disabled selected one</Heading>
+  <form id="sides">
+    <List aria-label="Choose your sides">
+      <ListItemCheckbox label="Bread" supportingText="Sourdough or wheat" name="side" value="bread" checked />
+      <ListItemCheckbox label="Pita" name="side" value="pita" />
+      <ListItemCheckbox label="Rice" overline="Gluten free" trailingIcon="star" name="side" value="rice" />
+      <ListItemCheckbox label="Fries" name="side" value="fries" disabled />
+      <ListItemCheckbox label="Salad" name="side" value="salad" checked disabled />
+    </List>
+  </form>
+  <Button>After the checkboxes</Button>
+</Section>
+
+<Section data-testid="list-checkbox-trailing" class="p-4 space-y-4">
+  <Heading level={2}>Checkboxes: trailing, after an avatar</Heading>
+  <List aria-label="Invite">
+    <ListItemCheckbox label="Ali Connors" supportingText="Product designer" controlPosition="trailing" name="invite" value="ali">
+      <span slot="avatar">A</span>
+    </ListItemCheckbox>
+  </List>
+</Section>
+
+<Section data-testid="list-radio" class="p-4 space-y-4">
+  <Heading level={2}>Radio buttons: single-select, leading, with trailing text</Heading>
+  <form id="sizes">
+    <List aria-label="Choose a size">
+      <ListItemRadio label="Small" name="size" value="s" />
+      <ListItemRadio label="Medium" name="size" value="m" checked />
+      <ListItemRadio label="Large" trailingText="+$2" name="size" value="l" />
+    </List>
+  </form>
+</Section>
+
+<Section data-testid="list-switch" class="p-4 space-y-4">
+  <Heading level={2}>Switches: trailing, after an icon</Heading>
+  <List aria-label="Connections">
+    <ListItemSwitch label="Notifications" supportingText="Sounds and badges" icon="notifications" name="notifications" checked />
+    <ListItemSwitch label="Airplane mode" icon="flight" name="airplane" />
+    <ListItemSwitch label="Location" icon="location_on" name="location" disabled />
+  </List>
+</Section>
+
+<Section data-testid="list-selection-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Selection, right to left</Heading>
+  <List aria-label="الجوانب">
+    <ListItemCheckbox label="خبز" name="side-rtl" value="bread" />
+    <ListItemSwitch label="الإشعارات" icon="notifications" name="notifications-rtl" />
+  </List>
+</Section>

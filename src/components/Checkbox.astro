@@ -6,19 +6,32 @@ import { twMerge } from "tailwind-merge";
 // `class` goes on the input (`name`, `value`, `checked`, `disabled`, `required`, `aria-*`), and
 // `class` on the label around it. The default slot is the label's text.
 type Props = Omit<HTMLAttributes<"input">, "type"> & {
+  // `span` draws the bare checkbox for a label that holds it, such as a ListItemCheckbox's: the
+  // label is its target, so it has no 48px target, state layer or focus ring of its own
+  as?: "label" | "span";
   // Starts the checkbox indeterminate (M3's third state). HTML has no attribute for it, so a
   // script sets the input's `indeterminate` property
   isIndeterminate?: boolean;
 };
 
 const {
+  as: Tag = "label",
   isIndeterminate = false,
   class: classList,
   ...attrs
 }: Props = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["label", "span"].includes(Tag)) {
+  throw new Error(
+    `Checkbox: its elements are "label" and "span", but this one's \`as\` is "${Tag}".`
+  );
+}
+const isBare = Tag === "span";
 ---
 
-<label
+<Tag
   class:list={twMerge(
     "inline-flex cursor-pointer items-center align-middle text-base leading-6 tracking-[0.5px]",
     // M3: a disabled label is on-surface at 38%, like the checkbox
@@ -27,21 +40,32 @@ const {
   )}
   data-ac-checkbox
 >
-  {/* M3 touch target: 48x48, around the 40px state layer and the 18px container */}
+  {/* M3 touch target: 48x48, around the 40px state layer and the 18px container. Bare, 24px,
+      Compose's checkbox with no target of its own. */}
   <span
-    class="relative grid size-12 shrink-0 place-items-center"
+    class:list={[
+      "relative grid shrink-0 place-items-center",
+      isBare ? "size-6" : "size-12",
+    ]}
     data-ac-checkbox-part="target"
   >
     <input
-      class="absolute size-10 cursor-[inherit] appearance-none rounded-full outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)"
+      class:list={[
+        "absolute cursor-[inherit] appearance-none rounded-full outline-none",
+        isBare
+          ? "inset-0 size-full"
+          : "size-10 focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
+      ]}
       type="checkbox"
       data-ac-checkbox-indeterminate={isIndeterminate ? "" : undefined}
       {...attrs}
     />
-    <span
-      class="pointer-events-none absolute size-10 rounded-full bg-(--ac-checkbox-layer) opacity-0 motion-safe:transition-[opacity,background-color]"
-      data-ac-checkbox-part="state-layer"
-    ></span>
+    {!isBare && (
+      <span
+        class="pointer-events-none absolute size-10 rounded-full bg-(--ac-checkbox-layer) opacity-0 motion-safe:transition-[opacity,background-color]"
+        data-ac-checkbox-part="state-layer"
+      />
+    )}
     <span
       class="pointer-events-none relative size-4.5 rounded-xs border-2 border-(--ac-checkbox-outline) bg-transparent motion-safe:transition-[border-color,background-color]"
       data-ac-checkbox-part="container"
@@ -72,7 +96,7 @@ const {
     </span>
   </span>
   <slot />
-</label>
+</Tag>
 
 <style>
   /* The roles each state draws from, swapped whole for the error state (M3's error tokens are
@@ -96,13 +120,13 @@ const {
     --ac-checkbox-layer: var(--theme-color-error);
   }
 
-  [data-ac-checkbox]:hover [data-ac-checkbox-part="state-layer"] {
+  label[data-ac-checkbox]:hover [data-ac-checkbox-part="state-layer"] {
     opacity: 0.08;
   }
 
   /* Focus is scoped under the label too, so it outranks hover */
-  [data-ac-checkbox]:active [data-ac-checkbox-part="state-layer"],
-  [data-ac-checkbox]
+  label[data-ac-checkbox]:active [data-ac-checkbox-part="state-layer"],
+  label[data-ac-checkbox]
     input:focus-visible
     ~ [data-ac-checkbox-part="state-layer"] {
     opacity: 0.1;
@@ -113,13 +137,13 @@ const {
   }
 
   /* M3: pressed, the state layer takes the color of the state it's about to become */
-  [data-ac-checkbox]:active
+  label[data-ac-checkbox]:active
     input:not(:checked, :indeterminate)
     ~ [data-ac-checkbox-part="state-layer"] {
     background-color: var(--ac-checkbox-accent);
   }
 
-  [data-ac-checkbox]:active
+  label[data-ac-checkbox]:active
     input:is(:checked, :indeterminate)
     ~ [data-ac-checkbox-part="state-layer"] {
     background-color: var(--ac-checkbox-layer);
@@ -129,7 +153,7 @@ const {
     display: none;
   }
 
-  [data-ac-checkbox]:is(:hover, :active)
+  label[data-ac-checkbox]:is(:hover, :active)
     input:enabled:not(:checked, :indeterminate)
     ~ [data-ac-checkbox-part="container"],
   input:focus-visible:not(:checked, :indeterminate)

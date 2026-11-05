@@ -1,0 +1,20 @@
+# List selection items are labels around native inputs
+
+M3's lists can select (#203): an item carries a checkbox, a radio button or a switch, at its leading or trailing end, and the whole item is the target. M3 Expressive highlights a selected item, with a `secondary-container` fill and 16px corners. For the web, M3's Accessibility page gives a selection list the `listbox` role, its items `option` with a selected state, and the container a label describing the kind of selection. On Android, the item is a checkbox or a radio button.
+
+ADR-0022 (the connected button group) and ADR-0024 (filter chips) already turned down ARIA roles over buttons for selection. They chose native inputs inside a `<label>` drawn as the component, which submit with a form, keep their state with no script, and work before JavaScript loads. Radios keep the browser's keyboard.
+
+We decided:
+
+1. **A selection item is a `<label>` around a native input,** drawn as M3's list item: ListItemCheckbox holds a checkbox, ListItemRadio a radio, and ListItemSwitch a checkbox with `role="switch"`. Every attribute but `class` goes on the input, as on Checkbox, RadioButton and Switch. The input is named by the item's label and supporting text through `aria-labelledby`, and described by the overline and trailing text, as M3 names an item.
+2. **The list stays a `list`, not a `listbox`.** An `option` can't hold a switch, and announcing options would hide the controls the item shows. The roles announced are the ones Compose gives its items (checkbox, radio button), and the switch's own. M3's container label is the List's `aria-label`, such as "Choose your sides".
+3. **ListItemBase draws all four items.** ListItem, the plain item, and the three selection items share it, as MenuItem, MenuItemCheckbox and MenuItemRadio share MenuItemBase. Each selection item renders the control itself, from Checkbox, RadioButton or Switch with `as="span"`. That form draws the bare control, as Compose draws a control with no `onClick` of its own: no 48px target, state layer or focus ring, since the item is its target, and no hover or press styles, which belong to the control's own label. A control's slot or a prop list of its attributes was rejected: a slotted Checkbox would bring its own `<label>`, which can't sit inside the item's, and ListItemBase couldn't give its input the item's name.
+4. **The keyboard follows M3 for checkboxes and switches, and the browser for radios.** A list of checkbox or switch items is one Tab stop, as ADR-0027 has it, the arrow keys move between them, and Space or Enter toggles one. List adds Enter for a checkbox, which would otherwise submit its form; Switch already answers Enter. Radio items keep the native radio keyboard, departing from M3 as ADR-0022 §3 does: Tab lands on the checked radio and the arrow keys move the selection.
+5. **A selected item is highlighted whatever its control.** Compose passes a toggleable item's `checked` as its `selected`, so a switch that's on highlights its item, as a checked checkbox does. Selected and disabled, the item is `on-surface` at 10%, as the Specs page's selected states draw it; its token says 38%, which the drawing doesn't match.
+
+## Consequences
+
+- Checkbox, RadioButton and Switch take `as="span"`. Their hover and press rules are scoped to `label[data-ac-…]`, so a bare control doesn't react to the pointer over it, while focus still styles it. A change to a control's look reaches the list's controls with it.
+- A selection item's states come from its input, so its state layer, corners and highlight are rules in ListItemBase's `<style>` block (ADR-0020 §2), and pressed is a mark its script sets while the pointer is down, as Firefox gives `:active` to neither a label nor its input (ADR-0024).
+- ListItem forwards its `avatar`, `image` and `video` slots to ListItemBase, which counts a slot once it renders something, since a forwarded slot is there even when its caller left it empty.
+- WebKit doesn't treat focus moved between radios by the arrow keys as `:focus-visible` (ADR-0022), so there a radio item the arrow keys reach shows no focus ring.

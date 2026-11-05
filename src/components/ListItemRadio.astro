@@ -1,0 +1,32 @@
+---
+import type { ComponentProps, HTMLAttributes } from "astro/types";
+import ListItemBase from "./ListItemBase.astro";
+
+// An M3 Expressive list item with a radio button, for a single-select List: a <label> around a
+// native radio, so the whole item selects it, items sharing a `name` form a group, and the chosen
+// `value` submits with its form (ADR-0028). The selected item is highlighted. Every attribute but
+// `class` goes on the input (`name`, `value`, `checked`, `disabled`, `required`, `aria-*`), and
+// `class` on the item. ListItemBase draws it.
+type Props = Omit<HTMLAttributes<"input">, "type"> &
+  Pick<
+    ComponentProps<typeof ListItemBase>,
+    | "label"
+    | "icon"
+    | "overline"
+    | "supportingText"
+    | "trailingIcon"
+    | "trailingText"
+    | "videoSize"
+  > & {
+    // The radio button's end of the item: leading, as Compose's samples place it, or trailing
+    controlPosition?: "leading" | "trailing";
+  };
+
+const { controlPosition = "leading", ...attrs }: Props = Astro.props;
+---
+
+<ListItemBase control="radio" controlPosition={controlPosition} {...attrs}>
+  {Astro.slots.has("avatar") && <slot name="avatar" slot="avatar" />}
+  {Astro.slots.has("image") && <slot name="image" slot="image" />}
+  {Astro.slots.has("video") && <slot name="video" slot="video" />}
+</ListItemBase>

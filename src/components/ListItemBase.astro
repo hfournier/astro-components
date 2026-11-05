@@ -1,0 +1,432 @@
+---
+import { twMerge } from "tailwind-merge";
+import type { SvgIconNameTypes } from "../svgs";
+import Checkbox from "./Checkbox.astro";
+import Icon from "./Icon.astro";
+import RadioButton from "./RadioButton.astro";
+import Switch from "./Switch.astro";
+
+// The markup ListItem, ListItemCheckbox, ListItemRadio and ListItemSwitch share: an M3 Expressive
+// list item, in the standard style, for a List. A label, with an overline above it and
+// supporting text below, a leading icon, avatar, image or video, and a trailing icon or text. It's
+// 56px tall for one line, 72px for two and 88px for three, its parts middle-aligned, or
+// top-aligned at three lines or 88px. The <li> holds the item and, in a List with `divider`, the
+// line below it.
+//
+// Without a `control`, the item is a <div>, or a link or button (`as`), and every attribute goes
+// on it. With one, it's a <label> holding a native checkbox, radio or switch at its leading or
+// trailing end (ADR-0028), and every attribute but `class` goes on the input. A selected item is
+// highlighted, as M3 Expressive's lists are.
+type Props = {
+  as?: "div" | "a" | "button";
+  // The item's Body Large text, which names it
+  label: string;
+  // A 20px icon before the label, by its file name in src/assets/svgs. For an avatar, an image
+  // or a video, fill the slot of that name instead.
+  icon?: SvgIconNameTypes;
+  // A line of Label Small text above the label
+  overline?: string;
+  // Body Medium text below the label, which can wrap
+  supportingText?: string;
+  // A 20px icon at the end, such as a chevron to show where the item leads
+  trailingIcon?: SvgIconNameTypes;
+  // Label Small text at the end, such as a count, a price or a date
+  trailingText?: string;
+  // The `video` slot's size: M3's small 100 by 56px, or large 114 by 64px
+  videoSize?: "sm" | "lg";
+  // M3's selection control, which makes the item a <label> around it
+  control?: "checkbox" | "radio" | "switch";
+  controlPosition?: "leading" | "trailing";
+  // A switch control's handle icons, as Switch takes them
+  icons?: "none" | "selected" | "both";
+  class?: string | null;
+  [attribute: string]: unknown;
+};
+
+const {
+  as = "div",
+  label,
+  icon,
+  overline,
+  supportingText,
+  trailingIcon,
+  trailingText,
+  videoSize = "sm",
+  control,
+  controlPosition = "leading",
+  icons,
+  class: classList,
+  ...attrs
+}: Props = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (
+  control !== undefined &&
+  !["checkbox", "radio", "switch"].includes(control)
+) {
+  throw new Error(
+    `ListItemBase: its controls are "checkbox", "radio" and "switch", but this one's \`control\` is "${control}".`
+  );
+}
+const name = control
+  ? {
+      checkbox: "ListItemCheckbox",
+      radio: "ListItemRadio",
+      switch: "ListItemSwitch",
+    }[control]
+  : "ListItem";
+if (!["div", "a", "button"].includes(as)) {
+  throw new Error(
+    `${name}: its elements are "div", "a" and "button", but this one's \`as\` is "${as}".`
+  );
+}
+if (!["leading", "trailing"].includes(controlPosition)) {
+  throw new Error(
+    `${name}: M3 places its control at the "leading" or "trailing" end, but this one's \`controlPosition\` is "${controlPosition}".`
+  );
+}
+if (!["sm", "lg"].includes(videoSize)) {
+  throw new Error(
+    `${name}: M3's leading video sizes are "sm" and "lg", but this one's \`videoSize\` is "${videoSize}".`
+  );
+}
+// M3's anatomy has one leading element and one trailing one
+const controlName =
+  control &&
+  { checkbox: "checkbox", radio: "radio button", switch: "switch" }[control];
+// A slot counts once it renders something: the components on this one forward all three, so
+// each is there, empty when their caller didn't fill it
+const rendered = Object.fromEntries(
+  await Promise.all(
+    ["avatar", "image", "video"].map(async (slot) => [
+      slot,
+      Astro.slots.has(slot) ? (await Astro.slots.render(slot)).trim() : "",
+    ])
+  )
+) as Record<string, string>;
+const leadingSlots = ["avatar", "image", "video"].filter(
+  (slot) => rendered[slot]
+);
+const leadings = [
+  ...(control && controlPosition === "leading" ? [`its ${controlName}`] : []),
+  ...(icon ? [`\`icon\` "${icon}"`] : []),
+  ...leadingSlots.map((slot) => `the \`${slot}\` slot`),
+];
+if (leadings.length > 1) {
+  throw new Error(
+    `${name}: M3's list item leads with one icon, avatar, image, video or control, but this one has ${leadings.join(" and ")}.`
+  );
+}
+const trailings = [
+  ...(control && controlPosition === "trailing" ? [`its ${controlName}`] : []),
+  ...(trailingIcon ? [`\`trailingIcon\` "${trailingIcon}"`] : []),
+  ...(trailingText ? [`\`trailingText\` "${trailingText}"`] : []),
+];
+if (trailings.length > 1) {
+  throw new Error(
+    `${name}: M3's list item ends with one icon, text or control, but this one has ${trailings.join(" and ")}.`
+  );
+}
+
+const leadingSlot = leadingSlots[0];
+const leadingMedia = leadingSlot ? rendered[leadingSlot] : undefined;
+
+const Tag = control ? "label" : as;
+// M3's Accessibility page: an item is named by its label and supporting text. The overline and
+// the trailing text describe it. A link or button item takes the name itself; a selection item
+// gives it to its control.
+const idPrefix = `ac-list-item-${crypto.randomUUID()}`;
+const ids = {
+  label: `${idPrefix}-label`,
+  overline: overline ? `${idPrefix}-overline` : undefined,
+  supporting: supportingText ? `${idPrefix}-supporting` : undefined,
+  trailing: trailingText ? `${idPrefix}-trailing` : undefined,
+};
+const isNamed = attrs["aria-label"] || attrs["aria-labelledby"];
+const a11yAttrs =
+  Tag === "div"
+    ? {}
+    : {
+        "aria-labelledby": isNamed
+          ? undefined
+          : [ids.label, ids.supporting].filter(Boolean).join(" "),
+        "aria-describedby":
+          [ids.overline, ids.trailing].filter(Boolean).join(" ") || undefined,
+      };
+const itemAttrs = control
+  ? {}
+  : { type: Tag === "button" ? "button" : undefined, ...a11yAttrs, ...attrs };
+const controlAttrs = { ...a11yAttrs, ...attrs };
+
+// M3's heights follow the lines of text: an overline or supporting text makes two, both make
+// three. The script below makes it three when the supporting text wraps, as Compose does.
+const lines =
+  overline && supportingText ? 3 : overline || supportingText ? 2 : 1;
+
+// M3: disabled content is on-surface at 38%. A button item is disabled itself, a selection item
+// through its input.
+const disabledContent =
+  "group-disabled/item:text-(--theme-color-on-surface)/38 group-has-disabled/item:text-(--theme-color-on-surface)/38";
+// Selected, the content is on-secondary-container
+const selectedContent =
+  "group-has-[input:checked:enabled]/item:text-(--theme-color-on-secondary-container)";
+// The overline, supporting and trailing text and the icons are on-surface-variant
+const variantContent = `text-(--theme-color-on-surface-variant) ${selectedContent} ${disabledContent}`;
+// Label Small
+const labelSmall = "text-[11px] leading-4 font-medium tracking-[0.5px]";
+
+// M3's iconography mirrors icons that point along the line right to left, such as a chevron to
+// where the item leads
+const mirrored = (iconName: SvgIconNameTypes) =>
+  ["arrow_back", "arrow_forward", "chevron_left", "chevron_right"].includes(
+    iconName
+  )
+    ? "rtl:-scale-x-100"
+    : "";
+
+// M3's leading elements: a 20px icon, a 40px circular avatar on primary-container with a Title
+// Medium letter or a photo, a 56px image, and a 100 by 56px or 114 by 64px video, both with 8px
+// corners. Media fills its box, cropped; disabled, it fades to 38% with the rest.
+const media =
+  "shrink-0 overflow-hidden group-disabled/item:opacity-38 group-has-disabled/item:opacity-38 [&_:is(img,video)]:size-full [&_:is(img,video)]:object-cover";
+const leadingClasses = leadingSlot
+  ? {
+      avatar: `${media} grid size-10 place-items-center rounded-full bg-(--theme-color-primary-container) text-base leading-6 font-medium tracking-[0.15px] text-(--theme-color-on-primary-container)`,
+      image: `${media} size-14 rounded-lg`,
+      video: `${media} rounded-lg ${{ sm: "h-14 w-25", lg: "h-16 w-[114px]" }[videoSize]}`,
+    }[leadingSlot]
+  : `flex shrink-0 ${variantContent}`;
+
+// The control, drawn bare: the item is its target (ADR-0028)
+const Control = control
+  ? { checkbox: Checkbox, radio: RadioButton, switch: Switch }[control]
+  : undefined;
+const controlProps = control === "switch" && icons ? { icons } : {};
+---
+
+<li class="list-none">
+  <Tag
+    class:list={twMerge(
+      // 16px at each end, 10px above and below, 12px between the parts, 56px tall for one line,
+      // 72px for two, 88px for three. Middle-aligned, or top-aligned at three lines or once the
+      // script finds it 88px tall.
+      "flex w-full min-h-14 items-center gap-3 px-4 py-2.5 text-start",
+      "data-[ac-list-item-lines=2]:min-h-18 data-[ac-list-item-lines=3]:min-h-22 data-[ac-list-item-lines=3]:items-start data-ac-list-item-top:items-start",
+      // On M3's surface container, its corners 4px. What it holds reads the surface's roles.
+      "rounded-sm bg-(--theme-color-surface) text-(--theme-color-on-surface)",
+      "[--theme-color-focus-ring-on-bg:var(--theme-color-secondary)] [--theme-color-link-text:var(--theme-color-primary)] [--theme-color-on-bg-variant:var(--theme-color-on-surface-variant)] [--theme-color-wrapper-bg:var(--theme-color-surface)]",
+      Tag !== "div" && [
+        "group/item relative isolate cursor-pointer disabled:cursor-default has-disabled:cursor-default",
+        // M3's on-surface state layer, shown by the <style> block below for a selection item
+        "before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-(--theme-color-on-surface) before:opacity-0 motion-safe:before:transition-opacity",
+        // the mixed springs, from the <style> block below
+        "motion-safe:[transition:var(--ac-list-item-transition)]",
+      ],
+      (Tag === "a" || Tag === "button") && [
+        // M3's state layer: 8% hovered, 10% focused or pressed
+        "not-disabled:hover:before:opacity-8 focus-visible:before:opacity-10 not-disabled:active:before:opacity-10",
+        // M3 Expressive's shape morph: 12px hovered, 16px focused or pressed
+        "not-disabled:hover:rounded-xl focus-visible:rounded-2xl not-disabled:active:rounded-2xl",
+        // M3's 3px focus indicator, inside the item
+        "outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-inset",
+      ],
+      // A selection item shows its control's focus, inside the item
+      Tag === "label" &&
+        "has-focus-visible:ring-3 has-focus-visible:ring-(--theme-color-focus-ring-on-bg) has-focus-visible:ring-inset",
+      classList
+    )}
+    data-ac-list-item
+    data-ac-list-item-lines={lines}
+    {...itemAttrs}
+  >
+    {Control && controlPosition === "leading" ? (
+      <span class="flex shrink-0" data-ac-list-item-part="leading">
+        <Control as="span" {...controlProps} {...controlAttrs} />
+      </span>
+    ) : icon ? (
+      <span class={leadingClasses} data-ac-list-item-part="leading">
+        <Icon class:list={["size-5", mirrored(icon)]} name={icon} />
+      </span>
+    ) : (
+      leadingMedia && (
+        <span
+          class={leadingClasses}
+          aria-hidden="true"
+          data-ac-list-item-part="leading"
+          set:html={leadingMedia}
+        />
+      )
+    )}
+    <span class="flex min-w-0 flex-1 flex-col" data-ac-list-item-part="content">
+      {overline && (
+        <span
+          class:list={[labelSmall, variantContent]}
+          id={ids.overline}
+          data-ac-list-item-part="overline"
+        >
+          {overline}
+        </span>
+      )}
+      {/* Body Large */}
+      <span
+        class:list={[
+          "text-base leading-6 tracking-[0.5px]",
+          selectedContent,
+          disabledContent,
+        ]}
+        id={ids.label}
+        data-ac-list-item-part="label"
+      >
+        {label}
+      </span>
+      {supportingText && (
+        <span
+          class:list={["text-sm leading-5 tracking-[0.25px]", variantContent]}
+          id={ids.supporting}
+          data-ac-list-item-part="supporting"
+        >
+          {supportingText}
+        </span>
+      )}
+    </span>
+    {trailingText && (
+      <span
+        class:list={["shrink-0", labelSmall, variantContent]}
+        id={ids.trailing}
+        data-ac-list-item-part="trailing"
+      >
+        {trailingText}
+      </span>
+    )}
+    {trailingIcon && (
+      <span
+        class:list={["flex shrink-0", variantContent]}
+        data-ac-list-item-part="trailing"
+      >
+        <Icon
+          class:list={["size-5", mirrored(trailingIcon)]}
+          name={trailingIcon}
+        />
+      </span>
+    )}
+    {Control && controlPosition === "trailing" && (
+      <span class="flex shrink-0" data-ac-list-item-part="trailing">
+        <Control as="span" {...controlProps} {...controlAttrs} />
+      </span>
+    )}
+  </Tag>
+  {/* M3's divider, 1px of outline-variant below the item; List shows it between items */}
+  <span
+    class="hidden h-px bg-(--theme-color-outline-variant)"
+    aria-hidden="true"
+    data-ac-list-item-part="divider"
+  ></span>
+</li>
+
+<style>
+  /* M3's list tokens put the corner morph on the fast spatial spring; colors on fast effects
+     (ADR-0018). A custom property, so a caller's transition class can replace it (ADR-0020). */
+  [data-ac-list-item] {
+    --ac-list-item-transition:
+      color var(--theme-duration-spring-fast-effects)
+        var(--ease-spring-fast-effects),
+      background-color var(--theme-duration-spring-fast-effects)
+        var(--ease-spring-fast-effects),
+      border-radius var(--theme-duration-spring-fast-spatial)
+        var(--ease-spring-fast-spatial);
+  }
+
+  /* A selection item's states come from its input (ADR-0020): M3's state layer at 8% hovered and
+     10% focused or pressed, and corners of 12px hovered and 16px focused or pressed. Selected,
+     M3 Expressive highlights the item in secondary-container with 16px corners in every state,
+     or on-surface at 10% disabled, as the Specs page draws it. Pressed is a mark the script
+     sets, as Firefox gives :active to neither a label nor its input. */
+  label[data-ac-list-item]:has(input:enabled):hover::before {
+    opacity: 0.08;
+  }
+  label[data-ac-list-item]:has(input:enabled):is(
+      :has(input:focus-visible),
+      [data-ac-list-item-pressed]
+    )::before {
+    opacity: 0.1;
+  }
+  label[data-ac-list-item]:has(input:enabled:not(:checked, :focus-visible)):not(
+      [data-ac-list-item-pressed]
+    ):hover {
+    border-radius: 12px;
+  }
+  label[data-ac-list-item]:is(
+      :has(input:focus-visible),
+      :has(input:checked),
+      :has(input:enabled)[data-ac-list-item-pressed]
+    ) {
+    border-radius: 16px;
+  }
+  label[data-ac-list-item]:has(input:checked:enabled) {
+    background-color: var(--theme-color-secondary-container);
+  }
+  label[data-ac-list-item]:has(input:checked:disabled) {
+    background-color: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 10%,
+      transparent
+    );
+  }
+</style>
+
+<script>
+  // M3's heights follow the item's lines of text, and supporting text that wraps makes three, as
+  // Compose counts it; an item 88px or taller, such as one whose label wraps, top-aligns its
+  // parts. Both depend on the item's width, so they're kept up to date as it resizes (ADR-0027).
+  const update = (item: HTMLElement) => {
+    const overline = item.querySelector("[data-ac-list-item-part=overline]");
+    const supporting = item.querySelector<HTMLElement>(
+      "[data-ac-list-item-part=supporting]"
+    );
+    const wraps =
+      !!supporting &&
+      supporting.offsetHeight >
+        parseFloat(getComputedStyle(supporting).lineHeight) * 1.5;
+    const lines =
+      (overline && supporting) || wraps ? 3 : overline || supporting ? 2 : 1;
+    item.dataset.acListItemLines = String(lines);
+    item.toggleAttribute("data-ac-list-item-top", item.offsetHeight >= 88);
+  };
+  // A frame later, since a new line count resizes the item, which inside the callback would be a
+  // ResizeObserver loop
+  const observer = new ResizeObserver((entries) => {
+    requestAnimationFrame(() => {
+      for (const entry of entries) update(entry.target as HTMLElement);
+    });
+  });
+  // Observed again after each swap, for items brought in by Astro's ClientRouter
+  const observeAll = () => {
+    for (const item of document.querySelectorAll<HTMLElement>(
+      "[data-ac-list-item]"
+    ))
+      observer.observe(item);
+  };
+  observeAll();
+  document.addEventListener("astro:after-swap", observeAll);
+
+  // M3's pressed state on a selection item, from the pointer pressing it to its release, which
+  // Firefox doesn't give :active, as BaseChip marks a <label> chip. A link or button item has
+  // :active in every browser.
+  const pressed = "data-ac-list-item-pressed";
+  document.addEventListener("pointerdown", (event) => {
+    if (!event.isPrimary || event.button !== 0) return;
+    const item = (event.target as Element).closest?.(
+      "label[data-ac-list-item]"
+    );
+    if (!item) return;
+    item.setAttribute(pressed, "");
+    const end = () => {
+      item.removeAttribute(pressed);
+      document.removeEventListener("pointerup", end);
+      document.removeEventListener("pointercancel", end);
+    };
+    document.addEventListener("pointerup", end);
+    document.addEventListener("pointercancel", end);
+  });
+</script>
