@@ -11,6 +11,11 @@ extends:
   tag: [input]
 mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/checkbox
 props:
+  - name: as
+    type: '"label" | "span"'
+    required: false
+    default: '"label"'
+    description: Which element holds the checkbox. `span` draws the bare checkbox for a label that holds it, as ListItemCheckbox does, with no 48px target, state layer or focus ring of its own, and no hover or press styles, since the label is its target; leave its default slot empty. Any other value fails the build.
   - name: isIndeterminate
     type: boolean
     required: false

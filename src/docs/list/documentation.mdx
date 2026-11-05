@@ -1,6 +1,6 @@
 ---
 name: List
-description: A Material 3 Expressive list, in the standard style, a continuous vertical index of text and images. It extends HTML's `<ul>` element, or `<ol>` for items in an order that matters, holds ListItems, draws M3's dividers between them, full width or inset, and moves between its links and buttons with the arrow keys.
+description: A Material 3 Expressive list, in the standard style, a continuous vertical index of text and images. It extends HTML's `<ul>` element, or `<ol>` for items in an order that matters, holds ListItems, or selection items, draws M3's dividers between them, full width or inset, and moves between its links and buttons with the arrow keys.
 category: Text content
 role: pattern
 meta:
@@ -23,7 +23,7 @@ props:
     description: M3's dividers between items, 1px of `outline-variant` with no space above or below. `full-width` runs from edge to edge, `inset` stops 16px short of each end. No line goes below the last item. Any other value fails the build.
 slots:
   - name: default
-    description: The list's items.
+    description: "The list's items: ListItems, or ListItemCheckbox, ListItemRadio or ListItemSwitch items for a selection."
     kind: component
     component: ListItem
     multiple: true

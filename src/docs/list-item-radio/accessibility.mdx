@@ -1,0 +1,8 @@
+Each item is a native radio button inside a `<label>`, so screen readers announce a radio button, selected or not, and its place in the group:
+
+- **Names:** as M3's Accessibility page asks, the radio button is named by the item's label and supporting text, and described by its overline and trailing text, such as "Large", "+$2". An `aria-label` or `aria-labelledby` you give replaces the name.
+- **The list's name:** give the List an `aria-label` that describes the choice, such as "Choose a size", as M3 asks of a selection list's container.
+- **Keyboard:** the items keep the browser's radio keyboard, as the connected button group's do. Tab lands on the selected item, or the first, and leaves the group. The arrow keys move the selection, and Space selects the focused item.
+- **Target size:** the whole item is the target, at least 56px tall.
+
+WebKit doesn't treat focus moved by the arrow keys as `:focus-visible`, so there an item reached that way shows no focus ring, as with every native radio. Under reduced motion, the highlight, corners and state layer change at once.

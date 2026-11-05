@@ -7,12 +7,25 @@ import { twMerge } from "tailwind-merge";
 // Every attribute but `class` goes on the input (`name`, `value`, `checked`, `disabled`,
 // `required`, `aria-*`), and `class` on the label around it. The default slot is the label's
 // text.
-type Props = Omit<HTMLAttributes<"input">, "type">;
+type Props = Omit<HTMLAttributes<"input">, "type"> & {
+  // `span` draws the bare radio button for a label that holds it, such as a ListItemRadio's: the
+  // label is its target, so it has no 48px target, state layer or focus ring of its own
+  as?: "label" | "span";
+};
 
-const { class: classList, ...attrs }: Props = Astro.props;
+const { as: Tag = "label", class: classList, ...attrs }: Props = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["label", "span"].includes(Tag)) {
+  throw new Error(
+    `RadioButton: its elements are "label" and "span", but this one's \`as\` is "${Tag}".`
+  );
+}
+const isBare = Tag === "span";
 ---
 
-<label
+<Tag
   class:list={twMerge(
     "inline-flex cursor-pointer items-center align-middle text-base leading-6 tracking-[0.5px]",
     // M3: a disabled label is on-surface at 38%, like the radio button
@@ -21,20 +34,31 @@ const { class: classList, ...attrs }: Props = Astro.props;
   )}
   data-ac-radio-button
 >
-  {/* M3 touch target: 48x48, around the 40px state layer and the 20px icon */}
+  {/* M3 touch target: 48x48, around the 40px state layer and the 20px icon. Bare, 24px,
+      Compose's radio button with no target of its own. */}
   <span
-    class="relative grid size-12 shrink-0 place-items-center"
+    class:list={[
+      "relative grid shrink-0 place-items-center",
+      isBare ? "size-6" : "size-12",
+    ]}
     data-ac-radio-button-part="target"
   >
     <input
-      class="absolute size-10 cursor-[inherit] appearance-none rounded-full outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)"
+      class:list={[
+        "absolute cursor-[inherit] appearance-none rounded-full outline-none",
+        isBare
+          ? "inset-0 size-full"
+          : "size-10 focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
+      ]}
       type="radio"
       {...attrs}
     />
-    <span
-      class="pointer-events-none absolute size-10 rounded-full bg-current opacity-0 motion-safe:transition-[opacity,background-color]"
-      data-ac-radio-button-part="state-layer"
-    ></span>
+    {!isBare && (
+      <span
+        class="pointer-events-none absolute size-10 rounded-full bg-current opacity-0 motion-safe:transition-[opacity,background-color]"
+        data-ac-radio-button-part="state-layer"
+      />
+    )}
     {/* Compose draws a 2px ring with a 10px dot inside it */}
     <span
       class="pointer-events-none relative grid size-5 place-items-center rounded-full border-2 border-(--theme-color-on-bg-variant) motion-safe:transition-[border-color] motion-safe:duration-(--theme-duration-spring-default-effects) motion-safe:ease-spring-default-effects"
@@ -47,7 +71,7 @@ const { class: classList, ...attrs }: Props = Astro.props;
     </span>
   </span>
   <slot />
-</label>
+</Tag>
 
 <style>
   /* Unselected, the ring is the label's color (on-surface outside any wrapper) when hovered,
@@ -61,13 +85,13 @@ const { class: classList, ...attrs }: Props = Astro.props;
     );
   }
 
-  [data-ac-radio-button]:hover [data-ac-radio-button-part="state-layer"] {
+  label[data-ac-radio-button]:hover [data-ac-radio-button-part="state-layer"] {
     opacity: 0.08;
   }
 
   /* Focus is scoped under the label too, so it outranks hover */
-  [data-ac-radio-button]:active [data-ac-radio-button-part="state-layer"],
-  [data-ac-radio-button]
+  label[data-ac-radio-button]:active [data-ac-radio-button-part="state-layer"],
+  label[data-ac-radio-button]
     input:focus-visible
     ~ [data-ac-radio-button-part="state-layer"] {
     opacity: 0.1;
@@ -79,26 +103,26 @@ const { class: classList, ...attrs }: Props = Astro.props;
 
   /* M3: pressed, the state layer takes the color of the state it's about to become. A selected
      radio stays selected, but its tokens still press in on-surface. */
-  [data-ac-radio-button]:active
+  label[data-ac-radio-button]:active
     input:not(:checked)
     ~ [data-ac-radio-button-part="state-layer"] {
     background-color: var(--theme-color-primary);
   }
 
-  [data-ac-radio-button]:active
+  label[data-ac-radio-button]:active
     input:checked
     ~ [data-ac-radio-button-part="state-layer"] {
     background-color: currentColor;
   }
 
   /* Scoped under the label to outrank its :hover and :active */
-  [data-ac-radio-button]
+  label[data-ac-radio-button]
     input:disabled
     ~ [data-ac-radio-button-part="state-layer"] {
     opacity: 0;
   }
 
-  [data-ac-radio-button]:is(:hover, :active)
+  label[data-ac-radio-button]:is(:hover, :active)
     input:enabled:not(:checked)
     ~ [data-ac-radio-button-part="icon"],
   input:focus-visible:not(:checked) ~ [data-ac-radio-button-part="icon"] {

@@ -1,0 +1,76 @@
+---
+name: BaseListItem
+description: The markup ListItem, ListItemCheckbox, ListItemRadio and ListItemSwitch share, an M3 Expressive list item in a `<li>`. It's a `<div>`, `<a>` or `<button>`, or, with a `control`, a `<label>` around a native checkbox, radio or switch. Each of the four sets what it needs; it isn't meant to be used on its own.
+category: Text content
+role: internal
+meta:
+  title: BaseListItem | astro-components HenriFournier.dev
+  description: The shared markup of Material 3 Expressive list items, their text, leading and trailing elements, and selection control.
+extends:
+  kind: element
+  tag: [div, a, button, label]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/li
+parents: [ListItem, ListItemCheckbox, ListItemRadio, ListItemSwitch]
+props:
+  - name: as
+    type: '"div" | "a" | "button"'
+    required: false
+    default: '"div"'
+    description: The item's element without a `control`, set by ListItem. Any other value fails the build.
+  - name: label
+    type: string
+    required: true
+    description: The item's text, in Body Large and `on-surface`. It names a link, button or selection item, with the supporting text.
+  - name: overline
+    type: string
+    required: false
+    description: A line of text above the label, in Label Small and `on-surface-variant`, such as a category or a date. It describes a link, button or selection item.
+  - name: supportingText
+    type: string
+    required: false
+    description: Text below the label, in Body Medium and `on-surface-variant`. It can wrap; past one line, the item is a three-line item.
+  - name: icon
+    type: SvgIconNameTypes
+    required: false
+    description: A 20px icon before the label, by its file name in `src/assets/svgs`, in `on-surface-variant`. It's decorative, so the label names the item. The build fails if the `avatar`, `image` or `video` slot is filled too, or a control leads the item.
+  - name: trailingIcon
+    type: SvgIconNameTypes
+    required: false
+    description: A 20px icon at the end, in `on-surface-variant`, such as a chevron for an item that leads somewhere. It's decorative. The build fails if `trailingText` is given too, or a control ends the item.
+  - name: trailingText
+    type: string
+    required: false
+    description: Text at the end, in Label Small and `on-surface-variant`, for meta information such as a count, a price or a date. It describes a link, button or selection item. The build fails if `trailingIcon` is given too, or a control ends the item.
+  - name: videoSize
+    type: '"sm" | "lg"'
+    required: false
+    default: '"sm"'
+    description: The size of the `video` slot, M3's small video at 100 by 56px or large at 114 by 64px. Any other value fails the build.
+  - name: control
+    type: '"checkbox" | "radio" | "switch"'
+    required: false
+    description: The selection control, set by ListItemCheckbox, ListItemRadio or ListItemSwitch. It makes the item a `<label>`, and every attribute but `class` goes on the control's input. Any other value fails the build.
+  - name: controlPosition
+    type: '"leading" | "trailing"'
+    required: false
+    default: '"leading"'
+    description: The control's end of the item. Any other value fails the build.
+  - name: icons
+    type: '"none" | "selected" | "both"'
+    required: false
+    description: A switch control's handle icons, as Switch takes them.
+slots:
+  - name: avatar
+    description: A 40px circular avatar before the label.
+    kind: any
+  - name: image
+    description: A 56px image before the label.
+    kind: any
+  - name: video
+    description: A video thumbnail before the label.
+    kind: any
+---
+
+## Leading and trailing elements
+
+M3's anatomy has one leading element and one trailing one. The build fails on an item with more than one at either end, counting the control at its end: an icon, an avatar, an image, a video or a leading control before the label, and an icon, text or a trailing control after it.

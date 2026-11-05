@@ -1,0 +1,40 @@
+---
+name: ListItemRadio
+description: A Material 3 Expressive list item with a radio button, for a List where one item can be selected. It renders a `<li>` holding a `<label>` around a native `<input type="radio">`, so the whole item selects it, items sharing a `name` form a group, and the chosen `value` submits with its form. The selected item is highlighted, in `secondary-container` with 16px corners.
+category: Forms
+role: pattern
+meta:
+  title: ListItemRadio | astro-components HenriFournier.dev
+  description: A Material 3 Expressive list item that selects a native radio button, highlighted when selected, for single-select lists.
+extends:
+  kind: component
+  name: BaseListItem
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/radio
+parents: [List]
+props:
+  - name: controlPosition
+    type: '"leading" | "trailing"'
+    required: false
+    default: '"leading"'
+    description: The radio button's end of the item. Leading, it takes the place of an icon or avatar. Trailing, it takes the place of trailing text or an icon, and leaves the start for an avatar, an image or a video. Any other value fails the build.
+slots:
+  - name: avatar
+    description: A 40px circle on `primary-container` before the label, with a letter or a photo, as ListItem's. Fill it only with a trailing radio button.
+    kind: any
+  - name: image
+    description: A 56px image before the label, as ListItem's, with a trailing radio button.
+    kind: any
+  - name: video
+    description: A video thumbnail before the label, as ListItem's, with a trailing radio button.
+    kind: any
+---
+
+## Attributes
+
+Every attribute except `class` goes on the `<input>`: `name`, `value`, `checked`, `disabled`, `required`, `form`, `aria-*` and the rest. Give the items of one List the same `name`, so choosing one clears the others. `class` goes on the item's `<label>`. Its other props are BaseListItem's: `label` (required), `overline`, `supportingText`, `icon`, `trailingIcon`, `trailingText` and `videoSize`. See BaseListItem for each.
+
+## States
+
+The radio button is drawn at Compose's 24px, with no target or state layer of its own: the item is its target. The item shows M3's state layer, 8% hovered and 10% focused or pressed, and its corners morph from 4px to 12px hovered and 16px focused or pressed. A focused item shows a 3px `secondary` ring inside its edges.
+
+Selected, M3 Expressive highlights the item: `secondary-container`, with its text and icons in `on-secondary-container` and 16px corners in every state. A disabled item's content is `on-surface` at 38%, and a disabled selected one is `on-surface` at 10%.

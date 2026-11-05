@@ -146,6 +146,22 @@ test.describe("motion", () => {
     await expectTransitions(item, { opacity: FAST_EFFECTS }, "::before");
   });
 
+  test("ListItemCheckbox: its highlight on fast effects, corners on fast spatial, its state layer on fast effects", async ({
+    page,
+  }) => {
+    await page.goto("/tests/list");
+    const item = page
+      .getByTestId("list-checkbox")
+      .locator("label[data-ac-list-item]")
+      .first();
+    await expectTransitions(item, {
+      color: FAST_EFFECTS,
+      "background-color": FAST_EFFECTS,
+      "border-radius": FAST_SPATIAL,
+    });
+    await expectTransitions(item, { opacity: FAST_EFFECTS }, "::before");
+  });
+
   test("ChipFilter: the leading space widening on fast spatial, the check mark and icon fading on fast effects", async ({
     page,
   }) => {

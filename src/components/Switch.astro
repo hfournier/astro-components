@@ -8,23 +8,37 @@ import Icon from "./Icon.astro";
 // the input (`name`, `value`, `checked`, `disabled`, `required`, `aria-*`), and `class` on the
 // label around it. The default slot is the label's text, which comes before the switch.
 type Props = Omit<HTMLAttributes<"input">, "type" | "role"> & {
+  // `span` draws the bare switch for a label that holds it, such as a ListItemSwitch's: the
+  // label is its target, so it has no 48px target, state layer or focus ring of its own
+  as?: "label" | "span";
   // M3's optional icon in the handle: a check on the selected state only, or a check and an x
   // on both states
   icons?: "none" | "selected" | "both";
 };
 
-const { icons = "none", class: classList, ...attrs }: Props = Astro.props;
+const {
+  as: Tag = "label",
+  icons = "none",
+  class: classList,
+  ...attrs
+}: Props = Astro.props;
 
 // Values outside these fail the build, rather than drawing something other than was asked for
 // (ADR-0021)
+if (!["label", "span"].includes(Tag)) {
+  throw new Error(
+    `Switch: its elements are "label" and "span", but this one's \`as\` is "${Tag}".`
+  );
+}
 if (!["none", "selected", "both"].includes(icons)) {
   throw new Error(
     `Switch: M3's icon options are "none", "selected" and "both", but this one's \`icons\` is "${icons}".`
   );
 }
+const isBare = Tag === "span";
 ---
 
-<label
+<Tag
   class:list={twMerge(
     "inline-flex cursor-pointer items-center gap-4 align-middle text-base leading-6 tracking-[0.5px]",
     // M3: a disabled label is on-surface at 38%
@@ -34,14 +48,22 @@ if (!["none", "selected", "both"].includes(icons)) {
   data-ac-switch
 >
   <slot />
-  {/* M3 touch target: 48px tall, around the 52x32 track */}
+  {/* M3 touch target: 48px tall, around the 52x32 track. Bare, the track alone, as Compose
+      draws a switch with no target of its own. */}
   <span
-    class="grid h-12 w-13 shrink-0 place-items-center *:col-start-1 *:row-start-1"
+    class:list={[
+      "grid w-13 shrink-0 place-items-center *:col-start-1 *:row-start-1",
+      isBare ? "h-8" : "h-12",
+    ]}
     data-ac-switch-part="target"
   >
     {/* the input covers the track, so the focus ring is drawn around it */}
     <input
-      class="h-8 w-13 cursor-[inherit] appearance-none rounded-full outline-none focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)"
+      class:list={[
+        "h-8 w-13 cursor-[inherit] appearance-none rounded-full outline-none",
+        !isBare &&
+          "focus-visible:ring-3 focus-visible:ring-(--theme-color-focus-ring-on-bg) focus-visible:ring-offset-2 focus-visible:ring-offset-(--theme-color-wrapper-bg)",
+      ]}
       type="checkbox"
       role="switch"
       {...attrs}
@@ -50,10 +72,12 @@ if (!["none", "selected", "both"].includes(icons)) {
       class="pointer-events-none h-8 w-13 rounded-full border-2 border-(--theme-color-outline) bg-(--theme-color-surface-container-highest) motion-safe:transition-[border-color,background-color]"
       data-ac-switch-part="track"
     ></span>
-    <span
-      class="pointer-events-none size-10 rounded-full bg-current opacity-0 [translate:calc(-10px*var(--ac-switch-flip))_0]"
-      data-ac-switch-part="state-layer"
-    ></span>
+    {!isBare && (
+      <span
+        class="pointer-events-none size-10 rounded-full bg-current opacity-0 [translate:calc(-10px*var(--ac-switch-flip))_0]"
+        data-ac-switch-part="state-layer"
+      />
+    )}
     {/* M3's handle: 16px unselected, 24px selected or holding an icon, 28px pressed */}
     <span
       class:list={[
@@ -82,7 +106,7 @@ if (!["none", "selected", "both"].includes(icons)) {
       )}
     </span>
   </span>
-</label>
+</Tag>
 
 <style>
   /* The handle and its state layer share a center, 16px from the track's start edge when
@@ -137,14 +161,14 @@ if (!["none", "selected", "both"].includes(icons)) {
     height: 24px;
   }
 
-  [data-ac-switch]:active input:enabled ~ [data-ac-switch-part="handle"] {
+  label[data-ac-switch]:active input:enabled ~ [data-ac-switch-part="handle"] {
     width: 28px;
     height: 28px;
   }
 
   /* Hovered, focused or pressed, the handle darkens: on-surface-variant unselected,
      primary-container selected */
-  [data-ac-switch]:is(:hover, :active)
+  label[data-ac-switch]:is(:hover, :active)
     input:enabled
     ~ [data-ac-switch-part="handle"],
   input:focus-visible ~ [data-ac-switch-part="handle"] {
@@ -155,7 +179,7 @@ if (!["none", "selected", "both"].includes(icons)) {
     background-color: var(--theme-color-on-primary);
   }
 
-  [data-ac-switch]:is(:hover, :active)
+  label[data-ac-switch]:is(:hover, :active)
     input:enabled:checked
     ~ [data-ac-switch-part="handle"],
   input:focus-visible:checked ~ [data-ac-switch-part="handle"] {
@@ -173,7 +197,7 @@ if (!["none", "selected", "both"].includes(icons)) {
   /* Hovered, focused or pressed, the check is on-primary-container, the on-color of the
      primary-container handle. M3 keeps it primary, but in a scheme whose primary-container is
      close to primary in tone (this theme's Fidelity), that leaves the check at under 2:1. */
-  [data-ac-switch]:is(:hover, :active)
+  label[data-ac-switch]:is(:hover, :active)
     input:enabled:checked
     ~ *
     [data-ac-switch-icon="selected"],
@@ -204,18 +228,20 @@ if (!["none", "selected", "both"].includes(icons)) {
     background-color: var(--theme-color-primary);
   }
 
-  [data-ac-switch]:hover [data-ac-switch-part="state-layer"] {
+  label[data-ac-switch]:hover [data-ac-switch-part="state-layer"] {
     opacity: 0.08;
   }
 
   /* Focus is scoped under the label too, so it outranks hover */
-  [data-ac-switch]:active [data-ac-switch-part="state-layer"],
-  [data-ac-switch] input:focus-visible ~ [data-ac-switch-part="state-layer"] {
+  label[data-ac-switch]:active [data-ac-switch-part="state-layer"],
+  label[data-ac-switch]
+    input:focus-visible
+    ~ [data-ac-switch-part="state-layer"] {
     opacity: 0.1;
   }
 
   /* Scoped under the label to outrank its :hover and :active */
-  [data-ac-switch] input:disabled ~ [data-ac-switch-part="state-layer"] {
+  label[data-ac-switch] input:disabled ~ [data-ac-switch-part="state-layer"] {
     opacity: 0;
   }
 
@@ -245,7 +271,9 @@ if (!["none", "selected", "both"].includes(icons)) {
           var(--ease-spring-fast-effects);
     }
 
-    [data-ac-switch]:active input:enabled ~ [data-ac-switch-part="handle"] {
+    label[data-ac-switch]:active
+      input:enabled
+      ~ [data-ac-switch-part="handle"] {
       transition:
         translate 0s,
         width 0s,

@@ -1,0 +1,7 @@
+Each item is a native checkbox with `role="switch"` inside a `<label>`, so screen readers announce a switch, on or off, in a list:
+
+- **Names:** as M3's Accessibility page asks, the switch is named by the item's label and supporting text, such as "Notifications" followed by "Sounds and badges", and described by its overline and trailing text. An `aria-label` or `aria-labelledby` you give replaces the name.
+- **Keyboard:** the list is one Tab stop, on its first item or the one focused last. The arrow keys move between items, wrapping at the ends and skipping disabled ones, and Space or Enter toggles the focused one.
+- **Target size:** the whole item is the target, at least 56px tall.
+
+Under reduced motion, the highlight, corners and state layer change at once.

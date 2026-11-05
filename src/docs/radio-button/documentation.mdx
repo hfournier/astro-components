@@ -10,6 +10,12 @@ extends:
   kind: element
   tag: [input]
 mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/radio
+props:
+  - name: as
+    type: '"label" | "span"'
+    required: false
+    default: '"label"'
+    description: Which element holds the radio button. `span` draws the bare radio button for a label that holds it, as ListItemRadio does, with no 48px target, state layer or focus ring of its own, and no hover or press styles, since the label is its target; leave its default slot empty. Any other value fails the build.
 slots:
   - name: default
     description: The label's text, in M3's Body Large and the background's on-color (`on-surface` outside any wrapper). It stays that color whether the radio button is selected or not. Clicking it selects the radio button. Leave it empty only when the radio button is named another way, with `aria-label` or `aria-labelledby`.

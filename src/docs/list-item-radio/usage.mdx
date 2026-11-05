@@ -1,0 +1,13 @@
+---
+title: ListItemRadio
+description: The following example shows a single-select List of radio items sharing a `name`, in a form, with Medium selected.
+show: both
+---
+
+<form>
+  <List aria-label="Choose a size">
+    <ListItemRadio label="Small" name="size" value="s" />
+    <ListItemRadio label="Medium" name="size" value="m" checked />
+    <ListItemRadio label="Large" trailingText="+$2" name="size" value="l" />
+  </List>
+</form>
