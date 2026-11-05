@@ -8,7 +8,7 @@ meta:
   description: A Material 3 Expressive list item that toggles a native checkbox, highlighted when selected, for multi-select lists.
 extends:
   kind: component
-  name: ListItemBase
+  name: BaseListItem
 mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/checkbox
 parents: [List]
 props:
@@ -31,7 +31,7 @@ slots:
 
 ## Attributes
 
-Every attribute except `class` goes on the `<input>`: `name`, `value`, `checked`, `disabled`, `required`, `form`, `aria-*` and the rest. `class` goes on the item's `<label>`. Its other props are ListItemBase's: `label` (required), `overline`, `supportingText`, `icon`, `trailingIcon`, `trailingText` and `videoSize`. See ListItemBase for each. Listen for the input's `change` event to react to a change.
+Every attribute except `class` goes on the `<input>`: `name`, `value`, `checked`, `disabled`, `required`, `form`, `aria-*` and the rest. `class` goes on the item's `<label>`. Its other props are BaseListItem's: `label` (required), `overline`, `supportingText`, `icon`, `trailingIcon`, `trailingText` and `videoSize`. See BaseListItem for each. Listen for the input's `change` event to react to a change.
 
 ## States
 

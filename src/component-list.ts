@@ -2,6 +2,7 @@
 // @ts-nocheck
 export { default as Aside } from "./components/Aside.astro";
 export { default as Badge } from "./components/Badge.astro";
+export { default as BaseListItem } from "./components/BaseListItem.astro";
 export { default as BaseMenuItem } from "./components/BaseMenuItem.astro";
 export { default as BaseWrapper } from "./components/BaseWrapper.astro";
 export { default as Button } from "./components/Button.astro";
@@ -31,7 +32,6 @@ export { default as Icon } from "./components/Icon.astro";
 export { default as Link } from "./components/Link.astro";
 export { default as List } from "./components/List.astro";
 export { default as ListItem } from "./components/ListItem.astro";
-export { default as ListItemBase } from "./components/ListItemBase.astro";
 export { default as ListItemCheckbox } from "./components/ListItemCheckbox.astro";
 export { default as ListItemRadio } from "./components/ListItemRadio.astro";
 export { default as ListItemSwitch } from "./components/ListItemSwitch.astro";

@@ -1,15 +1,15 @@
 ---
 import type { ComponentProps, HTMLAttributes } from "astro/types";
-import ListItemBase, { type ListItemContent } from "./ListItemBase.astro";
+import BaseListItem, { type ListItemContent } from "./BaseListItem.astro";
 
 // An M3 Expressive list item with a switch, for a List of settings: a <label> around a native
 // checkbox with role="switch", so the whole item toggles it and it submits with its form
 // (ADR-0028). An item that's on is highlighted. Every attribute but `class` goes on the input
 // (`name`, `value`, `checked`, `disabled`, `required`, `aria-*`), and `class` on the item.
-// ListItemBase draws it.
+// BaseListItem draws it.
 type Props = Omit<HTMLAttributes<"input">, "type" | "role"> &
   ListItemContent &
-  Pick<ComponentProps<typeof ListItemBase>, "icons"> & {
+  Pick<ComponentProps<typeof BaseListItem>, "icons"> & {
     // The switch's end of the item: trailing, as M3's Specs place it, or leading
     controlPosition?: "leading" | "trailing";
   };
@@ -17,8 +17,8 @@ type Props = Omit<HTMLAttributes<"input">, "type" | "role"> &
 const { controlPosition = "trailing", ...attrs }: Props = Astro.props;
 ---
 
-<ListItemBase control="switch" controlPosition={controlPosition} {...attrs}>
+<BaseListItem control="switch" controlPosition={controlPosition} {...attrs}>
   {Astro.slots.has("avatar") && <slot name="avatar" slot="avatar" />}
   {Astro.slots.has("image") && <slot name="image" slot="image" />}
   {Astro.slots.has("video") && <slot name="video" slot="video" />}
-</ListItemBase>
+</BaseListItem>

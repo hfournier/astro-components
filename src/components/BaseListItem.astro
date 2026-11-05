@@ -91,7 +91,7 @@ const {
 // (ADR-0021)
 if (control !== undefined && !(control in controls)) {
   throw new Error(
-    `ListItemBase: its controls are "checkbox", "radio" and "switch", but this one's \`control\` is "${control}".`
+    `BaseListItem: its controls are "checkbox", "radio" and "switch", but this one's \`control\` is "${control}".`
   );
 }
 const selection = control ? controls[control] : undefined;

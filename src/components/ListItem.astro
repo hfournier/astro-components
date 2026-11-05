@@ -1,18 +1,18 @@
 ---
 import type { HTMLTag, Polymorphic } from "astro/types";
-import ListItemBase, { type ListItemContent } from "./ListItemBase.astro";
+import BaseListItem, { type ListItemContent } from "./BaseListItem.astro";
 
 // An M3 Expressive list item, in the standard style, for a List: a label, with an overline above
 // it and supporting text below, a leading icon, avatar, image or video, and a trailing icon or
 // text. It's static, a link (`as="a"`) or a button (`as="button"`): an interactive item shows
 // M3's state layer and morphs its corners from 4px to 12px hovered and 16px focused or pressed.
-// Every attribute, `class` too, goes on the item. ListItemBase draws it.
+// Every attribute, `class` too, goes on the item. BaseListItem draws it.
 type Props<Tag extends Extract<HTMLTag, "div" | "a" | "button"> = "div"> =
   Polymorphic<{ as: Tag } & ListItemContent>;
 ---
 
-<ListItemBase {...(Astro.props as Props<"div" | "a" | "button">)}>
+<BaseListItem {...(Astro.props as Props<"div" | "a" | "button">)}>
   {Astro.slots.has("avatar") && <slot name="avatar" slot="avatar" />}
   {Astro.slots.has("image") && <slot name="image" slot="image" />}
   {Astro.slots.has("video") && <slot name="video" slot="video" />}
-</ListItemBase>
+</BaseListItem>

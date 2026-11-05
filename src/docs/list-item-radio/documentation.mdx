@@ -8,7 +8,7 @@ meta:
   description: A Material 3 Expressive list item that selects a native radio button, highlighted when selected, for single-select lists.
 extends:
   kind: component
-  name: ListItemBase
+  name: BaseListItem
 mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/radio
 parents: [List]
 props:
@@ -31,7 +31,7 @@ slots:
 
 ## Attributes
 
-Every attribute except `class` goes on the `<input>`: `name`, `value`, `checked`, `disabled`, `required`, `form`, `aria-*` and the rest. Give the items of one List the same `name`, so choosing one clears the others. `class` goes on the item's `<label>`. Its other props are ListItemBase's: `label` (required), `overline`, `supportingText`, `icon`, `trailingIcon`, `trailingText` and `videoSize`. See ListItemBase for each.
+Every attribute except `class` goes on the `<input>`: `name`, `value`, `checked`, `disabled`, `required`, `form`, `aria-*` and the rest. Give the items of one List the same `name`, so choosing one clears the others. `class` goes on the item's `<label>`. Its other props are BaseListItem's: `label` (required), `overline`, `supportingText`, `icon`, `trailingIcon`, `trailingText` and `videoSize`. See BaseListItem for each.
 
 ## States
 
