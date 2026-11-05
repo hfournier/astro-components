@@ -1,0 +1,57 @@
+---
+name: Card
+description: A Material 3 card, a container for content and actions about one subject, elevated, filled or outlined, with 12px corners. It's static, a `<div>` or `<article>` holding buttons and links, or interactive, one link or button covering the card that can still hold buttons of its own, and it shows M3's state layer and elevation as it's hovered, focused, pressed and dragged.
+category: Content sectioning
+role: pattern
+meta:
+  title: Card | astro-components HenriFournier.dev
+  description: A Material 3 card, elevated, filled or outlined, static or one link or button that can still hold buttons of its own.
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/article
+props:
+  - name: variant
+    type: '"elevated" | "filled" | "outlined"'
+    required: false
+    default: '"filled"'
+    description: "M3's card style: `elevated` on `surface-container-low` with a shadow, `filled` on `surface-container-highest`, or `outlined` on `surface` in an `outline-variant` outline. Any other value fails the build."
+  - name: as
+    type: '"div" | "article" | "a" | "button"'
+    required: false
+    default: '"div"'
+    description: "Which kind of card it is. `div`, or `article` for content that stands on its own, is a static card, a container whose buttons and links are the tab stops. `a` (with `href`) makes the card a link and `button` a button, a primary action covering the whole card, which needs `aria-label` or `aria-labelledby`. Any other value fails the build, and so does an `a` or `button` card with no name."
+slots:
+  - name: default
+    description: The card's content, laid out by you, in any of M3's content blocks, such as media, a headline, a subhead, supporting text and actions. Card adds no padding, so full-width media can reach its edges; give the text blocks M3's 16px.
+    kind: any
+---
+
+## Attributes
+
+On a static card, every attribute goes on its `<div>` or `<article>`. On an interactive card, `class` and `draggable` go on the card, and every other attribute goes on its link or button, such as `href`, `disabled` on a button card, `id` and `aria-*`.
+
+## Anatomy
+
+- **Container:** the only part M3 requires, with 12px corners. Its size follows its content, and it clips the content to its corners.
+- **Content:** whatever you put in it, often media, a headline, a subhead, supporting text and buttons, in that order. Lay it out with your own classes, with 16px of padding at each side, as M3's Specs ask.
+
+Use a headline that names the card, such as an `<h3>` in the page's heading order, and point an interactive card's `aria-labelledby` at it.
+
+## Interactive cards
+
+An interactive card has one primary action, a link or button covering the whole card, which M3 calls the primary action area. A click anywhere on the card is the action's. Buttons, links and form controls inside the card keep their own clicks and are separate tab stops after the card, so a card can have an overflow menu or a Play button beside its own action without one sitting inside the other. Position them with your own classes, such as `absolute end-2 top-2` for an overflow menu, since Card is `relative`.
+
+A disabled button card doesn't disable the buttons inside it. Disable them too.
+
+## States
+
+A static card has no states, as M3's Accessibility page asks. An interactive card shows its action's states:
+
+- **Hovered:** an 8% `on-surface` state layer. An elevated card rises to level 2, and a filled or outlined one to level 1.
+- **Focused:** a 10% state layer, and a 3px `secondary` focus indicator 2px outside the card. A focused outlined card's outline turns `on-surface`.
+- **Pressed:** a 10% state layer, at its resting elevation.
+- **Disabled:** a button card only. Its content is `on-surface` at 38%. An elevated card's container is `surface`, a filled one's is `surface-variant` at 38% over its own, and an outlined one's outline is `outline` at 12%.
+
+A card you make draggable, with `draggable="true"`, shows M3's dragged state while it's dragged: a 16% state layer, with an elevated card at level 4 and a filled or outlined one at level 3. Card doesn't add drag and drop itself.
+
+## Cards in a collection
+
+Show cards together in a grid, a vertical list or a row, at the same resting elevation, with no more than 8px between them. Put sort and filter options outside the collection. On a compact screen, a [List](/components/list) can show the same content more compactly.

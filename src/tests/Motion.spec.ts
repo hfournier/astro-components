@@ -130,6 +130,23 @@ test.describe("motion", () => {
     await expectTransitions(chip, { opacity: FAST_EFFECTS }, "::before");
   });
 
+  test("Card: colors, outline and shadow on fast effects, its state layer too", async ({
+    page,
+  }) => {
+    await page.goto("/tests/card");
+    const card = page
+      .getByTestId("card-interactive")
+      .locator("[data-ac-card]")
+      .first();
+    await expectTransitions(card, {
+      color: FAST_EFFECTS,
+      "background-color": FAST_EFFECTS,
+      "border-color": FAST_EFFECTS,
+      "box-shadow": FAST_EFFECTS,
+    });
+    await expectTransitions(card, { opacity: FAST_EFFECTS }, "::before");
+  });
+
   test("ListItem: colors on fast effects, corners on fast spatial, its state layer on fast effects", async ({
     page,
   }) => {

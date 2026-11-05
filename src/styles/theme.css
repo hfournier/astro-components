@@ -42,6 +42,22 @@
 @custom-variant chip-focus-visible (&:is(:focus-visible, :has(> input:focus-visible)));
 @custom-variant chip-active (&:is(:active, [data-ac-base-chip-pressed]));
 
+/* card state: an interactive Card's primary action is a link or button covering the card
+   (ADR-0030), and the card shows its states: its elevation, state layer, outline and focus
+   indicator. Hover is only for devices that hover, as Tailwind's hover: is. Dragged is Card's
+   script's mark on a card the page makes draggable. */
+@custom-variant card-hover {
+  @media (hover: hover) {
+    &:has(> [data-ac-card-part="action"]:not(:disabled):hover) {
+      @slot;
+    }
+  }
+}
+@custom-variant card-focus-visible (&:has(> [data-ac-card-part="action"]:focus-visible));
+@custom-variant card-active (&:has(> [data-ac-card-part="action"]:not(:disabled):active));
+@custom-variant card-disabled (&:has(> [data-ac-card-part="action"]:disabled));
+@custom-variant card-dragged (&[data-ac-card-dragged]);
+
 /* M3's enter and exit pattern, the timing of an overlay (BaseOverlay, the modal sheets) entering
    and leaving the screen: in on emphasized decelerate over medium 4, out on emphasized accelerate
    over short 4 (ADR-0018). A transition takes the timing of the state it goes to, so the open
