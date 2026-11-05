@@ -1,4 +1,5 @@
 ---
+import type { HTMLTag, Polymorphic } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import BaseWrapper from "./BaseWrapper.astro";
 
@@ -12,21 +13,27 @@ import BaseWrapper from "./BaseWrapper.astro";
 // `aria-labelledby`. The card's content lets clicks through to it, except the buttons, links and
 // form controls inside it, which keep their own, so a card can have buttons beside its own action
 // without one sitting inside the other (ADR-0030).
-type Props = {
-  as?: "div" | "article" | "a" | "button";
+type Props<
+  Tag extends Extract<HTMLTag, "div" | "article" | "a" | "button"> = "div",
+> = Polymorphic<{
+  as: Tag;
   variant?: "elevated" | "filled" | "outlined";
-  draggable?: boolean | "true" | "false" | null;
-  class?: string | null;
-  [attribute: string]: unknown;
-};
+}>;
 
+// Two-read `Astro.props`, as in Button: the first read grabs `as` untyped
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const { as = "div" }: any = Astro.props;
 const {
-  as = "div",
+  // kept out of `attrs`, which would render it as a literal attribute; `as` holds it
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  as: _as,
   variant = "filled",
   class: classList,
   draggable,
   ...attrs
-}: Props = Astro.props;
+}: Props<"div" | "article" | "a" | "button"> & {
+  disabled?: boolean;
+} = Astro.props;
 
 // Values outside these fail the build, rather than drawing something other than was asked for
 // (ADR-0021)

@@ -18,11 +18,6 @@ props:
     required: false
     default: '"div"'
     description: "Which kind of card it is. `div`, or `article` for content that stands on its own, is a static card, a container whose buttons and links are the tab stops. `a` (with `href`) makes the card a link and `button` a button, a primary action covering the whole card, which needs `aria-label` or `aria-labelledby`. Any other value fails the build, and so does an `a` or `button` card with no name."
-  - name: draggable
-    type: 'boolean | "true" | "false"'
-    required: false
-    default: "undefined"
-    description: "Makes the whole card draggable and shows M3's dragged state while it's dragged. On a link card, it also stops the link dragging its URL on its own. Card adds no drag and drop itself."
 slots:
   - name: default
     description: The card's content, laid out by you, in any of M3's content blocks, such as media, a headline, a subhead, supporting text and actions. Card adds no padding, so full-width media can reach its edges; give the text blocks M3's 16px.
