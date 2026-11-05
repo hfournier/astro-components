@@ -119,12 +119,14 @@ export const photo =
   <Button>After the checkboxes</Button>
 </Section>
 
-<Section data-testid="list-checkbox-trailing" class="p-4 space-y-4">
-  <Heading level={2}>Checkboxes: trailing, after an avatar</Heading>
+<Section data-testid="list-control-position" class="p-4 space-y-4">
+  <Heading level={2}>Control position: a trailing checkbox after an avatar, a trailing radio button, a leading switch</Heading>
   <List aria-label="Invite">
     <ListItemCheckbox label="Ali Connors" supportingText="Product designer" controlPosition="trailing" name="invite" value="ali">
       <span slot="avatar">A</span>
     </ListItemCheckbox>
+    <ListItemRadio label="Express" controlPosition="trailing" icon="luggage" name="delivery" value="express" />
+    <ListItemSwitch label="Dark theme" controlPosition="leading" name="dark" />
   </List>
 </Section>
 
@@ -135,6 +137,7 @@ export const photo =
       <ListItemRadio label="Small" name="size" value="s" />
       <ListItemRadio label="Medium" name="size" value="m" checked />
       <ListItemRadio label="Large" trailingText="+$2" name="size" value="l" />
+      <ListItemRadio label="Extra large" name="size" value="xl" disabled />
     </List>
   </form>
 </Section>

@@ -43,6 +43,34 @@ type Props = {
   [attribute: string]: unknown;
 };
 
+// The item's text and its leading and trailing elements, the props ListItem and the selection
+// items take from this one
+export type ListItemContent = Pick<
+  Props,
+  | "label"
+  | "icon"
+  | "overline"
+  | "supportingText"
+  | "trailingIcon"
+  | "trailingText"
+  | "videoSize"
+>;
+
+// M3's selection controls: the component each makes, what it's called, and what draws it
+const controls = {
+  checkbox: {
+    component: "ListItemCheckbox",
+    noun: "checkbox",
+    Control: Checkbox,
+  },
+  radio: {
+    component: "ListItemRadio",
+    noun: "radio button",
+    Control: RadioButton,
+  },
+  switch: { component: "ListItemSwitch", noun: "switch", Control: Switch },
+};
+
 const {
   as = "div",
   label,
@@ -61,21 +89,13 @@ const {
 
 // Values outside these fail the build, rather than drawing something other than was asked for
 // (ADR-0021)
-if (
-  control !== undefined &&
-  !["checkbox", "radio", "switch"].includes(control)
-) {
+if (control !== undefined && !(control in controls)) {
   throw new Error(
     `ListItemBase: its controls are "checkbox", "radio" and "switch", but this one's \`control\` is "${control}".`
   );
 }
-const name = control
-  ? {
-      checkbox: "ListItemCheckbox",
-      radio: "ListItemRadio",
-      switch: "ListItemSwitch",
-    }[control]
-  : "ListItem";
+const selection = control ? controls[control] : undefined;
+const name = selection?.component ?? "ListItem";
 if (!["div", "a", "button"].includes(as)) {
   throw new Error(
     `${name}: its elements are "div", "a" and "button", but this one's \`as\` is "${as}".`
@@ -92,9 +112,7 @@ if (!["sm", "lg"].includes(videoSize)) {
   );
 }
 // M3's anatomy has one leading element and one trailing one
-const controlName =
-  control &&
-  { checkbox: "checkbox", radio: "radio button", switch: "switch" }[control];
+const controlName = selection?.noun;
 // A slot counts once it renders something: the components on this one forward all three, so
 // each is there, empty when their caller didn't fill it
 const rendered = Object.fromEntries(
@@ -199,9 +217,7 @@ const leadingClasses = leadingSlot
   : `flex shrink-0 ${variantContent}`;
 
 // The control, drawn bare: the item is its target (ADR-0028)
-const Control = control
-  ? { checkbox: Checkbox, radio: RadioButton, switch: Switch }[control]
-  : undefined;
+const Control = selection?.Control;
 const controlProps = control === "switch" && icons ? { icons } : {};
 ---
 

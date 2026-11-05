@@ -192,6 +192,10 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
       ListItem,
       { label: "Inbox", trailingIcon: "chevron_right", trailingText: "100+" },
     ],
+    "list-item-checkbox-control-position": [
+      ListItemCheckbox,
+      { label: "Bread", controlPosition: "end" },
+    ],
     "list-item-checkbox-leading": [
       ListItemCheckbox,
       { label: "Bread", icon: "person" },
@@ -199,6 +203,10 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     "list-item-radio-control-position": [
       ListItemRadio,
       { label: "Small", controlPosition: "start" },
+    ],
+    "list-item-switch-control-position": [
+      ListItemSwitch,
+      { label: "Wi-Fi", controlPosition: "start" },
     ],
     "list-item-switch-trailing": [
       ListItemSwitch,

@@ -12,10 +12,6 @@ extends:
 mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/checkbox
 parents: [List]
 props:
-  - name: label
-    type: string
-    required: true
-    description: The item's text, in Body Large. It names the checkbox, with the supporting text.
   - name: controlPosition
     type: '"leading" | "trailing"'
     required: false
@@ -35,7 +31,7 @@ slots:
 
 ## Attributes
 
-Every attribute except `class` goes on the `<input>`: `name`, `value`, `checked`, `disabled`, `required`, `form`, `aria-*` and the rest. `class` goes on the item's `<label>`. The item takes ListItem's `overline`, `supportingText`, `icon`, `trailingIcon`, `trailingText` and `videoSize` too. Listen for the input's `change` event to react to a change.
+Every attribute except `class` goes on the `<input>`: `name`, `value`, `checked`, `disabled`, `required`, `form`, `aria-*` and the rest. `class` goes on the item's `<label>`. Its other props are ListItemBase's: `label` (required), `overline`, `supportingText`, `icon`, `trailingIcon`, `trailingText` and `videoSize`. See ListItemBase for each. Listen for the input's `change` event to react to a change.
 
 ## States
 

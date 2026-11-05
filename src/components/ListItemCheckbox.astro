@@ -1,22 +1,13 @@
 ---
-import type { ComponentProps, HTMLAttributes } from "astro/types";
-import ListItemBase from "./ListItemBase.astro";
+import type { HTMLAttributes } from "astro/types";
+import ListItemBase, { type ListItemContent } from "./ListItemBase.astro";
 
 // An M3 Expressive list item with a checkbox, for a multi-select List: a <label> around a native
 // checkbox, so the whole item toggles it and it submits with its form (ADR-0028). A checked item
 // is highlighted. Every attribute but `class` goes on the input (`name`, `value`, `checked`,
 // `disabled`, `required`, `aria-*`), and `class` on the item. ListItemBase draws it.
 type Props = Omit<HTMLAttributes<"input">, "type"> &
-  Pick<
-    ComponentProps<typeof ListItemBase>,
-    | "label"
-    | "icon"
-    | "overline"
-    | "supportingText"
-    | "trailingIcon"
-    | "trailingText"
-    | "videoSize"
-  > & {
+  ListItemContent & {
     // The checkbox's end of the item: leading, as Compose's samples place it, or trailing
     controlPosition?: "leading" | "trailing";
   };

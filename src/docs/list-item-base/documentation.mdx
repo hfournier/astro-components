@@ -20,36 +20,36 @@ props:
   - name: label
     type: string
     required: true
-    description: The item's text, in Body Large, which names a link, button or selection item, with the supporting text.
+    description: The item's text, in Body Large and `on-surface`. It names a link, button or selection item, with the supporting text.
   - name: overline
     type: string
     required: false
-    description: A line of Label Small text above the label. It describes the item.
+    description: A line of text above the label, in Label Small and `on-surface-variant`, such as a category or a date. It describes a link, button or selection item.
   - name: supportingText
     type: string
     required: false
-    description: Body Medium text below the label, which can wrap. It names the item, with the label.
+    description: Text below the label, in Body Medium and `on-surface-variant`. It can wrap; past one line, the item is a three-line item.
   - name: icon
     type: SvgIconNameTypes
     required: false
-    description: A 20px leading icon, by its file name in `src/assets/svgs`.
+    description: A 20px icon before the label, by its file name in `src/assets/svgs`, in `on-surface-variant`. It's decorative, so the label names the item. The build fails if the `avatar`, `image` or `video` slot is filled too, or a control leads the item.
   - name: trailingIcon
     type: SvgIconNameTypes
     required: false
-    description: A 20px trailing icon.
+    description: A 20px icon at the end, in `on-surface-variant`, such as a chevron for an item that leads somewhere. It's decorative. The build fails if `trailingText` is given too, or a control ends the item.
   - name: trailingText
     type: string
     required: false
-    description: Label Small text at the end. It describes the item.
+    description: Text at the end, in Label Small and `on-surface-variant`, for meta information such as a count, a price or a date. It describes a link, button or selection item. The build fails if `trailingIcon` is given too, or a control ends the item.
   - name: videoSize
     type: '"sm" | "lg"'
     required: false
     default: '"sm"'
-    description: The `video` slot's size. Any other value fails the build.
+    description: The size of the `video` slot, M3's small video at 100 by 56px or large at 114 by 64px. Any other value fails the build.
   - name: control
     type: '"checkbox" | "radio" | "switch"'
     required: false
-    description: The selection control, set by ListItemCheckbox, ListItemRadio or ListItemSwitch. It makes the item a `<label>`, and every attribute but `class` goes on the control's input.
+    description: The selection control, set by ListItemCheckbox, ListItemRadio or ListItemSwitch. It makes the item a `<label>`, and every attribute but `class` goes on the control's input. Any other value fails the build.
   - name: controlPosition
     type: '"leading" | "trailing"'
     required: false

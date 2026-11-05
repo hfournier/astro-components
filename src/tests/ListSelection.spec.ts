@@ -12,7 +12,7 @@ import {
 // Each case on /tests/list is a Section with data-testid="list-<caseId>". A selection item is a
 // <label> holding a native checkbox, radio or switch: found by its control's role and name.
 type SelectionCaseId =
-  "checkbox" | "checkbox-trailing" | "radio" | "switch" | "selection-rtl";
+  "checkbox" | "control-position" | "radio" | "switch" | "selection-rtl";
 type ControlRole = "checkbox" | "radio" | "switch";
 
 const scope = (page: Page, caseId: SelectionCaseId) =>
@@ -53,7 +53,7 @@ test.describe("List selection", () => {
       scope(page, "checkbox").getByRole("checkbox", { name: "Rice" })
     ).toHaveAccessibleDescription("Gluten free");
     await expect(
-      scope(page, "radio").getByRole("radio", { name: "Large" })
+      scope(page, "radio").getByRole("radio", { name: "Large", exact: true })
     ).toHaveAccessibleDescription("+$2");
     await expect(
       scope(page, "radio").getByRole("radio", { name: "Medium" })
@@ -114,7 +114,9 @@ test.describe("List selection", () => {
   }) => {
     for (const [caseId, role, name, position, width, height] of [
       ["checkbox", "checkbox", "Bread", "leading", 24, 24],
-      ["checkbox-trailing", "checkbox", "Ali Connors", "trailing", 24, 24],
+      ["control-position", "checkbox", "Ali Connors", "trailing", 24, 24],
+      ["control-position", "radio", "Express", "trailing", 24, 24],
+      ["control-position", "switch", "Dark theme", "leading", 52, 32],
       ["radio", "radio", "Small", "leading", 24, 24],
       ["switch", "switch", "Airplane mode", "trailing", 52, 32],
     ] as const) {
@@ -141,7 +143,7 @@ test.describe("List selection", () => {
     // a trailing control leaves the leading slot to an avatar
     await expect(
       part(
-        itemOf(control(page, "checkbox-trailing", "checkbox", "Ali Connors")),
+        itemOf(control(page, "control-position", "checkbox", "Ali Connors")),
         "leading"
       )
     ).toHaveText("A");
@@ -269,6 +271,14 @@ test.describe("List selection", () => {
     expect(await stateLayerOpacity(item)).toBe("0");
     expect(await radius(item)).toBe("4px");
     await expect(item).toHaveCSS("cursor", "default");
+
+    const extraLarge = control(page, "radio", "radio", "Extra large");
+    await expect(extraLarge).toBeDisabled();
+    await expect
+      .poll(async () =>
+        alpha(await css(part(itemOf(extraLarge), "label"), "color"))
+      )
+      .toBeCloseTo(0.38, 2);
 
     const salad = itemOf(control(page, "checkbox", "checkbox", "Salad"));
     await expect(salad).toHaveCSS(

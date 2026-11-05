@@ -12,20 +12,11 @@ extends:
 mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/checkbox
 parents: [List]
 props:
-  - name: label
-    type: string
-    required: true
-    description: The item's text, in Body Large. It names the switch, with the supporting text.
   - name: controlPosition
     type: '"leading" | "trailing"'
     required: false
     default: '"trailing"'
     description: The switch's end of the item, trailing as M3's Specs place it. Trailing, it takes the place of trailing text or an icon. Leading, it takes the place of an icon or avatar. Any other value fails the build.
-  - name: icons
-    type: '"none" | "selected" | "both"'
-    required: false
-    default: '"none"'
-    description: M3's optional icon in the switch's handle, as Switch takes it. Any other value fails the build.
 slots:
   - name: avatar
     description: A 40px circle on `primary-container` before the label, with a letter or a photo, as ListItem's.
@@ -40,7 +31,7 @@ slots:
 
 ## Attributes
 
-Every attribute except `class` goes on the `<input>`: `name`, `value`, `checked`, `disabled`, `required`, `form`, `aria-*` and the rest. `class` goes on the item's `<label>`. The item takes ListItem's `overline`, `supportingText`, `icon`, `trailingIcon`, `trailingText` and `videoSize` too. Listen for the input's `change` event to apply the setting.
+Every attribute except `class` goes on the `<input>`: `name`, `value`, `checked`, `disabled`, `required`, `form`, `aria-*` and the rest. `class` goes on the item's `<label>`. Its other props are ListItemBase's: `label` (required), `overline`, `supportingText`, `icon`, `trailingIcon`, `trailingText`, `videoSize` and `icons`, which takes Switch's handle icons. See ListItemBase for each. Listen for the input's `change` event to apply the setting.
 
 ## States
 

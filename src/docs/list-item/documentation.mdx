@@ -7,8 +7,8 @@ meta:
   title: ListItem | astro-components HenriFournier.dev
   description: A Material 3 Expressive list item with a label, overline, supporting text, leading media and trailing icon or text, static or a link or button.
 extends:
-  kind: element
-  tag: [div, a, button]
+  kind: component
+  name: ListItemBase
 mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/li
 parents: [List]
 props:
@@ -17,35 +17,6 @@ props:
     required: false
     default: '"div"'
     description: "Which element the item is. `div`, a static item, only shows information. `a` (with `href`) makes the item a link, and `button` a button, for a single-action list: the whole item is one target. Any other value fails the build."
-  - name: label
-    type: string
-    required: true
-    description: The item's text, in Body Large and `on-surface`. It names a link or button item, with the supporting text.
-  - name: overline
-    type: string
-    required: false
-    description: A line of text above the label, in Label Small and `on-surface-variant`, such as a category or a date.
-  - name: supportingText
-    type: string
-    required: false
-    description: Text below the label, in Body Medium and `on-surface-variant`. It can wrap; past one line, the item is a three-line item.
-  - name: icon
-    type: SvgIconNameTypes
-    required: false
-    description: A 20px icon before the label, by its file name in `src/assets/svgs`, in `on-surface-variant`. It's decorative, so the label names the item. The build fails if the `avatar`, `image` or `video` slot is filled too.
-  - name: trailingIcon
-    type: SvgIconNameTypes
-    required: false
-    description: A 20px icon at the end, in `on-surface-variant`, such as a chevron for an item that leads somewhere. It's decorative. The build fails if `trailingText` is given too.
-  - name: trailingText
-    type: string
-    required: false
-    description: Text at the end, in Label Small and `on-surface-variant`, for meta information such as a count, a price or a date. The build fails if `trailingIcon` is given too.
-  - name: videoSize
-    type: '"sm" | "lg"'
-    required: false
-    default: '"sm"'
-    description: The size of the `video` slot, M3's small video at 100 by 56px or large at 114 by 64px. Any other value fails the build.
 slots:
   - name: avatar
     description: A 40px circle on `primary-container` before the label, for a person or an entity, holding a letter, in Title Medium and `on-primary-container`, or a photo, cropped to fill it.
@@ -57,6 +28,10 @@ slots:
     description: A video thumbnail before the label, an `<img>` or a `<video>`, 100 by 56px or 114 by 64px (see `videoSize`), with 8px corners, cropped to fill it. It's decorative, hidden from assistive tech, so give a `<video>` no `controls`, since in a link or button item a control would sit inside another one.
     kind: any
 ---
+
+## Props
+
+ListItem's other props are ListItemBase's text and leading and trailing elements: `label` (required), `overline`, `supportingText`, `icon`, `trailingIcon`, `trailingText` and `videoSize`. See ListItemBase for each.
 
 ## Attributes
 
