@@ -1,0 +1,129 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+
+// An M3 Expressive list, in the standard style: a <ul>, or an <ol> for items in an order that
+// matters, of ListItems, with M3's dividers between them where `divider` asks. It moves focus
+// between its links and buttons with the arrow keys, as M3's Accessibility page asks: Tab
+// reaches the first item (or the one focused last), the arrow keys move through the rest,
+// wrapping at the ends, and Tab leaves the list. Space activates a link as well as Enter.
+type Props = HTMLAttributes<"ul"> & {
+  // A list whose order matters, such as steps, is an <ol>
+  as?: "ul" | "ol";
+  // M3's dividers between items: none, full width, or inset 16px at each end
+  divider?: "none" | "full-width" | "inset";
+};
+
+const {
+  as: Tag = "ul",
+  divider = "none",
+  class: classList,
+  ...attrs
+}: Props = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["ul", "ol"].includes(Tag)) {
+  throw new Error(
+    `List: its elements are "ul" and "ol", but this one's \`as\` is "${Tag}".`
+  );
+}
+if (!["none", "full-width", "inset"].includes(divider)) {
+  throw new Error(
+    `List: M3's list dividers are "none", "full-width" and "inset", but this one's \`divider\` is "${divider}".`
+  );
+}
+---
+
+{/* role="list": Safari drops a list's role once its markers are styled away */}
+<Tag
+  class:list={twMerge("flex list-none flex-col p-0", classList)}
+  role="list"
+  data-ac-list
+  data-ac-list-divider={divider === "none" ? undefined : divider}
+  {...attrs}
+>
+  <slot />
+</Tag>
+
+<style>
+  /* M3's dividers sit between items, with no space above or below them: each ListItem draws
+     one below itself, which shows in a list with dividers, except below the last item. An inset
+     one stops 16px short of each end. */
+  [data-ac-list-divider]
+    > :global(li:not(:last-child) > [data-ac-list-item-part="divider"]) {
+    display: block;
+  }
+  [data-ac-list-divider="inset"]
+    > :global(li > [data-ac-list-item-part="divider"]) {
+    margin-inline: 16px;
+  }
+</style>
+
+<script>
+  // M3's Accessibility page: one Tab stop per list, its first item, or the one focused last; the
+  // Down and Right arrow keys move to the next item and Up and Left to the previous one,
+  // wrapping at the ends, and mirrored right to left. Static and disabled items are skipped.
+  // Space or Enter activates an item, so Space activates a link too (ADR-0027).
+  const steps: Record<string, number> = {
+    ArrowUp: -1,
+    ArrowLeft: -1,
+    ArrowDown: 1,
+    ArrowRight: 1,
+  };
+  const focusables = (list: Element) => [
+    ...list.querySelectorAll<HTMLElement>(
+      ":scope > li > [data-ac-list-item]:is(a[href], button:not(:disabled))"
+    ),
+  ];
+  // the list an item is directly in, not one around that list
+  const ownList = (item: Element) => {
+    const list = item.closest("li")?.parentElement;
+    return list?.matches("[data-ac-list]") ? list : null;
+  };
+  const makeTabStop = (list: Element, stop: HTMLElement) => {
+    for (const item of focusables(list)) item.tabIndex = item === stop ? 0 : -1;
+  };
+
+  // Set again after each swap, for lists brought in by Astro's ClientRouter
+  const init = () => {
+    for (const list of document.querySelectorAll("[data-ac-list]")) {
+      const [first] = focusables(list);
+      if (first) makeTabStop(list, first);
+    }
+  };
+  init();
+  document.addEventListener("astro:after-swap", init);
+
+  document.addEventListener("focusin", (event) => {
+    const item = (event.target as Element).closest?.("[data-ac-list-item]");
+    const list = item && ownList(item);
+    if (list && focusables(list).includes(item as HTMLElement))
+      makeTabStop(list, item as HTMLElement);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.defaultPrevented) return;
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
+      return;
+    const item = event.target as HTMLElement;
+    if (!item.matches?.("[data-ac-list-item]")) return;
+    const list = ownList(item);
+    if (!list) return;
+    if (event.key === " " && item instanceof HTMLAnchorElement) {
+      event.preventDefault();
+      item.click();
+      return;
+    }
+    if (!(event.key in steps)) return;
+    const items = focusables(list);
+    const index = items.indexOf(item);
+    if (index < 0) return;
+    const isMirrored =
+      (event.key === "ArrowLeft" || event.key === "ArrowRight") &&
+      getComputedStyle(list).direction === "rtl";
+    const step = isMirrored ? -steps[event.key] : steps[event.key];
+    event.preventDefault();
+    items[(index + step + items.length) % items.length].focus();
+  });
+</script>

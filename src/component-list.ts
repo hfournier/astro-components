@@ -28,6 +28,8 @@ export { default as Header } from "./components/Header.astro";
 export { default as Heading } from "./components/Heading.astro";
 export { default as Icon } from "./components/Icon.astro";
 export { default as Link } from "./components/Link.astro";
+export { default as List } from "./components/List.astro";
+export { default as ListItem } from "./components/ListItem.astro";
 export { default as Main } from "./components/Main.astro";
 export { default as Menu } from "./components/Menu.astro";
 export { default as MenuGroup } from "./components/MenuGroup.astro";
