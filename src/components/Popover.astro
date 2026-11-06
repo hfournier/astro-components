@@ -10,6 +10,7 @@ type BaseOverlayProps = ComponentProps<typeof BaseOverlay>;
 type Props = Omit<BaseOverlayProps, "bgColor"> & {
   bgColor?: PopoverBgColorType;
   showCloseX?: boolean;
+  closeLabel?: string;
 };
 
 const {
@@ -17,6 +18,7 @@ const {
   id,
   class: classList,
   showCloseX = false,
+  closeLabel = "Close",
   transition,
   ...attrs
 } = Astro.props;
@@ -75,7 +77,7 @@ const isContainerTransform = transition === "container-transform";
       type="button"
       commandfor={id}
       command="hide-popover"
-      aria-label="Close"
+      aria-label={closeLabel}
     >
       <Icon class="size-4" name="close" />
     </button>

@@ -16,6 +16,11 @@ props:
     required: false
     default: '"surface-container-high"'
     description: The popover's Material 3 surface. Use `Surface Container` for a menu-like popover (M3's menu surface), `Surface Container High` for a dialog-like one, or `Inverse Surface` for a tooltip-like one. Text, links, focus rings and the close button follow the chosen surface. Any other value fails the build.
+  - name: closeLabel
+    type: string
+    required: false
+    default: '"Close"'
+    description: The close button's accessible name. Set it on pages in other languages.
   - name: showCloseX
     type: boolean
     required: false
