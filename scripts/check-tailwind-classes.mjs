@@ -20,6 +20,17 @@ scanner.scan();
 
 // The editor's hint uses a 16px root, so px and rem spellings of a value count as one
 const options = { rem: 16 };
+
+// Classes kept in their own spelling, each with the reason (#273)
+const allowed = new Map(
+  [
+    "[&:is(:has(>input:checked),[data-ac-chip-filter-selected])]:chip-enabled:hover:shadow-theme-elevation-1",
+    "[&:is(:has(>input:checked),[data-ac-chip-filter-selected])]:chip-enabled:chip-active:shadow-none",
+  ].map((candidate) => [
+    candidate,
+    "ChipFilter: the suggested variant drops the `&:is(…)`, so it doesn't plainly match the same chip",
+  ])
+);
 let count = 0;
 for (const file of scanner.files.sort()) {
   const content = await readFile(file, "utf8");
@@ -32,6 +43,7 @@ for (const file of scanner.files.sort()) {
     extension,
   })) {
     // Only candidates Tailwind compiles to CSS are classes; the scanner also returns plain words
+    if (allowed.has(candidate)) continue;
     if (designSystem.candidatesToCss([candidate])[0] === null) continue;
     const [canonical] = designSystem.canonicalizeCandidates(
       [candidate],

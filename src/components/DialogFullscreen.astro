@@ -61,7 +61,7 @@ const confirmProps = {
   class:list={twMerge(
     // A scroll-state container, so the header and action row pinned in it restyle themselves
     // while content scrolls under them
-    "[container-type:scroll-state] flex flex-col overflow-y-auto overscroll-contain",
+    "@container-[scroll-state] flex flex-col overflow-y-auto overscroll-contain",
     // Compact: M3's full-screen dialog, Surface (bgColor) with square corners, filling the window
     "max-medium:size-full",
     // Medium and up: M3's basic dialog, as Dialog, on Surface Container High
@@ -148,7 +148,7 @@ const confirmProps = {
       class:list={[
         "flex flex-wrap items-center gap-2",
         "max-medium:sticky max-medium:bottom-0 max-medium:z-1 max-medium:mt-auto max-medium:h-14 max-medium:shrink-0 max-medium:justify-end max-medium:bg-(--theme-color-wrapper-bg) max-medium:px-3",
-        "motion-safe:transition-[box-shadow] motion-safe:duration-(--theme-duration-spring-fast-effects) motion-safe:ease-spring-fast-effects",
+        "motion-safe:transition-shadow motion-safe:duration-(--theme-duration-spring-fast-effects) motion-safe:ease-spring-fast-effects",
         "max-medium:scrollable-bottom:shadow-theme-elevation-2",
         "medium:px-6 medium:pt-4",
       ]}
@@ -165,7 +165,7 @@ const confirmProps = {
     role="none"
     class:list={[
       "sticky bottom-0 z-1 mt-auto flex shrink-0 flex-wrap-reverse items-center justify-end gap-2 bg-(--theme-color-wrapper-bg) p-6 max-medium:hidden",
-      "motion-safe:transition-[box-shadow] motion-safe:duration-(--theme-duration-spring-fast-effects) motion-safe:ease-spring-fast-effects",
+      "motion-safe:transition-shadow motion-safe:duration-(--theme-duration-spring-fast-effects) motion-safe:ease-spring-fast-effects",
       "scrollable-bottom:shadow-[0_-1px_0_var(--theme-color-outline)]",
     ]}
   >

@@ -34,7 +34,7 @@ const {
   {/* A scrolling row hides its scrollbar, as text overflowing a field shows none: the field
       scrolls to its cursor, and to a chip that takes focus */}
   <ChipGroup
-    class={`min-h-8 min-w-0 flex-1 ${overflow === "scroll" ? "[scrollbar-width:none]" : ""}`}
+    class={`min-h-8 min-w-0 flex-1 ${overflow === "scroll" ? "scrollbar-none" : ""}`}
     overflow={overflow}
     aria-label={ariaLabel}
     aria-labelledby={ariaLabelledby}
