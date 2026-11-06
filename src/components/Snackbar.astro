@@ -41,6 +41,17 @@ const {
   ...attrs
 } = Astro.props;
 
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021). The checks that need to know whether there's an action follow the slots' rendering.
+if (
+  durationProp !== undefined &&
+  !["short", "long", "indefinite"].includes(durationProp)
+) {
+  throw new Error(
+    `Snackbar: its durations are "short", "long" and "indefinite", but this one's \`duration\` is "${durationProp}".`
+  );
+}
+
 const text = unwrapParagraph(await Astro.slots.render("default"));
 const action = Astro.slots.has("action")
   ? await Astro.slots.render("action")
@@ -48,32 +59,25 @@ const action = Astro.slots.has("action")
 const hasAction = action.trim() !== "";
 const duration = durationProp ?? (hasAction ? "indefinite" : "short");
 
-// Values outside these fail the build, rather than drawing something other than was asked for
-// (ADR-0021)
-if (!["short", "long", "indefinite"].includes(duration)) {
-  throw new Error(
-    `Snackbar: its durations are "short", "long" and "indefinite", but this one's \`duration\` is "${duration}".`
-  );
-}
 if (hasAction && duration !== "indefinite") {
   throw new Error(
-    `Snackbar: M3 doesn't time out a snackbar with an action, so its duration is "indefinite", but this one's \`duration\` is "${duration}".`
+    `Snackbar: M3 doesn't time out a snackbar with an action, but this one's \`duration\` is "${duration}".`
   );
 }
-if (!hasAction && !closeLabel && duration === "indefinite") {
+if (!hasAction && closeLabel === undefined && duration === "indefinite") {
   throw new Error(
-    "Snackbar: one that stays until it's acted on needs an action or a close button, but this one's `duration` is \"indefinite\" with neither."
+    'Snackbar: an "indefinite" snackbar needs an action or a close button to hide it by, but this one\'s `closeLabel` is undefined.'
   );
 }
 const actionCount = action.match(/<(a|button)\b/g)?.length ?? 0;
 if (actionCount > 1) {
   throw new Error(
-    `Snackbar: M3 gives a snackbar a single action, but this one's \`action\` slot has ${actionCount}.`
+    `Snackbar: M3 gives a snackbar a single action, but this one's \`action\` slot holds ${actionCount}.`
   );
 }
 if (isActionOnNewLine && !hasAction) {
   throw new Error(
-    "Snackbar: `isActionOnNewLine` puts the action below the text, but this one has no `action` slot."
+    "Snackbar: `isActionOnNewLine` moves the action below the text, but this one's `action` slot is empty."
   );
 }
 
@@ -96,7 +100,8 @@ const hasClose = closeLabel !== undefined;
     // as it leaves. The starting style lets it come in from display: none, and transition-discrete
     // keeps it drawn while it leaves. Under reduced motion it appears and disappears at once.
     "opacity-0 scale-80 open:opacity-100 open:scale-100",
-    "motion-safe:[transition:opacity_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects),scale_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial),display_var(--theme-duration-spring-fast-effects)_allow-discrete,overlay_var(--theme-duration-spring-fast-effects)_allow-discrete]",
+    // The mixed springs, from the <style> block below (ADR-0020, ADR-0023)
+    "motion-safe:[transition:var(--ac-snackbar-transition)]",
     "motion-safe:starting:open:opacity-0 motion-safe:starting:open:scale-80",
     classList
   )}
@@ -163,19 +168,23 @@ const hasClose = closeLabel !== undefined;
 <script>
   // Compose's SnackbarDuration: short and long, in ms. Indefinite never times out.
   const durations: Record<string, number> = { short: 4000, long: 10000 };
-  // Compose's SnackbarHost: 12px from the window's edges, and at most 600px wide from medium up
-  // (see the classes)
+  // The classes' measurements, which placing a snackbar reckons with before it's drawn: Compose's
+  // SnackbarHost puts it 12px from the window's edges, at most 600px wide from medium up, and two
+  // lines of text make it 68px high
   const edge = 12;
   const maxWidth = 600;
+  const twoLineHeight = 68;
   const medium = "(width >= 37.5rem)";
-  // What a snackbar is lifted above, at the bottom of the window, and what it starts beside, down
-  // its start side (M3's placement guidelines)
-  const liftAbove = "[data-ac-nav-bar], [data-ac-fab], [data-ac-fab-menu]";
-  const besideOf = "[data-ac-nav-rail], [data-ac-nav-drawer]";
+  // What it keeps out of the way of (M3's placement guidelines): what's fixed at the bottom of the
+  // window, which it goes up above, and what runs down the window's start side, which it starts
+  // past
+  const bottomObstacles =
+    "[data-ac-nav-bar], [data-ac-fab], [data-ac-fab-menu]";
+  const startObstacles = "[data-ac-nav-rail], [data-ac-nav-drawer]";
 
   const snackbars =
     document.querySelectorAll<HTMLElement>("[data-ac-snackbar]");
-  const showing = () =>
+  const openSnackbar = () =>
     document.querySelector<HTMLElement>("[data-ac-snackbar]:popover-open");
   // Snackbars asked to show while another was showing, in order
   const queue: HTMLElement[] = [];
@@ -187,56 +196,39 @@ const hasClose = closeLabel !== undefined;
     return false;
   };
 
-  // Keeps the snackbar out of navigation (M3's placement guidelines), through the custom
-  // properties its classes read. From medium up, it starts past a navigation rail or drawer
-  // running the window's height. Then it goes up to clear what's fixed at the bottom of the window
-  // beneath it: a navigation bar or a FAB, and a FAB above a navigation bar lifts it above both.
-  // It runs before the snackbar shows, so it reckons with the widest the snackbar can be, along
-  // its start edge, and the 68px of two lines.
-  const place = (snackbar: HTMLElement) => {
-    const width = innerWidth;
-    const isRtl = getComputedStyle(snackbar).direction === "rtl";
-    const isCompact = !matchMedia(medium).matches;
-    // a rect's distance from the window's start edge to its end side
-    const startToEnd = (rect: DOMRect) =>
-      isRtl ? width - rect.left : rect.right;
-    const start = isCompact
-      ? 0
-      : Math.max(
-          0,
-          ...[...document.querySelectorAll(besideOf)]
-            .map((element) => element.getBoundingClientRect())
-            .filter(
-              (rect) =>
-                rect.width > 0 &&
-                rect.top <= edge &&
-                rect.bottom >= innerHeight - edge &&
-                startToEnd(rect) > 0 &&
-                startToEnd(rect) - rect.width < width / 2
-            )
-            .map(startToEnd)
-        );
-    snackbar.style.setProperty("--ac-snackbar-start", `${start}px`);
+  // From medium up, how far past a navigation rail or drawer running the window's height the
+  // snackbar starts. `startToEnd` is a rect's distance from the window's start edge to its end side.
+  const startOffset = (startToEnd: (rect: DOMRect) => number) =>
+    Math.max(
+      0,
+      ...[...document.querySelectorAll(startObstacles)]
+        .map((element) => element.getBoundingClientRect())
+        .filter(
+          (rect) =>
+            rect.width > 0 &&
+            rect.top <= edge &&
+            rect.bottom >= innerHeight - edge &&
+            startToEnd(rect) > 0 &&
+            // on the start side, not the end side
+            startToEnd(rect) - rect.width < innerWidth / 2
+        )
+        .map(startToEnd)
+    );
 
-    const room = width - start - 2 * edge;
-    const span = isCompact ? room : Math.min(maxWidth, room);
-    const [left, right] = isRtl
-      ? [width - start - edge - span, width - start - edge]
-      : [start + edge, start + edge + span];
-    const obstacles = [...document.querySelectorAll(liftAbove)]
-      .map((element) => ({ element, rect: element.getBoundingClientRect() }))
+  // How far up the snackbar goes to clear what's fixed at the bottom of the window across its
+  // `left` to `right`. A FAB above a navigation bar lifts it above both.
+  const liftHeight = (left: number, right: number) => {
+    const obstacles = [...document.querySelectorAll(bottomObstacles)]
+      .filter((element) => isFixed(element))
+      .map((element) => element.getBoundingClientRect())
       .filter(
-        ({ element, rect }) =>
-          rect.width > 0 &&
-          rect.left < right &&
-          rect.right > left &&
-          isFixed(element)
+        (rect) => rect.width > 0 && rect.left < right && rect.right > left
       );
     let lift = 0;
     for (let changed = true; changed;) {
       changed = false;
-      const top = innerHeight - lift - edge - 68;
-      for (const { rect } of obstacles) {
+      const top = innerHeight - lift - edge - twoLineHeight;
+      for (const rect of obstacles) {
         const clearance = innerHeight - rect.top;
         if (rect.bottom > top && clearance > lift) {
           lift = clearance;
@@ -244,7 +236,30 @@ const hasClose = closeLabel !== undefined;
         }
       }
     }
-    snackbar.style.setProperty("--ac-snackbar-lift", `${lift}px`);
+    return lift;
+  };
+
+  // Keeps the snackbar out of navigation, through the custom properties its classes read. It runs
+  // before the snackbar is drawn, so it reckons with the widest the snackbar can be, along its
+  // start edge, and the height of two lines.
+  const place = (snackbar: HTMLElement) => {
+    const isRtl = getComputedStyle(snackbar).direction === "rtl";
+    const isCompact = !matchMedia(medium).matches;
+    const start = isCompact
+      ? 0
+      : startOffset((rect) => (isRtl ? innerWidth - rect.left : rect.right));
+    const availableWidth = innerWidth - start - 2 * edge;
+    const widest = isCompact
+      ? availableWidth
+      : Math.min(maxWidth, availableWidth);
+    const [left, right] = isRtl
+      ? [innerWidth - start - edge - widest, innerWidth - start - edge]
+      : [start + edge, start + edge + widest];
+    snackbar.style.setProperty("--ac-snackbar-start", `${start}px`);
+    snackbar.style.setProperty(
+      "--ac-snackbar-lift",
+      `${liftHeight(left, right)}px`
+    );
   };
 
   snackbars.forEach((snackbar) => {
@@ -261,7 +276,7 @@ const hasClose = closeLabel !== undefined;
     // where focus came from, to go back to once it hides
     let returnFocusTo: HTMLElement | null = null;
 
-    const run = () => {
+    const startCountdown = () => {
       clearTimeout(timer);
       if (timeout === undefined || isHovered || isFocused) return;
       startedAt = Date.now();
@@ -276,7 +291,7 @@ const hasClose = closeLabel !== undefined;
 
     snackbar.addEventListener("beforetoggle", (event) => {
       if ((event as ToggleEvent).newState === "open") {
-        const other = showing();
+        const other = openSnackbar();
         if (other && other !== snackbar) {
           event.preventDefault();
           if (!queue.includes(snackbar)) queue.push(snackbar);
@@ -286,7 +301,7 @@ const hasClose = closeLabel !== undefined;
         isHovered = false;
         isFocused = false;
         remaining = timeout ?? 0;
-        run();
+        startCountdown();
         if (live) {
           live.textContent =
             snackbar
@@ -320,7 +335,7 @@ const hasClose = closeLabel !== undefined;
     });
     snackbar.addEventListener("pointerleave", () => {
       isHovered = false;
-      run();
+      startCountdown();
     });
     snackbar.addEventListener("focusin", (event) => {
       const from = event.relatedTarget;
@@ -337,7 +352,7 @@ const hasClose = closeLabel !== undefined;
     snackbar.addEventListener("focusout", (event) => {
       if (snackbar.contains(event.relatedTarget as Node | null)) return;
       isFocused = false;
-      run();
+      startCountdown();
     });
 
     // An action, once clicked, has done its job (after the page's own click handler)
@@ -360,7 +375,7 @@ const hasClose = closeLabel !== undefined;
   // types a character for Option+G.
   document.addEventListener("keydown", (event) => {
     if (!event.altKey || event.code !== "KeyG") return;
-    const target = showing()?.querySelector<HTMLElement>(
+    const target = openSnackbar()?.querySelector<HTMLElement>(
       "[data-ac-snackbar-part=action] :is(a[href], button:not(:disabled)), [data-ac-snackbar-part=close]"
     );
     if (!target) return;
@@ -370,7 +385,23 @@ const hasClose = closeLabel !== undefined;
 
   // Its place follows the window's size while it shows
   addEventListener("resize", () => {
-    const snackbar = showing();
+    const snackbar = openSnackbar();
     if (snackbar) place(snackbar);
   });
 </script>
+
+<style>
+  /* M3's motion for the snackbar coming and going, as Compose's SnackbarHost: it fades on fast
+     effects while it scales on fast spatial, and stays drawn (display, overlay) for its fade. A
+     custom property, which a motion-safe: class reads (ADR-0020, ADR-0023). Global, as the
+     snackbar is BaseWrapper's element, which this component's scope doesn't reach. */
+  :global([data-ac-snackbar]) {
+    --ac-snackbar-transition:
+      opacity var(--theme-duration-spring-fast-effects)
+        var(--ease-spring-fast-effects),
+      scale var(--theme-duration-spring-fast-spatial)
+        var(--ease-spring-fast-spatial),
+      display var(--theme-duration-spring-fast-effects) allow-discrete,
+      overlay var(--theme-duration-spring-fast-effects) allow-discrete;
+  }
+</style>

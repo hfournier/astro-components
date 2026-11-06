@@ -8,7 +8,9 @@ type SnackbarCaseId =
   | "single"
   | "action"
   | "close"
+  | "action-only"
   | "two-line"
+  | "two-line-text"
   | "new-line"
   | "long"
   | "queue"
@@ -116,13 +118,46 @@ test.describe("anatomy", () => {
     expect(icon.width).toBe(24);
   });
 
-  test("a snackbar with only an action ends 8px after it", async ({ page }) => {
+  test("a single-line snackbar with only an action is 48px, ending 8px after the action", async ({
+    page,
+  }) => {
     await page.goto("/tests/snackbar");
-    const snackbar = snackbarOf(page, "snackbar-two-line");
-    await show(page, "two-line", "Move");
+    const snackbar = snackbarOf(page, "snackbar-action-only");
+    await show(page, "action-only", "Archive all");
     const rect = await box(snackbar);
-    const open = await box(snackbar.getByRole("button", { name: "Open" }));
-    expect(rect.x + rect.width - (open.x + open.width)).toBe(8);
+    expect(rect.height).toBe(48);
+    const undo = await box(snackbar.getByRole("button", { name: "Undo all" }));
+    expect(rect.x + rect.width - (undo.x + undo.width)).toBe(8);
+  });
+
+  test("two lines of text alone make a 68px snackbar", async ({ page }) => {
+    await page.goto("/tests/snackbar");
+    const snackbar = snackbarOf(page, "snackbar-two-line-text");
+    await show(page, "two-line-text", "Upload");
+    const rect = await box(snackbar);
+    expect(rect.height).toBe(68);
+    expect(rect.width).toBe(600);
+  });
+
+  test("in the dark theme it keeps its inverse roles", async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.goto("/tests/snackbar");
+    const snackbar = snackbarOf(page, "snackbar-action");
+    await show(page, "action", "Delete");
+    const role = (name: string) => colorInside(snackbar, name);
+    expect(await css(snackbar, "background-color")).toBe(
+      await role("--theme-color-inverse-surface")
+    );
+    expect(await css(textOf(snackbar), "color")).toBe(
+      await role("--theme-color-inverse-on-surface")
+    );
+    expect(
+      await css(snackbar.getByRole("button", { name: "Undo" }), "color")
+    ).toBe(await role("--theme-color-inverse-primary"));
+    // dark: inverse surface is the light one, unlike the page's
+    expect(await role("--theme-color-inverse-surface")).not.toBe(
+      await role("--theme-color-surface")
+    );
   });
 
   test("two lines of text make a 68px snackbar, the action beside them", async ({

@@ -17,6 +17,18 @@ description: Tests for the Snackbar component
   <Snackbar id="snackbar-action" closeLabel="Dismiss">Email deleted<Button slot="action" variant="text">Undo</Button></Snackbar>
 </Section>
 
+<Section data-testid="snackbar-action-only" class="p-4 space-y-4">
+  <Heading level={2}>Single line with action</Heading>
+  <Button commandfor="snackbar-action-only" command="show-popover">Archive all</Button>
+  <Snackbar id="snackbar-action-only">Conversations archived<Button slot="action" variant="text">Undo all</Button></Snackbar>
+</Section>
+
+<Section data-testid="snackbar-two-line-text" class="p-4 space-y-4">
+  <Heading level={2}>Two lines</Heading>
+  <Button commandfor="snackbar-two-line-text" command="show-popover">Upload</Button>
+  <Snackbar id="snackbar-two-line-text">Twelve photos from the trip to the coast were uploaded to the shared family album, where everyone invited can see them</Snackbar>
+</Section>
+
 <Section data-testid="snackbar-close" class="p-4 space-y-4">
   <Heading level={2}>Close only</Heading>
   <Button commandfor="snackbar-close" command="show-popover">Send</Button>
