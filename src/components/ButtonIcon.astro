@@ -80,7 +80,7 @@ const iconSizeClasses = {
 // from the pressed and selected radii (M3's shape morph) instead of jumping.
 const shapeClasses = {
   round: {
-    xs: "rounded-[16px]",
+    xs: "rounded-2xl",
     sm: "rounded-[20px]",
     md: "rounded-[28px]",
     lg: "rounded-[48px]",
@@ -105,7 +105,7 @@ const selectedShapeClasses = {
     xl: "aria-pressed:rounded-[28px]",
   }[size],
   square: {
-    xs: "aria-pressed:rounded-[16px]",
+    xs: "aria-pressed:rounded-2xl",
     sm: "aria-pressed:rounded-[20px]",
     md: "aria-pressed:rounded-[28px]",
     lg: "aria-pressed:rounded-[48px]",
@@ -153,7 +153,7 @@ const borderClasses = {
   sm: "border before:-inset-px [--ac-tooltip-anchor-inset:-1px]",
   md: "border before:-inset-px [--ac-tooltip-anchor-inset:-1px]",
   lg: "border-2 before:-inset-0.5 [--ac-tooltip-anchor-inset:-2px]",
-  xl: "border-3 before:-inset-[3px] [--ac-tooltip-anchor-inset:-3px]",
+  xl: "border-3 before:-inset-0.75 [--ac-tooltip-anchor-inset:-3px]",
 }[size];
 
 // The container is drawn here rather than by BaseButton, as its styles, touch target and motion

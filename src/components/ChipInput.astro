@@ -78,8 +78,8 @@ const mode = popoverId ? "popover" : isEditable ? "edit" : "select";
 // and 8px, which the remove button sits over. At least 88px wide, so the remove button's 48px
 // target leaves the body some of its own (M3's Guidelines).
 const bodyClasses = twMerge(
-  "min-w-22 ps-[11px] pe-[33px]",
-  avatar && "has-[>[data-ac-base-chip-part=leading-icon]]:ps-[3px]",
+  "min-w-22 ps-2.75 pe-8.25",
+  avatar && "has-[>[data-ac-base-chip-part=leading-icon]]:ps-0.75",
   "bg-(--ac-chip-input-container) text-(--ac-chip-input-label)",
   "border-(--ac-chip-input-outline) chip-focus-visible:border-(--ac-chip-input-focus-outline)",
   "chip-disabled:border-(--ac-chip-input-disabled-outline) chip-disabled:bg-(--ac-chip-input-disabled-container)"
@@ -108,7 +108,7 @@ const bodyClasses = twMerge(
       icon && (
         <Icon
           slot="leading-icon"
-          class="size-[18px] text-(--ac-chip-input-icon) group-chip-disabled/chip:text-current"
+          class="size-4.5 text-(--ac-chip-input-icon) group-chip-disabled/chip:text-current"
           name={icon}
         />
       )
@@ -119,7 +119,7 @@ const bodyClasses = twMerge(
       least 48px, above the body's */}
   <button
     class:list={[
-      "absolute end-[5px] top-1 z-1 grid size-6 cursor-pointer place-items-center rounded-full text-(--ac-chip-input-label)",
+      "absolute inset-e-1.25 top-1 z-1 grid size-6 cursor-pointer place-items-center rounded-full text-(--ac-chip-input-label)",
       "before:absolute before:inset-0 before:rounded-full before:bg-current before:opacity-0 motion-safe:before:transition-opacity",
       "enabled:hover:before:opacity-8 enabled:focus-visible:before:opacity-10 enabled:active:before:opacity-10",
       "after:absolute after:top-1/2 after:left-1/2 after:size-12 after:-translate-1/2",
@@ -135,7 +135,7 @@ const bodyClasses = twMerge(
     <span id={`${idPrefix}-remove`} hidden>
       Remove
     </span>
-    <Icon class="size-[18px]" name="close" />
+    <Icon class="size-4.5" name="close" />
   </button>
   {isEditable && (
     <input

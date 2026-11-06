@@ -78,7 +78,7 @@ const variantClasses = {
   flat: [
     "border-(--ac-chip-filter-outline) chip-focus-visible:border-(--ac-chip-filter-focus-outline)",
     "chip-disabled:border-(--ac-chip-filter-disabled-outline) chip-disabled:bg-(--ac-chip-filter-disabled-container)",
-    "[&:is(:has(>input:checked),[data-ac-chip-filter-selected])]:chip-enabled:hover:shadow-theme-elevation-1 [&:is(:has(>input:checked),[data-ac-chip-filter-selected])]:chip-enabled:chip-active:shadow-none",
+    "[:has(>input:checked),[data-ac-chip-filter-selected]]:chip-enabled:hover:shadow-theme-elevation-1 [:has(>input:checked),[data-ac-chip-filter-selected]]:chip-enabled:chip-active:shadow-none",
   ],
   elevated: [],
 }[variant];
@@ -112,21 +112,21 @@ const chipClasses = twMerge(
   <span
     slot="leading-icon"
     class:list={[
-      "relative h-[18px] shrink-0 overflow-hidden",
-      icon ? "w-[18px]" : "w-(--ac-chip-filter-leading-width)",
+      "relative h-4.5 shrink-0 overflow-hidden",
+      icon ? "w-4.5" : "w-(--ac-chip-filter-leading-width)",
       "motion-safe:transition-[width] motion-safe:duration-(--theme-duration-spring-fast-spatial) motion-safe:ease-spring-fast-spatial",
     ]}
     data-ac-chip-filter-part="leading"
   >
     {icon && (
       <Icon
-        class="absolute inset-s-0 top-0 size-[18px] text-(--theme-color-primary) opacity-(--ac-chip-filter-icon-opacity) group-chip-disabled/chip:text-current motion-safe:transition-opacity"
+        class="absolute inset-s-0 top-0 size-4.5 text-(--theme-color-primary) opacity-(--ac-chip-filter-icon-opacity) group-chip-disabled/chip:text-current motion-safe:transition-opacity"
         name={icon}
         data-ac-chip-filter-part="icon"
       />
     )}
     <Icon
-      class="absolute inset-s-0 top-0 size-[18px] opacity-(--ac-chip-filter-check-opacity) motion-safe:transition-opacity"
+      class="absolute inset-s-0 top-0 size-4.5 opacity-(--ac-chip-filter-check-opacity) motion-safe:transition-opacity"
       name="check"
       data-ac-chip-filter-part="check"
     />
@@ -144,7 +144,7 @@ const chipClasses = twMerge(
   )}
   <span data-ac-chip-filter-part="label" set:html={label} />
   {menuId && (
-    <Icon slot="trailing-icon" class="size-[18px]" name="arrow_drop_down" />
+    <Icon slot="trailing-icon" class="size-4.5" name="arrow_drop_down" />
   )}
 </BaseChip>
 

@@ -109,13 +109,13 @@ const iconSizeClasses = {
 const stateClasses = isExtended
   ? {
       default: "gap-2 px-4 rail-collapsed:gap-0 data-collapsed:gap-0",
-      md: "gap-3 px-[26px] rail-collapsed:gap-0 data-collapsed:gap-0",
-      lg: "gap-4 px-7 rail-collapsed:gap-0 rail-collapsed:px-[30px] data-collapsed:gap-0 data-collapsed:px-[30px]",
+      md: "gap-3 px-6.5 rail-collapsed:gap-0 data-collapsed:gap-0",
+      lg: "gap-4 px-7 rail-collapsed:gap-0 rail-collapsed:px-7.5 data-collapsed:gap-0 data-collapsed:px-7.5",
     }[size]
   : {
       default: "gap-0 px-4 rail-expanded:gap-2",
-      md: "gap-0 px-[26px] rail-expanded:gap-3",
-      lg: "gap-0 px-[30px] rail-expanded:gap-4 rail-expanded:px-7",
+      md: "gap-0 px-6.5 rail-expanded:gap-3",
+      lg: "gap-0 px-7.5 rail-expanded:gap-4 rail-expanded:px-7",
     }[size];
 
 // The label is always the accessible name, whether or not it's visible. As in Compose, it fades on

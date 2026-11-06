@@ -216,7 +216,7 @@ const leadingClasses = leadingSlot
   ? {
       avatar: `${media} grid size-10 place-items-center rounded-full bg-(--theme-color-primary-container) text-base leading-6 font-medium tracking-[0.15px] text-(--theme-color-on-primary-container)`,
       image: `${media} size-14 rounded-lg`,
-      video: `${media} rounded-lg ${{ sm: "h-14 w-25", lg: "h-16 w-[114px]" }[videoSize]}`,
+      video: `${media} rounded-lg ${{ sm: "h-14 w-25", lg: "h-16 w-28.5" }[videoSize]}`,
     }[leadingSlot]
   : `flex shrink-0 ${variantContent}`;
 
@@ -236,7 +236,7 @@ const controlProps = control === "switch" && icons ? { icons } : {};
       // On M3's surface container, its corners 4px; a segmented List fills it in surface-container
       // and rounds its group's ends, through --ac-list-item-container and --ac-list-item-corners,
       // internal to List rather than for callers (ADR-0029). What it holds reads the container's roles.
-      "rounded-[var(--ac-list-item-corners,4px)] bg-(--theme-color-wrapper-bg) text-(--theme-color-on-surface)",
+      "rounded-(--ac-list-item-corners,4px) bg-(--theme-color-wrapper-bg) text-(--theme-color-on-surface)",
       "[--theme-color-focus-ring-on-bg:var(--theme-color-secondary)] [--theme-color-link-text:var(--theme-color-primary)] [--theme-color-on-bg-variant:var(--theme-color-on-surface-variant)] [--theme-color-wrapper-bg:var(--ac-list-item-container,var(--theme-color-surface))]",
       Tag !== "div" && [
         "group/item relative isolate cursor-pointer disabled:cursor-default has-disabled:cursor-default",

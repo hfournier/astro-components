@@ -70,10 +70,10 @@ const variantClasses = {
 <Tag
   class:list={twMerge(
     // M3's 16px padding is from the container's edge, so 15px inside its 1px outline
-    "group/chip inline-flex h-8 shrink-0 cursor-pointer items-center gap-2 rounded-lg border px-[15px] whitespace-nowrap",
+    "group/chip inline-flex h-8 shrink-0 cursor-pointer items-center gap-2 rounded-lg border px-3.75 whitespace-nowrap",
     "text-sm leading-5 font-medium tracking-[0.1px] text-(--theme-color-on-surface)",
     // M3: 8px on an icon's side instead of 16
-    "has-[>[data-ac-base-chip-part=leading-icon]]:ps-[7px] has-[>[data-ac-base-chip-part=trailing-icon]]:pe-[7px]",
+    "has-[>[data-ac-base-chip-part=leading-icon]]:ps-1.75 has-[>[data-ac-base-chip-part=trailing-icon]]:pe-1.75",
     "relative isolate before:absolute before:-inset-px before:-z-10 before:rounded-[inherit] before:bg-current before:opacity-0 motion-safe:before:transition-opacity",
     "chip-enabled:hover:before:opacity-8 chip-enabled:chip-focus-visible:before:opacity-10 chip-enabled:chip-active:before:opacity-10",
     // M3 dragged: level 4 and a 16% state layer, while the script below marks the chip. A chip
@@ -98,7 +98,7 @@ const variantClasses = {
 >
   {icon ? (
     <Icon
-      class="size-[18px] shrink-0 text-(--theme-color-primary) group-chip-disabled/chip:text-current"
+      class="size-4.5 shrink-0 text-(--theme-color-primary) group-chip-disabled/chip:text-current"
       name={icon}
       data-ac-base-chip-part="leading-icon"
     />

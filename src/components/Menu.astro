@@ -78,10 +78,10 @@ const colors = (
 const surfaceClasses = [
   "flex w-max max-w-70 min-w-28 flex-col rounded-2xl py-0.5 shadow-theme-elevation-2",
   "max-h-(--ac-menu-max-height) overflow-y-auto",
-  "group-data-[ac-menu-layout=grouped]/menu:has-[[data-ac-menu-group]]:gap-0.5 group-data-[ac-menu-layout=grouped]/menu:has-[[data-ac-menu-group]]:bg-transparent group-data-[ac-menu-layout=grouped]/menu:has-[[data-ac-menu-group]]:py-0 group-data-[ac-menu-layout=grouped]/menu:has-[[data-ac-menu-group]]:shadow-none group-data-[ac-menu-layout=grouped]/menu:has-[[data-ac-menu-group]]:overflow-visible",
+  "group-data-[ac-menu-layout=grouped]/menu:has-data-ac-menu-group:gap-0.5 group-data-[ac-menu-layout=grouped]/menu:has-data-ac-menu-group:bg-transparent group-data-[ac-menu-layout=grouped]/menu:has-data-ac-menu-group:py-0 group-data-[ac-menu-layout=grouped]/menu:has-data-ac-menu-group:shadow-none group-data-[ac-menu-layout=grouped]/menu:has-data-ac-menu-group:overflow-visible",
   // M3's active and inactive shapes: with a submenu open, the menu holding focus or the pointer
   // has 16px corners and the others 8px, morphing on the fast spatial spring
-  "group-data-[ac-menu-inactive]/menu:rounded-lg",
+  "group-data-ac-menu-inactive/menu:rounded-lg",
   "motion-safe:transition-[border-radius] motion-safe:duration-(--theme-duration-spring-fast-spatial) motion-safe:ease-spring-fast-spatial",
 ];
 ---

@@ -80,13 +80,13 @@ const stroke =
     // the active indicator follows the value, and the wave flattens below 10% and from 95%, as
     // Compose's does: both transition in the <style> block
     "[--ac-progress-circular-progress:var(--ac-progress-circular-value)] [--ac-progress-circular-fill:var(--ac-progress-circular-progress)]",
-    "[--ac-progress-circular-amplitude:calc(clamp(0,(var(--ac-progress-circular-value)_-_0.1)*1e6,1)*clamp(0,(0.95_-_var(--ac-progress-circular-value))*1e6,1))]",
+    "[--ac-progress-circular-amplitude:calc(clamp(0,(var(--ac-progress-circular-value)-0.1)*1e6,1)*clamp(0,(0.95-var(--ac-progress-circular-value))*1e6,1))]",
     // Lengths along the ring, in px: the active indicator's, then the space after it, M3's 4px
     // gap between two caps (only as long as the active indicator, so it closes as that does),
     // and the track's, which takes that space at both ends
     "[--ac-progress-circular-active:calc(var(--ac-progress-circular-fill)*var(--ac-progress-circular-circumference))]",
     "[--ac-progress-circular-space:min(var(--ac-progress-circular-active),var(--ac-progress-circular-gap))]",
-    "[--ac-progress-circular-track:calc(var(--ac-progress-circular-circumference)_-_var(--ac-progress-circular-active)_-_2*var(--ac-progress-circular-space))]",
+    "[--ac-progress-circular-track:calc(var(--ac-progress-circular-circumference)-var(--ac-progress-circular-active)-2*var(--ac-progress-circular-space))]",
     classList
   )}
   style={`--ac-progress-circular-size: ${side}px; --ac-progress-circular-thickness: ${trackThickness}px; --ac-progress-circular-circumference: ${circumference}; --ac-progress-circular-gap: ${4 + trackThickness}; --ac-progress-circular-wave-amplitude: ${amplitude}; --ac-progress-circular-value: ${position}`}
@@ -103,7 +103,7 @@ const stroke =
       clockwise in every direction. */}
   <svg
     class:list={[
-      "pointer-events-none absolute inset-0 size-full overflow-visible rotate-[calc((var(--ac-progress-circular-rotation)_+_var(--ac-progress-circular-step))*1deg_-_90deg)]",
+      "pointer-events-none absolute inset-0 size-full overflow-visible rotate-[calc((var(--ac-progress-circular-rotation)+var(--ac-progress-circular-step))*1deg-90deg)]",
       isWavy &&
         "motion-safe:animate-[ac-progress-circular-phase_1s_linear_infinite]",
     ]}
@@ -115,7 +115,7 @@ const stroke =
     <circle
       class:list={[
         stroke,
-        "stroke-(--theme-color-secondary-container) opacity-[clamp(0,var(--ac-progress-circular-track)*1e6,1)] [stroke-dasharray:calc(max(0,var(--ac-progress-circular-track))*1px)_calc(var(--ac-progress-circular-circumference)*1px)] [stroke-dashoffset:calc((var(--ac-progress-circular-active)_+_var(--ac-progress-circular-space))*-1px)]",
+        "stroke-(--theme-color-secondary-container) opacity-[clamp(0,var(--ac-progress-circular-track)*1e6,1)] [stroke-dasharray:calc(max(0,var(--ac-progress-circular-track))*1px)_calc(var(--ac-progress-circular-circumference)*1px)] [stroke-dashoffset:calc((var(--ac-progress-circular-active)+var(--ac-progress-circular-space))*-1px)]",
       ]}
       cx={side / 2}
       cy={side / 2}
