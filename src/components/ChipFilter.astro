@@ -78,7 +78,7 @@ const variantClasses = {
   flat: [
     "border-(--ac-chip-filter-outline) chip-focus-visible:border-(--ac-chip-filter-focus-outline)",
     "chip-disabled:border-(--ac-chip-filter-disabled-outline) chip-disabled:bg-(--ac-chip-filter-disabled-container)",
-    "[&:is(:has(>input:checked),[data-ac-chip-filter-selected])]:chip-enabled:hover:shadow-theme-elevation-1 [&:is(:has(>input:checked),[data-ac-chip-filter-selected])]:chip-enabled:chip-active:shadow-none",
+    "[:has(>input:checked),[data-ac-chip-filter-selected]]:chip-enabled:hover:shadow-theme-elevation-1 [:has(>input:checked),[data-ac-chip-filter-selected]]:chip-enabled:chip-active:shadow-none",
   ],
   elevated: [],
 }[variant];
