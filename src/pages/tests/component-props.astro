@@ -15,6 +15,7 @@ import Button from "../../components/Button.astro";
 import ButtonGroupConnected from "../../components/ButtonGroupConnected.astro";
 import ButtonIcon from "../../components/ButtonIcon.astro";
 import ButtonSplit from "../../components/ButtonSplit.astro";
+import Card from "../../components/Card.astro";
 import Checkbox from "../../components/Checkbox.astro";
 import ChipAssist from "../../components/ChipAssist.astro";
 import ChipFilter from "../../components/ChipFilter.astro";
@@ -133,6 +134,13 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     "button-split-name": [ButtonSplit, { ...split, icon: "add" }],
     "button-split-size": [ButtonSplit, { ...split, size: "medium" }],
     "button-split-variant": [ButtonSplit, { ...split, variant: "text" }],
+    "card-as": [Card, { as: "section" }],
+    "card-variant": [Card, { variant: "tonal" }],
+    "card-name": [Card, { as: "a", href: "#card" }],
+    "card-disabled-link": [
+      Card,
+      { as: "a", href: "#card", "aria-label": "Lisbon", disabled: true },
+    ],
     "checkbox-as": [Checkbox, { as: "div" }],
     "chip-assist-as": [ChipAssist, { as: "div" }],
     "chip-assist-variant": [ChipAssist, { variant: "tonal" }],

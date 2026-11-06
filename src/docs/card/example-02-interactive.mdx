@@ -1,0 +1,15 @@
+---
+title: Interactive
+description: Set `as="a"` with `href` for a card that goes somewhere, or `as="button"` for one that does something on the page, and name it with `aria-labelledby` pointing to its headline. Hover, focus or press anywhere on the card to see its states.
+---
+
+<div class="grid gap-2 sm:grid-cols-2">
+  <Card variant="elevated" as="a" href="#lisbon" aria-labelledby="example-card-lisbon" class="p-4">
+    <h3 id="example-card-lisbon" class="text-base leading-6 font-medium tracking-[0.15px]">Lisbon</h3>
+    <p class="text-sm text-(--theme-color-on-surface-variant)">Five days by the river</p>
+  </Card>
+  <Card variant="outlined" as="button" aria-labelledby="example-card-porto" class="p-4">
+    <h3 id="example-card-porto" class="text-base leading-6 font-medium tracking-[0.15px]">Porto</h3>
+    <p class="text-sm text-(--theme-color-on-surface-variant)">A weekend of bridges</p>
+  </Card>
+</div>

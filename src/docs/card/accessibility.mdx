@@ -1,0 +1,9 @@
+- **Roles:** a static card has no role and no tab stop, as M3's Accessibility page asks, and its buttons and links are the tab stops. Use `as="article"` when the card's content stands on its own, such as a post in a feed. An interactive card is a link or a button.
+- **Names:** an interactive card's link or button has no text of its own, so name it with `aria-labelledby`, pointing to its headline, or with `aria-label`. A card with neither fails the build. Screen readers read the name, then the card's content.
+- **Keyboard:** Tab reaches an interactive card, then each button and link inside it, before the next card. Enter follows a link card, and Enter or Space presses a button card.
+- **Focus:** a 3px focus indicator 2px outside the card.
+- **Images:** give a decorative image an empty `alt`.
+- **Dragging:** if cards can be moved by dragging, give each one another way to move with a single pointer or the keyboard, such as a menu with "Move up" and "Move down", as M3 asks.
+- **Disabled:** a disabled button card can't be focused, and its content fades to 38%.
+
+Under reduced motion, the colors, shadow and state layer change at once.

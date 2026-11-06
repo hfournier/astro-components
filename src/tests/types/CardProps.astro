@@ -1,0 +1,29 @@
+---
+// Type fixture, never rendered: `astro check` fails if a valid use stops compiling, or if an
+// invalid one (each marked @ts-expect-error) starts compiling.
+import Card from "../../components/Card.astro";
+---
+
+<Card class="p-4" id="static" draggable="true">
+  Static
+</Card>
+<Card as="article" variant="outlined" aria-labelledby="title">
+  <h3 id="title">Article</h3>
+</Card>
+<Card as="a" href="/" aria-label="Link" class="p-4" draggable="true">
+  Link
+</Card>
+<Card as="button" aria-label="Button" disabled variant="elevated">
+  Button
+</Card>
+
+{/* @ts-expect-error A static card takes no href */}
+<Card href="/">Static with href</Card>
+{/* @ts-expect-error A link card can't be disabled */}
+<Card as="a" href="/" aria-label="Link" disabled>
+  Disabled link
+</Card>
+{/* @ts-expect-error Not one of Card's elements */}
+<Card as="section">Section</Card>
+{/* @ts-expect-error Not one of M3's card styles */}
+<Card variant="tonal">Tonal</Card>

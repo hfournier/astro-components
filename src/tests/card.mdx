@@ -1,0 +1,98 @@
+---
+title: Card
+description: Tests for the Card component
+---
+
+<Heading level={1}>Card Tests</Heading>
+
+<Section data-testid="card-styles" class="p-4 space-y-4">
+  <Heading level={2}>Styles</Heading>
+  <div class="grid gap-2 sm:grid-cols-3">
+    <Card variant="elevated" as="article" class="p-4">
+      <Heading level={3}>Elevated</Heading>
+      <p>Glass souvenirs from the old town</p>
+      <Button variant="text">Buy</Button>
+    </Card>
+    <Card as="article" class="p-4">
+      <Heading level={3}>Filled</Heading>
+      <p>Glass souvenirs from the old town</p>
+      <Button variant="text">Save</Button>
+    </Card>
+    <Card variant="outlined" as="article" class="p-4">
+      <Heading level={3}>Outlined</Heading>
+      <p>Glass souvenirs from the old town</p>
+      <Button variant="text">Share</Button>
+    </Card>
+  </div>
+</Section>
+
+<Section data-testid="card-interactive" class="p-4 space-y-4">
+  <Heading level={2}>Interactive</Heading>
+  <div class="grid gap-2 sm:grid-cols-3">
+    <Card variant="elevated" as="a" href="#card-elevated" aria-labelledby="card-elevated-title" class="p-4">
+      <h3 id="card-elevated-title" class="text-[1.375rem] leading-7">Lisbon</h3>
+      <p>Five days by the river</p>
+    </Card>
+    <Card as="a" href="#card-filled" aria-labelledby="card-filled-title" class="p-4">
+      <h3 id="card-filled-title" class="text-[1.375rem] leading-7">Porto</h3>
+      <p>A weekend of bridges</p>
+    </Card>
+    <Card variant="outlined" as="button" aria-label="Open Faro" class="p-4">
+      <Heading level={3}>Faro</Heading>
+      <p>Beaches in the south</p>
+    </Card>
+  </div>
+</Section>
+
+<Section data-testid="card-actions" class="p-4 space-y-4">
+  <Heading level={2}>Interactive, with its own buttons</Heading>
+  <Card variant="outlined" as="a" href="#card-album" aria-labelledby="card-album-title" class="flex max-w-sm flex-col gap-2 p-4">
+    <h3 id="card-album-title" class="text-[1.375rem] leading-7">Night drive</h3>
+    <p>An album of twelve songs</p>
+    <ButtonIcon icon="more_vert" label="More options" class="absolute end-2 top-2" />
+    <div class="flex gap-2">
+      <Button variant="filled">Play</Button>
+      <Button variant="outlined">Add to queue</Button>
+    </div>
+  </Card>
+  <Button variant="text">After the card</Button>
+</Section>
+
+<Section data-testid="card-disabled" class="p-4 space-y-4">
+  <Heading level={2}>Disabled</Heading>
+  <div class="grid gap-2 sm:grid-cols-3">
+    <Card variant="elevated" as="button" aria-label="Elevated disabled" disabled class="p-4">
+      <p>Elevated disabled</p>
+    </Card>
+    <Card as="button" aria-label="Filled disabled" disabled class="p-4">
+      <p>Filled disabled</p>
+    </Card>
+    <Card variant="outlined" as="button" aria-label="Outlined disabled" disabled class="p-4">
+      <p>Outlined disabled</p>
+    </Card>
+  </div>
+</Section>
+
+<Section data-testid="card-dragged" class="p-4 space-y-4">
+  <Heading level={2}>Dragged</Heading>
+  <div class="grid gap-2 sm:grid-cols-3">
+    <Card variant="elevated" draggable="true" class="p-4">
+      <p>Elevated drag</p>
+    </Card>
+    <Card draggable="true" class="p-4">
+      <p>Filled drag</p>
+    </Card>
+    <Card variant="outlined" draggable="true" class="p-4">
+      <p>Outlined drag</p>
+    </Card>
+  </div>
+</Section>
+
+<Section data-testid="card-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <Card variant="outlined" as="a" href="#card-rtl" aria-labelledby="card-rtl-title" class="max-w-sm p-4">
+    <h3 id="card-rtl-title" class="text-[1.375rem] leading-7">لشبونة</h3>
+    <p>خمسة أيام على النهر</p>
+    <ButtonIcon icon="more_vert" label="خيارات أخرى" class="absolute end-2 top-2" />
+  </Card>
+</Section>

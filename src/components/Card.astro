@@ -1,0 +1,146 @@
+---
+import type { HTMLTag, Polymorphic } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import BaseWrapper from "./BaseWrapper.astro";
+
+// M3's card: a container for content and actions about one subject, elevated, filled or
+// outlined, with 12px corners. Its content is the default slot, laid out by the page; M3's
+// anatomy has only the container as a required part.
+//
+// A static card (`as` "div" or "article") is purely a container: no role of its own, and the
+// buttons and links in it are the tab stops. An interactive card (`as` "a" or "button") has one
+// primary action, a link or button covering the whole card, named through `aria-label` or
+// `aria-labelledby`. The card's content lets clicks through to it, except the buttons, links and
+// form controls inside it, which keep their own, so a card can have buttons beside its own action
+// without one sitting inside the other (ADR-0030).
+type Props<
+  Tag extends Extract<HTMLTag, "div" | "article" | "a" | "button"> = "div",
+> = Polymorphic<{
+  as: Tag;
+  variant?: "elevated" | "filled" | "outlined";
+}>;
+
+// Two-read `Astro.props`, as in Button: the first read grabs `as` untyped
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const { as = "div" }: any = Astro.props;
+const {
+  // kept out of `attrs`, which would render it as a literal attribute; `as` holds it
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  as: _as,
+  variant = "filled",
+  class: classList,
+  draggable,
+  ...attrs
+}: Props<"div" | "article" | "a" | "button"> & {
+  disabled?: boolean;
+} = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["div", "article", "a", "button"].includes(as)) {
+  throw new Error(
+    `Card: its elements are "div", "article", "a" and "button", but this one's \`as\` is "${as}".`
+  );
+}
+if (!["elevated", "filled", "outlined"].includes(variant)) {
+  throw new Error(
+    `Card: M3's card styles are "elevated", "filled" and "outlined", but this one's \`variant\` is "${variant}".`
+  );
+}
+const isInteractive = as === "a" || as === "button";
+// The action has no text of its own, so without a name it would be an unnamed link or button
+if (isInteractive && !attrs["aria-label"] && !attrs["aria-labelledby"]) {
+  throw new Error(
+    `Card: a link or button card is named through \`aria-label\` or \`aria-labelledby\`, but this one has neither.`
+  );
+}
+if (as === "a" && attrs.disabled !== undefined && attrs.disabled !== false) {
+  throw new Error(
+    `Card: only a button card can be disabled, as a link can't be, but this one's \`as\` is "a" with \`disabled\`.`
+  );
+}
+
+// M3's container colors, which BaseWrapper paints and passes on to what sits on the card
+const bgColor = (
+  {
+    elevated: "surface-container-low",
+    filled: "surface-container-highest",
+    outlined: "surface",
+  } as const
+)[variant];
+
+// M3's Specs per style: the elevation at rest, hovered and dragged (pressed and focused stay at
+// rest), the outline, and the disabled container. Disabled, the elevated container is surface,
+// the filled one surface-variant at 38% over its own, and the outlined one's outline is outline
+// at 12%, as Compose's CardDefaults draw them.
+const variantClasses = {
+  elevated:
+    "shadow-theme-elevation-1 card-hover:shadow-theme-elevation-2 card-active:shadow-theme-elevation-1 data-ac-card-dragged:shadow-theme-elevation-4! card-disabled:bg-(--theme-color-surface)",
+  filled:
+    "card-hover:shadow-theme-elevation-1 card-active:shadow-none data-ac-card-dragged:shadow-theme-elevation-3! card-disabled:bg-[color-mix(in_srgb,var(--theme-color-surface-variant)_38%,var(--theme-color-surface-container-highest))]",
+  outlined:
+    "border border-(--theme-color-outline-variant) card-hover:shadow-theme-elevation-1 card-active:shadow-none data-ac-card-dragged:shadow-theme-elevation-3! card-focus-visible:border-(--theme-color-on-surface) card-disabled:border-(--theme-color-outline)/12",
+}[variant];
+
+// An interactive card lets clicks on its content through to its action, beneath it, but not
+// clicks on the controls inside it, which keep their own
+const interactiveClasses =
+  "pointer-events-none [&_:is(a[href],button,input,select,textarea,label,summary,video[controls],audio[controls],iframe,[tabindex],[contenteditable])]:pointer-events-auto";
+
+// `class` and `draggable` are the card's; an interactive card's other attributes are its action's
+const cardAttrs = isInteractive ? { draggable } : { draggable, ...attrs };
+const ActionTag = isInteractive ? as : undefined;
+const actionAttrs = {
+  type: as === "button" ? ("button" as const) : undefined,
+  // a link drags its URL by default, so a draggable card is dragged as a whole instead
+  draggable: draggable && as === "a" ? ("false" as const) : undefined,
+  ...attrs,
+};
+---
+
+<BaseWrapper
+  as={isInteractive ? "div" : as}
+  bgColor={bgColor}
+  class={twMerge(
+    "relative isolate overflow-hidden rounded-xl",
+    // M3's state layer, on-surface: 8% hovered, 10% focused or pressed, 16% dragged. It covers
+    // the content, as M3 draws it, and takes no clicks.
+    "before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:bg-(--theme-color-on-surface) before:opacity-0 motion-safe:before:transition-opacity",
+    "card-hover:before:opacity-8 card-focus-visible:before:opacity-10 card-active:before:opacity-10 data-ac-card-dragged:before:opacity-16!",
+    // M3's focus indicator: 3px, 2px outside the card
+    "card-focus-visible:outline-3 card-focus-visible:outline-offset-2 card-focus-visible:outline-(--theme-color-focus-ring-on-bg)",
+    // M3 disabled: the content on-surface at 38%
+    "card-disabled:text-(--theme-color-on-surface)/38",
+    // colors, the outline and the shadow all change on fast effects, Tailwind's default (ADR-0018)
+    "motion-safe:transition-[color,background-color,border-color,box-shadow]",
+    variantClasses,
+    isInteractive && interactiveClasses,
+    classList
+  )}
+  data-ac-card={variant}
+  {...cardAttrs}
+>
+  {ActionTag && (
+    <ActionTag
+      class="absolute inset-0 -z-1 cursor-pointer rounded-[inherit] outline-none disabled:cursor-default"
+      data-ac-card-part="action"
+      {...actionAttrs}
+    />
+  )}
+  <slot />
+</BaseWrapper>
+
+<script>
+  // M3's dragged state, for a card the page makes draggable: marked from dragstart to dragend.
+  // Only the card itself counts, not a link or image in it dragged on its own.
+  const draggedCard = (event: DragEvent) =>
+    event.target instanceof Element && event.target.matches("[data-ac-card]")
+      ? event.target
+      : null;
+  document.addEventListener("dragstart", (event) => {
+    draggedCard(event)?.setAttribute("data-ac-card-dragged", "");
+  });
+  document.addEventListener("dragend", (event) => {
+    draggedCard(event)?.removeAttribute("data-ac-card-dragged");
+  });
+</script>
