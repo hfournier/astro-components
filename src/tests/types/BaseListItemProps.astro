@@ -1,0 +1,30 @@
+---
+// Type fixture, never rendered: `astro check` fails if a valid use stops compiling, or if an
+// invalid one (each marked @ts-expect-error) starts compiling.
+import BaseListItem from "../../components/BaseListItem.astro";
+---
+
+<BaseListItem label="Static" class="w-full" id="static" />
+<BaseListItem label="Link" as="a" href="/" aria-describedby="hint" />
+<BaseListItem label="Button" as="button" disabled />
+<BaseListItem
+  label="Bread"
+  control="checkbox"
+  name="side"
+  value="bread"
+  checked
+/>
+<BaseListItem label="Wi-Fi" control="switch" icons="both" class="w-full" />
+
+{/* @ts-expect-error A static item takes no href */}
+<BaseListItem label="Static link" href="/" />
+{/* @ts-expect-error A link item can't be disabled */}
+<BaseListItem label="Disabled link" as="a" href="/" disabled />
+{/* @ts-expect-error A selection item is a <label>, not a link or button */}
+<BaseListItem label="Linked checkbox" as="a" control="checkbox" />
+{/* @ts-expect-error A selection item's attributes are its input's, which takes no href */}
+<BaseListItem label="Bread" control="checkbox" href="/" />
+{/* @ts-expect-error Not one of M3's selection controls */}
+<BaseListItem label="Slider" control="slider" />
+{/* @ts-expect-error The label is required */}
+<BaseListItem as="button" />

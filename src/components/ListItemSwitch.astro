@@ -1,6 +1,7 @@
 ---
 import type { ComponentProps, HTMLAttributes } from "astro/types";
 import BaseListItem, { type ListItemContent } from "./BaseListItem.astro";
+import type Switch from "./Switch.astro";
 
 // An M3 Expressive list item with a switch, for a List of settings: a <label> around a native
 // checkbox with role="switch", so the whole item toggles it and it submits with its form
@@ -9,7 +10,7 @@ import BaseListItem, { type ListItemContent } from "./BaseListItem.astro";
 // BaseListItem draws it.
 type Props = Omit<HTMLAttributes<"input">, "type" | "role"> &
   ListItemContent &
-  Pick<ComponentProps<typeof BaseListItem>, "icons"> & {
+  Pick<ComponentProps<typeof Switch>, "icons"> & {
     // The switch's end of the item: trailing, as M3's Specs place it, or leading
     controlPosition?: "leading" | "trailing";
   };

@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes, HTMLTag, Polymorphic } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import type { SvgIconNameTypes } from "../svgs";
 import Checkbox from "./Checkbox.astro";
@@ -17,8 +18,9 @@ import Switch from "./Switch.astro";
 // on it. With one, it's a <label> holding a native checkbox, radio or switch at its leading or
 // trailing end (ADR-0028), and every attribute but `class` goes on the input. A selected item is
 // highlighted, as M3 Expressive's lists are.
-type Props = {
-  as?: "div" | "a" | "button";
+// The item's text and its leading and trailing elements, the props ListItem and the selection
+// items take from this one
+export type ListItemContent = {
   // The item's Body Large text, which names it
   label: string;
   // A 20px icon before the label, by its file name in src/assets/svgs. For an avatar, an image
@@ -34,27 +36,21 @@ type Props = {
   trailingText?: string;
   // The `video` slot's size: M3's small 100 by 56px, or large 114 by 64px
   videoSize?: "sm" | "lg";
-  // M3's selection control, which makes the item a <label> around it
-  control?: "checkbox" | "radio" | "switch";
-  controlPosition?: "leading" | "trailing";
-  // A switch control's handle icons, as Switch takes them
-  icons?: "none" | "selected" | "both";
-  class?: string | null;
-  [attribute: string]: unknown;
 };
 
-// The item's text and its leading and trailing elements, the props ListItem and the selection
-// items take from this one
-export type ListItemContent = Pick<
-  Props,
-  | "label"
-  | "icon"
-  | "overline"
-  | "supportingText"
-  | "trailingIcon"
-  | "trailingText"
-  | "videoSize"
->;
+// Without a control, the item's element and its attributes, by `as`; with one, the input's
+// attributes, and `class` for the item
+type Props<Tag extends Extract<HTMLTag, "div" | "a" | "button"> = "div"> =
+  | Polymorphic<{ as: Tag; control?: undefined } & ListItemContent>
+  | (Omit<HTMLAttributes<"input">, "type" | "role"> &
+      ListItemContent & {
+        as?: undefined;
+        // M3's selection control, which makes the item a <label> around it
+        control: "checkbox" | "radio" | "switch";
+        controlPosition?: "leading" | "trailing";
+        // A switch control's handle icons, as Switch takes them
+        icons?: "none" | "selected" | "both";
+      });
 
 // M3's selection controls: the component each makes, what it's called, and what draws it
 const controls = {
@@ -85,7 +81,15 @@ const {
   icons,
   class: classList,
   ...attrs
-}: Props = Astro.props;
+}: ListItemContent & {
+  as?: "div" | "a" | "button";
+  control?: "checkbox" | "radio" | "switch";
+  controlPosition?: "leading" | "trailing";
+  icons?: "none" | "selected" | "both";
+  class?: string | null;
+  // the rest go on the item or its input, typed by `Props` above
+  [attribute: string]: unknown;
+} = Astro.props as Props<"div" | "a" | "button">;
 
 // Values outside these fail the build, rather than drawing something other than was asked for
 // (ADR-0021)
