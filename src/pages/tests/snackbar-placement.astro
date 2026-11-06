@@ -1,0 +1,41 @@
+---
+// A snackbar on a page with a navigation bar and a FAB fixed to the bottom of the window, which it
+// shows above (M3's placement guidelines). A page has one navigation bar, so this page has its own
+// layout rather than BaseLayout's. See src/tests/Snackbar.spec.ts.
+import "../../styles/global.css";
+import BaseHead from "../../internal/BaseHead.astro";
+import Button from "../../components/Button.astro";
+import Fab from "../../components/Fab.astro";
+import Main from "../../components/Main.astro";
+import NavBar from "../../components/NavBar.astro";
+import NavBarItem from "../../components/NavBarItem.astro";
+import Snackbar from "../../components/Snackbar.astro";
+---
+
+<html lang="en">
+  <BaseHead
+    title="Snackbar placement"
+    description="A snackbar above a navigation bar and a FAB"
+  />
+  <body class="bg-(--theme-color-surface) text-(--theme-color-on-surface)">
+    <Main class="p-4">
+      <h1>Snackbar placement</h1>
+      <Button commandfor="snackbar-placement" command="show-popover">
+        Archive
+      </Button>
+      <Snackbar id="snackbar-placement" showCloseX>
+        Email archived
+      </Snackbar>
+      <Fab
+        class="fixed inset-e-4 bottom-[calc(4rem+16px)] z-30"
+        icon="edit"
+        label="Compose"
+      />
+    </Main>
+    <NavBar label="Test bar">
+      <NavBarItem href="/tests/snackbar-placement" icon="home" label="Home" />
+      <NavBarItem href="/tests/snackbar" icon="inbox" label="Inbox" />
+      <NavBarItem href="/tests/card" icon="star" label="Starred" />
+    </NavBar>
+  </body>
+</html>

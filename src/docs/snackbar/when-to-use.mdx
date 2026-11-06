@@ -1,0 +1,10 @@
+Use a snackbar for a brief, low-priority update about something the app did or will do, such as "Email archived" or "Saved to Vacation". It doesn't interrupt: people can go on with the page and ignore it.
+
+Give it an action when there's one obvious thing to do next, such as "Undo". Don't make the snackbar the only way to reach a core task.
+
+### When not to use it
+
+- **Information people must act on, or a decision before they can go on:** use a [Dialog](/components/dialog).
+- **Several updates at once:** show them one after another, never stacked or side by side. The snackbar queues them for you.
+- **A message that needs an icon, a link or styled text:** use another component, such as a dialog.
+- **The only feedback, if it hides on its own:** on the web, also show the update where it happened, such as a Save button that changes to "Saved", or give the snackbar an action so it stays.

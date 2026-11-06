@@ -1,0 +1,8 @@
+---
+title: Snackbar
+description: The following example shows a snackbar with an Undo action, shown by a button that points to it with `commandfor` and `command="show-popover"`. It stays until Undo or the close button is pressed.
+show: both
+---
+
+<Button commandfor="usage-snackbar" command="show-popover">Delete</Button>
+<Snackbar id="usage-snackbar" showCloseX>Email deleted<Button slot="action" variant="text">Undo</Button></Snackbar>

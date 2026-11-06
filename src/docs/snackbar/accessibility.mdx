@@ -1,0 +1,9 @@
+- **Announced:** its text is read in a polite live region (`role="status"`) as it shows, so screen readers announce it after what they're reading, without moving focus.
+- **Focus:** it never takes focus or traps it. Tab reaches its action and close button at the snackbar's place in the page. Press **Alt+G** (Option+G on a Mac) to move focus to the action, or to the close button when there's no action. Once it hides, focus goes back to where it was. Let people know about Alt+G, such as in a help page.
+- **Keyboard:** Tab moves between its action and close button. Escape hides it while it holds focus.
+- **Timing:** one with an action never hides on its own. One without an action hides after 4 or 10 seconds, paused while it's hovered or holds focus. Since some people can't read it in time, also show the update where it happened, such as on the button that started it.
+- **Names:** the close button is named "Close", or by `closeLabel`. The action is named by its own text.
+- **Targets:** the action and the close button each have a 48px target.
+- **Placement:** it doesn't cover a navigation bar, a FAB or a navigation rail. Keep it from covering what's focused, such as by not showing one over a form being filled in at the bottom of the window.
+
+Under reduced motion, it appears and disappears at once.

@@ -1,0 +1,68 @@
+---
+title: Snackbar
+description: Tests for the Snackbar component
+---
+
+<Heading level={1}>Snackbar Tests</Heading>
+
+<Section data-testid="snackbar-single" class="p-4 space-y-4">
+  <Heading level={2}>Single line</Heading>
+  <Button commandfor="snackbar-single" command="show-popover">Archive</Button>
+  <Snackbar id="snackbar-single">Email archived</Snackbar>
+</Section>
+
+<Section data-testid="snackbar-action" class="p-4 space-y-4">
+  <Heading level={2}>Single line with action and close</Heading>
+  <Button commandfor="snackbar-action" command="show-popover">Delete</Button>
+  <Snackbar id="snackbar-action" showCloseX closeLabel="Dismiss">Email deleted<Button slot="action" variant="text">Undo</Button></Snackbar>
+</Section>
+
+<Section data-testid="snackbar-action-only" class="p-4 space-y-4">
+  <Heading level={2}>Single line with action</Heading>
+  <Button commandfor="snackbar-action-only" command="show-popover">Archive all</Button>
+  <Snackbar id="snackbar-action-only">Conversations archived<Button slot="action" variant="text">Undo all</Button></Snackbar>
+</Section>
+
+<Section data-testid="snackbar-two-line-text" class="p-4 space-y-4">
+  <Heading level={2}>Two lines</Heading>
+  <Button commandfor="snackbar-two-line-text" command="show-popover">Upload</Button>
+  <Snackbar id="snackbar-two-line-text">Twelve photos from the trip to the coast were uploaded to the shared family album, where everyone invited can see them</Snackbar>
+</Section>
+
+<Section data-testid="snackbar-close" class="p-4 space-y-4">
+  <Heading level={2}>Close only</Heading>
+  <Button commandfor="snackbar-close" command="show-popover">Send</Button>
+  <Snackbar id="snackbar-close" showCloseX>Message sent</Snackbar>
+</Section>
+
+<Section data-testid="snackbar-two-line" class="p-4 space-y-4">
+  <Heading level={2}>Two lines with action</Heading>
+  <Button commandfor="snackbar-two-line" command="show-popover">Move</Button>
+  <Snackbar id="snackbar-two-line">Twelve photos from the trip to the coast were moved to the shared family album, where everyone invited can see them<Button slot="action" variant="text">Open</Button></Snackbar>
+</Section>
+
+<Section data-testid="snackbar-new-line" class="p-4 space-y-4">
+  <Heading level={2}>Two lines with longer action</Heading>
+  <Button commandfor="snackbar-new-line" command="show-popover">Sync</Button>
+  <Snackbar id="snackbar-new-line" isActionOnNewLine>Your calendar couldn't sync while you were offline<Button slot="action" variant="text">Try again now</Button></Snackbar>
+</Section>
+
+<Section data-testid="snackbar-long" class="p-4 space-y-4">
+  <Heading level={2}>Long duration</Heading>
+  <Button commandfor="snackbar-long" command="show-popover">Copy</Button>
+  <Snackbar id="snackbar-long" duration="long">Link copied</Snackbar>
+</Section>
+
+<Section data-testid="snackbar-queue" class="p-4 space-y-4">
+  <Heading level={2}>Queue</Heading>
+  <Button commandfor="snackbar-queue-first" command="show-popover">Show first</Button>
+  <Button commandfor="snackbar-queue-second" command="show-popover">Show second</Button>
+  <Snackbar id="snackbar-queue-first">First update</Snackbar>
+  <Snackbar id="snackbar-queue-second">Second update</Snackbar>
+</Section>
+
+<Section data-testid="snackbar-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <Button commandfor="snackbar-rtl" command="show-popover">Delete RTL</Button>
+  <Snackbar id="snackbar-rtl" showCloseX closeLabel="Dismiss RTL">Email deleted<Button slot="action" variant="text">Undo RTL</Button></Snackbar>
+</Section>
