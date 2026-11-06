@@ -1,3 +1,7 @@
 {
-  "files.eol": "\n"
+  "files.eol": "\n",
+  // The Astro extension bundles language server 2.16, which can't read a component's generic
+  // Props (BaseChip's, BaseListItem's) and so flags its callers' props. Run the one `pnpm check`
+  // runs instead, hoisted by pnpm-workspace.yaml.
+  "astro.language-server.ls-path": "node_modules/@astrojs/language-server/bin/nodeServer.js"
 }

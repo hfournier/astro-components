@@ -8,3 +8,7 @@ trustPolicyExclude:
   - "chokidar@4.0.3"
 strictDepBuilds: true
 blockExoticSubdeps: true
+
+# The Astro editor extension runs this one, the version `pnpm check` uses (.vscode/settings.json)
+publicHoistPattern:
+  - "@astrojs/language-server"
