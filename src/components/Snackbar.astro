@@ -93,9 +93,9 @@ const hasClose = closeLabel !== undefined;
     // medium up it fits its text, up to Compose's 600px, at the start.
     "fixed inset-auto m-0 overflow-visible rounded-sm border-0 p-0 shadow-theme-elevation-3",
     // From medium up it starts past a navigation rail or drawer (the script sets the start)
-    "start-[calc(12px_+_var(--ac-snackbar-start,0px))] end-3 w-auto max-w-150 medium:end-auto medium:w-max medium:max-w-[min(600px,100%_-_24px_-_var(--ac-snackbar-start,0px))]",
+    "inset-s-[calc(12px+var(--ac-snackbar-start,0px))] inset-e-3 w-auto max-w-150 medium:inset-e-auto medium:w-max medium:max-w-[min(600px,100%-24px-var(--ac-snackbar-start,0px))]",
     // above a navigation bar or FAB (the script sets the lift), and the device's bottom safe area
-    "bottom-[calc(12px_+_max(var(--ac-snackbar-lift,0px),env(safe-area-inset-bottom,0px)))]",
+    "bottom-[calc(12px+max(var(--ac-snackbar-lift,0px),env(safe-area-inset-bottom,0px)))]",
     // As Compose's: it fades on fast effects while it scales from 80% on fast spatial, and back
     // as it leaves. The starting style lets it come in from display: none, and transition-discrete
     // keeps it drawn while it leaves. Under reduced motion it appears and disappears at once.
