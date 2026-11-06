@@ -52,7 +52,7 @@ const position =
 // Determinate, the active indicator runs to the progress and the track starts a gap after it;
 // the indeterminate state moves them in the <style> block.
 const segment =
-  "absolute top-1/2 h-(--ac-progress-linear-thickness) -translate-y-1/2 rounded-full [--ac-progress-linear-end-cap:clamp(var(--ac-progress-linear-cap),var(--ac-progress-linear-end),100%_-_var(--ac-progress-linear-cap))] [--ac-progress-linear-start-cap:clamp(var(--ac-progress-linear-cap),var(--ac-progress-linear-start),100%_-_var(--ac-progress-linear-cap))] start-[calc(var(--ac-progress-linear-start-cap)_-_var(--ac-progress-linear-cap))] w-[clamp(0px,(var(--ac-progress-linear-end)_-_var(--ac-progress-linear-start))*1000,var(--ac-progress-linear-end-cap)_-_var(--ac-progress-linear-start-cap)_+_2*var(--ac-progress-linear-cap))]";
+  "absolute top-1/2 h-(--ac-progress-linear-thickness) -translate-y-1/2 rounded-full [--ac-progress-linear-end-cap:clamp(var(--ac-progress-linear-cap),var(--ac-progress-linear-end),100%-var(--ac-progress-linear-cap))] [--ac-progress-linear-start-cap:clamp(var(--ac-progress-linear-cap),var(--ac-progress-linear-start),100%-var(--ac-progress-linear-cap))] inset-s-[calc(var(--ac-progress-linear-start-cap)-var(--ac-progress-linear-cap))] w-[clamp(0px,(var(--ac-progress-linear-end)-var(--ac-progress-linear-start))*1000,var(--ac-progress-linear-end-cap)-var(--ac-progress-linear-start-cap)+2*var(--ac-progress-linear-cap))]";
 const track = `${segment} bg-(--theme-color-secondary-container)`;
 const active = `${segment} bg-(--theme-color-primary)`;
 // The wavy active indicator, a path the script draws
@@ -68,14 +68,14 @@ const indeterminateOnly =
     "relative block",
     // a wavy active indicator waves 3px (M3's amplitude) either side of the track
     shape === "wavy"
-      ? "h-[calc(var(--ac-progress-linear-thickness)_+_6px)]"
+      ? "h-[calc(var(--ac-progress-linear-thickness)+6px)]"
       : "h-(--ac-progress-linear-thickness)",
     // the progress follows the value, and the wave flattens below 10% and from 95%, as
     // Compose's does: both transition in the <style> block
     "[--ac-progress-linear-progress:var(--ac-progress-linear-value)]",
-    "[--ac-progress-linear-amplitude:calc(clamp(0,(var(--ac-progress-linear-value)_-_0.1)*1e6,1)*clamp(0,(0.95_-_var(--ac-progress-linear-value))*1e6,1))]",
+    "[--ac-progress-linear-amplitude:calc(clamp(0,(var(--ac-progress-linear-value)-0.1)*1e6,1)*clamp(0,(0.95-var(--ac-progress-linear-value))*1e6,1))]",
     // a round cap is half the thickness, and M3's 4px gap sits between two caps
-    "[--ac-progress-linear-cap:calc(var(--ac-progress-linear-thickness)/2)] [--ac-progress-linear-gap:calc(4px_+_var(--ac-progress-linear-thickness))]",
+    "[--ac-progress-linear-cap:calc(var(--ac-progress-linear-thickness)/2)] [--ac-progress-linear-gap:calc(4px+var(--ac-progress-linear-thickness))]",
     classList
   )}
   style={`--ac-progress-linear-thickness: ${trackThickness}px; --ac-progress-linear-value: ${position}`}
@@ -89,7 +89,7 @@ const indeterminateOnly =
   <span
     class:list={[
       track,
-      "[--ac-progress-linear-end:100%] [--ac-progress-linear-start:calc(var(--ac-progress-linear-progress)*100%_+_min(var(--ac-progress-linear-progress)*100%,var(--ac-progress-linear-gap)))]",
+      "[--ac-progress-linear-end:100%] [--ac-progress-linear-start:calc(var(--ac-progress-linear-progress)*100%+min(var(--ac-progress-linear-progress)*100%,var(--ac-progress-linear-gap)))]",
     ]}
     data-ac-progress-linear-part="track"
     data-ac-progress-linear-segment="1"
@@ -142,7 +142,7 @@ const indeterminateOnly =
   {showStopIndicator && (
     // M3's 4px circle at the track's end, inset as Compose's is when the track is thicker
     <span
-      class="absolute end-[min(max(0px,(var(--ac-progress-linear-thickness)_-_4px)/2),6px)] top-1/2 size-[min(4px,var(--ac-progress-linear-thickness))] -translate-y-1/2 rounded-full bg-(--theme-color-primary)"
+      class="absolute inset-e-[min(max(0px,(var(--ac-progress-linear-thickness)-4px)/2),6px)] top-1/2 size-[min(4px,var(--ac-progress-linear-thickness))] -translate-y-1/2 rounded-full bg-(--theme-color-primary)"
       data-ac-progress-linear-part="stop-indicator"
     ></span>
   )}

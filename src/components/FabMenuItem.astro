@@ -36,7 +36,7 @@ const { icon, label, class: classList, ...attrs } = Astro.props;
     "motion-safe:[transition:opacity_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects)_var(--ac-fab-menu-item-delay),clip-path_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial)_var(--ac-fab-menu-item-delay)]",
     // Each starts at its place in FabMenu's stagger span, counted from the FAB when opening (the
     // last item first) and from the top when closing: halfway through its share of the span
-    "[--ac-fab-menu-item-delay:calc((sibling-index()_-_0.5)_/_sibling-count()_*_var(--ac-fab-menu-stagger-span))] group-open/fab-menu-items:[--ac-fab-menu-item-delay:calc((sibling-count()_-_sibling-index()_+_0.5)_/_sibling-count()_*_var(--ac-fab-menu-stagger-span))]",
+    "[--ac-fab-menu-item-delay:calc((sibling-index()-0.5)/sibling-count()*var(--ac-fab-menu-stagger-span))] group-open/fab-menu-items:[--ac-fab-menu-item-delay:calc((sibling-count()-sibling-index()+0.5)/sibling-count()*var(--ac-fab-menu-stagger-span))]",
     classList
   )}
   data-ac-fab-menu-item

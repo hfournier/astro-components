@@ -52,7 +52,7 @@ const { align, isScrollable, randomId, tabs, variant } = Astro.props;
         <button
           class:list={twMerge(
             "group/tab relative isolate flex min-h-12 cursor-pointer items-center justify-center px-4 select-none",
-            isScrollable && "min-w-[90px]",
+            isScrollable && "min-w-22.5",
             "text-sm leading-5 font-medium tracking-[0.1px] text-(--theme-color-on-surface-variant) not-aria-selected:hover:text-(--theme-color-on-surface) not-aria-selected:focus-visible:text-(--theme-color-on-surface) not-aria-selected:active:text-(--theme-color-on-surface)",
             variant === "primary"
               ? "aria-selected:text-(--theme-color-primary)"
