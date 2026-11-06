@@ -107,7 +107,7 @@ const expected: Record<string, string | RegExp> = {
   "sheet-side-edge": `SheetSide: its edges are "start" and "end", but this one's \`edge\` is "left".`,
   "snackbar-duration": `Snackbar: its durations are "short", "long" and "indefinite", but this one's \`duration\` is "brief".`,
   "snackbar-action-duration": `Snackbar: M3 doesn't time out a snackbar with an action, but this one's \`duration\` is "short".`,
-  "snackbar-indefinite": `Snackbar: an "indefinite" snackbar needs an action or a close button to hide it by, but this one's \`closeLabel\` is undefined.`,
+  "snackbar-indefinite": `Snackbar: an "indefinite" snackbar needs an action or a close button to hide it by, but this one's \`showCloseX\` is false.`,
   "snackbar-actions":
     "Snackbar: M3 gives a snackbar a single action, but this one's `action` slot holds 2.",
   "snackbar-new-line":

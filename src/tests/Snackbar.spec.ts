@@ -297,8 +297,9 @@ test.describe("timing", () => {
     await show(page, "close", "Send", false);
     await page.mouse.move(600, 10);
     await page.keyboard.press("Alt+g");
+    // without a closeLabel, the close button is named "Close"
     await expect(
-      snackbar.getByRole("button", { name: "Dismiss" })
+      snackbar.getByRole("button", { name: "Close", exact: true })
     ).toBeFocused();
     await page.clock.runFor(10_000);
     await expect(snackbar).toBeVisible();

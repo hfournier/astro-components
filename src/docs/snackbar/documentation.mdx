@@ -15,15 +15,21 @@ props:
     type: string
     required: true
     description: The snackbar's id. Buttons that show it point to it with `commandfor` and `command="show-popover"`, and a script can call `showPopover()` on it.
+  - name: showCloseX
+    type: boolean
+    required: false
+    default: "false"
+    description: Shows M3's optional close icon button at the snackbar's end, which hides it.
   - name: closeLabel
     type: string
     required: false
-    description: Adds M3's optional close icon button, named this, such as "Dismiss".
+    default: '"Close"'
+    description: The close button's accessible name, also shown in its tooltip. Set it on pages in other languages.
   - name: duration
     type: '"short" | "long" | "indefinite"'
     required: false
     default: '"short" without an action, "indefinite" with one'
-    description: How long it shows before it hides on its own, as in Compose. `short` is 4 seconds and `long` is 10 seconds. `indefinite` stays until the action or the close button is pressed, or Escape. M3 doesn't time out a snackbar with an action, so with an action only `indefinite` is allowed. Without one, `indefinite` needs a close button. Any other value fails the build, and so do these combinations.
+    description: How long it shows before it hides on its own, as in Compose. `short` is 4 seconds and `long` is 10 seconds. `indefinite` stays until the action or the close button is pressed, or Escape. M3 doesn't time out a snackbar with an action, so with an action only `indefinite` is allowed. Without one, `indefinite` needs `showCloseX`. Any other value fails the build, and so do these combinations.
   - name: isActionOnNewLine
     type: boolean
     required: false

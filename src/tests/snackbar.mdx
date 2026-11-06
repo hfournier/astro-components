@@ -14,7 +14,7 @@ description: Tests for the Snackbar component
 <Section data-testid="snackbar-action" class="p-4 space-y-4">
   <Heading level={2}>Single line with action and close</Heading>
   <Button commandfor="snackbar-action" command="show-popover">Delete</Button>
-  <Snackbar id="snackbar-action" closeLabel="Dismiss">Email deleted<Button slot="action" variant="text">Undo</Button></Snackbar>
+  <Snackbar id="snackbar-action" showCloseX closeLabel="Dismiss">Email deleted<Button slot="action" variant="text">Undo</Button></Snackbar>
 </Section>
 
 <Section data-testid="snackbar-action-only" class="p-4 space-y-4">
@@ -32,7 +32,7 @@ description: Tests for the Snackbar component
 <Section data-testid="snackbar-close" class="p-4 space-y-4">
   <Heading level={2}>Close only</Heading>
   <Button commandfor="snackbar-close" command="show-popover">Send</Button>
-  <Snackbar id="snackbar-close" closeLabel="Dismiss">Message sent</Snackbar>
+  <Snackbar id="snackbar-close" showCloseX>Message sent</Snackbar>
 </Section>
 
 <Section data-testid="snackbar-two-line" class="p-4 space-y-4">
@@ -64,5 +64,5 @@ description: Tests for the Snackbar component
 <Section data-testid="snackbar-rtl" class="p-4 space-y-4" dir="rtl">
   <Heading level={2}>Right to left</Heading>
   <Button commandfor="snackbar-rtl" command="show-popover">Delete RTL</Button>
-  <Snackbar id="snackbar-rtl" closeLabel="Dismiss RTL">Email deleted<Button slot="action" variant="text">Undo RTL</Button></Snackbar>
+  <Snackbar id="snackbar-rtl" showCloseX closeLabel="Dismiss RTL">Email deleted<Button slot="action" variant="text">Undo RTL</Button></Snackbar>
 </Section>

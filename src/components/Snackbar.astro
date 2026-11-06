@@ -6,7 +6,7 @@ import ButtonIcon from "./ButtonIcon.astro";
 import { unwrapParagraph } from "../utils";
 
 // M3's snackbar: a short update at the bottom of the window, with an optional action (the
-// `action` slot, one text Button) and an optional close icon button (`closeLabel`). It's a manual
+// `action` slot, one text Button) and an optional close icon button (`showCloseX`). It's a manual
 // popover, so it sits in the top layer and the page shows it the native way: a button with
 // `commandfor` its id and `command="show-popover"`, or `showPopover()` from a script. Its close
 // button and its action hide it. The script (below):
@@ -23,20 +23,23 @@ import { unwrapParagraph } from "../utils";
 type Props = Omit<HTMLAttributes<"div">, "id" | "popover"> & {
   // the popover's id, which the buttons that show it point to with `commandfor`
   id: string;
-  // M3's optional close icon button, named this (e.g. "Dismiss")
+  // The close button's accessible name and tooltip, for pages in other languages
   closeLabel?: string;
   // Compose's durations: "short" (4s, the default without an action), "long" (10s) or
   // "indefinite" (the default with one, and the only one M3 allows it)
   duration?: "short" | "long" | "indefinite";
   // M3's "two lines with longer action": the action goes on its own line, below the text
   isActionOnNewLine?: boolean;
+  // M3's optional close icon button, as SheetSide's
+  showCloseX?: boolean;
 };
 
 const {
   id,
-  closeLabel,
+  closeLabel = "Close",
   duration: durationProp,
   isActionOnNewLine = false,
+  showCloseX = false,
   class: classList,
   ...attrs
 } = Astro.props;
@@ -64,9 +67,9 @@ if (hasAction && duration !== "indefinite") {
     `Snackbar: M3 doesn't time out a snackbar with an action, but this one's \`duration\` is "${duration}".`
   );
 }
-if (!hasAction && closeLabel === undefined && duration === "indefinite") {
+if (!hasAction && !showCloseX && duration === "indefinite") {
   throw new Error(
-    'Snackbar: an "indefinite" snackbar needs an action or a close button to hide it by, but this one\'s `closeLabel` is undefined.'
+    'Snackbar: an "indefinite" snackbar needs an action or a close button to hide it by, but this one\'s `showCloseX` is false.'
   );
 }
 const actionCount = action.match(/<(a|button)\b/g)?.length ?? 0;
@@ -80,8 +83,6 @@ if (isActionOnNewLine && !hasAction) {
     "Snackbar: `isActionOnNewLine` moves the action below the text, but this one's `action` slot is empty."
   );
 }
-
-const hasClose = closeLabel !== undefined;
 ---
 
 <BaseWrapper
@@ -117,20 +118,20 @@ const hasClose = closeLabel !== undefined;
     class:list={[
       "flex items-center ps-4",
       isActionOnNewLine && "flex-wrap",
-      hasClose ? "pe-0" : "pe-2",
+      showCloseX ? "pe-0" : "pe-2",
     ]}
   >
     <div
       class:list={[
         "min-w-0 flex-1 py-3.5 text-sm leading-5 font-normal tracking-[0.25px]",
         isActionOnNewLine ? "basis-full" : "pe-2",
-        isActionOnNewLine && (hasClose ? "pe-4" : "pe-2"),
+        isActionOnNewLine && (showCloseX ? "pe-4" : "pe-2"),
       ]}
       data-ac-snackbar-part="text"
     >
       <Fragment set:html={text} />
     </div>
-    {(hasAction || hasClose) && (
+    {(hasAction || showCloseX) && (
       <div
         class:list={[
           "ms-auto flex shrink-0 items-center",
@@ -146,7 +147,7 @@ const hasClose = closeLabel !== undefined;
             <Fragment set:html={action} />
           </div>
         )}
-        {hasClose && (
+        {showCloseX && (
           <ButtonIcon
             class="mx-1"
             icon="close"
