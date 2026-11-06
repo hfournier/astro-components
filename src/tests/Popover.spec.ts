@@ -12,12 +12,14 @@ async function activate(locator: Locator): Promise<void> {
 
 // Each case on /tests/popover is a Section with data-testid="popover-<caseId>" holding one trigger
 // and the Popover it opens. The basic case's Popover has only its id; the close-button case's sets
-// showCloseX and the fade-scale transition. Each trigger's label names its case.
-type PopoverCaseId = "basic" | "close-button";
+// showCloseX and the fade-scale transition, and the close-label case's also sets a closeLabel. Each
+// trigger's label names its case.
+type PopoverCaseId = "basic" | "close-button" | "close-label";
 
 const TRIGGER_LABELS: Record<PopoverCaseId, string> = {
   basic: "Open basic Popover",
   "close-button": "Open Popover with close button",
+  "close-label": "Ouvrir le Popover",
 };
 
 const popoverCase = (page: Page, caseId: PopoverCaseId) =>
@@ -56,6 +58,27 @@ test.describe("Popover", () => {
 
     await expect(popover).toBeHidden();
     await expect(trigger).toBeFocused();
+  });
+
+  test('names its close button by closeLabel, or "Close" without one', async ({
+    page,
+  }) => {
+    await activate(triggerFor(page, "close-label"));
+    await expect(
+      popoverFor(page, "close-label").getByRole("button", {
+        name: "Fermer",
+        exact: true,
+      })
+    ).toBeVisible();
+    await page.keyboard.press("Escape");
+
+    await activate(triggerFor(page, "close-button"));
+    await expect(
+      popoverFor(page, "close-button").getByRole("button", {
+        name: "Close",
+        exact: true,
+      })
+    ).toBeVisible();
   });
 
   test("closes via Escape and returns focus to the trigger", async ({

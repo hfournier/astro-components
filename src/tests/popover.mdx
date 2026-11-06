@@ -21,3 +21,12 @@ description: Tests for the Popover component
     voluptatum!
   </Popover>
 </Section>
+
+<Section data-testid="popover-close-label" class="p-4 space-y-4">
+  <Heading level={2}>Close label</Heading>
+  <Button command="show-popover" commandfor="close-label-popover">Ouvrir le Popover</Button>
+
+  <Popover id="close-label-popover" transition="fade-scale" showCloseX={true} closeLabel="Fermer">
+    Contenu du Popover
+  </Popover>
+</Section>
