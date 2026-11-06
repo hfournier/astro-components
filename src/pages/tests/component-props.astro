@@ -38,6 +38,7 @@ import NavRail from "../../components/NavRail.astro";
 import Popover from "../../components/Popover.astro";
 import RadioButton from "../../components/RadioButton.astro";
 import SheetSide from "../../components/SheetSide.astro";
+import Snackbar from "../../components/Snackbar.astro";
 import Switch from "../../components/Switch.astro";
 import Tab from "../../components/Tab.astro";
 import Tabs from "../../components/Tabs.astro";
@@ -236,6 +237,20 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     ],
     "radio-button-as": [RadioButton, { as: "div" }],
     "sheet-side-edge": [SheetSide, { edge: "left" }],
+    "snackbar-duration": [Snackbar, { id: "snackbar", duration: "brief" }],
+    "snackbar-action-duration": [
+      Snackbar,
+      { id: "snackbar", duration: "short" },
+    ],
+    "snackbar-indefinite": [
+      Snackbar,
+      { id: "snackbar", duration: "indefinite" },
+    ],
+    "snackbar-actions": [Snackbar, { id: "snackbar" }],
+    "snackbar-new-line": [
+      Snackbar,
+      { id: "snackbar", isActionOnNewLine: true },
+    ],
     "switch-as": [Switch, { as: "div" }],
     "switch-icons": [Switch, { icons: "unselected" }],
     "tab-transition": [Tab, { label: "One", transition: "slide" }],
@@ -289,6 +304,10 @@ const chipsSlot = { chips: "<span>Chip</span>" };
 const namedSlots: Record<string, Record<string, string>> = {
   "chip-input-icon-avatar": { avatar: '<img src="" alt="" />' },
   "list-item-leading": { avatar: "A" },
+  "snackbar-action-duration": { action: "<button>Undo</button>" },
+  "snackbar-actions": {
+    action: "<button>Undo</button><button>Edit</button>",
+  },
   "text-field-chips-textarea": chipsSlot,
   "text-field-chip-overflow": chipsSlot,
   "text-field-chips-name": chipsSlot,

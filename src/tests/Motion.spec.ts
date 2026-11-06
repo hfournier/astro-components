@@ -284,6 +284,17 @@ test.describe("motion", () => {
     await expectTransitions(tooltip, { opacity: FAST_EFFECTS });
   });
 
+  test("Snackbar: fades on fast effects while it scales on fast spatial", async ({
+    page,
+  }) => {
+    await page.goto("/tests/snackbar");
+    const snackbar = page.locator("#snackbar-single");
+    await expectTransitions(snackbar, {
+      opacity: FAST_EFFECTS,
+      scale: FAST_SPATIAL,
+    });
+  });
+
   test("SheetBottom: a modal sheet enters on emphasized decelerate and leaves on emphasized accelerate", async ({
     page,
   }) => {

@@ -1,0 +1,376 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import BaseWrapper from "./BaseWrapper.astro";
+import ButtonIcon from "./ButtonIcon.astro";
+import { unwrapParagraph } from "../utils";
+
+// M3's snackbar: a short update at the bottom of the window, with an optional action (the
+// `action` slot, one text Button) and an optional close icon button (`closeLabel`). It's a manual
+// popover, so it sits in the top layer and the page shows it the native way: a button with
+// `commandfor` its id and `command="show-popover"`, or `showPopover()` from a script. Its close
+// button and its action hide it. The script (below):
+//
+// - shows one at a time: one asked to show while another is showing waits its turn (M3: "Only one
+//   snackbar may be displayed at a time");
+// - hides it after `duration`, paused while it's hovered or holds focus. M3 doesn't time out a
+//   snackbar with an action, so one with an action stays until it's acted on or closed;
+// - announces its text in a polite live region beside it, without moving focus;
+// - places it above a navigation bar or FAB at the bottom of the window;
+// - hides it on Escape when it holds focus, and focuses it on Alt+G (M3: "a shortcut should exist
+//   for users to move focus to snackbars with actions (like Alt+G)"), focus going back where it
+//   came from once it hides.
+type Props = Omit<HTMLAttributes<"div">, "id" | "popover"> & {
+  // the popover's id, which the buttons that show it point to with `commandfor`
+  id: string;
+  // M3's optional close icon button, named this (e.g. "Dismiss")
+  closeLabel?: string;
+  // Compose's durations: "short" (4s, the default without an action), "long" (10s) or
+  // "indefinite" (the default with one, and the only one M3 allows it)
+  duration?: "short" | "long" | "indefinite";
+  // M3's "two lines with longer action": the action goes on its own line, below the text
+  isActionOnNewLine?: boolean;
+};
+
+const {
+  id,
+  closeLabel,
+  duration: durationProp,
+  isActionOnNewLine = false,
+  class: classList,
+  ...attrs
+} = Astro.props;
+
+const text = unwrapParagraph(await Astro.slots.render("default"));
+const action = Astro.slots.has("action")
+  ? await Astro.slots.render("action")
+  : "";
+const hasAction = action.trim() !== "";
+const duration = durationProp ?? (hasAction ? "indefinite" : "short");
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["short", "long", "indefinite"].includes(duration)) {
+  throw new Error(
+    `Snackbar: its durations are "short", "long" and "indefinite", but this one's \`duration\` is "${duration}".`
+  );
+}
+if (hasAction && duration !== "indefinite") {
+  throw new Error(
+    `Snackbar: M3 doesn't time out a snackbar with an action, so its duration is "indefinite", but this one's \`duration\` is "${duration}".`
+  );
+}
+if (!hasAction && !closeLabel && duration === "indefinite") {
+  throw new Error(
+    "Snackbar: one that stays until it's acted on needs an action or a close button, but this one's `duration` is \"indefinite\" with neither."
+  );
+}
+const actionCount = action.match(/<(a|button)\b/g)?.length ?? 0;
+if (actionCount > 1) {
+  throw new Error(
+    `Snackbar: M3 gives a snackbar a single action, but this one's \`action\` slot has ${actionCount}.`
+  );
+}
+if (isActionOnNewLine && !hasAction) {
+  throw new Error(
+    "Snackbar: `isActionOnNewLine` puts the action below the text, but this one has no `action` slot."
+  );
+}
+
+const hasClose = closeLabel !== undefined;
+---
+
+<BaseWrapper
+  bgColor="inverse-surface"
+  class={twMerge(
+    // M3 snackbar: inverse surface, corner extra small, elevation level 3 (Compose's
+    // SnackbarTokens). A manual popover, fixed to the bottom of the window, 12px from its edges
+    // (Compose's SnackbarHost). Below medium it spans the window, as M3's compact layout does; from
+    // medium up it fits its text, up to Compose's 600px, at the start.
+    "fixed inset-auto m-0 overflow-visible rounded-sm border-0 p-0 shadow-theme-elevation-3",
+    // From medium up it starts past a navigation rail or drawer (the script sets the start)
+    "start-[calc(12px_+_var(--ac-snackbar-start,0px))] end-3 w-auto max-w-150 medium:end-auto medium:w-max medium:max-w-[min(600px,100%_-_24px_-_var(--ac-snackbar-start,0px))]",
+    // above a navigation bar or FAB (the script sets the lift), and the device's bottom safe area
+    "bottom-[calc(12px_+_max(var(--ac-snackbar-lift,0px),env(safe-area-inset-bottom,0px)))]",
+    // As Compose's: it fades on fast effects while it scales from 80% on fast spatial, and back
+    // as it leaves. The starting style lets it come in from display: none, and transition-discrete
+    // keeps it drawn while it leaves. Under reduced motion it appears and disappears at once.
+    "opacity-0 scale-80 open:opacity-100 open:scale-100",
+    "motion-safe:[transition:opacity_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects),scale_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial),display_var(--theme-duration-spring-fast-effects)_allow-discrete,overlay_var(--theme-duration-spring-fast-effects)_allow-discrete]",
+    "motion-safe:starting:open:opacity-0 motion-safe:starting:open:scale-80",
+    classList
+  )}
+  {id}
+  popover="manual"
+  data-ac-snackbar={duration}
+  {...attrs}
+>
+  {/* M3's measurements: 16px before the text, 8px after the action, and the close button's 24px
+       icon 12px from the action and from the end. The text is Body Medium, 14px above and below,
+       so one line is 48px high and two are 68px. */}
+  <div
+    class:list={[
+      "flex items-center ps-4",
+      isActionOnNewLine && "flex-wrap",
+      hasClose ? "pe-0" : "pe-2",
+    ]}
+  >
+    <div
+      class:list={[
+        "min-w-0 flex-1 py-3.5 text-sm leading-5 font-normal tracking-[0.25px]",
+        isActionOnNewLine ? "basis-full" : "pe-2",
+        isActionOnNewLine && (hasClose ? "pe-4" : "pe-2"),
+      ]}
+      data-ac-snackbar-part="text"
+    >
+      <Fragment set:html={text} />
+    </div>
+    {(hasAction || hasClose) && (
+      <div
+        class:list={[
+          "ms-auto flex shrink-0 items-center",
+          isActionOnNewLine && "pb-1",
+        ]}
+      >
+        {hasAction && (
+          // M3: the action's label is inverse primary, which M3 made for actions on inverse surface
+          <div
+            class="flex *:text-(--theme-color-inverse-primary)"
+            data-ac-snackbar-part="action"
+          >
+            <Fragment set:html={action} />
+          </div>
+        )}
+        {hasClose && (
+          <ButtonIcon
+            class="mx-1"
+            icon="close"
+            label={closeLabel}
+            commandfor={id}
+            command="hide-popover"
+            data-ac-snackbar-part="close"
+          />
+        )}
+      </div>
+    )}
+  </div>
+</BaseWrapper>
+{/* The polite live region the script announces the text in. It's outside the popover, which is
+     display: none until it shows, and a live region has to be on the page before its text
+     changes to be read. */}
+<span class="sr-only" role="status" data-ac-snackbar-live={id}></span>
+
+<script>
+  // Compose's SnackbarDuration: short and long, in ms. Indefinite never times out.
+  const durations: Record<string, number> = { short: 4000, long: 10000 };
+  // Compose's SnackbarHost: 12px from the window's edges, and at most 600px wide from medium up
+  // (see the classes)
+  const edge = 12;
+  const maxWidth = 600;
+  const medium = "(width >= 37.5rem)";
+  // What a snackbar is lifted above, at the bottom of the window, and what it starts beside, down
+  // its start side (M3's placement guidelines)
+  const liftAbove = "[data-ac-nav-bar], [data-ac-fab], [data-ac-fab-menu]";
+  const besideOf = "[data-ac-nav-rail], [data-ac-nav-drawer]";
+
+  const snackbars =
+    document.querySelectorAll<HTMLElement>("[data-ac-snackbar]");
+  const showing = () =>
+    document.querySelector<HTMLElement>("[data-ac-snackbar]:popover-open");
+  // Snackbars asked to show while another was showing, in order
+  const queue: HTMLElement[] = [];
+
+  const isFixed = (element: Element | null) => {
+    for (let el = element; el; el = el.parentElement) {
+      if (getComputedStyle(el).position === "fixed") return true;
+    }
+    return false;
+  };
+
+  // Keeps the snackbar out of navigation (M3's placement guidelines), through the custom
+  // properties its classes read. From medium up, it starts past a navigation rail or drawer
+  // running the window's height. Then it goes up to clear what's fixed at the bottom of the window
+  // beneath it: a navigation bar or a FAB, and a FAB above a navigation bar lifts it above both.
+  // It runs before the snackbar shows, so it reckons with the widest the snackbar can be, along
+  // its start edge, and the 68px of two lines.
+  const place = (snackbar: HTMLElement) => {
+    const width = innerWidth;
+    const isRtl = getComputedStyle(snackbar).direction === "rtl";
+    const isCompact = !matchMedia(medium).matches;
+    // a rect's distance from the window's start edge to its end side
+    const startToEnd = (rect: DOMRect) =>
+      isRtl ? width - rect.left : rect.right;
+    const start = isCompact
+      ? 0
+      : Math.max(
+          0,
+          ...[...document.querySelectorAll(besideOf)]
+            .map((element) => element.getBoundingClientRect())
+            .filter(
+              (rect) =>
+                rect.width > 0 &&
+                rect.top <= edge &&
+                rect.bottom >= innerHeight - edge &&
+                startToEnd(rect) > 0 &&
+                startToEnd(rect) - rect.width < width / 2
+            )
+            .map(startToEnd)
+        );
+    snackbar.style.setProperty("--ac-snackbar-start", `${start}px`);
+
+    const room = width - start - 2 * edge;
+    const span = isCompact ? room : Math.min(maxWidth, room);
+    const [left, right] = isRtl
+      ? [width - start - edge - span, width - start - edge]
+      : [start + edge, start + edge + span];
+    const obstacles = [...document.querySelectorAll(liftAbove)]
+      .map((element) => ({ element, rect: element.getBoundingClientRect() }))
+      .filter(
+        ({ element, rect }) =>
+          rect.width > 0 &&
+          rect.left < right &&
+          rect.right > left &&
+          isFixed(element)
+      );
+    let lift = 0;
+    for (let changed = true; changed;) {
+      changed = false;
+      const top = innerHeight - lift - edge - 68;
+      for (const { rect } of obstacles) {
+        const clearance = innerHeight - rect.top;
+        if (rect.bottom > top && clearance > lift) {
+          lift = clearance;
+          changed = true;
+        }
+      }
+    }
+    snackbar.style.setProperty("--ac-snackbar-lift", `${lift}px`);
+  };
+
+  snackbars.forEach((snackbar) => {
+    const live = document.querySelector<HTMLElement>(
+      `[data-ac-snackbar-live="${CSS.escape(snackbar.id)}"]`
+    );
+    const timeout = durations[snackbar.dataset.acSnackbar ?? ""];
+    let timer: number | undefined;
+    let remaining = 0;
+    let startedAt = 0;
+    // what's holding it open: the pointer over it, and focus in it
+    let isHovered = false;
+    let isFocused = false;
+    // where focus came from, to go back to once it hides
+    let returnFocusTo: HTMLElement | null = null;
+
+    const run = () => {
+      clearTimeout(timer);
+      if (timeout === undefined || isHovered || isFocused) return;
+      startedAt = Date.now();
+      timer = window.setTimeout(() => snackbar.hidePopover(), remaining);
+    };
+    const pause = () => {
+      if (timer === undefined) return;
+      clearTimeout(timer);
+      timer = undefined;
+      remaining -= Date.now() - startedAt;
+    };
+
+    snackbar.addEventListener("beforetoggle", (event) => {
+      if ((event as ToggleEvent).newState === "open") {
+        const other = showing();
+        if (other && other !== snackbar) {
+          event.preventDefault();
+          if (!queue.includes(snackbar)) queue.push(snackbar);
+          return;
+        }
+        place(snackbar);
+        isHovered = false;
+        isFocused = false;
+        remaining = timeout ?? 0;
+        run();
+        if (live) {
+          live.textContent =
+            snackbar
+              .querySelector("[data-ac-snackbar-part=text]")
+              ?.textContent?.trim() ?? "";
+        }
+        return;
+      }
+      clearTimeout(timer);
+      timer = undefined;
+      // focus goes back where it came from, rather than to the page as the snackbar disappears
+      if (
+        snackbar.contains(document.activeElement) &&
+        returnFocusTo?.isConnected
+      ) {
+        returnFocusTo.focus();
+      }
+      returnFocusTo = null;
+    });
+    snackbar.addEventListener("toggle", (event) => {
+      if ((event as ToggleEvent).newState === "open") return;
+      if (live) live.textContent = "";
+      // the next one waiting shows once this one hides
+      const next = queue.shift();
+      if (next?.isConnected) next.showPopover();
+    });
+
+    snackbar.addEventListener("pointerenter", () => {
+      isHovered = true;
+      pause();
+    });
+    snackbar.addEventListener("pointerleave", () => {
+      isHovered = false;
+      run();
+    });
+    snackbar.addEventListener("focusin", (event) => {
+      const from = event.relatedTarget;
+      if (
+        !returnFocusTo &&
+        from instanceof HTMLElement &&
+        !snackbar.contains(from)
+      ) {
+        returnFocusTo = from;
+      }
+      isFocused = true;
+      pause();
+    });
+    snackbar.addEventListener("focusout", (event) => {
+      if (snackbar.contains(event.relatedTarget as Node | null)) return;
+      isFocused = false;
+      run();
+    });
+
+    // An action, once clicked, has done its job (after the page's own click handler)
+    snackbar
+      .querySelector("[data-ac-snackbar-part=action]")
+      ?.addEventListener("click", (event) => {
+        if ((event.target as Element).closest("a, button")) {
+          snackbar.hidePopover();
+        }
+      });
+    // M3: Escape dismisses the snackbar when it holds focus
+    snackbar.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      snackbar.hidePopover();
+    });
+  });
+
+  // M3: a shortcut moves focus to a snackbar with actions. Alt+G by its key's position, as macOS
+  // types a character for Option+G.
+  document.addEventListener("keydown", (event) => {
+    if (!event.altKey || event.code !== "KeyG") return;
+    const target = showing()?.querySelector<HTMLElement>(
+      "[data-ac-snackbar-part=action] :is(a[href], button:not(:disabled)), [data-ac-snackbar-part=close]"
+    );
+    if (!target) return;
+    event.preventDefault();
+    target.focus();
+  });
+
+  // Its place follows the window's size while it shows
+  addEventListener("resize", () => {
+    const snackbar = showing();
+    if (snackbar) place(snackbar);
+  });
+</script>

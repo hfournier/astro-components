@@ -105,6 +105,13 @@ const expected: Record<string, string | RegExp> = {
   "popover-bg-color": `Popover: M3's popover surfaces are "surface-container", "surface-container-high" and "inverse-surface", but this one's \`bgColor\` is "surface-container-low".`,
   "radio-button-as": `RadioButton: its elements are "label" and "span", but this one's \`as\` is "div".`,
   "sheet-side-edge": `SheetSide: its edges are "start" and "end", but this one's \`edge\` is "left".`,
+  "snackbar-duration": `Snackbar: its durations are "short", "long" and "indefinite", but this one's \`duration\` is "brief".`,
+  "snackbar-action-duration": `Snackbar: M3 doesn't time out a snackbar with an action, so its duration is "indefinite", but this one's \`duration\` is "short".`,
+  "snackbar-indefinite": `Snackbar: one that stays until it's acted on needs an action or a close button, but this one's \`duration\` is "indefinite" with neither.`,
+  "snackbar-actions":
+    "Snackbar: M3 gives a snackbar a single action, but this one's `action` slot has 2.",
+  "snackbar-new-line":
+    "Snackbar: `isActionOnNewLine` puts the action below the text, but this one has no `action` slot.",
   "switch-as": `Switch: its elements are "label" and "span", but this one's \`as\` is "div".`,
   "switch-icons": `Switch: M3's icon options are "none", "selected" and "both", but this one's \`icons\` is "unselected".`,
   "tab-transition": `Tab: its transitions are "fade", "fade-up" and "slide-left", but this one's \`transition\` is "slide".`,

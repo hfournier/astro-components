@@ -1,0 +1,53 @@
+---
+name: Snackbar
+description: A Material 3 snackbar, a short update at the bottom of the window, with an optional action and close button. It's a popover the page shows with a button's `commandfor` and `command="show-popover"`. One shows at a time and later ones wait their turn. One without an action hides on its own after a few seconds, paused while it's hovered or focused. One with an action stays until it's acted on. Its text is announced politely without moving focus, and it sits above a navigation bar or FAB, clear of a navigation rail.
+category: Text content
+role: pattern
+meta:
+  title: Snackbar | astro-components HenriFournier.dev
+  description: A Material 3 snackbar with an optional action and close button, shown one at a time at the bottom of the window and announced politely.
+extends:
+  kind: element
+  tag: [div]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/popover
+props:
+  - name: id
+    type: string
+    required: true
+    description: The snackbar's id. Buttons that show it point to it with `commandfor` and `command="show-popover"`, and a script can call `showPopover()` on it.
+  - name: closeLabel
+    type: string
+    required: false
+    description: Adds M3's optional close icon button, named this, such as "Dismiss".
+  - name: duration
+    type: '"short" | "long" | "indefinite"'
+    required: false
+    default: '"short" without an action, "indefinite" with one'
+    description: How long it shows before it hides on its own, as in Compose. `short` is 4 seconds and `long` is 10 seconds. `indefinite` stays until the action or the close button is pressed, or Escape. M3 doesn't time out a snackbar with an action, so with an action only `indefinite` is allowed. Without one, `indefinite` needs a close button. Any other value fails the build, and so do these combinations.
+  - name: isActionOnNewLine
+    type: boolean
+    required: false
+    default: "false"
+    description: Puts the action on its own line, below the text and at the end, for an action too long to sit beside two lines of text. It needs an `action` slot, or the build fails.
+slots:
+  - name: default
+    description: The message, a short update about what the app did or will do. Keep it to one line where you can, and two at most. No icons, links or styled text.
+    kind: text
+  - name: action
+    description: One text Button, such as "Undo". It takes M3's inverse primary color. Pressing it hides the snackbar after its own click handler runs. More than one button or link fails the build.
+    kind: any
+---
+
+## Showing a snackbar
+
+A snackbar is a manual popover. Show it with a button that has `commandfor` (its id) and `command="show-popover"`, or call `showPopover()` from a script, such as once a save finishes. To change the message first, set the text of its `[data-ac-snackbar-part="text"]` element.
+
+Only one shows at a time. A snackbar asked to show while another is showing waits, and shows once the other one hides. To replace an outdated snackbar straight away, call `hidePopover()` on it first.
+
+## Placement
+
+It sits 12px above the bottom of the window. Below medium it spans the window, 12px from each side. From medium up it fits its text, up to 600px, at the start of the window. It starts past a navigation rail or drawer down that side, and goes up above a navigation bar or a FAB fixed to the bottom of the window. To place it elsewhere, such as centered, pass classes, and place it the same way each time.
+
+## Writing
+
+Write a short, clear update about the process, such as "Email archived". The action is a single verb that relates to it, such as "Undo" or "Retry".

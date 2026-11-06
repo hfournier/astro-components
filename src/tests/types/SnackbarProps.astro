@@ -1,0 +1,26 @@
+---
+// Type fixture, never rendered: `astro check` fails if a valid use stops compiling, or if an
+// invalid one (each marked @ts-expect-error) starts compiling.
+import Snackbar from "../../components/Snackbar.astro";
+---
+
+<Snackbar id="archived" class="medium:start-auto" aria-describedby="hint">
+  Email archived
+</Snackbar>
+<Snackbar id="copied" duration="long">
+  Link copied
+</Snackbar>
+<Snackbar id="deleted" closeLabel="Dismiss" isActionOnNewLine>
+  Email deleted
+</Snackbar>
+
+{/* @ts-expect-error The buttons that show it point to its id */}
+<Snackbar>Email archived</Snackbar>
+{/* @ts-expect-error Not one of Compose's durations */}
+<Snackbar id="brief" duration="brief">
+  Email archived
+</Snackbar>
+{/* @ts-expect-error The component makes it a manual popover */}
+<Snackbar id="auto" popover="auto">
+  Email archived
+</Snackbar>
