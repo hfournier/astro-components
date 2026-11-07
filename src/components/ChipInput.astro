@@ -25,6 +25,10 @@ type Props = HTMLAttributes<"button"> & {
   isSelected?: boolean;
   // The id of the popover a tap opens, to show more about the chip, in place of selecting it
   popoverId?: string;
+  // The words before the label in the remove button's name, and the edit field's: "Remove
+  // Lisbon", "Edit Lisbon". Set them on pages in other languages.
+  removeLabel?: string;
+  editLabel?: string;
 };
 
 const {
@@ -32,6 +36,8 @@ const {
   isEditable = false,
   isSelected = false,
   popoverId,
+  removeLabel = "Remove",
+  editLabel = "Edit",
   class: classList,
   ...attrs
 }: Props = Astro.props;
@@ -133,7 +139,7 @@ const bodyClasses = twMerge(
     data-ac-chip-input-part="remove"
   >
     <span id={`${idPrefix}-remove`} hidden>
-      Remove
+      {removeLabel}
     </span>
     <Icon class="size-4.5" name="close" />
   </button>
@@ -148,7 +154,7 @@ const bodyClasses = twMerge(
   )}
   {isEditable && (
     <span id={`${idPrefix}-edit`} hidden>
-      Edit
+      {editLabel}
     </span>
   )}
 </span>

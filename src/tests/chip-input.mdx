@@ -93,3 +93,12 @@ description: Tests for the ChipInput component
   <p>سارة</p>
   <p>{"sara@example.com"}</p>
 </Popover>
+
+<Section data-testid="chip-input-labels" class="p-4 space-y-4" lang="fr">
+  <Heading level={2}>Labels in another language</Heading>
+  <ChipGroup aria-label="Destinataires">
+    <ChipInput removeLabel="Retirer" editLabel="Modifier" isEditable>
+      Lisbonne
+    </ChipInput>
+  </ChipGroup>
+</Section>

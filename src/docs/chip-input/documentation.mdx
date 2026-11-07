@@ -29,6 +29,16 @@ props:
     type: SvgIconNameTypes
     required: false
     description: An 18px icon before the label, by its file name in `src/assets/svgs`, on-surface-variant, or primary while selected. It's decorative, so the label alone names the chip. The build fails if the `avatar` slot is filled too.
+  - name: removeLabel
+    type: string
+    required: false
+    default: '"Remove"'
+    description: The words before the chip's label in the remove button's accessible name, such as "Remove Lisbon". Set it on pages in other languages.
+  - name: editLabel
+    type: string
+    required: false
+    default: '"Edit"'
+    description: With `isEditable`, the words before the chip's label in the edit field's accessible name, such as "Edit Lisbon". Set it on pages in other languages.
 slots:
   - name: default
     description: What the person entered, such as a name or an email address.

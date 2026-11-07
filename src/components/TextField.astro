@@ -26,6 +26,12 @@ type Props = (
   maxlength?: number;
   // With chips: wrapping onto new rows, so all of them show, or one row that scrolls sideways
   chipOverflow?: "wrap" | "scroll";
+  // With chips: the words before a chip's label in the names of the chips typed text becomes,
+  // their remove button's ("Remove Lisbon") and edit field's ("Edit Lisbon"). Set them on pages
+  // in other languages; the `chips` slot's own chips take ChipInput's `removeLabel` and
+  // `editLabel`.
+  chipRemoveLabel?: string;
+  chipEditLabel?: string;
 };
 
 const {
@@ -37,6 +43,8 @@ const {
   rows,
   maxlength,
   chipOverflow,
+  chipRemoveLabel,
+  chipEditLabel,
   name,
   "aria-describedby": describedBy,
   class: classList,
@@ -97,6 +105,16 @@ if (chipOverflow !== undefined && !hasChips) {
   throw new Error(
     `TextField: \`chipOverflow\` lays out the chips in the \`chips\` slot, but this one has \`chipOverflow\` "${chipOverflow}" and no chips.`
   );
+}
+for (const [prop, given] of [
+  ["chipRemoveLabel", chipRemoveLabel],
+  ["chipEditLabel", chipEditLabel],
+] as const) {
+  if (given !== undefined && !hasChips) {
+    throw new Error(
+      `TextField: \`${prop}\` names the chips typed text becomes, in the \`chips\` slot, but this one has \`${prop}\` "${given}" and no chips.`
+    );
+  }
 }
 
 // A multi-line field is a textarea. Without `rows`, it starts one line tall and grows with its
@@ -295,6 +313,8 @@ const controlAttrs = {
         <TextFieldChips
           overflow={chipOverflow ?? "wrap"}
           name={name ?? undefined}
+          removeLabel={chipRemoveLabel}
+          editLabel={chipEditLabel}
           {...chipsName}
         >
           <slot name="chips" slot="chips" />

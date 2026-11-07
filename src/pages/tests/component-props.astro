@@ -289,6 +289,14 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
       TextField,
       { ...field, chipOverflow: "scroll" },
     ],
+    "text-field-chip-remove-label-no-chips": [
+      TextField,
+      { ...field, chipRemoveLabel: "Retirer" },
+    ],
+    "text-field-chip-edit-label-no-chips": [
+      TextField,
+      { ...field, chipEditLabel: "Modifier" },
+    ],
     "text-field-chips-name": [TextField, {}],
     "tooltip-placement": [Tooltip, { placement: "left" }],
     "tooltip-variant": [Tooltip, { variant: "tooltip" }],

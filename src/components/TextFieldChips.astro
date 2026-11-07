@@ -12,6 +12,10 @@ type Props = {
   overflow: "wrap" | "scroll";
   // The name the chips' values submit under
   name?: string;
+  // The new chips' ChipInput `removeLabel` and `editLabel`, TextField's `chipRemoveLabel` and
+  // `chipEditLabel`, so a translated field's chips aren't named in English
+  removeLabel?: string;
+  editLabel?: string;
   // The group's name: the field's label, or the input's own
   "aria-label"?: string;
   "aria-labelledby"?: string;
@@ -20,6 +24,8 @@ type Props = {
 const {
   overflow,
   name,
+  removeLabel,
+  editLabel,
   "aria-label": ariaLabel,
   "aria-labelledby": ariaLabelledby,
 } = Astro.props;
@@ -45,7 +51,9 @@ const {
   {/* The chip committed text becomes: an editable one, as M3 shows for text converted into
       chips, so a mistyped address can be corrected. The script gives each copy its own ids. */}
   <template data-ac-text-field-chips-part="template">
-    <ChipInput isEditable>chip</ChipInput>
+    <ChipInput isEditable removeLabel={removeLabel} editLabel={editLabel}>
+      chip
+    </ChipInput>
   </template>
   <div hidden data-ac-text-field-chips-part="values"></div>
   <span
