@@ -34,6 +34,15 @@ jobs:
     name: Test (${{ matrix.project }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # Playwright's image has the browsers and their system packages installed, so a job doesn't
+    # spend its time on apt (a slow mirror once took WebKit's whole 30 minutes). Its tag must be
+    # the @playwright/test version in pnpm-lock.yaml; the first step fails the job when they differ.
+    # --user 1001 is the image's non-root user, which Firefox needs to launch.
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      options: --user 1001
+    env:
+      PLAYWRIGHT_IMAGE_VERSION: 1.64.1
     strategy:
       fail-fast: false
       matrix:
@@ -48,7 +57,13 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps ${{ matrix.project }}
+      - name: Check the image's Playwright is the lockfile's
+        run: |
+          installed="$(pnpm exec playwright --version)"
+          if [ "$installed" != "Version $PLAYWRIGHT_IMAGE_VERSION" ]; then
+            echo "::error::@playwright/test is \"$installed\", but the container image is v$PLAYWRIGHT_IMAGE_VERSION. Update the image tag and PLAYWRIGHT_IMAGE_VERSION in ci.yml."
+            exit 1
+          fi
       - run: pnpm test --project=${{ matrix.project }}
       - uses: actions/upload-artifact@v4
         if: failure()
