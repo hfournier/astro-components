@@ -111,7 +111,7 @@ const label = Astro.slots.has("default")
 <BaseTextField
   variant={variant}
   id={id}
-  control={isMultiLine ? "multi-line" : "single-line"}
+  layout={isMultiLine ? "multi-line" : "single-line"}
   label={label}
   value={value}
   maxlength={limit}

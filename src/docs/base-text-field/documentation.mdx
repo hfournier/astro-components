@@ -10,15 +10,15 @@ props:
   - name: variant
     type: '"filled" | "outlined"'
     required: true
-    description: M3's filled or outlined field. The component over BaseTextField checks it.
+    description: M3's filled or outlined field. The component over BaseTextField checks it first, so the error names that component, and BaseTextField checks it again.
   - name: id
     type: string
     required: true
     description: The control's id, which the label is for, and which the ids of the label, prefix, suffix, supporting text and counter start from.
-  - name: control
+  - name: layout
     type: '"single-line" | "multi-line" | "chips"'
     required: true
-    description: What the field holds, which sets its height and how its content sits in it. `single-line` is 56px tall; `multi-line` and `chips` grow from 56px, and `chips` centers its row and, filled, rests its label lower.
+    description: What the field holds, a value outside these failing the build, which sets its height and how its content sits in it. `single-line` is 56px tall; `multi-line` and `chips` grow from 56px, and `chips` centers its row and, filled, rests its label lower.
   - name: label
     type: string
     required: true
@@ -69,7 +69,7 @@ slots:
 BaseTextField can't see the control a component renders in its slot, so it hands the component what the control needs: a function in its default slot, which it calls with the control's attributes and classes and renders where the control goes (ADR-0032).
 
 ```astro
-<BaseTextField variant={variant} id={id} control="single-line" label={label} attrs={attrs} …>
+<BaseTextField variant={variant} id={id} layout="single-line" label={label} attrs={attrs} …>
   {(control: TextFieldControlType) => (
     <input class:list={twMerge(control.class, "h-6")} type={type} value={value} {...control.attrs} />
   )}

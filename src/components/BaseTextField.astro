@@ -21,7 +21,7 @@ type Props = {
   id: string;
   // A single-line input, a textarea, or chips with an input inline: the field's height and how
   // its content sits in it
-  control: "single-line" | "multi-line" | "chips";
+  layout: "single-line" | "multi-line" | "chips";
   // The label's HTML, or "" for a field without one
   label: string;
   // The control's starting value, for the counter's count
@@ -41,7 +41,7 @@ type Props = {
 const {
   variant,
   id,
-  control,
+  layout,
   label,
   value,
   maxlength: limit,
@@ -51,7 +51,20 @@ const {
   class: classList,
 } = Astro.props;
 
-const isChips = control === "chips";
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021). The components over BaseTextField check `variant` too, so their errors name them.
+if (!["filled", "outlined"].includes(variant)) {
+  throw new Error(
+    `BaseTextField: M3's styles are "filled" and "outlined", but this one's \`variant\` is "${variant}".`
+  );
+}
+if (!["single-line", "multi-line", "chips"].includes(layout)) {
+  throw new Error(
+    `BaseTextField: its layouts are "single-line", "multi-line" and "chips", but this one's \`layout\` is "${layout}".`
+  );
+}
+
+const isChips = layout === "chips";
 
 // M3: a required field's label ends with an asterisk, which its accessible name includes
 const labelText = label && attrs.required ? `${label}*` : label;
@@ -138,7 +151,7 @@ const controlHtml = await Astro.slots.render("default", [controlFor]);
       "relative flex cursor-text motion-safe:transition-colors",
       // a textarea, or a field of chips, grows with its lines or rows, and a filled field of
       // chips with its floated label
-      control === "single-line" ? "h-14" : "min-h-14",
+      layout === "single-line" ? "h-14" : "min-h-14",
       variant === "filled"
         ? // The filled container is its own surface: a ButtonIcon in it, and its focus ring,
           // take the surface's colors whatever the background around the field

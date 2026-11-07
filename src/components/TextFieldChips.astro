@@ -73,10 +73,12 @@ if (!["wrap", "scroll"].includes(overflow)) {
 }
 // MDX passes attributes as strings, so `maxlength="20"` is read as the number it says. Text that
 // isn't a number is quoted in the message.
+const shown = (value: unknown) =>
+  typeof value === "string" ? `"${value}"` : value;
 const limit = maxlength == null ? undefined : Number(maxlength);
 if (limit !== undefined && !(Number.isInteger(limit) && limit >= 0)) {
   throw new Error(
-    `TextFieldChips: a character limit is a whole number, from 0, but this one's \`maxlength\` is ${typeof maxlength === "string" ? `"${maxlength}"` : maxlength}.`
+    `TextFieldChips: a character limit is a whole number, from 0, but this one's \`maxlength\` is ${shown(maxlength)}.`
   );
 }
 // From Astro.props, as the destructured props carry their defaults
@@ -106,7 +108,7 @@ if (!label && !attrs["aria-label"] && !attrs["aria-labelledby"]) {
 <BaseTextField
   variant={variant}
   id={id}
-  control="chips"
+  layout="chips"
   label={label}
   value={value}
   maxlength={limit}

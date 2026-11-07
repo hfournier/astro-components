@@ -18,6 +18,8 @@ const expected: Record<string, string | RegExp> = {
   "base-button-variant": `BaseButton: M3's button styles are "elevated", "filled", "tonal", "outlined" and "text", but this one's \`variant\` is "contained".`,
   "base-button-size": `BaseButton: M3's sizes are ${sizes}, but this one's \`size\` is "medium".`,
   "base-button-toggle-text": `BaseButton: M3's toggle buttons are "elevated", "filled", "tonal" and "outlined", but this one's \`variant\` is "text".`,
+  "base-text-field-variant": `BaseTextField: M3's styles are "filled" and "outlined", but this one's \`variant\` is "standard".`,
+  "base-text-field-layout": `BaseTextField: its layouts are "single-line", "multi-line" and "chips", but this one's \`layout\` is "multi-row".`,
   "button-as": `Button: its elements are "button" and "a", but this one's \`as\` is "div".`,
   "button-variant": `Button: M3's button styles are "elevated", "filled", "tonal", "outlined" and "text", but this one's \`variant\` is "contained".`,
   "button-shape": `Button: M3's shapes are "round" and "square", but this one's \`shape\` is "oval".`,
