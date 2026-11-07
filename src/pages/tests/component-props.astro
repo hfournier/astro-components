@@ -280,6 +280,14 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
       TextField,
       { ...field, maxlength: "long" },
     ],
+    "text-field-counter-label-no-maxlength": [
+      TextField,
+      { ...field, counterLabel: "Nombre de caractères" },
+    ],
+    "text-field-over-limit-message-no-maxlength": [
+      TextField,
+      { ...field, overLimitMessage: "{limit} caractères au plus" },
+    ],
     "text-field-chips-textarea": [TextField, { ...field, type: "textarea" }],
     "text-field-chip-overflow": [
       TextField,
