@@ -24,6 +24,11 @@ type Props = (
 ) & {
   variant?: "filled" | "outlined";
   maxlength?: number;
+  // With `maxlength`: the words screen readers hear before the count ("Character count, 5/20"),
+  // and the validation message and announcement past the limit, `{limit}` replaced with it. Set
+  // them on pages in other languages.
+  counterLabel?: string;
+  overLimitMessage?: string;
   // With chips: wrapping onto new rows, so all of them show, or one row that scrolls sideways
   chipOverflow?: "wrap" | "scroll";
   // With chips: the words before a chip's label in the names of the chips typed text becomes,
@@ -42,6 +47,8 @@ const {
   value,
   rows,
   maxlength,
+  counterLabel = "Character count",
+  overLimitMessage = "Use {limit} characters or fewer",
   chipOverflow,
   chipRemoveLabel,
   chipEditLabel,
@@ -89,6 +96,14 @@ if (limit !== undefined && !(Number.isInteger(limit) && limit >= 0)) {
   throw new Error(
     `TextField: a character limit is a whole number, from 0, but this one's \`maxlength\` is ${shown(maxlength)}.`
   );
+}
+for (const prop of ["counterLabel", "overLimitMessage"] as const) {
+  const given = Astro.props[prop];
+  if (given !== undefined && limit === undefined) {
+    throw new Error(
+      `TextField: \`${prop}\` words the character counter, which \`maxlength\` shows, but this one has \`${prop}\` "${given}" and no \`maxlength\`.`
+    );
+  }
 }
 if (chipOverflow !== undefined && !["wrap", "scroll"].includes(chipOverflow)) {
   throw new Error(
@@ -387,8 +402,9 @@ const controlAttrs = {
           id={counterId}
           class="ms-auto shrink-0 pt-1 text-(--ac-text-field-supporting) motion-safe:transition-colors"
           data-ac-text-field-part="counter"
+          data-ac-text-field-over-limit-message={overLimitMessage}
         >
-          <span class="sr-only">Character count, </span>
+          <span class="sr-only">{counterLabel}, </span>
           <span data-ac-text-field-count>{count}</span>/{limit}
         </div>
       )}
@@ -738,7 +754,10 @@ const controlAttrs = {
     const count = field.querySelector("[data-ac-text-field-count]");
     const isOverLimit = count !== null && input.value.length > limit;
     const wasOverLimit = field.hasAttribute("data-ac-text-field-over-limit");
-    const message = `Use ${limit} characters or fewer`;
+    const message = (
+      field.querySelector<HTMLElement>("[data-ac-text-field-part=counter]")
+        ?.dataset.acTextFieldOverLimitMessage ?? ""
+    ).replaceAll("{limit}", String(limit));
     if (count) count.textContent = String(input.value.length);
     field.toggleAttribute("data-ac-text-field-over-limit", isOverLimit);
     if (isOverLimit) {

@@ -3,7 +3,8 @@ import { test, expect } from "./support/a11y-fixture";
 import { box, resolvedColor, settled, textBox } from "./support/helpers";
 
 // Each case on /tests/text-field is a Section with data-testid="text-field-<caseId>". Each field
-// is named by its label, which names the variant or state it shows.
+// is named by its label, which names the variant or state it shows. The counter-labels case's
+// field sets counterLabel and overLimitMessage, in French.
 type TextFieldCaseId =
   | "filled"
   | "outlined"
@@ -18,6 +19,7 @@ type TextFieldCaseId =
   | "text-area"
   | "counter"
   | "counter-form"
+  | "counter-labels"
   | "rtl"
   | "on-secondary-container";
 
@@ -785,6 +787,34 @@ test.describe("TextField", () => {
         outlinedContainer.width -
         (outlinedCount.x + outlinedCount.width)
     ).toBeCloseTo(16, 1);
+  });
+
+  test('character counter: worded by counterLabel and overLimitMessage, or "Character count" and "Use {limit} characters or fewer" without them', async ({
+    page,
+  }) => {
+    const validationMessage = (input: Locator) =>
+      input.evaluate((el) => (el as HTMLInputElement).validationMessage);
+
+    const translated = field(page, "counter-labels", "Ville");
+    await expect(translated).toHaveAccessibleDescription(
+      "Nombre de caractères, 0/10"
+    );
+    await expect(part(translated, "counter")).toHaveText(
+      "Nombre de caractères, 0/10"
+    );
+    await translated.fill("Eleven char");
+    await expect(root(translated).getByRole("alert")).toHaveText(
+      "10 caractères au plus"
+    );
+    expect(await validationMessage(translated)).toBe("10 caractères au plus");
+
+    const english = field(page, "counter", "Outlined");
+    await expect(english).toHaveAccessibleDescription("Character count, 0/10");
+    await english.fill("Eleven char");
+    await expect(root(english).getByRole("alert")).toHaveText(
+      "Use 10 characters or fewer"
+    );
+    expect(await validationMessage(english)).toBe("Use 10 characters or fewer");
   });
 
   test("character counter: people can type past the limit, which turns the counter and the field error", async ({

@@ -44,6 +44,16 @@ props:
     type: number
     required: false
     description: Shows M3's character counter, the length of the value and this limit (`5/20`), at the end of the supporting text line. Unlike the native attribute, it doesn't stop people typing past the limit. Past it, the counter and the field turn to the error colors, and the input is invalid, so its form won't submit. A value that isn't a whole number from 0 fails the build.
+  - name: counterLabel
+    type: string
+    required: false
+    default: '"Character count"'
+    description: With `maxlength` only. The words screen readers hear before the count, as the counter describes the input ("Character count, 5/20"). Set it on pages in other languages. Given without `maxlength`, it fails the build.
+  - name: overLimitMessage
+    type: string
+    required: false
+    default: '"Use {limit} characters or fewer"'
+    description: With `maxlength` only. The input's validation message once the value goes past the limit, which the browser shows when the form is submitted, and the alert announced as it goes past. `{limit}` stands for the limit, `maxlength`'s value. Set it on pages in other languages. Given without `maxlength`, it fails the build.
 slots:
   - name: default
     description: The label's text, which names the input. It rests in the field in M3's Body Large while the field is empty, and floats above the text in Body Small when the field is focused or has a value. Keep it short, so it isn't truncated. Leave it empty only when the field is named another way, with `aria-label` or `aria-labelledby`.
@@ -75,7 +85,7 @@ slots:
 
 Every attribute except `class` and `maxlength` goes on the `<input>`, or the `<textarea>`: `name`, `value`, `placeholder`, `required`, `disabled`, `readonly`, `pattern`, `minlength`, `autocomplete`, `aria-*` and the rest. A textarea's `value` becomes its text. `class` goes on the element around the whole field, so it can place and size it. A field is 280px wide by default, Compose's minimum; set a width with `class`, such as `w-full`. Listen for the input's `input` or `change` event to react to a change.
 
-`maxlength` is TextField's own soft limit, for its character counter (see the prop). The counter follows the person's typing and a form's reset. After setting the value from a script, dispatch an `input` event on the input so the counter follows it too. Past the limit, the input's validation message is "Use 20 characters or fewer" (with its limit), which the browser shows when the form is submitted.
+`maxlength` is TextField's own soft limit, for its character counter (see the prop). The counter follows the person's typing and a form's reset. After setting the value from a script, dispatch an `input` event on the input so the counter follows it too. Past the limit, the input's validation message is "Use 20 characters or fewer" (with its limit), which the browser shows when the form is submitted. On a page in another language, word it with `overLimitMessage`, and the count's spoken label with `counterLabel`.
 
 A `placeholder` shows only while the field is focused and empty, since the resting label takes its place. Without a label, it always shows.
 
