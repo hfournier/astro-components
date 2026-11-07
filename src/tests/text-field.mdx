@@ -191,6 +191,18 @@ description: Tests for the TextField component
   </div>
 </Section>
 
+<Section data-testid="text-field-counter-labels" class="p-4 space-y-4" lang="fr">
+  <Heading level={2}>Character counter in another language</Heading>
+  <TextField
+    variant="outlined"
+    maxlength={10}
+    counterLabel="Nombre de caractères"
+    overLimitMessage="{limit} caractères au plus"
+  >
+    Ville
+  </TextField>
+</Section>
+
 <Section data-testid="text-field-counter-form" class="p-4 space-y-4">
   <Heading level={2}>Character counter in a form</Heading>
   <form class="space-y-4" onsubmit="event.preventDefault()">

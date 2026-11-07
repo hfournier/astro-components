@@ -126,6 +126,8 @@ const expected: Record<string, string | RegExp> = {
   "text-field-maxlength-as-text": "rendered 20 characters",
   "text-field-maxlength-negative": `TextField: a character limit is a whole number, from 0, but this one's \`maxlength\` is -1.`,
   "text-field-maxlength-not-a-number": `TextField: a character limit is a whole number, from 0, but this one's \`maxlength\` is "long".`,
+  "text-field-counter-label-no-maxlength": `TextField: \`counterLabel\` words the character counter, which \`maxlength\` shows, but this one has \`counterLabel\` "Nombre de caractères" and no \`maxlength\`.`,
+  "text-field-over-limit-message-no-maxlength": `TextField: \`overLimitMessage\` words the character counter, which \`maxlength\` shows, but this one has \`overLimitMessage\` "{limit} caractères au plus" and no \`maxlength\`.`,
   "text-field-chips-textarea": `TextField: M3 puts input chips inline with the cursor of a single-line field, but this one has the \`chips\` slot with \`type="textarea"\`.`,
   "text-field-chip-overflow": `TextField: its chip overflows are "wrap" and "scroll", but this one's \`chipOverflow\` is "hidden".`,
   "text-field-chip-overflow-no-chips": `TextField: \`chipOverflow\` lays out the chips in the \`chips\` slot, but this one has \`chipOverflow\` "scroll" and no chips.`,
