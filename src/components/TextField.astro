@@ -97,6 +97,7 @@ if (limit !== undefined && !(Number.isInteger(limit) && limit >= 0)) {
     `TextField: a character limit is a whole number, from 0, but this one's \`maxlength\` is ${shown(maxlength)}.`
   );
 }
+// From Astro.props, as the destructured props carry their defaults
 for (const prop of ["counterLabel", "overLimitMessage"] as const) {
   const given = Astro.props[prop];
   if (given !== undefined && limit === undefined) {
@@ -208,6 +209,8 @@ const controlAttrs = {
   placeholder: placeholder ?? (label ? " " : undefined),
   "aria-describedby": ariaDescribedBy,
   "data-ac-text-field-limit": limit,
+  "data-ac-text-field-over-limit-message":
+    limit === undefined ? undefined : overLimitMessage,
 };
 ---
 
@@ -402,7 +405,6 @@ const controlAttrs = {
           id={counterId}
           class="ms-auto shrink-0 pt-1 text-(--ac-text-field-supporting) motion-safe:transition-colors"
           data-ac-text-field-part="counter"
-          data-ac-text-field-over-limit-message={overLimitMessage}
         >
           <span class="sr-only">{counterLabel}, </span>
           <span data-ac-text-field-count>{count}</span>/{limit}
@@ -755,8 +757,7 @@ const controlAttrs = {
     const isOverLimit = count !== null && input.value.length > limit;
     const wasOverLimit = field.hasAttribute("data-ac-text-field-over-limit");
     const message = (
-      field.querySelector<HTMLElement>("[data-ac-text-field-part=counter]")
-        ?.dataset.acTextFieldOverLimitMessage ?? ""
+      input.dataset.acTextFieldOverLimitMessage ?? ""
     ).replaceAll("{limit}", String(limit));
     if (count) count.textContent = String(input.value.length);
     field.toggleAttribute("data-ac-text-field-over-limit", isOverLimit);
