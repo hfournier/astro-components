@@ -2,8 +2,10 @@ import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "./support/a11y-fixture";
 import { box, resolvedColor, settled } from "./support/helpers";
 
-// Each case on /tests/text-field-chips is a Section with data-testid="text-field-chips-<caseId>"
-type CaseId = "wrap" | "empty" | "outlined" | "scroll" | "move" | "rtl";
+// Each case on /tests/text-field-chips is a Section with data-testid="text-field-chips-<caseId>".
+// The labels case's field sets chipRemoveLabel and chipEditLabel, in French.
+type CaseId =
+  "wrap" | "empty" | "outlined" | "scroll" | "move" | "rtl" | "labels";
 
 const section = (page: Page, caseId: CaseId) =>
   page.getByTestId(`text-field-chips-${caseId}`);
@@ -85,6 +87,22 @@ test.describe("TextField with chips", () => {
       .locator("[id]")
       .evaluateAll((els) => els.map((el) => el.id));
     expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  // A translated field's new chips are named in its language, not English (the test above)
+  test("the chips it makes name their remove and edit controls by chipRemoveLabel and chipEditLabel", async ({
+    page,
+  }) => {
+    const target = field(page, "labels", "À");
+    await input(target).fill("Lisbonne");
+    await input(target).press("Enter");
+    await expect(
+      target.getByRole("button", { name: "Retirer Lisbonne", exact: true })
+    ).toBeVisible();
+    await body(chip(target, "Lisbonne")).click();
+    await expect(
+      target.getByRole("textbox", { name: "Modifier Lisbonne", exact: true })
+    ).toBeFocused();
   });
 
   test("Enter on an empty field adds nothing, and submits its form as a text field's does", async ({

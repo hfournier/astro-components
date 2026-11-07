@@ -110,3 +110,17 @@ description: Tests for a TextField holding input chips
     </Fragment>
   </TextField>
 </Section>
+
+<Section data-testid="text-field-chips-labels" class="p-4 space-y-4" lang="fr">
+  <Heading level={2}>Labels in another language</Heading>
+  <TextField
+    name="destinataires"
+    class="w-90"
+    chipRemoveLabel="Retirer"
+    chipEditLabel="Modifier"
+  >
+    À
+
+    <Fragment slot="chips" />
+  </TextField>
+</Section>

@@ -10,8 +10,10 @@ import {
   textBox,
 } from "./support/helpers";
 
-// Each case on /tests/chip-input is a Section with data-testid="chip-input-<caseId>"
-type ChipCaseId = "styles" | "disabled" | "remove" | "edit" | "popover" | "rtl";
+// Each case on /tests/chip-input is a Section with data-testid="chip-input-<caseId>". The labels
+// case's chip sets removeLabel and editLabel, in French.
+type ChipCaseId =
+  "styles" | "disabled" | "remove" | "edit" | "popover" | "rtl" | "labels";
 
 // The chip: its wrapper, around the body and the remove button
 const chip = (page: Page, caseId: ChipCaseId, name: string) =>
@@ -189,6 +191,31 @@ test.describe("ChipInput", () => {
     await expect(
       leadingIcon(chip(page, "styles", "Holiday photos")).locator("svg")
     ).toHaveAttribute("aria-hidden", "true");
+  });
+
+  test('names its remove and edit controls by removeLabel and editLabel, or "Remove" and "Edit" without them', async ({
+    page,
+  }) => {
+    const labels = page.getByTestId("chip-input-labels");
+    await expect(
+      labels.getByRole("button", { name: "Retirer Lisbonne", exact: true })
+    ).toBeVisible();
+    await part(chip(page, "labels", "Lisbonne"), "body").click();
+    await expect(
+      labels.getByRole("textbox", { name: "Modifier Lisbonne", exact: true })
+    ).toBeFocused();
+
+    await expect(
+      page
+        .getByTestId("chip-input-styles")
+        .getByRole("button", { name: "Remove Ziad Aouad", exact: true })
+    ).toBeVisible();
+    await part(chip(page, "edit", "ziad@example.com"), "body").click();
+    await expect(
+      page
+        .getByTestId("chip-input-edit")
+        .getByRole("textbox", { name: "Edit ziad@example.com", exact: true })
+    ).toBeFocused();
   });
 
   // M3's Guidelines: a tap selects the chip; Space or Enter does too (M3's Accessibility page)

@@ -16,6 +16,16 @@ props:
     type: string
     required: false
     description: TextField's `name`, which each chip's hidden input submits under, in place of the text input.
+  - name: removeLabel
+    type: string
+    required: false
+    default: '"Remove"'
+    description: TextField's `chipRemoveLabel`, the `removeLabel` of each ChipInput typed text becomes.
+  - name: editLabel
+    type: string
+    required: false
+    default: '"Edit"'
+    description: TextField's `chipEditLabel`, the `editLabel` of each ChipInput typed text becomes.
 slots:
   - name: default
     description: TextField's input.

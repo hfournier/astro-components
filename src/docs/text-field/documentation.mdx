@@ -30,6 +30,16 @@ props:
     required: false
     default: '"wrap"'
     description: For a field with chips only. `wrap` puts them on new rows, so all of them show, and the field grows a row at a time. `scroll` keeps the field one row high and scrolls its chips and text sideways, as text overflowing a field does. M3's Guidelines page shows both. Given without the `chips` slot, or with another value, it fails the build.
+  - name: chipRemoveLabel
+    type: string
+    required: false
+    default: '"Remove"'
+    description: For a field with chips only. The first word of the accessible name of the remove button on each chip typed text becomes, followed by the chip's label, such as "Remove Lisbon". It's ChipInput's `removeLabel` for the chips the field makes; give the `chips` slot's own chips theirs. Set it on pages in other languages. Given without the `chips` slot, it fails the build.
+  - name: chipEditLabel
+    type: string
+    required: false
+    default: '"Edit"'
+    description: For a field with chips only. The first word of the accessible name of the edit field on each chip typed text becomes, followed by the chip's label, such as "Edit Lisbon". It's ChipInput's `editLabel` for the chips the field makes; give the `chips` slot's own chips theirs. Set it on pages in other languages. Given without the `chips` slot, it fails the build.
   - name: maxlength
     type: number
     required: false
@@ -93,7 +103,7 @@ M3's Specs page gives no timing, so TextField follows Compose: the label moves a
 Fill the `chips` slot with [ChipInput](/components/chip-input)s to make the field hold input chips, as M3's Guidelines page shows for the contacts in an email's "To" field, or the terms in a search field. The chips sit inline with the cursor, in a [ChipGroup](/components/chip-group) named by the field's label, and wrap onto new rows or, with `chipOverflow="scroll"`, scroll sideways in one row (ADR-0026). In MDX, wrap the chips in a `<Fragment slot="chips">`.
 
 - **Adding:** Enter turns the typed text into an editable chip, before the cursor. First the input fires an `add` event, which bubbles and is cancelable, with `detail.value` (the text, which the chip submits) and `detail.label` (what it shows). Call `preventDefault()` to refuse the text, which stays in the field, such as an address that isn't a contact; set `aria-invalid="true"` and swap in error text to say why. Set `detail.label` to show something else, such as the contact's name for their address. Enter on an empty field submits its form, as a text field's does.
-- **Removing:** Backspace with the cursor at the start of the text selects the chip before it, and a second Backspace deletes it, as M3's Guidelines page describes. Typing instead goes on in the text, and the chip is deselected. Each chip's remove button, and Backspace or Delete on a chip, remove it too, and fire ChipInput's `remove` event.
+- **Removing:** Backspace with the cursor at the start of the text selects the chip before it, and a second Backspace deletes it, as M3's Guidelines page describes. Typing instead goes on in the text, and the chip is deselected. Each chip's remove button, and Backspace or Delete on a chip, remove it too, and fire ChipInput's `remove` event. On a page in another language, name the remove buttons and edit fields of the chips the field makes with `chipRemoveLabel` and `chipEditLabel`, and those of the `chips` slot's own chips with ChipInput's `removeLabel` and `editLabel`.
 - **Editing:** a tap on an editable chip turns it back into the text it stands for: its value, such as a contact's address, not the name it shows. Enter commits the edit, and the new text becomes the chip's label and value, as typed text does. To edit a contact as M3's Guidelines page shows, as `Name <address>`, write that text on ChipInput's `edit` event and split it back into the name and the address on its `change` event, as in the example below.
 - **Moving:** drag a chip to another place in the field, or into another field of the same form, such as from "To" to "Cc". From the keyboard, Shift with ArrowLeft or ArrowRight moves the focused chip a place, and Shift with ArrowUp or ArrowDown moves it to the end of the previous or next field.
 - **Submitting:** each chip submits its value under the field's `name`: its `value` attribute, such as a contact's address, or else its label, in the chips' order, whether or not it's selected. The typed text, not yet a chip, doesn't. A `required` field is satisfied by one chip.
