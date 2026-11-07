@@ -1,8 +1,13 @@
 ---
 title: TextFieldChips
-description: |
-  As an "internal" component, TextFieldChips is an implementation detail of
-  TextField and is not meant to be used independently. See
-  [TextField](/components/text-field) for real usage.
-show: none
+description: The following example shows a filled TextFieldChips with two chips. Type an address and press Enter to add one; Backspace at the start of the text selects the chip before it.
 ---
+
+<TextFieldChips name="to" type="email" class="w-90">
+  To
+
+  <Fragment slot="chips">
+    <ChipInput value="ziad@example.com" isEditable>Ziad Aouad</ChipInput>
+    <ChipInput isEditable>{"ping@example.com"}</ChipInput>
+  </Fragment>
+</TextFieldChips>

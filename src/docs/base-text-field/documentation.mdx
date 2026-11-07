@@ -1,0 +1,79 @@
+---
+name: BaseTextField
+description: A primitive that draws Material 3's text field around a control the component over it renders. It draws the filled or outlined container, the floating label, the leading and trailing icons, the prefix and suffix, the supporting text and the character counter, in every state, and its script keeps the counter, the error state and a growing textarea in step with the control. TextField puts an `<input>` or `<textarea>` in it, and TextFieldChips its chips and an `<input>`.
+category: Base
+role: primitive
+meta:
+  title: BaseTextField | astro-components HenriFournier.dev
+  description: A primitive drawing Material 3's text field (container, label, icons, affixes, supporting text, counter) for TextField and TextFieldChips.
+props:
+  - name: variant
+    type: '"filled" | "outlined"'
+    required: true
+    description: M3's filled or outlined field. The component over BaseTextField checks it.
+  - name: id
+    type: string
+    required: true
+    description: The control's id, which the label is for, and which the ids of the label, prefix, suffix, supporting text and counter start from.
+  - name: control
+    type: '"single-line" | "multi-line" | "chips"'
+    required: true
+    description: What the field holds, which sets its height and how its content sits in it. `single-line` is 56px tall; `multi-line` and `chips` grow from 56px, and `chips` centers its row and, filled, rests its label lower.
+  - name: label
+    type: string
+    required: true
+    description: The label's HTML, or an empty string for a field named by the control's `aria-label` or `aria-labelledby`. A `required` control's label ends with an asterisk.
+  - name: value
+    type: unknown
+    required: false
+    description: The control's starting value, for the counter's starting count.
+  - name: maxlength
+    type: number
+    required: false
+    description: The counter's limit, a whole number from 0, which the component over BaseTextField checks. Without it, there's no counter.
+  - name: counterLabel
+    type: string
+    required: true
+    description: The words screen readers hear before the count.
+  - name: overLimitMessage
+    type: string
+    required: true
+    description: The control's validation message and the alert past the limit, `{limit}` replaced with it.
+  - name: attrs
+    type: Record<string, unknown>
+    required: true
+    description: The page's attributes for the control. `required`, `disabled`, `aria-invalid`, `placeholder` and `aria-describedby` change the field, and all of them go on the control.
+slots:
+  - name: default
+    description: "A function that renders the control, which BaseTextField calls with a `TextFieldControlType`: `attrs`, the control's attributes, to spread on it (its id, description, placeholder and counter limit, and the page's own), `class`, its classes, and `labelId`, the label's id, or undefined for a field without one. The control needs only its type, value and name besides."
+    kind: any
+  - name: leading-icon
+    description: An icon before the control, drawn only when the slot has content.
+    kind: any
+  - name: trailing-icon
+    description: An icon or button after the control, drawn only when the slot has content.
+    kind: any
+  - name: prefix
+    description: Text before the control, drawn only when the slot has content.
+    kind: any
+  - name: suffix
+    description: Text after the control, drawn only when the slot has content.
+    kind: any
+  - name: supporting-text
+    description: Text below the field, drawn only when the slot has content.
+    kind: any
+---
+
+## The control
+
+BaseTextField can't see the control a component renders in its slot, so it hands the component what the control needs: a function in its default slot, which it calls with the control's attributes and classes and renders where the control goes (ADR-0032).
+
+```astro
+<BaseTextField variant={variant} id={id} control="single-line" label={label} attrs={attrs} …>
+  {(control: TextFieldControlType) => (
+    <input class:list={twMerge(control.class, "h-6")} type={type} value={value} {...control.attrs} />
+  )}
+</BaseTextField>
+```
+
+Forward the icon, affix and supporting-text slots only when the page fills them. BaseTextField draws a part only when its slot has content, as a forwarded slot counts as present even when it's empty.

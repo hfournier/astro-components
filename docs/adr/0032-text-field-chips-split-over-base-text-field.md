@@ -1,0 +1,20 @@
+# TextFieldChips is its own component, over a BaseTextField it shares with TextField
+
+> **Supersedes part of ADR-0026**: §1 (TextField takes the chips in a `chips` slot and gains `chipOverflow`) and the rejected "chip field" alternative. ADR-0026's other decisions, on the shared ChipGroup, the input marked as the field's, committed text becoming a chip, submitting and moving chips, stand, now in TextFieldChips.
+
+ADR-0026 gave TextField a `chips` slot, so a plain text field carried chip props (`chipOverflow`, and `chipRemoveLabel` and `chipEditLabel` from #267), chip build checks, and a branch rendering the internal TextFieldChips. Translatable text for the chips (#271) would have added more. A page that never uses chips shouldn't see them in TextField's API (#277).
+
+ADR-0026 rejected a separate chip field because it would either duplicate TextField's container, label and states, or wrap TextField from outside, where it can't put chips inline with TextField's own input. A primitive under both avoids both, as BaseChip does for the chips and BaseButton for the buttons. We decided:
+
+1. **BaseTextField draws the field.** It has everything TextField drew around its control: the filled and outlined containers, the label, the icons, prefix and suffix, the supporting text, the character counter, the styles and the script that keeps the counter, the error state and a growing textarea in step. Its `control` prop (`single-line`, `multi-line` or `chips`) sets the field's height and how its content sits in it.
+2. **The control comes back through a function.** BaseTextField can't see the control a component renders in its slot, yet the control needs attributes BaseTextField computes: its id, which the label is for, its `aria-describedby`, the placeholder a labelled field needs, and the counter's limit and message. So its default slot is a function, which it calls with those attributes (and the page's own), the control's classes and the label's id, through `Astro.slots.render("default", [control])`, and renders where the control goes. The component over it renders only its control's type, value and name. We rejected having each component compute the attributes itself from a shared helper, which would split the field's ids between two files.
+3. **TextField is the `<input>` or `<textarea>` in BaseTextField**, with no chips slot, chip props or chip checks.
+4. **TextFieldChips is public,** the ChipGroup with the `chips` slot's ChipInputs and an `<input>` in BaseTextField, with ADR-0026's script. Its chip props drop the prefix TextField needed: `overflow`, `removeLabel` and `editLabel`. It takes the single-line types only, so a textarea isn't offered rather than failing as a combination.
+5. **Each component checks the props it passes to BaseTextField**, `variant`, `maxlength` and the counter's text, so an error names the component the author wrote, as ADR-0023 has Button do over BaseButton. BaseTextField, whose props only these components set, checks none (ADR-0021 §1).
+6. **BaseTextField draws a part only when its slot has content.** The components forward their slots to it, and a forwarded slot counts as present to `Astro.slots.has` even when the page left it empty.
+
+## Consequences
+
+- A field of chips is `<TextFieldChips>` rather than `<TextField>` with a `chips` slot; `chipOverflow`, `chipRemoveLabel` and `chipEditLabel` are TextFieldChips' `overflow`, `removeLabel` and `editLabel`. A field of chips can start empty without an empty `<Fragment slot="chips" />`.
+- TextField's and TextFieldChips' rendered HTML is what TextField's was, but for the order of the input's attributes. The styles' scope is BaseTextField's.
+- A new kind of field, such as one with a menu, renders its control in BaseTextField the same way.
