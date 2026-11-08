@@ -1,67 +1,181 @@
 ---
+import type { HTMLAttributes } from "astro/types";
+import crypto from "node:crypto";
+import { twMerge } from "tailwind-merge";
+import { unwrapParagraph } from "../utils";
+import BaseTextField, {
+  type TextFieldControlType,
+} from "./BaseTextField.astro";
 import ChipGroup from "./ChipGroup.astro";
 import ChipInput from "./ChipInput.astro";
 
-// TextField's chips, inline with its input in one ChipGroup, as M3's Guidelines page places input
-// chips in a text field (ADR-0026). Rendered by TextField alone: the `chips` slot is the page's
-// ChipInputs, the default slot TextField's input. The script turns committed text into a chip,
-// selects the chip before the cursor on Backspace, moves chips by dragging and with Shift and the
-// arrow keys, and keeps a hidden input per chip, under `name`, for the form.
-type Props = {
-  // Wrapping onto new rows, or one row that scrolls sideways
-  overflow: "wrap" | "scroll";
-  // The name the chips' values submit under
-  name?: string;
-  // The new chips' ChipInput `removeLabel` and `editLabel`, TextField's `chipRemoveLabel` and
-  // `chipEditLabel`, so a translated field's chips aren't named in English
+// M3's text field holding input chips inline with the cursor, as M3's Guidelines page shows for
+// contacts in a "To" field: the `chips` slot's ChipInputs and a native input share one ChipGroup,
+// in the field BaseTextField draws (ADR-0026, ADR-0032). The script turns committed text into a
+// chip, selects the chip before the cursor on Backspace, moves chips by dragging and with Shift
+// and the arrow keys, and keeps a hidden input per chip, under `name`, for the form: the chips
+// submit, not the text. Every attribute but `class` and `maxlength` goes on the input, and
+// `class` on the element around the whole field. The default slot is the label's text.
+type Props = Omit<HTMLAttributes<"input">, "type"> & {
+  type?: "email" | "number" | "password" | "search" | "tel" | "text" | "url";
+  variant?: "filled" | "outlined";
+  maxlength?: number;
+  // With `maxlength`: the words screen readers hear before the count ("Character count, 5/20"),
+  // and the validation message and announcement past the limit, `{limit}` replaced with it. Set
+  // them on pages in other languages.
+  counterLabel?: string;
+  overLimitMessage?: string;
+  // Wrapping onto new rows, so all the chips show, or one row that scrolls sideways
+  overflow?: "wrap" | "scroll";
+  // The words before a chip's label in the names of the chips typed text becomes, their remove
+  // button's ("Remove Lisbon") and edit field's ("Edit Lisbon"). Set them on pages in other
+  // languages; the `chips` slot's own chips take ChipInput's `removeLabel` and `editLabel`.
   removeLabel?: string;
   editLabel?: string;
-  // The group's name: the field's label, or the input's own
-  "aria-label"?: string;
-  "aria-labelledby"?: string;
 };
 
 const {
-  overflow,
-  name,
+  type = "text",
+  variant = "filled",
+  id: givenId,
+  value,
+  maxlength,
+  counterLabel = "Character count",
+  overLimitMessage = "Use {limit} characters or fewer",
+  overflow = "wrap",
   removeLabel,
   editLabel,
-  "aria-label": ariaLabel,
-  "aria-labelledby": ariaLabelledby,
-} = Astro.props;
+  name,
+  class: classList,
+  ...attrs
+}: Props = Astro.props;
+
+// Values outside these, or numbers outside their range, fail the build, rather than drawing
+// something other than was asked for (ADR-0021)
+if (
+  !["text", "email", "number", "password", "search", "tel", "url"].includes(
+    type
+  )
+) {
+  throw new Error(
+    `TextFieldChips: M3 puts input chips inline with the cursor of a single-line field, whose types are "text", "email", "number", "password", "search", "tel" and "url", but this one's \`type\` is "${type}".`
+  );
+}
+if (!["filled", "outlined"].includes(variant)) {
+  throw new Error(
+    `TextFieldChips: M3's styles are "filled" and "outlined", but this one's \`variant\` is "${variant}".`
+  );
+}
+if (!["wrap", "scroll"].includes(overflow)) {
+  throw new Error(
+    `TextFieldChips: its overflows are "wrap" and "scroll", but this one's \`overflow\` is "${overflow}".`
+  );
+}
+// MDX passes attributes as strings, so `maxlength="20"` is read as the number it says. Text that
+// isn't a number is quoted in the message.
+const shown = (value: unknown) =>
+  typeof value === "string" ? `"${value}"` : value;
+const limit = maxlength == null ? undefined : Number(maxlength);
+if (limit !== undefined && !(Number.isInteger(limit) && limit >= 0)) {
+  throw new Error(
+    `TextFieldChips: a character limit is a whole number, from 0, but this one's \`maxlength\` is ${shown(maxlength)}.`
+  );
+}
+// From Astro.props, as the destructured props carry their defaults
+for (const prop of ["counterLabel", "overLimitMessage"] as const) {
+  const given = Astro.props[prop];
+  if (given !== undefined && limit === undefined) {
+    throw new Error(
+      `TextFieldChips: \`${prop}\` words the character counter, which \`maxlength\` shows, but this one has \`${prop}\` "${given}" and no \`maxlength\`.`
+    );
+  }
+}
+
+// A null id, which HTML attributes allow, gets one too, as the label and description need it
+const id = givenId ?? `ac-text-field-${crypto.randomUUID()}`;
+
+const label = Astro.slots.has("default")
+  ? unwrapParagraph(await Astro.slots.render("default")).trim()
+  : "";
+// The chips are a group named as the field is: by its label, or the input's own aria name
+if (!label && !attrs["aria-label"] && !attrs["aria-labelledby"]) {
+  throw new Error(
+    "TextFieldChips: its chips are a group named by the field's label, but this one has no label, `aria-label` or `aria-labelledby`."
+  );
+}
 ---
 
-<div
-  class="flex min-w-0 flex-1"
-  data-ac-text-field-chips={overflow}
-  data-ac-text-field-chips-name={name}
-  data-ac-text-field-part="chips"
+<BaseTextField
+  variant={variant}
+  id={id}
+  layout="chips"
+  label={label}
+  value={value}
+  maxlength={limit}
+  counterLabel={counterLabel}
+  overLimitMessage={overLimitMessage}
+  attrs={attrs}
+  class={classList}
 >
-  {/* A scrolling row hides its scrollbar, as text overflowing a field shows none: the field
-      scrolls to its cursor, and to a chip that takes focus */}
-  <ChipGroup
-    class={`min-h-8 min-w-0 flex-1 ${overflow === "scroll" ? "scrollbar-none" : ""}`}
-    overflow={overflow}
-    aria-label={ariaLabel}
-    aria-labelledby={ariaLabelledby}
-  >
-    <slot name="chips" />
-    <slot />
-  </ChipGroup>
-  {/* The chip committed text becomes: an editable one, as M3 shows for text converted into
-      chips, so a mistyped address can be corrected. The script gives each copy its own ids. */}
-  <template data-ac-text-field-chips-part="template">
-    <ChipInput isEditable removeLabel={removeLabel} editLabel={editLabel}>
-      chip
-    </ChipInput>
-  </template>
-  <div hidden data-ac-text-field-chips-part="values"></div>
-  <span
-    class="sr-only"
-    role="status"
-    data-ac-text-field-chips-part="status"
-  ></span>
-</div>
+  {Astro.slots.has("leading-icon") && (
+    <slot name="leading-icon" slot="leading-icon" />
+  )}
+  {Astro.slots.has("trailing-icon") && (
+    <slot name="trailing-icon" slot="trailing-icon" />
+  )}
+  {Astro.slots.has("prefix") && <slot name="prefix" slot="prefix" />}
+  {Astro.slots.has("suffix") && <slot name="suffix" slot="suffix" />}
+  {Astro.slots.has("supporting-text") && (
+    <slot name="supporting-text" slot="supporting-text" />
+  )}
+  {(control: TextFieldControlType) => (
+    <div
+      class="flex min-w-0 flex-1"
+      data-ac-text-field-chips={overflow}
+      data-ac-text-field-chips-name={name}
+      data-ac-text-field-part="chips"
+    >
+      {/* A scrolling row hides its scrollbar, as text overflowing a field shows none: the field
+          scrolls to its cursor, and to a chip that takes focus */}
+      <ChipGroup
+        class={`min-h-8 min-w-0 flex-1 ${overflow === "scroll" ? "scrollbar-none" : ""}`}
+        overflow={overflow}
+        aria-label={control.labelId ? undefined : attrs["aria-label"]}
+        aria-labelledby={control.labelId ?? attrs["aria-labelledby"]}
+      >
+        <slot name="chips" />
+        {/* The chips submit under the field's name, rather than the text, which is what's still
+            to become one (ADR-0026) */}
+        <input
+          class:list={twMerge(
+            control.class,
+            "h-6",
+            // M3 uses a trailing icon to clear a field, rather than the browser's own button
+            "[&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none",
+            "min-w-20"
+          )}
+          type={type}
+          value={value}
+          {...control.attrs}
+        />
+      </ChipGroup>
+      {/* The chip committed text becomes: an editable one, as M3 shows for text converted into
+          chips, so a mistyped address can be corrected. The script gives each copy its own
+          ids. */}
+      <template data-ac-text-field-chips-part="template">
+        <ChipInput isEditable removeLabel={removeLabel} editLabel={editLabel}>
+          chip
+        </ChipInput>
+      </template>
+      <div hidden data-ac-text-field-chips-part="values"></div>
+      <span
+        class="sr-only"
+        role="status"
+        data-ac-text-field-chips-part="status"
+      ></span>
+    </div>
+  )}
+</BaseTextField>
 
 <script>
   const FIELD = "[data-ac-text-field-chips]";

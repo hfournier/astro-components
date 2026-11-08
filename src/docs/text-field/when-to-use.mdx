@@ -3,7 +3,6 @@ Use a text field to:
 - let people enter or edit a short piece of text, such as a name, an email address or a number
 - collect input in forms and dialogs
 - search, with a leading search icon
-- collect several discrete pieces of information, such as the contacts a message goes to or the terms of a search, as input chips in the field
 - collect a longer answer, such as a message or an address, in a multi-line field or a text area
 
 Make text fields look interactive, and keep their labels and error messages brief and easy to act on. Use the filled or the outlined variant throughout a form, rather than mixing them without reason: filled fields stand out more, and outlined ones suit forms with many fields.
@@ -11,5 +10,6 @@ Make text fields look interactive, and keep their labels and error messages brie
 ### When not to use it
 
 - **Long answers in a single-line field:** it scrolls its text sideways. Use `type="textarea"`. On the web, M3 recommends a text area, whose large size shows a long answer is welcome, over a field that grows.
+- **Several discrete pieces of information,** such as the contacts a message goes to or the terms of a search: use [TextFieldChips](/components/text-field-chips), which turns each into an input chip.
 - **Choosing from a fixed set of options:** use radio buttons, checkboxes or a menu.
 - **Turning a setting on or off:** use a switch.

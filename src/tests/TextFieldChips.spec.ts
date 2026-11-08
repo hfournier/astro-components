@@ -3,9 +3,17 @@ import { test, expect } from "./support/a11y-fixture";
 import { box, resolvedColor, settled } from "./support/helpers";
 
 // Each case on /tests/text-field-chips is a Section with data-testid="text-field-chips-<caseId>".
-// The labels case's field sets chipRemoveLabel and chipEditLabel, in French.
+// The labels case's field sets removeLabel and editLabel, in French, and the counter case's
+// maxlength.
 type CaseId =
-  "wrap" | "empty" | "outlined" | "scroll" | "move" | "rtl" | "labels";
+  | "wrap"
+  | "empty"
+  | "outlined"
+  | "scroll"
+  | "move"
+  | "rtl"
+  | "labels"
+  | "counter";
 
 const section = (page: Page, caseId: CaseId) =>
   page.getByTestId(`text-field-chips-${caseId}`);
@@ -54,7 +62,7 @@ const recordAdds = (page: Page) =>
 const added = (page: Page) =>
   page.evaluate(() => (window as unknown as { __added: string[] }).__added);
 
-test.describe("TextField with chips", () => {
+test.describe("TextFieldChips", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/tests/text-field-chips");
   });
@@ -90,7 +98,7 @@ test.describe("TextField with chips", () => {
   });
 
   // A translated field's new chips are named in its language, not English (the test above)
-  test("the chips it makes name their remove and edit controls by chipRemoveLabel and chipEditLabel", async ({
+  test("the chips it makes name their remove and edit controls by removeLabel and editLabel", async ({
     page,
   }) => {
     const target = field(page, "labels", "À");
@@ -551,6 +559,31 @@ test.describe("TextField with chips", () => {
     await expect(body(chip(rtl, "زياد"))).toBeFocused();
     await page.keyboard.press("ArrowLeft");
     await expect(input(rtl)).toBeFocused();
+  });
+
+  // The counter counts the text still to become a chip, as the chips are what the field holds
+  test("with maxlength, the counter counts the typed text, and past the limit the field is invalid", async ({
+    page,
+  }) => {
+    const target = field(page, "counter", "Topics");
+    const counter = target.locator("[data-ac-text-field-part=counter]");
+    await expect(input(target)).toHaveAccessibleDescription(
+      "Character count, 0/10"
+    );
+    await input(target).fill("Eleven char");
+    await expect(counter).toHaveText(/11\/10$/);
+    await expect(target.getByRole("alert")).toHaveText(
+      "Use 10 characters or fewer"
+    );
+    expect(
+      await input(target).evaluate(
+        (el) => (el as HTMLInputElement).validity.valid
+      )
+    ).toBe(false);
+    await input(target).fill("Motion");
+    await input(target).press("Enter");
+    expect(await labels(target)).toEqual(["Design", "Motion"]);
+    await expect(counter).toHaveText(/0\/10$/);
   });
 
   test("the chips sit inside the field, from its start", async ({ page }) => {

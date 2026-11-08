@@ -1,5 +1,7 @@
 # A text field holds input chips in a chip set around its input
 
+> **Partly superseded by ADR-0032**: §1 and the rejected "chip field" alternative. A field of chips is now TextFieldChips, a public component over the BaseTextField it shares with TextField, and `chipOverflow` is its `overflow`. The other decisions stand, in TextFieldChips.
+
 M3's Guidelines page puts input chips "inline with the cursor in a text field", as for contacts in an email's "To" field (#251). Text typed there becomes a chip. Backspace with the cursor before a chip selects it, and a second Backspace deletes it. Chips wrap onto new rows, or scroll sideways in a field one row high, the overflow following text: an unfocused field shows its start, and focusing it puts the cursor at the end. Chips can be reordered in a field and moved into another. ChipInput (#201, ADR-0025) left all of this to the field and said the page keeps a chip's data, since the chip doesn't submit. Neither M3 nor Compose defines a field of chips. Compose's `InputChip` sits in whatever row the app builds.
 
 We decided:

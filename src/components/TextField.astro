@@ -3,14 +3,15 @@ import type { HTMLAttributes } from "astro/types";
 import crypto from "node:crypto";
 import { twMerge } from "tailwind-merge";
 import { unwrapParagraph } from "../utils";
-import TextFieldChips from "./TextFieldChips.astro";
+import BaseTextField, {
+  type TextFieldControlType,
+} from "./BaseTextField.astro";
 
 // A native text input, or a textarea for `type="textarea"`, so it submits, resets and validates
-// with its form. Every attribute but `class` and `maxlength` goes on the input (`name`, `value`,
-// `placeholder`, `required`, `disabled`, `aria-*`), and `class` on the element around the whole
-// field. The default slot is the label's text. The `chips` slot holds input chips (ChipInput),
-// inline with the cursor, as M3's Guidelines page shows for contacts in a "To" field: text typed
-// there becomes a chip, and the chips, not the text, submit under `name` (ADR-0026).
+// with its form, in M3's text field, which BaseTextField draws. Every attribute but `class` and
+// `maxlength` goes on the input (`name`, `value`, `placeholder`, `required`, `disabled`,
+// `aria-*`), and `class` on the element around the whole field. The default slot is the label's
+// text. For a field that holds input chips, see TextFieldChips.
 type Props = (
   | (Omit<HTMLAttributes<"input">, "type"> & {
       type?:
@@ -29,31 +30,18 @@ type Props = (
   // them on pages in other languages.
   counterLabel?: string;
   overLimitMessage?: string;
-  // With chips: wrapping onto new rows, so all of them show, or one row that scrolls sideways
-  chipOverflow?: "wrap" | "scroll";
-  // With chips: the words before a chip's label in the names of the chips typed text becomes,
-  // their remove button's ("Remove Lisbon") and edit field's ("Edit Lisbon"). Set them on pages
-  // in other languages; the `chips` slot's own chips take ChipInput's `removeLabel` and
-  // `editLabel`.
-  chipRemoveLabel?: string;
-  chipEditLabel?: string;
 };
 
 const {
   type = "text",
   variant = "filled",
-  id = `ac-text-field-${crypto.randomUUID()}`,
-  placeholder,
+  id: givenId,
   value,
   rows,
   maxlength,
   counterLabel = "Character count",
   overLimitMessage = "Use {limit} characters or fewer",
-  chipOverflow,
-  chipRemoveLabel,
-  chipEditLabel,
   name,
-  "aria-describedby": describedBy,
   class: classList,
   ...attrs
 }: Props = Astro.props;
@@ -106,724 +94,75 @@ for (const prop of ["counterLabel", "overLimitMessage"] as const) {
     );
   }
 }
-if (chipOverflow !== undefined && !["wrap", "scroll"].includes(chipOverflow)) {
-  throw new Error(
-    `TextField: its chip overflows are "wrap" and "scroll", but this one's \`chipOverflow\` is "${chipOverflow}".`
-  );
-}
-const hasChips = Astro.slots.has("chips");
-if (hasChips && type === "textarea") {
-  throw new Error(
-    'TextField: M3 puts input chips inline with the cursor of a single-line field, but this one has the `chips` slot with `type="textarea"`.'
-  );
-}
-if (chipOverflow !== undefined && !hasChips) {
-  throw new Error(
-    `TextField: \`chipOverflow\` lays out the chips in the \`chips\` slot, but this one has \`chipOverflow\` "${chipOverflow}" and no chips.`
-  );
-}
-for (const [prop, given] of [
-  ["chipRemoveLabel", chipRemoveLabel],
-  ["chipEditLabel", chipEditLabel],
-] as const) {
-  if (given !== undefined && !hasChips) {
-    throw new Error(
-      `TextField: \`${prop}\` names the chips typed text becomes, in the \`chips\` slot, but this one has \`${prop}\` "${given}" and no chips.`
-    );
-  }
-}
 
 // A multi-line field is a textarea. Without `rows`, it starts one line tall and grows with its
 // content; with `rows`, it's M3's text area, that many lines tall, and scrolls.
 const isMultiLine = type === "textarea";
 const hasFixedRows = isMultiLine && rowCount !== undefined;
 
+// A null id, which HTML attributes allow, gets one too, as the label and description need it
+const id = givenId ?? `ac-text-field-${crypto.randomUUID()}`;
+
 const label = Astro.slots.has("default")
   ? unwrapParagraph(await Astro.slots.render("default")).trim()
   : "";
-// M3: a required field's label ends with an asterisk, which its accessible name includes
-const labelText = label && attrs.required ? `${label}*` : label;
-const labelId = `${id}-label`;
-
-// The chips are a group named as the field is: by its label, or the input's own aria name
-const chipsName = label
-  ? { "aria-labelledby": labelId }
-  : {
-      "aria-label": attrs["aria-label"] ?? undefined,
-      "aria-labelledby": attrs["aria-labelledby"] ?? undefined,
-    };
-if (hasChips && !label && !attrs["aria-label"] && !attrs["aria-labelledby"]) {
-  throw new Error(
-    "TextField: its chips are a group named by the field's label, but this one has no label, `aria-label` or `aria-labelledby`."
-  );
-}
-
-const hasLeadingIcon = Astro.slots.has("leading-icon");
-const hasTrailingIcon = Astro.slots.has("trailing-icon");
-const prefixId = Astro.slots.has("prefix") ? `${id}-prefix` : undefined;
-const suffixId = Astro.slots.has("suffix") ? `${id}-suffix` : undefined;
-const supportingId = Astro.slots.has("supporting-text")
-  ? `${id}-supporting-text`
-  : undefined;
-
-// M3's character counter: `maxlength` is a limit people can type past, as on Android, rather
-// than the native one that stops them. Past it, the counter and the field turn error, and the
-// script below makes the input invalid, so its form won't submit.
-const counterId = limit === undefined ? undefined : `${id}-counter`;
-const count = String(value ?? "").length;
-const isOverLimit = limit !== undefined && count > limit;
-
-// A disabled field's supporting text is at 38%, below text contrast, which WCAG allows for an
-// inactive component. Text outside a label isn't tied to the input, so aria-disabled on the
-// whole field says it's part of one. The script below keeps it in step with the input.
-const ariaDisabled = attrs.disabled ? "true" : undefined;
-
-// M3: in the error state, the error text in the supporting text's place is an alert, announced
-// as it appears. The script below keeps it in step with aria-invalid and :user-invalid.
-const isError = String(attrs["aria-invalid"]) === "true" || isOverLimit;
-
-// The prefix and suffix say what the value is in ("Euro", "at gmail dot com"), the supporting
-// text (or the error text in its place) how to fill it in, and the counter how much is left
-const ariaDescribedBy =
-  [prefixId, suffixId, supportingId, counterId, describedBy]
-    .filter(Boolean)
-    .join(" ") || undefined;
-
-// The placeholder fades in on slow effects as the field is focused, and out on fast effects
-const controlClass = twMerge(
-  "min-w-0 flex-1 bg-transparent p-0 text-(--ac-text-field-input) caret-(--ac-text-field-accent) outline-none disabled:cursor-default",
-  "placeholder:text-(--ac-text-field-icon) placeholder:opacity-100 motion-safe:placeholder:transition-opacity",
-  "motion-safe:focus:placeholder:duration-(--theme-duration-spring-slow-effects) motion-safe:focus:placeholder:ease-spring-slow-effects",
-  // While the label rests in the field, it takes the placeholder's place
-  label && "not-focus:placeholder:opacity-0"
-);
-const inputClass = twMerge(
-  controlClass,
-  "h-6",
-  // M3 uses a trailing icon to clear a field, rather than the browser's own button
-  "[&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none"
-);
-const controlAttrs = {
-  id,
-  "data-ac-text-field-part": "input",
-  placeholder: placeholder ?? (label ? " " : undefined),
-  "aria-describedby": ariaDescribedBy,
-  "data-ac-text-field-limit": limit,
-  "data-ac-text-field-over-limit-message":
-    limit === undefined ? undefined : overLimitMessage,
-};
 ---
 
-<div
-  class:list={twMerge(
-    "inline-flex w-70 max-w-full flex-col align-top text-base leading-6 tracking-[0.5px]",
-    classList
-  )}
-  data-ac-text-field={variant}
-  aria-disabled={ariaDisabled}
-  data-ac-text-field-labelled={label ? "" : undefined}
-  data-ac-text-field-leading={hasLeadingIcon ? "" : undefined}
-  data-ac-text-field-trailing={hasTrailingIcon ? "" : undefined}
-  data-ac-text-field-over-limit={isOverLimit ? "" : undefined}
+<BaseTextField
+  variant={variant}
+  id={id}
+  layout={isMultiLine ? "multi-line" : "single-line"}
+  label={label}
+  value={value}
+  maxlength={limit}
+  counterLabel={counterLabel}
+  overLimitMessage={overLimitMessage}
+  attrs={attrs}
+  class={classList}
 >
-  <div
-    class:list={[
-      "relative flex cursor-text motion-safe:transition-colors",
-      // a field of chips grows with their rows, and with a filled field's floated label
-      isMultiLine || hasChips ? "min-h-14" : "h-14",
-      variant === "filled"
-        ? // The filled container is its own surface: a ButtonIcon in it, and its focus ring,
-          // take the surface's colors whatever the background around the field
-          "rounded-t-sm bg-(--theme-color-surface-container-highest) [--theme-color-focus-ring-on-bg:var(--theme-color-secondary)] [--theme-color-on-bg-variant:var(--theme-color-on-surface-variant)] [--theme-color-wrapper-bg:var(--theme-color-surface-container-highest)]"
-        : "rounded-sm",
-    ]}
-    data-ac-text-field-part="container"
-  >
-    {variant === "filled" ? (
-      <>
-        <span
-          class="pointer-events-none absolute inset-0 rounded-[inherit] bg-(--theme-color-on-surface) opacity-0 motion-safe:transition-opacity"
-          data-ac-text-field-part="state-layer"
-        />
-        <span
-          class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-(--ac-text-field-indicator)"
-          data-ac-text-field-part="active-indicator"
-        />
-      </>
-    ) : (
-      // The outline is a fieldset so that its legend, a hidden copy of the label, cuts the gap
-      // the floated label sits in, whatever the label's width. The legend starts 12px in, so
-      // the label it copies starts at the field's 16px padding.
-      <fieldset
-        class:list={[
-          "pointer-events-none absolute inset-x-0 bottom-0 m-0 min-w-0 rounded-[inherit] border-(length:--ac-text-field-outline-width) border-(--ac-text-field-indicator) px-[calc(12px-var(--ac-text-field-outline-width))] [--ac-text-field-outline-width:1px]",
-          // A fieldset centers its top border on the legend, which is 16px tall, the floated
-          // label's line. Raised by 8px less half the border, the border's top edge stays on
-          // the container's.
-          label
-            ? "top-[calc(var(--ac-text-field-outline-width)/2-8px)]"
-            : "top-0",
-        ]}
-        aria-hidden="true"
-        data-ac-text-field-part="outline"
-      >
-        {label && (
-          <legend class="invisible block h-4 w-auto max-w-[0.01px] overflow-hidden p-0 text-xs leading-4 tracking-[0.4px] whitespace-nowrap motion-safe:transition-[max-width] motion-safe:duration-(--theme-duration-spring-fast-spatial) motion-safe:ease-spring-fast-spatial">
-            <span class="px-1" set:html={labelText} />
-          </legend>
-        )}
-      </fieldset>
-    )}
-    {hasLeadingIcon && (
-      <span
-        class="relative grid w-12 shrink-0 place-items-center text-(--ac-text-field-icon) motion-safe:transition-colors"
-        data-ac-text-field-part="leading-icon"
-      >
-        <slot name="leading-icon" />
-      </span>
-    )}
-    <div
-      class:list={[
-        "relative flex min-w-0 flex-1",
-        // Chips are 32px tall: 12px above and below them make the 56px field, and below a
-        // filled field's floated label, 24px above and 8px below
-        hasChips ? "items-center" : "items-baseline",
-        variant === "filled" && label
-          ? "pt-6 pb-2"
-          : hasChips
-            ? "py-3"
-            : "py-4",
-        hasLeadingIcon ? "ps-1" : "ps-4",
-        hasTrailingIcon ? "pe-1" : "pe-4",
-      ]}
-    >
-      {prefixId && (
-        <span
-          id={prefixId}
-          class="me-0.5 text-(--ac-text-field-icon) motion-safe:transition-opacity"
-          data-ac-text-field-part="prefix"
-        >
-          <slot name="prefix" />
-        </span>
-      )}
-      {isMultiLine ? (
-        <textarea
-          class:list={[
-            controlClass,
-            // No resize handle. It grows a line at a time with its content, or as a text area
-            // is `rows` lines tall, Body Large's 24px each, and scrolls.
-            "resize-none",
-            hasFixedRows
-              ? "h-[calc(var(--ac-text-field-rows)*24px)]"
-              : "min-h-6 overflow-y-hidden field-sizing-content",
-          ]}
-          {...controlAttrs}
-          rows={rowCount ?? 1}
-          style={hasFixedRows ? `--ac-text-field-rows: ${rowCount}` : undefined}
-          data-ac-text-field-grows={hasFixedRows ? undefined : ""}
-          name={name}
-          {...attrs}
-          set:text={value}
-        ></textarea>
-      ) : hasChips ? (
-        // The chips submit under the field's name, rather than the text, which is what's
-        // still to become one (ADR-0026)
-        <TextFieldChips
-          overflow={chipOverflow ?? "wrap"}
-          name={name ?? undefined}
-          removeLabel={chipRemoveLabel}
-          editLabel={chipEditLabel}
-          {...chipsName}
-        >
-          <slot name="chips" slot="chips" />
-          <input
-            class:list={twMerge(inputClass, "min-w-20")}
-            {...controlAttrs}
-            type={type}
-            value={value}
-            {...attrs}
-          />
-        </TextFieldChips>
-      ) : (
-        <input
-          class:list={inputClass}
-          {...controlAttrs}
-          type={type}
-          value={value}
-          name={name}
-          {...attrs}
-        />
-      )}
-      {suffixId && (
-        <span
-          id={suffixId}
-          class="ms-0.5 text-(--ac-text-field-icon) motion-safe:transition-opacity"
-          data-ac-text-field-part="suffix"
-        >
-          <slot name="suffix" />
-        </span>
-      )}
-    </div>
-    {label && (
-      <label
-        class:list={[
-          "pointer-events-none absolute truncate text-(--ac-text-field-label)",
-          // resting, in line with the text, or centered in a filled field of chips
-          hasChips && variant === "filled" ? "top-5" : "top-4",
-          hasLeadingIcon ? "inset-s-13" : "inset-s-4",
-          hasTrailingIcon ? "inset-e-13" : "inset-e-4",
-        ]}
-        id={labelId}
-        for={id}
-        data-ac-text-field-part="label"
-        set:html={labelText}
-      />
-    )}
-    {hasTrailingIcon && (
-      <span
-        class="relative grid w-12 shrink-0 place-items-center text-(--ac-text-field-trailing) motion-safe:transition-colors [--theme-color-on-bg-variant:var(--ac-text-field-trailing)]"
-        data-ac-text-field-part="trailing-icon"
-      >
-        <slot name="trailing-icon" />
-      </span>
-    )}
-  </div>
-  {(supportingId || counterId) && (
-    <div class="flex gap-4 px-4 text-xs leading-4 tracking-[0.4px]">
-      {supportingId && (
-        <div
-          id={supportingId}
-          class="min-w-0 pt-1 text-(--ac-text-field-supporting) motion-safe:transition-colors"
-          role={isError ? "alert" : undefined}
-          data-ac-text-field-part="supporting-text"
-        >
-          <slot name="supporting-text" />
-        </div>
-      )}
-      {counterId && (
-        <div
-          id={counterId}
-          class="ms-auto shrink-0 pt-1 text-(--ac-text-field-supporting) motion-safe:transition-colors"
-          data-ac-text-field-part="counter"
-        >
-          <span class="sr-only">{counterLabel}, </span>
-          <span data-ac-text-field-count>{count}</span>/{limit}
-        </div>
-      )}
-      {counterId && (
-        // Says so when the value goes past the counter's limit. Outside the counter, so the
-        // input's description doesn't include it, and rendered empty, so it's in place before
-        // anything is announced.
-        <span class="sr-only" role="alert" data-ac-text-field-announcement />
-      )}
-    </div>
+  {Astro.slots.has("leading-icon") && (
+    <slot name="leading-icon" slot="leading-icon" />
   )}
-</div>
-
-<style>
-  /* The roles each state draws from, as M3's Specs page maps them, swapped whole for the error
-     state. The variants differ only in the indicator or outline and the hovered label. */
-  [data-ac-text-field] {
-    --ac-text-field-accent: var(--theme-color-primary);
-    --ac-text-field-supporting: var(--theme-color-on-surface-variant);
-    --ac-text-field-indicator-hover: var(--theme-color-on-surface);
-    --ac-text-field-label: var(--theme-color-on-surface-variant);
-    --ac-text-field-icon: var(--theme-color-on-surface-variant);
-    --ac-text-field-trailing: var(--theme-color-on-surface-variant);
-    --ac-text-field-trailing-hover: var(--theme-color-on-surface-variant);
-    --ac-text-field-input: var(--theme-color-on-surface);
-  }
-
-  [data-ac-text-field="filled"] {
-    --ac-text-field-indicator: var(--theme-color-on-surface-variant);
-    --ac-text-field-label-hover: var(--theme-color-on-surface-variant);
-  }
-
-  [data-ac-text-field="outlined"] {
-    --ac-text-field-indicator: var(--theme-color-outline);
-    --ac-text-field-label-hover: var(--theme-color-on-surface);
-  }
-
-  /* An error is set by aria-invalid, which also announces it, by the browser's own validation,
-     once the person has interacted with the form, or by a value past the counter's limit */
-  [data-ac-text-field]:has(
-    [data-ac-text-field-part="input"]:is([aria-invalid="true"], :user-invalid)
-  ),
-  [data-ac-text-field][data-ac-text-field-over-limit] {
-    --ac-text-field-accent: var(--theme-color-error);
-    --ac-text-field-supporting: var(--theme-color-error);
-    --ac-text-field-indicator: var(--theme-color-error);
-    --ac-text-field-indicator-hover: var(--theme-color-on-error-container);
-    --ac-text-field-label: var(--theme-color-error);
-    --ac-text-field-label-hover: var(--theme-color-on-error-container);
-    --ac-text-field-trailing: var(--theme-color-error);
-    --ac-text-field-trailing-hover: var(--theme-color-on-error-container);
-  }
-
-  /* Hovered, unless focused: a focused field keeps its focused colors under the pointer */
-  [data-ac-text-field]:has([data-ac-text-field-part="input"]:enabled):not(
-      :has(
-        [data-ac-text-field-part="input"]:focus,
-        [data-ac-text-field-part="chips"] :focus
-      )
+  {Astro.slots.has("trailing-icon") && (
+    <slot name="trailing-icon" slot="trailing-icon" />
+  )}
+  {Astro.slots.has("prefix") && <slot name="prefix" slot="prefix" />}
+  {Astro.slots.has("suffix") && <slot name="suffix" slot="suffix" />}
+  {Astro.slots.has("supporting-text") && (
+    <slot name="supporting-text" slot="supporting-text" />
+  )}
+  {(control: TextFieldControlType) =>
+    isMultiLine ? (
+      <textarea
+        class:list={[
+          control.class,
+          // No resize handle. It grows a line at a time with its content, or as a text area is
+          // `rows` lines tall, Body Large's 24px each, and scrolls.
+          "resize-none",
+          hasFixedRows
+            ? "h-[calc(var(--ac-text-field-rows)*24px)]"
+            : "min-h-6 overflow-y-hidden field-sizing-content",
+        ]}
+        rows={rowCount ?? 1}
+        style={hasFixedRows ? `--ac-text-field-rows: ${rowCount}` : undefined}
+        data-ac-text-field-grows={hasFixedRows ? undefined : ""}
+        name={name}
+        {...control.attrs}
+        set:text={value}
+      ></textarea>
+    ) : (
+      <input
+        class:list={twMerge(
+          control.class,
+          "h-6",
+          // M3 uses a trailing icon to clear a field, rather than the browser's own button
+          "[&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none"
+        )}
+        type={type}
+        value={value}
+        name={name}
+        {...control.attrs}
+      />
     )
-    [data-ac-text-field-part="container"]:hover
-    [data-ac-text-field-part="state-layer"] {
-    opacity: 0.08;
   }
-
-  [data-ac-text-field]:has([data-ac-text-field-part="input"]:enabled):not(
-      :has(
-        [data-ac-text-field-part="input"]:focus,
-        [data-ac-text-field-part="chips"] :focus
-      )
-    )
-    [data-ac-text-field-part="container"]:hover
-    :is(
-      [data-ac-text-field-part="active-indicator"],
-      [data-ac-text-field-part="outline"]
-    ) {
-    --ac-text-field-indicator: var(--ac-text-field-indicator-hover);
-  }
-
-  [data-ac-text-field]:has([data-ac-text-field-part="input"]:enabled):not(
-      :has(
-        [data-ac-text-field-part="input"]:focus,
-        [data-ac-text-field-part="chips"] :focus
-      )
-    )
-    [data-ac-text-field-part="container"]:hover
-    [data-ac-text-field-part="label"] {
-    color: var(--ac-text-field-label-hover);
-  }
-
-  [data-ac-text-field]:has([data-ac-text-field-part="input"]:enabled):not(
-      :has(
-        [data-ac-text-field-part="input"]:focus,
-        [data-ac-text-field-part="chips"] :focus
-      )
-    )
-    [data-ac-text-field-part="container"]:hover
-    [data-ac-text-field-part="trailing-icon"] {
-    --ac-text-field-trailing: var(--ac-text-field-trailing-hover);
-  }
-
-  /* Focused: the thicker indicator in the accent color is M3's focus indicator for a text
-     field. The Specs page's tokens give the filled one both a 2dp height and a 3dp thickness
-     (md.sys.state.focus-indicator.thickness); its state diagram draws 3dp, as the outline's */
-  [data-ac-text-field]:has(
-      [data-ac-text-field-part="input"]:focus,
-      [data-ac-text-field-part="chips"] :focus
-    )
-    [data-ac-text-field-part="active-indicator"] {
-    height: 3px;
-    background-color: var(--ac-text-field-accent);
-  }
-
-  [data-ac-text-field]:has(
-      [data-ac-text-field-part="input"]:focus,
-      [data-ac-text-field-part="chips"] :focus
-    )
-    [data-ac-text-field-part="outline"] {
-    --ac-text-field-outline-width: 3px;
-    border-color: var(--ac-text-field-accent);
-  }
-
-  [data-ac-text-field]:has(
-      [data-ac-text-field-part="input"]:focus,
-      [data-ac-text-field-part="chips"] :focus
-    )
-    [data-ac-text-field-part="label"] {
-    color: var(--ac-text-field-accent);
-  }
-
-  /* The label floats above the input when the field is focused or has a value (an empty
-     field shows its placeholder, which is a space when none is given). Filled, it moves to the
-     top of the container, in line with the input. Outlined, it sits on the outline, at the
-     field's start even past a leading icon, as in Compose. */
-  [data-ac-text-field]:has(
-      [data-ac-text-field-part="input"]:is(
-        :focus,
-        :not(:placeholder-shown),
-        :autofill
-      ),
-      [data-ac-text-field-part="chips"] :is(:focus, [data-ac-chip-input])
-    )
-    [data-ac-text-field-part="label"] {
-    font-size: 12px;
-    line-height: 16px;
-    letter-spacing: 0.4px;
-  }
-
-  [data-ac-text-field]:has(
-      [data-ac-text-field-part="input"]:is(
-        :focus,
-        :not(:placeholder-shown),
-        :autofill
-      ),
-      [data-ac-text-field-part="chips"] :is(:focus, [data-ac-chip-input])
-    )
-    [data-ac-text-field-part="outline"]
-    legend {
-    max-width: 100%;
-  }
-
-  [data-ac-text-field="filled"]:has(
-      [data-ac-text-field-part="input"]:is(
-        :focus,
-        :not(:placeholder-shown),
-        :autofill
-      ),
-      [data-ac-text-field-part="chips"] :is(:focus, [data-ac-chip-input])
-    )
-    [data-ac-text-field-part="label"] {
-    top: 8px;
-  }
-
-  [data-ac-text-field="outlined"]:has(
-      [data-ac-text-field-part="input"]:is(
-        :focus,
-        :not(:placeholder-shown),
-        :autofill
-      ),
-      [data-ac-text-field-part="chips"] :is(:focus, [data-ac-chip-input])
-    )
-    [data-ac-text-field-part="label"] {
-    top: -8px;
-    inset-inline-start: 16px;
-  }
-
-  /* While the label rests in the field, the prefix and suffix wait for it to float, as in
-     Compose */
-  [data-ac-text-field][data-ac-text-field-labelled]:not(
-      :has(
-        [data-ac-text-field-part="input"]:is(
-          :focus,
-          :not(:placeholder-shown),
-          :autofill
-        ),
-        [data-ac-text-field-part="chips"] :is(:focus, [data-ac-chip-input])
-      )
-    )
-    :is(
-      [data-ac-text-field-part="prefix"],
-      [data-ac-text-field-part="suffix"]
-    ) {
-    opacity: 0;
-  }
-
-  /* Disabled: everything on-surface at 38%, the filled container at 4% and the outline at 12% */
-  [data-ac-text-field]:has([data-ac-text-field-part="input"]:disabled) {
-    --ac-text-field-disabled: color-mix(
-      in oklab,
-      var(--theme-color-on-surface) 38%,
-      transparent
-    );
-    --ac-text-field-indicator: var(--ac-text-field-disabled);
-    --ac-text-field-label: var(--ac-text-field-disabled);
-    --ac-text-field-icon: var(--ac-text-field-disabled);
-    --ac-text-field-trailing: var(--ac-text-field-disabled);
-    --ac-text-field-input: var(--ac-text-field-disabled);
-    --ac-text-field-supporting: var(--ac-text-field-disabled);
-  }
-
-  [data-ac-text-field]:has([data-ac-text-field-part="input"]:disabled)
-    [data-ac-text-field-part="container"] {
-    cursor: default;
-  }
-
-  [data-ac-text-field="filled"]:has([data-ac-text-field-part="input"]:disabled)
-    [data-ac-text-field-part="container"] {
-    background-color: color-mix(
-      in oklab,
-      var(--theme-color-on-surface) 4%,
-      transparent
-    );
-  }
-
-  [data-ac-text-field="outlined"]:has(
-    [data-ac-text-field-part="input"]:disabled
-  ) {
-    --ac-text-field-indicator: color-mix(
-      in oklab,
-      var(--theme-color-on-surface) 12%,
-      transparent
-    );
-  }
-
-  /* Compose's timing, which M3's Specs page doesn't give, for the parts that mix two springs:
-     the label moves and resizes, and the indicator and outline thicken, on fast spatial, while
-     their colors change on fast effects. The parts on one spring have it in their classes. */
-  @media (prefers-reduced-motion: no-preference) {
-    [data-ac-text-field-part="active-indicator"] {
-      transition:
-        background-color var(--theme-duration-spring-fast-effects)
-          var(--ease-spring-fast-effects),
-        height var(--theme-duration-spring-fast-spatial)
-          var(--ease-spring-fast-spatial);
-    }
-
-    [data-ac-text-field-part="outline"] {
-      transition:
-        border-color var(--theme-duration-spring-fast-effects)
-          var(--ease-spring-fast-effects),
-        border-width var(--theme-duration-spring-fast-spatial)
-          var(--ease-spring-fast-spatial),
-        padding var(--theme-duration-spring-fast-spatial)
-          var(--ease-spring-fast-spatial),
-        top var(--theme-duration-spring-fast-spatial)
-          var(--ease-spring-fast-spatial);
-    }
-
-    [data-ac-text-field-part="label"] {
-      transition:
-        color var(--theme-duration-spring-fast-effects)
-          var(--ease-spring-fast-effects),
-        top var(--theme-duration-spring-fast-spatial)
-          var(--ease-spring-fast-spatial),
-        inset-inline-start var(--theme-duration-spring-fast-spatial)
-          var(--ease-spring-fast-spatial),
-        font-size var(--theme-duration-spring-fast-spatial)
-          var(--ease-spring-fast-spatial),
-        line-height var(--theme-duration-spring-fast-spatial)
-          var(--ease-spring-fast-spatial),
-        letter-spacing var(--theme-duration-spring-fast-spatial)
-          var(--ease-spring-fast-spatial);
-    }
-  }
-</style>
-
-<script>
-  // A press anywhere in the container that isn't on the input or a control of its own (the
-  // padding, the label, an icon, the prefix or suffix) focuses the input, as a press on a
-  // native field does. Delegated, so it covers fields brought in by Astro's ClientRouter.
-  document.addEventListener("mousedown", (event) => {
-    const target = event.target as Element;
-    const container = target.closest("[data-ac-text-field-part='container']");
-    if (!container || target.closest("input, textarea, button, a, [tabindex]"))
-      return;
-    const input = container.querySelector<
-      HTMLInputElement | HTMLTextAreaElement
-    >("[data-ac-text-field-part=input]");
-    if (!input || input.disabled) return;
-    event.preventDefault();
-    input.focus();
-  });
-
-  // The inputs whose validity message is the counter's, so a message of the page's own stays
-  const overLimit = new WeakSet<Element>();
-
-  // A growing multi-line field takes its content's height through field-sizing. The change
-  // moves on the fast spatial spring, unless motion is reduced. CSS can't transition it, since
-  // the height property stays the same while the content changes, so it's animated from the
-  // height the field last had (or has now, partway through an animation).
-  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
-  const heights = new WeakMap<Element, number>();
-  const grow = (input: HTMLInputElement | HTMLTextAreaElement) => {
-    if (!input.hasAttribute("data-ac-text-field-grows")) return;
-    const running = input.getAnimations();
-    const from = running.length
-      ? input.getBoundingClientRect().height
-      : heights.get(input);
-    for (const animation of running) animation.cancel();
-    const to = input.getBoundingClientRect().height;
-    heights.set(input, to);
-    // a hidden field has no height to move from or to
-    if (!from || !to || from === to || reducedMotion.matches) return;
-    const root = getComputedStyle(document.documentElement);
-    input.animate([{ height: `${from}px` }, { height: `${to}px` }], {
-      duration: parseFloat(
-        root.getPropertyValue("--theme-duration-spring-fast-spatial")
-      ),
-      easing: root.getPropertyValue("--ease-spring-fast-spatial").trim(),
-    });
-  };
-
-  // Keeps each field in step with its input: the counter's count, and the input's validity past
-  // its limit; aria-disabled on the field while the input is disabled; and role="alert" on the
-  // supporting text while the field is in error (aria-invalid="true", past the counter's limit,
-  // or :user-invalid once the person has interacted with the form)
-  const sync = (field: Element) => {
-    const input = field.querySelector<HTMLInputElement | HTMLTextAreaElement>(
-      "[data-ac-text-field-part=input]"
-    );
-    if (!input) return;
-    grow(input);
-    if (input.disabled) field.setAttribute("aria-disabled", "true");
-    else field.removeAttribute("aria-disabled");
-
-    const limit = Number(input.dataset.acTextFieldLimit);
-    const count = field.querySelector("[data-ac-text-field-count]");
-    const isOverLimit = count !== null && input.value.length > limit;
-    const wasOverLimit = field.hasAttribute("data-ac-text-field-over-limit");
-    const message = (
-      input.dataset.acTextFieldOverLimitMessage ?? ""
-    ).replaceAll("{limit}", String(limit));
-    if (count) count.textContent = String(input.value.length);
-    field.toggleAttribute("data-ac-text-field-over-limit", isOverLimit);
-    if (isOverLimit) {
-      input.setCustomValidity(message);
-      overLimit.add(input);
-    } else if (overLimit.delete(input)) {
-      input.setCustomValidity("");
-    }
-    // Announced as the value goes past the limit, not on each keystroke after, nor for a value
-    // already past it when the page loads
-    const announcement = field.querySelector(
-      "[data-ac-text-field-announcement]"
-    );
-    if (announcement && isOverLimit !== wasOverLimit)
-      announcement.textContent = isOverLimit ? message : "";
-
-    const supporting = field.querySelector(
-      "[data-ac-text-field-part='supporting-text']"
-    );
-    if (!supporting) return;
-    const isError =
-      isOverLimit ||
-      input.getAttribute("aria-invalid") === "true" ||
-      input.matches(":user-invalid");
-    if (isError) supporting.setAttribute("role", "alert");
-    else supporting.removeAttribute("role");
-  };
-
-  const syncFrom = (target: EventTarget | Node | null) => {
-    const field =
-      target instanceof Element && target.closest("[data-ac-text-field]");
-    if (field) sync(field);
-  };
-
-  // Attributes a script sets, observed from the root element so it covers fields brought in by
-  // Astro's ClientRouter
-  new MutationObserver((records) => {
-    for (const record of records) syncFrom(record.target);
-  }).observe(document.documentElement, {
-    subtree: true,
-    attributeFilter: ["disabled", "aria-invalid"],
-  });
-
-  // :user-invalid changes as the person edits, leaves the field or submits the form (invalid
-  // doesn't bubble, so it's caught on the way down). A reset clears it once the form has
-  // reset, after the event.
-  for (const type of ["input", "change", "focusout"]) {
-    document.addEventListener(type, (event) => syncFrom(event.target));
-  }
-  document.addEventListener("invalid", (event) => syncFrom(event.target), true);
-
-  // A value over the limit from the start makes the input invalid once the page loads, and a
-  // growing field records its height then, for its first change to move from
-  const syncAll = () => {
-    for (const field of document.querySelectorAll("[data-ac-text-field]"))
-      sync(field);
-  };
-  syncAll();
-  document.addEventListener("astro:page-load", syncAll);
-  document.addEventListener("reset", (event) => {
-    setTimeout(() => {
-      if (!(event.target instanceof HTMLFormElement)) return;
-      // a reset's values aren't input, so the counts and heights follow here too
-      for (const field of event.target.querySelectorAll("[data-ac-text-field]"))
-        sync(field);
-    });
-  });
-</script>
+</BaseTextField>

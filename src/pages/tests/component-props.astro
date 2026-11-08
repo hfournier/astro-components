@@ -11,6 +11,7 @@ import BaseButton from "../../components/BaseButton.astro";
 import BaseChip from "../../components/BaseChip.astro";
 import BaseOverlay from "../../components/BaseOverlay.astro";
 import BaseWrapper from "../../components/BaseWrapper.astro";
+import BaseTextField from "../../components/BaseTextField.astro";
 import Button from "../../components/Button.astro";
 import ButtonGroupConnected from "../../components/ButtonGroupConnected.astro";
 import ButtonIcon from "../../components/ButtonIcon.astro";
@@ -43,6 +44,7 @@ import Switch from "../../components/Switch.astro";
 import Tab from "../../components/Tab.astro";
 import Tabs from "../../components/Tabs.astro";
 import TextField from "../../components/TextField.astro";
+import TextFieldChips from "../../components/TextFieldChips.astro";
 import Tooltip from "../../components/Tooltip.astro";
 
 const container = await experimental_AstroContainer.create();
@@ -56,6 +58,15 @@ const choice = {
   options: [{ label: "One" }, { label: "Two" }],
 };
 // ButtonSplit needs its menu's id and its trailing button's name
+const baseField = {
+  variant: "filled",
+  id: "base-field",
+  layout: "single-line",
+  label: "Name",
+  counterLabel: "Character count",
+  overLimitMessage: "Use {limit} characters or fewer",
+  attrs: {},
+};
 const split = { menuId: "split-menu", menuLabel: "More options" };
 // Each case: the component, and the props it needs plus the one under test. MDX passes
 // attributes as strings, so the number cases do too, and a valid one lists what it drew.
@@ -81,6 +92,14 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     "base-button-toggle-text": [
       BaseButton,
       { isToggle: true, variant: "text" },
+    ],
+    "base-text-field-variant": [
+      BaseTextField,
+      { ...baseField, variant: "standard" },
+    ],
+    "base-text-field-layout": [
+      BaseTextField,
+      { ...baseField, layout: "multi-row" },
     ],
     "button-as": [Button, { as: "div" }],
     "button-variant": [Button, { variant: "contained" }],
@@ -288,24 +307,32 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
       TextField,
       { ...field, overLimitMessage: "{limit} caractères au plus" },
     ],
-    "text-field-chips-textarea": [TextField, { ...field, type: "textarea" }],
-    "text-field-chip-overflow": [
-      TextField,
-      { ...field, chipOverflow: "hidden" },
+    "text-field-chips-type": [TextFieldChips, { ...field, type: "textarea" }],
+    "text-field-chips-variant": [
+      TextFieldChips,
+      { ...field, variant: "standard" },
     ],
-    "text-field-chip-overflow-no-chips": [
-      TextField,
-      { ...field, chipOverflow: "scroll" },
+    "text-field-chips-overflow": [
+      TextFieldChips,
+      { ...field, overflow: "hidden" },
     ],
-    "text-field-chip-remove-label-no-chips": [
-      TextField,
-      { ...field, chipRemoveLabel: "Retirer" },
+    "text-field-chips-maxlength-negative": [
+      TextFieldChips,
+      { ...field, maxlength: -1 },
     ],
-    "text-field-chip-edit-label-no-chips": [
-      TextField,
-      { ...field, chipEditLabel: "Modifier" },
+    "text-field-chips-maxlength-not-a-number": [
+      TextFieldChips,
+      { ...field, maxlength: "long" },
     ],
-    "text-field-chips-name": [TextField, {}],
+    "text-field-chips-counter-label-no-maxlength": [
+      TextFieldChips,
+      { ...field, counterLabel: "Nombre de caractères" },
+    ],
+    "text-field-chips-over-limit-message-no-maxlength": [
+      TextFieldChips,
+      { ...field, overLimitMessage: "{limit} caractères au plus" },
+    ],
+    "text-field-chips-name": [TextFieldChips, {}],
     "tooltip-placement": [Tooltip, { placement: "left" }],
     "tooltip-variant": [Tooltip, { variant: "tooltip" }],
   };
@@ -315,8 +342,7 @@ const slots: Record<string, string> = {
   "button-split-name": "",
   "text-field-chips-name": "",
 };
-// The cases that fill a named slot too: an input chip's avatar, a text field's chips
-const chipsSlot = { chips: "<span>Chip</span>" };
+// The cases that fill a named slot too: an input chip's avatar, a snackbar's action
 const namedSlots: Record<string, Record<string, string>> = {
   "chip-input-icon-avatar": { avatar: '<img src="" alt="" />' },
   "list-item-leading": { avatar: "A" },
@@ -324,9 +350,6 @@ const namedSlots: Record<string, Record<string, string>> = {
   "snackbar-actions": {
     action: "<button>Undo</button><button>Edit</button>",
   },
-  "text-field-chips-textarea": chipsSlot,
-  "text-field-chip-overflow": chipsSlot,
-  "text-field-chips-name": chipsSlot,
 };
 const outcomes = await Promise.all(
   Object.entries(cases).map(async ([name, [Component, props]]) => {
