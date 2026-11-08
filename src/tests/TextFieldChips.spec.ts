@@ -3,8 +3,8 @@ import { test, expect } from "./support/a11y-fixture";
 import { box, resolvedColor, settled } from "./support/helpers";
 
 // Each case on /tests/text-field-chips is a Section with data-testid="text-field-chips-<caseId>".
-// The labels case's field sets removeLabel and editLabel, in French, and the counter case's
-// maxlength.
+// The labels case's field sets removeLabel, editLabel and chipPositionMessage, in French, and the
+// counter case's maxlength.
 type CaseId =
   | "wrap"
   | "empty"
@@ -111,6 +111,23 @@ test.describe("TextFieldChips", () => {
     await expect(
       target.getByRole("textbox", { name: "Modifier Lisbonne", exact: true })
     ).toBeFocused();
+  });
+
+  // The move tests below check the English default, "Alex, 2 of 3 in To"
+  test("a moved chip's place is announced in chipPositionMessage's words", async ({
+    page,
+  }) => {
+    const target = field(page, "labels", "À");
+    for (const text of ["Lisbonne", "Porto"]) {
+      await input(target).fill(text);
+      await input(target).press("Enter");
+    }
+    await body(chip(target, "Lisbonne")).focus();
+    await page.keyboard.press("Shift+ArrowRight");
+    expect(await labels(target)).toEqual(["Porto", "Lisbonne"]);
+    await expect(target.locator("[role=status]")).toHaveText(
+      "Lisbonne, position 2 sur 2 dans À"
+    );
   });
 
   test("Enter on an empty field adds nothing, and submits its form as a text field's does", async ({
