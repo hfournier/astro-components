@@ -5,7 +5,10 @@ description: Tests for the SkipToContent component
 
 <Heading level={1}>SkipToContent Tests</Heading>
 
-<Section data-testid="skip-to-content-text" class="p-4 space-y-4" lang="fr">
+{/* BaseLayout's own skip link, in English, comes first on this page too, so the case's is the
+    second, and only shows on focus */}
+
+<Section data-testid="skip-to-content-labels" class="p-4 space-y-4" lang="fr">
   <Heading level={2}>Text in another language</Heading>
   <SkipToContent>Aller au contenu</SkipToContent>
 </Section>
