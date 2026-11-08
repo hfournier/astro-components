@@ -84,3 +84,38 @@ export const badgedName = (
   if (badgeLabel === "") return `${label}, ${badgeDescription}`;
   return isBadgeCount(badgeLabel) ? `${label}, ${badgeLabel}` : undefined;
 };
+
+/**
+ * Closes a modal dialog on a click on its scrim, in browsers without `closedby` (Safari). Where
+ * it's supported, `closedby="any"` on the dialog does this natively, and this does nothing. It
+ * also does nothing for a dialog whose `closedby` isn't `"any"` when it's called, so a page that
+ * sets its own `closedby` gets the same behaviour in every browser.
+ *
+ * Like Escape, the click fires a cancelable `cancel` first, and closes only if nothing prevents
+ * it. (The platform's `cancel` is cancelable only after a user action, which a click is, so the
+ * two agree.) The dialog's panel must fill it, so a click that lands on the dialog itself is on
+ * its `::backdrop`. The press must start there too, as the platform's light dismiss asks, so a
+ * text selection dragged out of the content doesn't close it.
+ *
+ * @param dialog - A modal `<dialog>` with `closedby="any"`, whose content fills it.
+ */
+export const closeOnScrimClick = (dialog: HTMLDialogElement) => {
+  if (
+    "closedBy" in HTMLDialogElement.prototype ||
+    dialog.getAttribute("closedby") !== "any"
+  )
+    return;
+  let pressedOnScrim = false;
+  dialog.addEventListener("pointerdown", (event) => {
+    pressedOnScrim = event.target === dialog;
+  });
+  dialog.addEventListener("click", (event) => {
+    const onScrim = event.target === dialog && pressedOnScrim;
+    pressedOnScrim = false;
+    if (
+      onScrim &&
+      dialog.dispatchEvent(new Event("cancel", { cancelable: true }))
+    )
+      dialog.close("");
+  });
+};

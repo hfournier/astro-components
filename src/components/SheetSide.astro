@@ -129,6 +129,7 @@ const closeAttrs = isModal
   class:list={twMerge(placementClasses, widthClasses, modalClasses, classList)}
   id={id}
   aria-labelledby={headlineId}
+  closedby={isModal ? "any" : undefined}
   data-ac-sheet-side={isModal ? "modal" : "standard"}
   {...attrs}
 >
@@ -199,30 +200,18 @@ const closeAttrs = isModal
 </Tag>
 
 <script>
-  // A modal sheet closes on a click on its scrim: its content fills the dialog, so a click that
-  // lands on the dialog itself is on its ::backdrop. Like Escape, it fires a cancelable `cancel`
-  // first. The press must start there too, so a text selection dragged out of the content doesn't
-  // close it. Neither that nor Escape is an action, so both clear returnValue, which Firefox and
-  // WebKit otherwise keep from the sheet's last opening.
+  import { closeOnScrimClick } from "../utils";
+
+  // A modal sheet closes on a click on its scrim, as Escape does: closedby="any", or
+  // closeOnScrimClick where that's unsupported. Neither that nor Escape is an action, so both
+  // clear returnValue, which the HTML spec otherwise keeps from the sheet's last opening.
   document
     .querySelectorAll<HTMLDialogElement>('[data-ac-sheet-side="modal"]')
     .forEach((sheet) => {
-      let pressedOnScrim = false;
-      sheet.addEventListener("pointerdown", (event) => {
-        pressedOnScrim = event.target === sheet;
-      });
-      sheet.addEventListener("click", (event) => {
-        const onScrim = event.target === sheet && pressedOnScrim;
-        pressedOnScrim = false;
-        if (
-          onScrim &&
-          sheet.dispatchEvent(new Event("cancel", { cancelable: true }))
-        )
-          sheet.close("");
-      });
       sheet.addEventListener("cancel", () => {
         sheet.returnValue = "";
       });
+      closeOnScrimClick(sheet);
     });
 
   // A standard sheet's close button hides it; remove its hidden attribute to show it again. The

@@ -107,6 +107,7 @@ const heightClasses = hasHalfHeight
 <Tag
   class:list={twMerge(placementClasses, widthClasses, modalClasses, classList)}
   id={id}
+  closedby={isModal ? "any" : undefined}
   data-ac-sheet-bottom={isModal ? "modal" : "standard"}
   {...attrs}
 >
@@ -159,33 +160,22 @@ const heightClasses = hasHalfHeight
 </Tag>
 
 <script>
+  import { closeOnScrimClick } from "../utils";
+
   // Past this, a drag on the handle collapses or closes the sheet (or expands a collapsed one)
   const dragThreshold = 32;
 
-  // A modal sheet closes on a click on its scrim: its content fills the dialog, so a click that
-  // lands on the dialog itself is on its ::backdrop. Like Escape, it fires a cancelable `cancel`
-  // first. The press must start there too, so a text selection dragged out of the content doesn't
-  // close it. Neither that, Escape nor the drag handle is an action, so all of them clear
-  // returnValue, which Firefox and WebKit otherwise keep from the sheet's last opening.
+  // A modal sheet closes on a click on its scrim, as Escape does: closedby="any", or
+  // closeOnScrimClick where that's unsupported. Neither that, Escape nor the drag handle is an
+  // action, so all of them clear returnValue, which the HTML spec otherwise keeps from the
+  // sheet's last opening.
   document
     .querySelectorAll<HTMLDialogElement>('[data-ac-sheet-bottom="modal"]')
     .forEach((sheet) => {
-      let pressedOnScrim = false;
-      sheet.addEventListener("pointerdown", (event) => {
-        pressedOnScrim = event.target === sheet;
-      });
-      sheet.addEventListener("click", (event) => {
-        const onScrim = event.target === sheet && pressedOnScrim;
-        pressedOnScrim = false;
-        if (
-          onScrim &&
-          sheet.dispatchEvent(new Event("cancel", { cancelable: true }))
-        )
-          sheet.close("");
-      });
       sheet.addEventListener("cancel", () => {
         sheet.returnValue = "";
       });
+      closeOnScrimClick(sheet);
     });
 
   // Content taller than the sheet scrolls, so it's a tab stop then, for keyboard users to scroll
