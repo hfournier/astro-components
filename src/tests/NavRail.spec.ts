@@ -16,10 +16,9 @@ const railNav = (page: Page) =>
 const destination = (page: Page, name: string) =>
   railNav(page).getByRole("link", { name, exact: true });
 // The site rail's toggle has the default name; the expandable test rail's is its menuLabel
-const menuToggle = (page: Page) =>
-  rail(page).getByRole("button", { name: "Menu", exact: true });
-const testMenuToggle = (page: Page) =>
-  rail(page).getByRole("button", { name: "Test menu", exact: true });
+const menuToggle = (page: Page, name = "Menu") =>
+  rail(page).getByRole("button", { name, exact: true });
+const testMenuToggle = (page: Page) => menuToggle(page, "Test menu");
 // The modal rail makes the rest of the page inert
 const isMainInert = (page: Page) =>
   page.locator("main").evaluate((el) => el.closest("[inert]") !== null);
@@ -240,6 +239,10 @@ test.describe("NavRail, expandable", () => {
       page,
     }) => {
       await expect(testMenuToggle(page)).toBeVisible();
+      // menuLabel words the toggle's tooltip, as well as naming it
+      await expect(
+        testMenuToggle(page).locator("[data-ac-tooltip]")
+      ).toHaveText("Test menu");
       await expect(testMenuToggle(page)).toHaveAttribute(
         "aria-expanded",
         "true"
