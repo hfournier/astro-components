@@ -44,4 +44,16 @@ test.describe("MenuToggle", () => {
     await expect(button).toHaveAttribute("aria-expanded", "false");
     expect(await visibleIcon(button).innerHTML()).toBe(collapsedIcon);
   });
+
+  test("is named, and its tooltip worded, by `label`, Menu by default", async ({
+    page,
+  }) => {
+    await expect(toggle(page).locator("[data-ac-tooltip]")).toHaveText("Menu");
+    const translated = page
+      .getByTestId("menu-toggle-labels")
+      .getByRole("button", { name: "Menú", exact: true });
+    await expect(translated.locator("[data-ac-tooltip]")).toHaveText("Menú");
+    await translated.hover();
+    await expect(translated.locator("[data-ac-tooltip]")).toBeVisible();
+  });
 });

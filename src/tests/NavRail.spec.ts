@@ -15,8 +15,10 @@ const railNav = (page: Page) =>
   page.getByRole("navigation", { name: "Main", exact: true });
 const destination = (page: Page, name: string) =>
   railNav(page).getByRole("link", { name, exact: true });
-const menuToggle = (page: Page) =>
-  rail(page).getByRole("button", { name: "Menu", exact: true });
+// The site rail's toggle has the default name; the expandable test rail's is its menuLabel
+const menuToggle = (page: Page, name = "Menu") =>
+  rail(page).getByRole("button", { name, exact: true });
+const testMenuToggle = (page: Page) => menuToggle(page, "Test menu");
 // The modal rail makes the rest of the page inert
 const isMainInert = (page: Page) =>
   page.locator("main").evaluate((el) => el.closest("[inert]") !== null);
@@ -236,21 +238,34 @@ test.describe("NavRail, expandable", () => {
     test("starts expanded, with its menu toggle shown and expanded", async ({
       page,
     }) => {
-      await expect(menuToggle(page)).toBeVisible();
-      await expect(menuToggle(page)).toHaveAttribute("aria-expanded", "true");
+      await expect(testMenuToggle(page)).toBeVisible();
+      // menuLabel words the toggle's tooltip, as well as naming it
+      await expect(
+        testMenuToggle(page).locator("[data-ac-tooltip]")
+      ).toHaveText("Test menu");
+      await expect(testMenuToggle(page)).toHaveAttribute(
+        "aria-expanded",
+        "true"
+      );
       expect((await box(rail(page))).width).toBe(220);
     });
 
     test("its menu toggle collapses it and expands it again", async ({
       page,
     }) => {
-      await menuToggle(page).click();
-      await expect(menuToggle(page)).toHaveAttribute("aria-expanded", "false");
+      await testMenuToggle(page).click();
+      await expect(testMenuToggle(page)).toHaveAttribute(
+        "aria-expanded",
+        "false"
+      );
       await settled(page);
       expect((await box(rail(page))).width).toBe(96);
 
-      await menuToggle(page).click();
-      await expect(menuToggle(page)).toHaveAttribute("aria-expanded", "true");
+      await testMenuToggle(page).click();
+      await expect(testMenuToggle(page)).toHaveAttribute(
+        "aria-expanded",
+        "true"
+      );
       await settled(page);
       expect((await box(rail(page))).width).toBe(220);
     });
@@ -258,21 +273,39 @@ test.describe("NavRail, expandable", () => {
     test("resizing below large and back resets it to each size's default", async ({
       page,
     }) => {
-      await menuToggle(page).click();
-      await expect(menuToggle(page)).toHaveAttribute("aria-expanded", "false");
+      await testMenuToggle(page).click();
+      await expect(testMenuToggle(page)).toHaveAttribute(
+        "aria-expanded",
+        "false"
+      );
 
       await page.setViewportSize({ width: 1000, height: 800 });
-      await expect(menuToggle(page)).toHaveAttribute("aria-expanded", "false");
-      await menuToggle(page).click();
-      await expect(menuToggle(page)).toHaveAttribute("aria-expanded", "true");
+      await expect(testMenuToggle(page)).toHaveAttribute(
+        "aria-expanded",
+        "false"
+      );
+      await testMenuToggle(page).click();
+      await expect(testMenuToggle(page)).toHaveAttribute(
+        "aria-expanded",
+        "true"
+      );
 
       // within medium-to-large the user's choice holds, until large resets it
       await page.setViewportSize({ width: 900, height: 800 });
-      await expect(menuToggle(page)).toHaveAttribute("aria-expanded", "true");
+      await expect(testMenuToggle(page)).toHaveAttribute(
+        "aria-expanded",
+        "true"
+      );
       await page.setViewportSize({ width: 1280, height: 800 });
-      await expect(menuToggle(page)).toHaveAttribute("aria-expanded", "true");
-      await menuToggle(page).click();
-      await expect(menuToggle(page)).toHaveAttribute("aria-expanded", "false");
+      await expect(testMenuToggle(page)).toHaveAttribute(
+        "aria-expanded",
+        "true"
+      );
+      await testMenuToggle(page).click();
+      await expect(testMenuToggle(page)).toHaveAttribute(
+        "aria-expanded",
+        "false"
+      );
 
       // collapsed at large, it's collapsed below large too, so wait for a frame there for the
       // window size to change (WebKit can skip a size it only has between frames)
@@ -284,7 +317,10 @@ test.describe("NavRail, expandable", () => {
           )
       );
       await page.setViewportSize({ width: 1280, height: 800 });
-      await expect(menuToggle(page)).toHaveAttribute("aria-expanded", "true");
+      await expect(testMenuToggle(page)).toHaveAttribute(
+        "aria-expanded",
+        "true"
+      );
       await settled(page);
       expect((await box(rail(page))).width).toBe(220);
     });
@@ -296,9 +332,12 @@ test.describe("NavRail, expandable", () => {
     test("starts collapsed, its menu toggle 44px from the top", async ({
       page,
     }) => {
-      await expect(menuToggle(page)).toHaveAttribute("aria-expanded", "false");
+      await expect(testMenuToggle(page)).toHaveAttribute(
+        "aria-expanded",
+        "false"
+      );
       expect((await box(rail(page))).width).toBe(96);
-      expect((await box(menuToggle(page))).y).toBe(44);
+      expect((await box(testMenuToggle(page))).y).toBe(44);
     });
 
     test("sits on surface at elevation 0 by default, as M3's standard rail", async ({
@@ -356,8 +395,11 @@ test.describe("NavRail, expandable", () => {
 
     test.describe("expanded", () => {
       test.beforeEach(async ({ page }) => {
-        await menuToggle(page).click();
-        await expect(menuToggle(page)).toHaveAttribute("aria-expanded", "true");
+        await testMenuToggle(page).click();
+        await expect(testMenuToggle(page)).toHaveAttribute(
+          "aria-expanded",
+          "true"
+        );
         await settled(page);
       });
 
@@ -429,7 +471,7 @@ test.describe("NavRail, expandable", () => {
       page,
     }) => {
       expect((await rect(rail(page))).x).toBeGreaterThanOrEqual(400);
-      const toggle = await box(menuToggle(page));
+      const toggle = await box(testMenuToggle(page));
       expect(toggle.x + toggle.width).toBe(380);
       expect(toggle.y).toBe(20);
     });
@@ -437,8 +479,11 @@ test.describe("NavRail, expandable", () => {
     test("opens from the right edge, its rounded corners on the left", async ({
       page,
     }) => {
-      await menuToggle(page).click();
-      await expect(menuToggle(page)).toHaveAttribute("aria-expanded", "true");
+      await testMenuToggle(page).click();
+      await expect(testMenuToggle(page)).toHaveAttribute(
+        "aria-expanded",
+        "true"
+      );
       await settled(page);
 
       const open = await box(rail(page));
@@ -453,8 +498,11 @@ test.describe("NavRail, expandable", () => {
     test("with the default bgColor, opens on surface-container, M3's modal rail", async ({
       page,
     }) => {
-      await menuToggle(page).click();
-      await expect(menuToggle(page)).toHaveAttribute("aria-expanded", "true");
+      await testMenuToggle(page).click();
+      await expect(testMenuToggle(page)).toHaveAttribute(
+        "aria-expanded",
+        "true"
+      );
       await settled(page);
 
       await expect(rail(page)).toHaveCSS(
