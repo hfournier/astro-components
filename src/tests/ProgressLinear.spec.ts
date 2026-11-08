@@ -1,6 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "./support/a11y-fixture";
-import { box, resolvedColor, settled } from "./support/helpers";
+import { box, contrastRatio, resolvedColor, settled } from "./support/helpers";
 
 // Each case on /tests/progress-linear is a Section with
 // data-testid="progress-linear-<caseId>". Each indicator is named by its aria-label.
@@ -168,18 +168,36 @@ test.describe("ProgressLinear", () => {
   test("in a button, the active indicator takes the label's color, and the track and stop indicator are gone", async ({
     page,
   }) => {
-    const progress = indicator(page, "in-button", "Uploading, 40%");
-    const label = await style(
-      progress.locator("xpath=ancestor::*[@data-ac-base-button][1]"),
-      "color"
-    );
-    await expect(part(progress, "active-indicator").first()).toHaveCSS(
-      "background-color",
-      label
-    );
-    for (const track of await part(progress, "track").all())
-      await expect(track).toBeHidden();
-    await expect(part(progress, "stop-indicator")).toBeHidden();
+    for (const scheme of ["light", "dark"] as const) {
+      await page.emulateMedia({ colorScheme: scheme });
+      // the button's colors transition to the new scheme
+      await settled(page);
+      for (const name of ["Uploading, 40%", "Uploading, wavy"]) {
+        const progress = indicator(page, "in-button", name);
+        const button = progress.locator(
+          "xpath=ancestor::*[@data-ac-base-button][1]"
+        );
+        const label = await style(button, "color");
+        // the flat segments are filled, the wave stroked
+        expect(
+          await part(progress, "active-indicator").evaluateAll((els) => [
+            ...new Set(
+              els.map((el) =>
+                el instanceof SVGElement
+                  ? getComputedStyle(el).stroke
+                  : getComputedStyle(el).backgroundColor
+              )
+            ),
+          ])
+        ).toEqual([label]);
+        for (const track of await part(progress, "track").all())
+          await expect(track).toBeHidden();
+        await expect(part(progress, "stop-indicator")).toBeHidden();
+        expect(
+          contrastRatio(label, await style(button, "background-color"))
+        ).toBeGreaterThanOrEqual(3);
+      }
+    }
   });
 
   test("showStopIndicator={false} leaves the stop indicator out", async ({

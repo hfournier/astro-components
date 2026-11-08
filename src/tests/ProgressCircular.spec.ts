@@ -255,7 +255,7 @@ test.describe("ProgressCircular", () => {
       await page.emulateMedia({ colorScheme: scheme });
       // the button's colors transition to the new scheme
       await settled(page);
-      for (const name of ["Saving, halfway", "Sending"]) {
+      for (const name of ["Saving, halfway", "Sending", "Exporting, wavy"]) {
         const progress = indicator(page, "in-button", name);
         const button = progress.locator(
           "xpath=ancestor::*[@data-ac-base-button][1]"

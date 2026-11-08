@@ -155,8 +155,15 @@ export const elevation = (page: Page, level: keyof typeof ELEVATION) =>
     return resolved;
   }, ELEVATION[level]);
 
-/** WCAG's contrast ratio between two opaque computed colors, such as `rgb(156, 63, 0)`. */
+/**
+ * WCAG's contrast ratio between two opaque computed colors, such as `rgb(156, 63, 0)`. A
+ * translucent one, such as a text button's transparent container, throws, as its ratio depends
+ * on what's behind it.
+ */
 export const contrastRatio = (a: string, b: string): number => {
+  for (const color of [a, b])
+    if (alpha(color) < 1)
+      throw new Error(`contrastRatio: ${color} isn't opaque`);
   const luminance = (color: string) => {
     const [r, g, b] = color
       .match(/[\d.]+/g)!
