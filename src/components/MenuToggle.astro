@@ -4,8 +4,12 @@ import ButtonIcon from "./ButtonIcon.astro";
 
 type ButtonIconProps = ComponentProps<typeof ButtonIcon>;
 
-type Props = Omit<ButtonIconProps, "icon" | "label" | "selectedIcon">;
-const { class: classList, ...attrs } = Astro.props;
+// `label` names the button and words its tooltip, as ButtonIcon's does. Set it on pages in other
+// languages.
+type Props = Omit<ButtonIconProps, "icon" | "label" | "selectedIcon"> & {
+  label?: string;
+};
+const { label = "Menu", class: classList, ...attrs } = Astro.props;
 ---
 
 {/* A disclosure button: it shows and hides other content (the expanded rail), so its state is
@@ -15,7 +19,7 @@ const { class: classList, ...attrs } = Astro.props;
   class={classList}
   icon="menu"
   selectedIcon="menu_open"
-  label="Menu"
+  label={label}
   size="md"
   aria-expanded="false"
   data-ac-icon-toggle="aria-expanded"

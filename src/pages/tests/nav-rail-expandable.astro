@@ -1,9 +1,10 @@
 ---
 // An expandable NavRail, which the site's own (in BaseLayout) isn't. A page can have only one
 // rail, so this page has its own layout rather than BaseLayout's. The rail is labelled "Test
-// rail", centers its items and draws its divider; its destinations are this page (current, with a
-// filled active icon and a section of sub-items), a short one with a dot badge, and one with a label
-// too long for a 220px rail. See src/tests/NavRail.spec.ts.
+// rail" and its menu toggle "Test menu", centers its items and draws its divider; its
+// destinations are this page (current, with a filled active icon and a section of sub-items), a
+// short one with a dot badge, and one with a label too long for a 220px rail. See
+// src/tests/NavRail.spec.ts.
 import "../../styles/global.css";
 import BaseHead from "../../internal/BaseHead.astro";
 import Fab from "../../components/Fab.astro";
@@ -19,7 +20,7 @@ import NavRailSubItems from "../../components/NavRailSubItems.astro";
     description="An expandable NavRail, with centered items and a divider"
   />
   <body class="grid grid-cols-1 bg-(--theme-color-surface) text-(--theme-color-on-surface) medium:grid-cols-[auto_1fr]">
-    <NavRail label="Test rail" align="center" showDivider>
+    <NavRail label="Test rail" menuLabel="Test menu" align="center" showDivider>
       <Fab icon="search" label="Search" slot="fab" />
 
       <NavRailItem

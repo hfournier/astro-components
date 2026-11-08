@@ -16,6 +16,9 @@ type Props = Omit<BaseWrapperProps, "as"> & {
   align?: "top" | "center";
   // The <nav>'s accessible name
   label?: string;
+  // The name and tooltip of the rail's MenuToggle, below medium and when it's expandable. Set it
+  // on pages in other languages.
+  menuLabel?: string;
   // M3's optional divider on the rail's end edge, beside the page's content, from medium up
   showDivider?: boolean;
 };
@@ -25,6 +28,7 @@ const {
   isExpandable = true,
   align = "top",
   label = "Main",
+  menuLabel = "Menu",
   showDivider = false,
   class: classList,
   ...attrs
@@ -125,7 +129,10 @@ const expandedWidthClasses = {
          over whatever is behind it while the rail is closed, and blends into the rail when it's
          open. The div keeps its place in the rail. */}
     <div class:list={["size-14 shrink-0", !isExpandable && "medium:hidden"]}>
-      <MenuToggle class="max-medium:visible max-medium:fixed max-medium:inset-s-5 max-medium:top-5 max-medium:z-10 max-medium:bg-(--theme-color-wrapper-bg)" />
+      <MenuToggle
+        label={menuLabel}
+        class="max-medium:visible max-medium:fixed max-medium:inset-s-5 max-medium:top-5 max-medium:z-10 max-medium:bg-(--theme-color-wrapper-bg)"
+      />
       <script is:inline>
         // M3: a rail can be expanded by default on larger windows, so an expandable one starts
         // expanded from large up. Set before the rail is first painted, so it doesn't show
