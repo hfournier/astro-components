@@ -291,7 +291,8 @@ if (!label && !attrs["aria-label"] && !attrs["aria-labelledby"]) {
       "[data-ac-text-field-chips-part=status]"
     );
     const chips = chipsOf(field);
-    // The page's words, from chipPositionMessage, with each placeholder filled in
+    // The page's words, from chipPositionMessage, with each placeholder filled in and any other
+    // braces left as written
     const message = (field as HTMLElement).dataset
       .acTextFieldChipsPositionMessage!;
     const values: Record<string, string> = {
@@ -302,8 +303,8 @@ if (!label && !attrs["aria-label"] && !attrs["aria-labelledby"]) {
     };
     if (status)
       status.textContent = message.replace(
-        /\{(chip|position|count|field)\}/g,
-        (_, key: string) => values[key]
+        /\{(\w+)\}/g,
+        (placeholder, key: string) => values[key] ?? placeholder
       );
   };
 
