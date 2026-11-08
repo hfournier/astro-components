@@ -166,6 +166,32 @@ test.describe("ButtonGroupConnected", () => {
     await expect(checkbox(filters, "Open")).toBeFocused();
   });
 
+  // A held key presses an option as the pointer does: Space on any input, Enter only on a
+  // checkbox, which Enter checks; a radio ignores Enter
+  test("holding Space, or Enter on a checkbox, presses the option until the key is released", async ({
+    page,
+  }) => {
+    const pressedMark = "data-ac-button-group-connected-pressed";
+    const open = checkbox(group(page, "multi", "Filters", "group"), "Open");
+    await open.focus();
+    for (const key of ["Space", "Enter"]) {
+      await page.keyboard.down(key);
+      await expect(option(open), key).toHaveAttribute(pressedMark, "");
+      await page.keyboard.up(key);
+      await expect(option(open), key).not.toHaveAttribute(pressedMark);
+    }
+
+    const week = radio(group(page, "single", "View"), "Week");
+    await week.focus();
+    await page.keyboard.down("Space");
+    await expect(option(week)).toHaveAttribute(pressedMark, "");
+    await page.keyboard.up("Space");
+    await expect(option(week)).not.toHaveAttribute(pressedMark);
+    await page.keyboard.down("Enter");
+    await expect(option(week)).not.toHaveAttribute(pressedMark);
+    await page.keyboard.up("Enter");
+  });
+
   test("multi-select with selection required keeps its last checkbox checked", async ({
     page,
   }) => {

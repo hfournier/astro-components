@@ -119,3 +119,111 @@ export const closeOnScrimClick = (dialog: HTMLDialogElement) => {
       dialog.close("");
   });
 };
+
+/**
+ * M3's window size classes as media queries, for `matchMedia`. They repeat theme.css's
+ * `--breakpoint-*` (ADR-0014), which a script can't read in a media query, so keep the two in
+ * step.
+ */
+export const breakpoints = {
+  medium: "(width >= 37.5rem)",
+  expanded: "(width >= 52.5rem)",
+  large: "(width >= 75rem)",
+  xlarge: "(width >= 100rem)",
+} as const;
+
+/**
+ * One of theme.css's motion springs, as timing for `element.animate()`, for motion CSS can't
+ * transition, such as a change of place or an animation to an element's natural size. Read when
+ * called, so it follows the page's current theme.
+ *
+ * @param name - The spring, e.g. `"fast-spatial"`, which reads `--theme-duration-spring-fast-spatial`
+ * and `--ease-spring-fast-spatial`.
+ * @returns The spring's duration in ms and its easing.
+ */
+export const springTiming = (name: string) => {
+  const root = getComputedStyle(document.documentElement);
+  return {
+    duration: parseFloat(
+      root.getPropertyValue(`--theme-duration-spring-${name}`)
+    ),
+    easing: root.getPropertyValue(`--ease-spring-${name}`).trim(),
+  };
+};
+
+/**
+ * Makes the rest of the page inert under a modal that isn't a `<dialog>`, such as a navigation
+ * rail or drawer opened over it: every child of `<body>` except scripts, the scrim and those
+ * holding one of `keep`. Only what it made inert is restored, so what the page made inert stays
+ * that way.
+ *
+ * @param keep - The elements that stay usable, e.g. the open rail.
+ * @param scrim - A selector for the modal's scrim, which stays clickable to close it.
+ * @returns `setInert(isInert)`: `true` makes the rest of the page inert, `false` restores it.
+ */
+export const inertOutside = (keep: readonly Element[], scrim: string) => {
+  const inerted: HTMLElement[] = [];
+  return (isInert: boolean) => {
+    if (!isInert) {
+      inerted.splice(0).forEach((element) => (element.inert = false));
+      return;
+    }
+    Array.from(document.body.children).forEach((element) => {
+      if (
+        element instanceof HTMLElement &&
+        !element.inert &&
+        !(element instanceof HTMLScriptElement) &&
+        !element.matches(scrim) &&
+        !keep.some((kept) => element.contains(kept))
+      ) {
+        element.inert = true;
+        inerted.push(element);
+      }
+    });
+  };
+};
+
+/**
+ * Marks an element pressed, as `:active` would, from the primary pointer pressing it to its
+ * release, and, if `isPressKey` is given, while a press key is held on an input inside it. For a
+ * `<label>` drawn as a control around its native input, as Firefox doesn't reliably give `:active`
+ * to either (ADR-0022, ADR-0024, ADR-0028).
+ * Delegated from the document, so it covers elements added later.
+ *
+ * @param selector - The elements to mark, e.g. `"label[data-ac-base-chip]"`.
+ * @param attribute - The mark, set to `""` while pressed, e.g. `"data-ac-base-chip-pressed"`.
+ * @param isPressKey - Whether a key event's key presses the element, e.g. Space. Left out, keys
+ * don't mark it.
+ */
+export const markPressed = (
+  selector: string,
+  attribute: string,
+  isPressKey?: (event: KeyboardEvent) => boolean
+) => {
+  document.addEventListener("pointerdown", (event) => {
+    if (!event.isPrimary || event.button !== 0) return;
+    const element = (event.target as Element).closest?.(selector);
+    if (!element) return;
+    element.setAttribute(attribute, "");
+    const end = () => {
+      element.removeAttribute(attribute);
+      document.removeEventListener("pointerup", end);
+      document.removeEventListener("pointercancel", end);
+    };
+    document.addEventListener("pointerup", end);
+    document.addEventListener("pointercancel", end);
+  });
+  if (!isPressKey) return;
+  const elementOf = (target: EventTarget | null) =>
+    target instanceof HTMLInputElement ? target.closest(selector) : null;
+  document.addEventListener("keydown", (event) => {
+    if (isPressKey(event) && !event.repeat)
+      elementOf(event.target)?.setAttribute(attribute, "");
+  });
+  document.addEventListener("keyup", (event) => {
+    if (isPressKey(event)) elementOf(event.target)?.removeAttribute(attribute);
+  });
+  document.addEventListener("focusout", (event) => {
+    elementOf(event.target)?.removeAttribute(attribute);
+  });
+};

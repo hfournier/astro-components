@@ -284,6 +284,19 @@ test.describe("ChipFilter", () => {
     }
   });
 
+  // Space held on a chip's input presses the chip until it's released, as it would a button
+  test("holding Space on its input presses the chip until the key is released", async ({
+    page,
+  }) => {
+    const pressedMark = "data-ac-base-chip-pressed";
+    const docs = chip(page, "styles", "Docs");
+    await input(page, "styles", "Docs").focus();
+    await page.keyboard.down("Space");
+    await expect(docs).toHaveAttribute(pressedMark, "");
+    await page.keyboard.up("Space");
+    await expect(docs).not.toHaveAttribute(pressedMark);
+  });
+
   // Compose's FilterChipTokens: a flat chip rises to level 1 on hover only while selected, and is
   // flat again pressed
   test("a selected flat chip rises to level 1 on hover, not while pressed", async ({

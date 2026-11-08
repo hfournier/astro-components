@@ -3,6 +3,7 @@ import type { ComponentProps } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import BaseWrapper from "./BaseWrapper.astro";
 import MenuToggle from "./MenuToggle.astro";
+import { breakpoints } from "../utils";
 
 type BaseWrapperProps = ComponentProps<typeof BaseWrapper>;
 
@@ -134,14 +135,13 @@ const expandedWidthClasses = {
         label={menuLabel}
         class="max-medium:visible max-medium:fixed max-medium:inset-s-5 max-medium:top-5 max-medium:z-10 max-medium:bg-(--theme-color-wrapper-bg)"
       />
-      <script is:inline>
+      <script is:inline define:vars={{ large: breakpoints.large }}>
         // M3: a rail can be expanded by default on larger windows, so an expandable one starts
         // expanded from large up. Set before the rail is first painted, so it doesn't show
-        // collapsed and then expand. M3's large window size; keep in step with
-        // --breakpoint-large in theme.css.
+        // collapsed and then expand.
         if (
           document.currentScript.closest("[data-ac-nav-rail-expandable]") &&
-          window.matchMedia("(width >= 75rem)").matches
+          window.matchMedia(large).matches
         )
           document.currentScript.parentElement
             .querySelector("[data-ac-menu-toggle]")
@@ -178,15 +178,16 @@ const expandedWidthClasses = {
 ></div>
 
 <script>
+  import { breakpoints, inertOutside } from "../utils";
+
   // Below medium the rail's MenuToggle opens it as a modal: the rest of the page is inert under a
   // scrim. It closes with the toggle, Escape or a click on the scrim. The toggle stays in place, so
   // focus stays on it, except that Escape from inside the rail brings focus back to it. Its
   // aria-expanded is the open state: MenuToggle flips it on click, and the rail follows.
   // From medium up, an expandable rail's toggle expands and collapses it, and starts expanded from
   // large up.
-  // M3's medium and large window sizes; keep in step with --breakpoint-* in theme.css
-  const medium = window.matchMedia("(width >= 37.5rem)");
-  const large = window.matchMedia("(width >= 75rem)");
+  const medium = window.matchMedia(breakpoints.medium);
+  const large = window.matchMedia(breakpoints.large);
 
   const isVisible = (element: HTMLElement) =>
     element.getClientRects().length > 0;
@@ -215,27 +216,9 @@ const expandedWidthClasses = {
         links[index + (event.key === "ArrowDown" ? 1 : -1)]?.focus();
       });
 
-      const inerted: HTMLElement[] = [];
       const isOpen = () => rail.hasAttribute("data-open");
 
-      const setInert = (isInert: boolean) => {
-        if (!isInert) {
-          inerted.splice(0).forEach((element) => (element.inert = false));
-          return;
-        }
-        Array.from(document.body.children).forEach((element) => {
-          if (
-            element instanceof HTMLElement &&
-            !element.inert &&
-            !(element instanceof HTMLScriptElement) &&
-            !element.matches("[data-ac-nav-rail-scrim]") &&
-            !element.contains(rail)
-          ) {
-            element.inert = true;
-            inerted.push(element);
-          }
-        });
-      };
+      const setInert = inertOutside([rail], "[data-ac-nav-rail-scrim]");
 
       const open = () => {
         if (isOpen()) return;

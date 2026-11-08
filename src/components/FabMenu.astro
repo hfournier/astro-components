@@ -294,6 +294,8 @@ const fabBaseClasses = [
 </div>
 
 <script>
+  import { breakpoints } from "../utils";
+
   document
     .querySelectorAll<HTMLElement>("[data-ac-fab-menu]")
     .forEach((menu) => {
@@ -322,9 +324,8 @@ const fabBaseClasses = [
       });
 
       // Crossing the large window size class swaps one FAB for the other, so whichever menu is
-      // open closes, its FAB being gone, and focus in either moves to the FAB now shown. The
-      // width repeats theme.css's --breakpoint-large (ADR-0014).
-      const large = matchMedia("(width >= 75rem)");
+      // open closes, its FAB being gone, and focus in either moves to the FAB now shown.
+      const large = matchMedia(breakpoints.large);
       large.addEventListener("change", () => {
         const hadFocus = menu.contains(document.activeElement);
         if (popover.matches(":popover-open")) popover.hidePopover();

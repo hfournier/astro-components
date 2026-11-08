@@ -59,6 +59,8 @@ const { headings, isDocked = false } = Astro.props;
 )}
 
 <script>
+  import { breakpoints } from "../utils";
+
   const toc = document.getElementById("table-of-contents");
 
   if (toc instanceof HTMLDialogElement) {
@@ -73,12 +75,9 @@ const { headings, isDocked = false } = Astro.props;
     });
 
     // From large up the docked sheet takes over, so an open modal one closes rather than staying
-    // hidden (large:hidden) with the page still inert. M3's large window size; keep in step with
-    // --breakpoint-large in theme.css.
-    window
-      .matchMedia("(width >= 75rem)")
-      .addEventListener("change", (event) => {
-        if (event.matches) toc.close();
-      });
+    // hidden (large:hidden) with the page still inert
+    window.matchMedia(breakpoints.large).addEventListener("change", (event) => {
+      if (event.matches) toc.close();
+    });
   }
 </script>

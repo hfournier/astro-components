@@ -167,6 +167,8 @@ if (isActionOnNewLine && !hasAction) {
 <span class="sr-only" role="status" data-ac-snackbar-live={id}></span>
 
 <script>
+  import { breakpoints } from "../utils";
+
   // Compose's SnackbarDuration: short and long, in ms. Indefinite never times out.
   const durations: Record<string, number> = { short: 4000, long: 10000 };
   // The classes' measurements, which placing a snackbar reckons with before it's drawn: Compose's
@@ -175,7 +177,6 @@ if (isActionOnNewLine && !hasAction) {
   const edge = 12;
   const maxWidth = 600;
   const twoLineHeight = 68;
-  const medium = "(width >= 37.5rem)";
   // What it keeps out of the way of (M3's placement guidelines): what's fixed at the bottom of the
   // window, which it goes up above, and what runs down the window's start side, which it starts
   // past
@@ -245,7 +246,7 @@ if (isActionOnNewLine && !hasAction) {
   // start edge, and the height of two lines.
   const place = (snackbar: HTMLElement) => {
     const isRtl = getComputedStyle(snackbar).direction === "rtl";
-    const isCompact = !matchMedia(medium).matches;
+    const isCompact = !matchMedia(breakpoints.medium).matches;
     const start = isCompact
       ? 0
       : startOffset((rect) => (isRtl ? innerWidth - rect.left : rect.right));

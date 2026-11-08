@@ -117,11 +117,10 @@ const widthClasses = {
 )}
 
 <script>
-  import { trimSlash } from "../utils";
+  import { breakpoints, inertOutside, trimSlash } from "../utils";
 
-  // M3's medium and large window sizes; keep in step with --breakpoint-* in theme.css
-  const medium = window.matchMedia("(width >= 37.5rem)");
-  const large = window.matchMedia("(width >= 75rem)");
+  const medium = window.matchMedia(breakpoints.medium);
+  const large = window.matchMedia(breakpoints.large);
   const openDelay = 200; // so the pointer can cross the rail without opening the drawer
   const closeDelay = 300; // time to move the pointer between a rail item and the drawer
 
@@ -153,7 +152,6 @@ const widthClasses = {
       // focus leaves that item
       let dismissedItem: HTMLAnchorElement | null = null;
       let timer: number | undefined;
-      const inerted: HTMLElement[] = [];
 
       // From medium to large, where the drawer opens and closes. Below medium it does neither: its sections
       // are in the rail, which opens expanded (see place()).
@@ -217,25 +215,10 @@ const widthClasses = {
         });
       };
 
-      const setInert = (isInert: boolean) => {
-        if (!isInert) {
-          inerted.splice(0).forEach((element) => (element.inert = false));
-          return;
-        }
-        Array.from(document.body.children).forEach((element) => {
-          if (
-            element instanceof HTMLElement &&
-            !element.inert &&
-            !(element instanceof HTMLScriptElement) &&
-            !element.hasAttribute("data-ac-nav-drawer-scrim") &&
-            !element.contains(drawer) &&
-            !element.contains(rail)
-          ) {
-            element.inert = true;
-            inerted.push(element);
-          }
-        });
-      };
+      const setInert = inertOutside(
+        [drawer, rail],
+        "[data-ac-nav-drawer-scrim]"
+      );
 
       const open = (item: HTMLAnchorElement, moveFocus = false) => {
         if (!medium.matches) return;
