@@ -32,6 +32,10 @@ type Props = Omit<HTMLAttributes<"input">, "type"> & {
   // languages; the `chips` slot's own chips take ChipInput's `removeLabel` and `editLabel`.
   removeLabel?: string;
   editLabel?: string;
+  // What screen readers hear when a chip moves ("Alex, 2 of 3 in To"), `{chip}` replaced with its
+  // label, `{position}` with its place, `{count}` with the number of chips and `{field}` with the
+  // field's name. Set it on pages in other languages.
+  chipPositionMessage?: string;
 };
 
 const {
@@ -45,6 +49,7 @@ const {
   overflow = "wrap",
   removeLabel,
   editLabel,
+  chipPositionMessage = "{chip}, {position} of {count} in {field}",
   name,
   class: classList,
   ...attrs
@@ -133,6 +138,7 @@ if (!label && !attrs["aria-label"] && !attrs["aria-labelledby"]) {
       class="flex min-w-0 flex-1"
       data-ac-text-field-chips={overflow}
       data-ac-text-field-chips-name={name}
+      data-ac-text-field-chips-position-message={chipPositionMessage}
       data-ac-text-field-part="chips"
     >
       {/* A scrolling row hides its scrollbar, as text overflowing a field shows none: the field
@@ -285,8 +291,20 @@ if (!label && !attrs["aria-label"] && !attrs["aria-labelledby"]) {
       "[data-ac-text-field-chips-part=status]"
     );
     const chips = chipsOf(field);
+    // The page's words, from chipPositionMessage, with each placeholder filled in
+    const message = (field as HTMLElement).dataset
+      .acTextFieldChipsPositionMessage!;
+    const values: Record<string, string> = {
+      chip: labelOf(chip),
+      position: String(chips.indexOf(chip as HTMLElement) + 1),
+      count: String(chips.length),
+      field: nameOf(field),
+    };
     if (status)
-      status.textContent = `${labelOf(chip)}, ${chips.indexOf(chip as HTMLElement) + 1} of ${chips.length} in ${nameOf(field)}`;
+      status.textContent = message.replace(
+        /\{(chip|position|count|field)\}/g,
+        (_, key: string) => values[key]
+      );
   };
 
   // Motion: chips slide to their new places on the fast spatial spring (ADR-0018), animated from

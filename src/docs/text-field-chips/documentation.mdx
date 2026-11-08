@@ -36,6 +36,11 @@ props:
     required: false
     default: '"Edit"'
     description: The words before the chip's label in the accessible name of the edit field on each chip typed text becomes, such as "Edit Lisbon". It's ChipInput's `editLabel` for the chips the field makes; give the `chips` slot's own chips theirs. Set it on pages in other languages.
+  - name: chipPositionMessage
+    type: string
+    required: false
+    default: '"{chip}, {position} of {count} in {field}"'
+    description: What screen readers hear when a chip moves, such as "Blake, 2 of 2 in Cc". `{chip}` stands for the chip's label, `{position}` for its place among the field's chips, `{count}` for how many there are, and `{field}` for the field's name, its label. Set it on pages in other languages, in their words and order, such as `"{chip}, position {position} sur {count} dans {field}"`.
   - name: maxlength
     type: number
     required: false
