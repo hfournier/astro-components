@@ -40,6 +40,8 @@ Every attribute except `class` goes on the `<progress>`: `value`, `max`, `aria-l
 - **Active indicator:** `primary`, clockwise from the top of the ring to the value. Just started, it's a dot.
 - **Track:** `secondary-container`, from a 4px gap after the active indicator round to a 4px gap before its start.
 
+Inside a button, as M3 asks for an indicator integrated into another component, the active indicator takes the button's label or icon color, and the track is removed. It does this, with no prop to set, in any Button (a toggle too), a split button and a button group's Buttons, the buttons a page puts content in.
+
 A circular indicator has no stop indicator. Center it on the element or page that's loading, or in the space where new content will appear. It isn't mirrored in right-to-left layouts: M3's circular indicators fill clockwise in every direction.
 
 ## Motion

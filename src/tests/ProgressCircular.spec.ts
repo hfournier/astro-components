@@ -1,11 +1,17 @@
 import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "./support/a11y-fixture";
-import { box, resolvedColor, settled } from "./support/helpers";
+import { box, contrastRatio, resolvedColor, settled } from "./support/helpers";
 
 // Each case on /tests/progress-circular is a Section with
 // data-testid="progress-circular-<caseId>". Each indicator is named by its aria-label.
 type ProgressCircularCaseId =
-  "determinate" | "indeterminate" | "thick" | "wavy" | "size" | "rtl";
+  | "determinate"
+  | "indeterminate"
+  | "thick"
+  | "wavy"
+  | "size"
+  | "rtl"
+  | "in-button";
 
 const section = (page: Page, caseId: ProgressCircularCaseId) =>
   page.getByTestId(`progress-circular-${caseId}`);
@@ -237,6 +243,34 @@ test.describe("ProgressCircular", () => {
         primary
       );
       expect(await ring(progress, 18, [45, 180])).toEqual(["active", "track"]);
+    }
+  });
+
+  // M3: integrated into another component, such as a button, the active indicator takes its
+  // label or icon color, at least 3:1 against it, and the track is removed
+  test("in a button, the active indicator takes the label's color, at least 3:1 against the button, and the track is gone", async ({
+    page,
+  }) => {
+    for (const scheme of ["light", "dark"] as const) {
+      await page.emulateMedia({ colorScheme: scheme });
+      // the button's colors transition to the new scheme
+      await settled(page);
+      for (const name of ["Saving, halfway", "Sending", "Exporting, wavy"]) {
+        const progress = indicator(page, "in-button", name);
+        const button = progress.locator(
+          "xpath=ancestor::*[@data-ac-base-button][1]"
+        );
+        const label = await style(button, "color");
+        expect(
+          await part(progress, "active-indicator").evaluateAll((els) => [
+            ...new Set(els.map((el) => getComputedStyle(el).stroke)),
+          ])
+        ).toEqual([label]);
+        await expect(part(progress, "track")).toBeHidden();
+        expect(
+          contrastRatio(label, await style(button, "background-color"))
+        ).toBeGreaterThanOrEqual(3);
+      }
     }
   });
 

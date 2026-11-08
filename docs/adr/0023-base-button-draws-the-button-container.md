@@ -21,5 +21,6 @@ We kept two components out:
 
 - A change to a button's colors, state layer, focus ring or motion is made once, in BaseButton, and reaches Button, ButtonSplit and everything built on Button (FabMenuItem, the dialogs' actions, SkipToContent).
 - One visible change: ButtonSplit's trailing button, hovered while its menu is open, now keeps the pressed 10% state layer rather than showing hover's 8%, as Button already did and as M3 asks of a button whose menu is open.
+- ProgressCircular and ProgressLinear take a button's label color and drop their track inside `[data-ac-base-button]` (#239), so BaseButton's marker is part of its contract. The buttons outside BaseButton take no content a progress indicator could go in.
 - ButtonIcon and ButtonGroupConnected still need a change to BaseButton copied across where it applies to them.
 - Copying Button or ButtonSplit into a project means copying BaseButton with it, as copying Section means copying BaseWrapper (ADR-0013).

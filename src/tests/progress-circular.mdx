@@ -60,3 +60,21 @@ description: Tests for the ProgressCircular component
     <ProgressCircular shape="wavy" value="0.5" aria-label="Right to left, wavy" />
   </div>
 </Section>
+
+<Section data-testid="progress-circular-in-button" class="p-4 space-y-4">
+  <Heading level={2}>In a button</Heading>
+  <div class="flex flex-wrap gap-4">
+    <Button variant="filled">
+      <ProgressCircular size={24} value="0.5" aria-label="Saving, halfway" />
+      Saving
+    </Button>
+    <Button variant="tonal">
+      <ProgressCircular size={24} aria-label="Sending" />
+      Sending
+    </Button>
+    <Button variant="filled" size="lg">
+      <ProgressCircular shape="wavy" size={32} value="0.5" aria-label="Exporting, wavy" />
+      Exporting
+    </Button>
+  </div>
+</Section>

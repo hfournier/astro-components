@@ -1,11 +1,11 @@
 import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "./support/a11y-fixture";
-import { box, resolvedColor, settled } from "./support/helpers";
+import { box, contrastRatio, resolvedColor, settled } from "./support/helpers";
 
 // Each case on /tests/progress-linear is a Section with
 // data-testid="progress-linear-<caseId>". Each indicator is named by its aria-label.
 type ProgressLinearCaseId =
-  "determinate" | "indeterminate" | "thick" | "wavy" | "rtl";
+  "determinate" | "indeterminate" | "thick" | "wavy" | "rtl" | "in-button";
 
 const section = (page: Page, caseId: ProgressLinearCaseId) =>
   page.getByTestId(`progress-linear-${caseId}`);
@@ -160,6 +160,43 @@ test.describe("ProgressLinear", () => {
       await expect(
         wave(indicator(page, "wavy", "Wavy, halfway")).first()
       ).toHaveCSS("stroke", primary);
+    }
+  });
+
+  // M3: integrated into another component, such as a button, the active indicator takes its
+  // label or icon color and the track, with its stop indicator, is removed
+  test("in a button, the active indicator takes the label's color, and the track and stop indicator are gone", async ({
+    page,
+  }) => {
+    for (const scheme of ["light", "dark"] as const) {
+      await page.emulateMedia({ colorScheme: scheme });
+      // the button's colors transition to the new scheme
+      await settled(page);
+      for (const name of ["Uploading, 40%", "Uploading, wavy"]) {
+        const progress = indicator(page, "in-button", name);
+        const button = progress.locator(
+          "xpath=ancestor::*[@data-ac-base-button][1]"
+        );
+        const label = await style(button, "color");
+        // the flat segments are filled, the wave stroked
+        expect(
+          await part(progress, "active-indicator").evaluateAll((els) => [
+            ...new Set(
+              els.map((el) =>
+                el instanceof SVGElement
+                  ? getComputedStyle(el).stroke
+                  : getComputedStyle(el).backgroundColor
+              )
+            ),
+          ])
+        ).toEqual([label]);
+        for (const track of await part(progress, "track").all())
+          await expect(track).toBeHidden();
+        await expect(part(progress, "stop-indicator")).toBeHidden();
+        expect(
+          contrastRatio(label, await style(button, "background-color"))
+        ).toBeGreaterThanOrEqual(3);
+      }
     }
   });
 
