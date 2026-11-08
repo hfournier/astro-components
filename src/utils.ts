@@ -127,9 +127,7 @@ export const closeOnScrimClick = (dialog: HTMLDialogElement) => {
  */
 export const breakpoints = {
   medium: "(width >= 37.5rem)",
-  expanded: "(width >= 52.5rem)",
   large: "(width >= 75rem)",
-  xlarge: "(width >= 100rem)",
 } as const;
 
 /**
@@ -141,7 +139,15 @@ export const breakpoints = {
  * and `--ease-spring-fast-spatial`.
  * @returns The spring's duration in ms and its easing.
  */
-export const springTiming = (name: string) => {
+export const springTiming = (
+  name:
+    | "fast-spatial"
+    | "fast-effects"
+    | "default-spatial"
+    | "default-effects"
+    | "slow-effects"
+    | "standard-fast-spatial"
+) => {
   const root = getComputedStyle(document.documentElement);
   return {
     duration: parseFloat(

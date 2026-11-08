@@ -199,7 +199,7 @@ The largest script (TextFieldChips.astro:186-787). Most of it is behaviour M3 de
 
 #### BaseChip, BaseListItem, ButtonGroupConnected (the pressed state)
 
-All three set a `data-*-pressed` mark from `pointerdown` to `pointerup` or `pointercancel`. BaseChip and ButtonGroupConnected also set it while Space (and Enter) is held. The reason given is that Firefox applies `:active` to neither a `<label>` nor its input (BaseChip.astro:125-156, BaseListItem.astro:435-453, ButtonGroupConnected.astro:292-327; ADR-0022, ADR-0024, ADR-0028).
+All three set a `data-*-pressed` mark from `pointerdown` to `pointerup` or `pointercancel`. BaseChip and ButtonGroupConnected also set it while Space (and Enter) is held. The reason given is that Firefox applies `:active` to neither a `<label>` nor its input (before #288: BaseChip.astro:125-156, BaseListItem.astro:435-453, ButtonGroupConnected.astro:292-327; ADR-0022, ADR-0024, ADR-0028).
 
 - **No platform replacement** if Firefox still behaves that way. The HTML spec says a labelable element is `:active` while its label is ([HTML §selector-active](https://html.spec.whatwg.org/multipage/semantics-other.html#selector-active)). Re-tested in Firefox 157 (#288): it still falls short. The first press on a label chip matches `:active`, but after it, while that chip's input keeps focus, a press on another label matches `:active` on neither the label nor its input. Chromium 156 and WebKit 27.2 match every press. The scripts stay.
 - **Reduced** (#288): the three now call one delegated helper, `markPressed` in `src/utils.ts` (see [Cross-cutting](#cross-cutting)).
