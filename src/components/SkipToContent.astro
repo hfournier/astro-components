@@ -20,5 +20,6 @@ const { href, size = "sm", class: classList, ...attrs }: Props = Astro.props;
   href={href || "#main-content"}
   {...attrs}
 >
-  Skip to content
+  {/* The link's text: a page in another language words it in the default slot */}
+  <slot>Skip to content</slot>
 </Button>

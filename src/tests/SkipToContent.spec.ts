@@ -28,4 +28,19 @@ test.describe("SkipToContent", () => {
     // The a11y fixture's automatic axe scan (ADR-0002) runs after this test body,
     // while the link is still focused/visible, catching any contrast violation.
   });
+
+  test("is named by its default text, in English", async ({ page }) => {
+    await expect(skipLink(page)).toHaveText("Skip to content");
+  });
+});
+
+// A page in another language words the link in its default slot
+test("SkipToContent takes its text from its default slot", async ({ page }) => {
+  await page.goto("/tests/skip-to-content");
+  const link = page
+    .getByTestId("skip-to-content-text")
+    .getByRole("link", { name: "Aller au contenu", exact: true });
+  await expect(link).toHaveAttribute("href", "#main-content");
+  await link.focus();
+  await expect(link).toBeInViewport();
 });
