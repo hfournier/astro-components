@@ -227,6 +227,96 @@ test.describe("Dialog", () => {
     await expect(dialog).toBeVisible();
   });
 
+  // The platform closes it on a scrim click (light dismiss): a press inside that ends on the
+  // scrim doesn't count, and it fires a cancelable `cancel` first, as Escape does
+  test('has closedby="any", for the platform to close it on a scrim click', async ({
+    page,
+  }) => {
+    await expect(basicDialog(page)).toHaveAttribute("closedby", "any");
+  });
+
+  // Safari has no closedby yet, so a script stands in for it. Here it's forced on in every
+  // engine: the property hidden before the scripts run, so they attach the fallback, and the
+  // attribute removed once they have, so the platform doesn't close it as well.
+  test.describe("where closedby isn't supported", () => {
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript(() => {
+        delete (HTMLDialogElement.prototype as Partial<HTMLDialogElement>)
+          .closedBy;
+      });
+      await page.reload();
+      await basicDialog(page).evaluate((el) => el.removeAttribute("closedby"));
+    });
+
+    test("a click on the scrim cancels it, with an empty returnValue", async ({
+      page,
+    }) => {
+      await activate(openDialog(page));
+      const dialog = basicDialog(page);
+      await settled(page);
+      await recordEvents(dialog);
+
+      await page.mouse.click(5, 5);
+
+      await expect(dialog).toBeHidden();
+      expect(await recordedEvents(dialog)).toEqual(["cancel", "close:"]);
+    });
+
+    test("stays open on a scrim click when the page prevents cancel", async ({
+      page,
+    }) => {
+      await activate(openDialog(page));
+      const dialog = basicDialog(page);
+      await settled(page);
+      await dialog.evaluate((el) =>
+        el.addEventListener("cancel", (event) => event.preventDefault())
+      );
+
+      await page.mouse.click(5, 5);
+
+      await expect(dialog).toBeVisible();
+    });
+
+    test("stays open when a press starts in the content and ends on the scrim", async ({
+      page,
+    }) => {
+      await activate(openDialog(page));
+      const dialog = basicDialog(page);
+      await settled(page);
+
+      const { x, y } = await box(supportingText(page));
+      await page.mouse.move(x + 2, y + 2);
+      await page.mouse.down();
+      await page.mouse.move(5, 5, { steps: 5 });
+      await page.mouse.up();
+
+      await expect(dialog).toBeVisible();
+    });
+
+    // As the platform would: a page's own closedby="none" keeps it open on a scrim click
+    test("stays open on a scrim click when the page sets its own closedby", async ({
+      page,
+    }) => {
+      // set as the dialog is parsed, before the scripts read it
+      await page.addInitScript(() => {
+        new MutationObserver((_, observer) => {
+          const dialog = document.getElementById("basic-dialog");
+          if (!dialog) return;
+          dialog.setAttribute("closedby", "none");
+          observer.disconnect();
+        }).observe(document, { childList: true, subtree: true });
+      });
+      await page.reload();
+      await activate(openDialog(page));
+      const dialog = basicDialog(page);
+      await settled(page);
+
+      await page.mouse.click(5, 5);
+
+      await expect(dialog).toBeVisible();
+    });
+  });
+
   test("lays out a bare Button in its actions slot end-aligned, in a <footer>", async ({
     page,
   }) => {

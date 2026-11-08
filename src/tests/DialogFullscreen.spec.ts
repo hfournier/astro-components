@@ -278,6 +278,7 @@ test.describe("DialogFullscreen from a medium window up", () => {
     await open(page, "basic");
     const dialog = dialogIn(page, "basic");
 
+    await expect(dialog).toHaveAttribute("closedby", "any");
     await page.mouse.click(5, 5);
     await expect(dialog).toBeHidden();
   });

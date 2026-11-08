@@ -12,6 +12,8 @@ import BaseWrapper from "./BaseWrapper.astro";
 
 type Props = Omit<HTMLAttributes<"dialog" | "div">, "id"> & {
   as?: "dialog" | "div";
+  // A <dialog>'s own attribute, which the "dialog" | "div" union above leaves out
+  closedby?: HTMLAttributes<"dialog">["closedby"];
   bgColor?: OverlayBgColorType;
   id: string;
   // Classes for the actual top-layer/`position: fixed` element (the native

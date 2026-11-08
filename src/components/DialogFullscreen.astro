@@ -78,6 +78,7 @@ const confirmProps = {
   {id}
   aria-labelledby={headline ? `${id}-headline` : undefined}
   aria-label={label && !headline ? label : undefined}
+  closedby="any"
   data-ac-dialog-fullscreen
   {...attrs}
 >
@@ -179,30 +180,21 @@ const confirmProps = {
 </BaseOverlay>
 
 <script>
+  import { closeOnScrimClick } from "../utils";
+
   // As Dialog: Escape and the close and dismiss buttons (request-close) close it without setting
-  // its returnValue, and Firefox and WebKit keep the one from its last opening, so it's cleared:
-  // a dismissal never reads as the action chosen last time.
+  // its returnValue, and the HTML spec keeps the one from its last opening, so it's cleared: a
+  // dismissal never reads as the action chosen last time.
   //
-  // From medium up, as a basic dialog, a click on its scrim cancels it too, as Escape does: a
-  // cancelable `cancel`, then close. The press must start there too, so a text selection dragged
-  // out of the content doesn't close it. In a compact window, the panel fills the dialog, so
-  // there's no scrim to click.
+  // From medium up, as a basic dialog, a click on its scrim cancels it too, as Escape does:
+  // closedby="any", or closeOnScrimClick where that's unsupported. In a compact window, the panel
+  // fills the dialog, so there's no scrim to click.
   document
     .querySelectorAll<HTMLDialogElement>("[data-ac-dialog-fullscreen]")
     .forEach((dialog) => {
       dialog.addEventListener("cancel", () => {
         dialog.returnValue = "";
       });
-
-      let pressedOnScrim = false;
-      dialog.addEventListener("pointerdown", (event) => {
-        pressedOnScrim = event.target === dialog;
-      });
-      dialog.addEventListener("click", (event) => {
-        if (event.target !== dialog || !pressedOnScrim) return;
-        pressedOnScrim = false;
-        if (dialog.dispatchEvent(new Event("cancel", { cancelable: true })))
-          dialog.close("");
-      });
+      closeOnScrimClick(dialog);
     });
 </script>

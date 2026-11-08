@@ -350,6 +350,7 @@ test.describe("SheetBottom", () => {
       page,
     }) => {
       await open(page);
+      await expect(sheet(page)).toHaveAttribute("closedby", "any");
       await sheet(page).evaluate((el) => {
         el.addEventListener("cancel", (event) => event.preventDefault(), {
           once: true,
