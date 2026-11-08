@@ -154,3 +154,19 @@ export const elevation = (page: Page, level: keyof typeof ELEVATION) =>
     probe.remove();
     return resolved;
   }, ELEVATION[level]);
+
+/** WCAG's contrast ratio between two opaque computed colors, such as `rgb(156, 63, 0)`. */
+export const contrastRatio = (a: string, b: string): number => {
+  const luminance = (color: string) => {
+    const [r, g, b] = color
+      .match(/[\d.]+/g)!
+      .slice(0, 3)
+      .map((c) => {
+        const s = Number(c) / 255;
+        return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+      });
+    return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+  };
+  const [light, dark] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (light! + 0.05) / (dark! + 0.05);
+};

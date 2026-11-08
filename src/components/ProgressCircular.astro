@@ -69,7 +69,9 @@ const position =
     ? 0
     : Math.min(Math.max(Number(attrs.value) / max || 0, 0), 1);
 
-// Each part is a stroke along the ring, drawn with round caps as Compose draws its arcs
+// Each part is a stroke along the ring, drawn with round caps as Compose draws its arcs. M3:
+// integrated into another component, such as a button, the active indicator takes its label or
+// icon color, and the track is removed (the in-data-ac-base-button variants below).
 const stroke =
   "fill-none [stroke-linecap:round] [stroke-width:var(--ac-progress-circular-thickness)]";
 ---
@@ -115,7 +117,7 @@ const stroke =
     <circle
       class:list={[
         stroke,
-        "stroke-(--theme-color-secondary-container) opacity-[clamp(0,var(--ac-progress-circular-track)*1e6,1)] [stroke-dasharray:calc(max(0,var(--ac-progress-circular-track))*1px)_calc(var(--ac-progress-circular-circumference)*1px)] [stroke-dashoffset:calc((var(--ac-progress-circular-active)+var(--ac-progress-circular-space))*-1px)]",
+        "stroke-(--theme-color-secondary-container) in-data-ac-base-button:invisible opacity-[clamp(0,var(--ac-progress-circular-track)*1e6,1)] [stroke-dasharray:calc(max(0,var(--ac-progress-circular-track))*1px)_calc(var(--ac-progress-circular-circumference)*1px)] [stroke-dashoffset:calc((var(--ac-progress-circular-active)+var(--ac-progress-circular-space))*-1px)]",
       ]}
       cx={side / 2}
       cy={side / 2}
@@ -128,7 +130,7 @@ const stroke =
       <path
         class:list={[
           stroke,
-          "stroke-(--theme-color-primary) [stroke-linejoin:round]",
+          "stroke-(--theme-color-primary) in-data-ac-base-button:stroke-current [stroke-linejoin:round]",
         ]}
         data-ac-progress-circular-part="active-indicator"
       ></path>
@@ -137,7 +139,7 @@ const stroke =
       <circle
         class:list={[
           stroke,
-          "stroke-(--theme-color-primary) opacity-[clamp(0,var(--ac-progress-circular-fill)*1e6,1)] [stroke-dasharray:calc(var(--ac-progress-circular-active)*1px)_calc(var(--ac-progress-circular-circumference)*1px)]",
+          "stroke-(--theme-color-primary) in-data-ac-base-button:stroke-current opacity-[clamp(0,var(--ac-progress-circular-fill)*1e6,1)] [stroke-dasharray:calc(var(--ac-progress-circular-active)*1px)_calc(var(--ac-progress-circular-circumference)*1px)]",
         ]}
         cx={side / 2}
         cy={side / 2}

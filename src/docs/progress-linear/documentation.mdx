@@ -41,6 +41,8 @@ Every attribute except `class` goes on the `<progress>`: `value`, `max`, `aria-l
 - **Track:** `secondary-container`, from a 4px gap after the active indicator to the end.
 - **Stop indicator:** a 4px `primary` circle at the track's end, on determinate indicators only.
 
+Inside a button, as M3 asks for an indicator integrated into another component, the active indicator takes the button's label or icon color, and the track and its stop indicator are removed. Every one of M3's buttons does this, with no prop to set; give the indicator a width with `class`.
+
 The indicator spans the width of its container. M3 places it on the edge of the container that's loading, or along the top of a page, inset at least 4px from each end. It mirrors in right-to-left layouts, filling from the right.
 
 ## Motion

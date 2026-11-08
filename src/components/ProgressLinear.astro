@@ -53,11 +53,13 @@ const position =
 // the indeterminate state moves them in the <style> block.
 const segment =
   "absolute top-1/2 h-(--ac-progress-linear-thickness) -translate-y-1/2 rounded-full [--ac-progress-linear-end-cap:clamp(var(--ac-progress-linear-cap),var(--ac-progress-linear-end),100%-var(--ac-progress-linear-cap))] [--ac-progress-linear-start-cap:clamp(var(--ac-progress-linear-cap),var(--ac-progress-linear-start),100%-var(--ac-progress-linear-cap))] inset-s-[calc(var(--ac-progress-linear-start-cap)-var(--ac-progress-linear-cap))] w-[clamp(0px,(var(--ac-progress-linear-end)-var(--ac-progress-linear-start))*1000,var(--ac-progress-linear-end-cap)-var(--ac-progress-linear-start-cap)+2*var(--ac-progress-linear-cap))]";
-const track = `${segment} bg-(--theme-color-secondary-container)`;
-const active = `${segment} bg-(--theme-color-primary)`;
+// M3: integrated into another component, such as a button, the active indicator takes its label
+// or icon color, and the track, with its stop indicator, is removed
+const track = `${segment} bg-(--theme-color-secondary-container) in-data-ac-base-button:invisible`;
+const active = `${segment} bg-(--theme-color-primary) in-data-ac-base-button:bg-current`;
 // The wavy active indicator, a path the script draws
 const wave =
-  "fill-none stroke-(--theme-color-primary) [stroke-linecap:round] [stroke-width:var(--ac-progress-linear-thickness)]";
+  "fill-none stroke-(--theme-color-primary) in-data-ac-base-button:stroke-current [stroke-linecap:round] [stroke-width:var(--ac-progress-linear-thickness)]";
 // The segments only an indeterminate indicator draws, empty while it's determinate
 const indeterminateOnly =
   "[--ac-progress-linear-end:0px] [--ac-progress-linear-start:0px]";
@@ -142,7 +144,7 @@ const indeterminateOnly =
   {showStopIndicator && (
     // M3's 4px circle at the track's end, inset as Compose's is when the track is thicker
     <span
-      class="absolute inset-e-[min(max(0px,(var(--ac-progress-linear-thickness)-4px)/2),6px)] top-1/2 size-[min(4px,var(--ac-progress-linear-thickness))] -translate-y-1/2 rounded-full bg-(--theme-color-primary)"
+      class="absolute inset-e-[min(max(0px,(var(--ac-progress-linear-thickness)-4px)/2),6px)] top-1/2 size-[min(4px,var(--ac-progress-linear-thickness))] -translate-y-1/2 rounded-full bg-(--theme-color-primary) in-data-ac-base-button:invisible"
       data-ac-progress-linear-part="stop-indicator"
     ></span>
   )}

@@ -5,7 +5,7 @@ import { box, resolvedColor, settled } from "./support/helpers";
 // Each case on /tests/progress-linear is a Section with
 // data-testid="progress-linear-<caseId>". Each indicator is named by its aria-label.
 type ProgressLinearCaseId =
-  "determinate" | "indeterminate" | "thick" | "wavy" | "rtl";
+  "determinate" | "indeterminate" | "thick" | "wavy" | "rtl" | "in-button";
 
 const section = (page: Page, caseId: ProgressLinearCaseId) =>
   page.getByTestId(`progress-linear-${caseId}`);
@@ -161,6 +161,25 @@ test.describe("ProgressLinear", () => {
         wave(indicator(page, "wavy", "Wavy, halfway")).first()
       ).toHaveCSS("stroke", primary);
     }
+  });
+
+  // M3: integrated into another component, such as a button, the active indicator takes its
+  // label or icon color and the track, with its stop indicator, is removed
+  test("in a button, the active indicator takes the label's color, and the track and stop indicator are gone", async ({
+    page,
+  }) => {
+    const progress = indicator(page, "in-button", "Uploading, 40%");
+    const label = await style(
+      progress.locator("xpath=ancestor::*[@data-ac-base-button][1]"),
+      "color"
+    );
+    await expect(part(progress, "active-indicator").first()).toHaveCSS(
+      "background-color",
+      label
+    );
+    for (const track of await part(progress, "track").all())
+      await expect(track).toBeHidden();
+    await expect(part(progress, "stop-indicator")).toBeHidden();
   });
 
   test("showStopIndicator={false} leaves the stop indicator out", async ({
