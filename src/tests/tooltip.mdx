@@ -7,12 +7,12 @@ description: Tests for the Tooltip component
 
 <Section data-testid="tooltip-plain" class="p-4 pt-12 space-y-4">
   <Heading level={2}>Plain</Heading>
-  <Link class="relative inline-flex" href="https://github.com/hfournier/astro-components" aria-label="GitHub repository"><Icon name="github" /><Tooltip>GitHub repository</Tooltip></Link>
+  <Link class="inline-flex" href="https://github.com/hfournier/astro-components" aria-label="GitHub repository"><Icon name="github" /><Tooltip>GitHub repository</Tooltip></Link>
 </Section>
 
 <Section data-testid="tooltip-plain-below" class="p-4 space-y-4">
   <Heading level={2}>Plain, below</Heading>
-  <Link class="relative inline-flex" href="https://github.com/hfournier/astro-components" aria-label="Source code"><Icon name="github" /><Tooltip placement="below">Source code</Tooltip></Link>
+  <Link class="inline-flex" href="https://github.com/hfournier/astro-components" aria-label="Source code"><Icon name="github" /><Tooltip placement="below">Source code</Tooltip></Link>
 </Section>
 
 <Section data-testid="tooltip-plain-row" class="p-4 pt-12 space-y-4">
@@ -23,6 +23,11 @@ description: Tests for the Tooltip component
     <ButtonIcon icon="share" label="Share" />
     <ButtonIcon class="[--ac-tooltip-off:1]" icon="archive" label="Archive" />
   </div>
+</Section>
+
+<Section data-testid="tooltip-plain-bordered" class="p-4 pt-12 space-y-4">
+  <Heading level={2}>On an element with a border</Heading>
+  <ButtonIcon icon="settings" label="Settings" size="lg" variant="outlined" />
 </Section>
 
 <Section data-testid="tooltip-plain-touch" class="p-4 pt-12 space-y-4">

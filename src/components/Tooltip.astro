@@ -8,13 +8,10 @@ import { unwrapParagraph } from "../utils";
 // M3 tooltips, in two variants that are placed differently:
 //
 // - "plain" (default): a short label for the element it's placed in, above it (or below, in an
-//   app bar). Put it as a direct child of that element, which must be positioned (e.g.
-//   `relative`), or of a label around the input it names. It shows 500ms into a hover, straight
-//   away on keyboard focus, and on a long press
-//   on a touchscreen. Its text repeats the element's accessible name, so it's hidden from assistive
-//   tech. To anchor to the element's border box rather than its padding box, the element sets
-//   --ac-tooltip-anchor-inset to minus its border width (e.g. `[--ac-tooltip-anchor-inset:-1px]`).
-//   While the element doesn't need its tooltip, such as while its label is visible, it sets
+//   app bar), placed from the outside of its border. Put it as a direct child of that element,
+//   or of a label around the input it names. It shows 500ms into a hover, straight away on
+//   keyboard focus, and on a long press on a touchscreen. Its text repeats the element's
+//   accessible name, so it's hidden from assistive tech. While the element doesn't need its tooltip, such as while its label is visible, it sets
 //   --ac-tooltip-off to 1 (e.g. `rail-expanded:[--ac-tooltip-off:1]`): the tooltip doesn't show,
 //   and doesn't hide any other.
 // - "rich": an optional subhead, supporting text and optional actions (the `actions` slot, e.g.
@@ -69,11 +66,11 @@ if (variant === "rich" && !triggerId) {
   );
 }
 
-// Each tooltip anchors to its own element, so each needs its own anchor name. A plain tooltip puts
-// it on an inner span rather than the element itself, so it can't clash with an anchor-name the
-// element has; a rich tooltip's script adds it to the element's own anchor names.
+// Each tooltip anchors to its own element, the element that opens it, so its implicit anchor:
+// the script passes it to showPopover() as the source, or a persistent rich tooltip's element
+// opens it as its popovertarget. position-anchor is written as auto, as its initial value
+// differs between engines.
 const randomId = crypto.randomUUID();
-const anchorName = `--ac-anchorname-tooltip-${randomId}`;
 const descriptionId = `ac-tooltip-description-${randomId}`;
 const hasActions = Astro.slots.has("actions");
 const text = unwrapParagraph(await Astro.slots.render("default"));
@@ -85,11 +82,6 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
 
 {variant === "plain" ? (
   <>
-    <span
-      class="pointer-events-none absolute inset-(--ac-tooltip-anchor-inset,0px)"
-      style={`anchor-name: ${anchorName}`}
-      aria-hidden="true"
-    />
     <span
       class:list={twMerge(
         // M3 plain tooltip: Body Small, corner extra small, 4px from its element. Next to plain
@@ -115,7 +107,7 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
         "transition-[visibility,display,overlay] transition-discrete duration-(--theme-duration-spring-fast-effects) ease-spring-fast-effects motion-safe:transition-[opacity,visibility,display,overlay]",
         classList
       )}
-      style={`position-anchor: ${anchorName}`}
+      style="position-anchor: auto"
       popover="manual"
       aria-hidden="true"
       data-ac-tooltip
@@ -139,12 +131,11 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
       "opacity-0 open:opacity-100 motion-safe:transition-[opacity,display,overlay] motion-safe:transition-discrete motion-safe:duration-(--theme-duration-spring-fast-effects) motion-safe:ease-spring-fast-effects motion-safe:starting:open:opacity-0",
       classList
     )}
-    style={`position-anchor: ${anchorName}`}
+    style="position-anchor: auto"
     popover={isPersistent ? "auto" : "manual"}
     role="tooltip"
     data-ac-tooltip-rich={triggerId}
     data-ac-tooltip-persistent={isPersistent ? "" : undefined}
-    data-ac-anchor-name={anchorName}
     {...attrs}
   >
     <div id={descriptionId}>
@@ -277,7 +268,8 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
         // data-shown first: Firefox can leave a popover on its starting style, hidden, when the
         // attribute is set just after showPopover()
         tooltip.setAttribute("data-shown", "");
-        if (!tooltip.matches(":popover-open")) tooltip.showPopover();
+        if (!tooltip.matches(":popover-open"))
+          tooltip.showPopover({ source: parent });
       };
       // A tooltip that never showed, cut short before its hover delay, hides at once
       const hideLater = () => {
@@ -336,17 +328,6 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
       const trigger = document.getElementById(tooltip.dataset.acTooltipRich!);
       if (!trigger) return;
 
-      // Anchor the tooltip to its trigger, keeping any anchor names the trigger already has
-      const ownNames =
-        getComputedStyle(trigger).getPropertyValue("anchor-name");
-      const anchorName = tooltip.dataset.acAnchorName!;
-      trigger.style.setProperty(
-        "anchor-name",
-        ownNames && ownNames !== "none"
-          ? `${ownNames}, ${anchorName}`
-          : anchorName
-      );
-
       // The subhead and supporting text describe the trigger (the actions don't)
       const descriptionId = tooltip.firstElementChild!.id;
       const describedBy =
@@ -391,6 +372,24 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
         }
         trigger.popoverTargetElement = tooltip;
         trigger.setAttribute("aria-expanded", "false");
+        // Its element is its implicit anchor only when it opens it. A page's own showPopover(),
+        // as for a tooltip opened on load, has no source, so the tooltip opens again with its
+        // element as the source, before it's drawn.
+        let isFromTrigger = false;
+        trigger.addEventListener("click", () => {
+          isFromTrigger = true;
+          setTimeout(() => (isFromTrigger = false));
+        });
+        tooltip.addEventListener("beforetoggle", (event) => {
+          if ((event as ToggleEvent).newState !== "open") return;
+          if (isFromTrigger) {
+            isFromTrigger = false;
+            return;
+          }
+          event.preventDefault();
+          isFromTrigger = true;
+          queueMicrotask(() => tooltip.showPopover({ source: trigger }));
+        });
         tooltip.addEventListener("toggle", (event) => {
           trigger.setAttribute(
             "aria-expanded",
@@ -433,7 +432,7 @@ const textPadding = [subhead && "pt-1", hasActions && "pb-3"];
         if (isDismissed) return;
         clearTimeout(timer);
         timer = window.setTimeout(() => {
-          if (!isOpen()) tooltip.showPopover();
+          if (!isOpen()) tooltip.showPopover({ source: trigger });
         }, delay);
       };
       const close = (delay: number) => {

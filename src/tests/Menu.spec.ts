@@ -775,6 +775,44 @@ test.describe("Menu", () => {
       await page.keyboard.press("Escape");
     });
 
+    test("a menu shared by two triggers sits beside the one that opened it, after switching too", async ({
+      page,
+    }) => {
+      // Two triggers at either end of a row (the "shared" case), both commandfor one menu
+      const section = page.getByTestId("menu-shared");
+      const files = section.getByRole("button", { name: "Sort files" });
+      const folders = section.getByRole("button", { name: "Sort folders" });
+      const shared = page.getByRole("menu", { name: "Sort by" });
+      const sharedSurface = shared.locator(":scope > [data-ac-wrapper]");
+      const expectBeside = async (button: Locator) => {
+        await expect(shared).toBeVisible();
+        await settled(page);
+        const from = await box(button);
+        const opened = await box(sharedSurface);
+        expect(opened.y - (from.y + from.height)).toBeCloseTo(4, 0);
+        expect(opened.x).toBeCloseTo(from.x, 0);
+        await expect(button).toHaveAttribute("aria-expanded", "true");
+      };
+
+      await files.click();
+      await expectBeside(files);
+      await expect(folders).toHaveAttribute("aria-expanded", "false");
+      await page.keyboard.press("Escape");
+      await folders.click();
+      await expectBeside(folders);
+      await expect(files).toHaveAttribute("aria-expanded", "false");
+      await page.keyboard.press("Escape");
+      // and back, from the keyboard: ArrowDown opens it from script
+      await files.focus();
+      await page.keyboard.press("ArrowDown");
+      await expectBeside(files);
+      await page.keyboard.press("Escape");
+      await folders.focus();
+      await page.keyboard.press("Enter");
+      await expectBeside(folders);
+      await page.keyboard.press("Escape");
+    });
+
     test("right to left, lined up with the trigger's right edge", async ({
       page,
     }) => {
