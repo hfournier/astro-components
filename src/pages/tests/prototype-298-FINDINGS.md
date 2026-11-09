@@ -84,7 +84,7 @@ a pixel.
 ### At 1x
 
 All of it holds. The peak window is a single device pixel here, so it's more sensitive to
-anti-aliasing. Linear: dash mismatch rises to 7.1% and peak to 0.48 (indeterminate 23.5% and 0.68,
+anti-aliasing. Linear: dash mismatch rises to 7.5% and peak to 0.48 (indeterminate 23.5% and 0.68,
 apart from the same Chromium frame). Circular: peak at most 0.80, at 24px and in the crossfade, which
 has 31.8% mismatch at its worst. WebKit's 0.5% linear dot is 14.4%, with peak 0.24.
 
