@@ -248,10 +248,14 @@ const surfaceClasses = [
         list.scrollTop = list.scrollHeight;
     };
 
+    // The anchor it last opened beside, which the browser anchors it to until it closes; `anchor`
+    // can move ahead of it, as a trigger is pressed
+    let openedBeside: HTMLElement | null = null;
+
     // Opening from script, the opener is the source, so it's the implicit anchor. Open from
     // another, the menu closes first, since only opening sets the implicit anchor.
     const showFrom = (opener: HTMLElement) => {
-      if (isOpen() && anchor !== opener) menu.hidePopover();
+      if (isOpen() && openedBeside !== opener) menu.hidePopover();
       useTrigger(opener);
       if (!isOpen()) menu.showPopover({ source: opener });
     };
@@ -267,8 +271,10 @@ const surfaceClasses = [
       button.addEventListener("pointerdown", () => useTrigger(button));
       // ArrowDown and ArrowUp open the menu on its first and last item
       button.addEventListener("keydown", (event) => {
-        if (event.key !== "ArrowDown" && event.key !== "ArrowUp")
-          return useTrigger(button);
+        if (event.key !== "ArrowDown" && event.key !== "ArrowUp") {
+          useTrigger(button);
+          return;
+        }
         event.preventDefault();
         showFrom(button);
         focusItem(event.key === "ArrowDown" ? 0 : -1);
@@ -280,7 +286,9 @@ const surfaceClasses = [
       menu.setAttribute("aria-labelledby", trigger.id);
 
     menu.addEventListener("beforetoggle", (event) => {
-      if ((event as ToggleEvent).newState === "open") fitToWindow();
+      if ((event as ToggleEvent).newState !== "open") return;
+      openedBeside = anchor;
+      fitToWindow();
     });
 
     // While open, the menu fits again as the page scrolls or the window resizes, moving its

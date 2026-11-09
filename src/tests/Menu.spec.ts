@@ -23,6 +23,8 @@ import {
 // - standard-checked: "View" opens a standard-color menu labelled "View options" by its `label`,
 //   with checkbox items "Show hidden files" (checked, with an icon) and "Show extensions".
 // - three-groups: "Arrange" opens a grouped menu of three one-item groups.
+// - shared: "Sort files" and "Sort folders", at either end of a row, both open one menu, labelled
+//   "Sort by", of Name and Date.
 type MenuCaseId =
   | "actions"
   | "standard-layout"
@@ -810,6 +812,15 @@ test.describe("Menu", () => {
       await folders.focus();
       await page.keyboard.press("Enter");
       await expectBeside(folders);
+      await page.keyboard.press("Escape");
+      // and while it's open from one, ArrowDown on the other moves it there
+      await files.click();
+      await expectBeside(files);
+      await folders.focus();
+      await expect(shared).toBeVisible();
+      await page.keyboard.press("ArrowDown");
+      await expectBeside(folders);
+      await expect(files).toHaveAttribute("aria-expanded", "false");
       await page.keyboard.press("Escape");
     });
 
