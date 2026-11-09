@@ -1,0 +1,226 @@
+---
+// PROTOTYPE (issue #289), throwaway: lives on branch prototype/289-anchor-sizing only.
+//
+// Question: can anchor positioning alone size Menu's and FabMenu's lists, with no
+// getBoundingClientRect and no scroll/resize listeners?
+//   - Menu: anchor insets on both sides (top: anchor(bottom)+4px, bottom: 0, 48px margin),
+//     align-self: start, position-try-fallbacks: flip-block, position-try-order: most-block-size.
+//   - FabMenu: top: 0, bottom: anchor(top), align-self: end.
+// Each can be tried with no max-height, or max-height: stretch (fill the inset-modified
+// containing block), to see whether the box clamps itself or needs the keyword.
+//
+// Everything is driven by the URL, so the measuring script (prototype-289.spec.ts) and a person
+// can load the same case:
+//   ?case=menu|fab   which list
+//   &y=<px>          the trigger's top, in the window, once the page has scrolled to 1000px
+//   &items=<n>       how many items
+//   &size=none|stretch|stretch-min   the list's max-height (stretch-min adds FabMenu's 5rem floor)
+//   &order=most|none position-try-order: most-block-size, or not (Menu only)
+//   &scroll=<px>     how far the page scrolls before opening (default 1000)
+//   &fixed=1         the FAB fixed to the window, rather than scrolling with the page (fab only)
+// The panel at the top right shows the live measurements; it updates every frame, so scroll
+// the page with the list open to see whether it follows.
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PROTOTYPE 289 anchor sizing</title>
+    <style is:inline>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font: 14px/1.4 system-ui, sans-serif;
+        height: 4000px;
+        background: #fafafa;
+        color: #111;
+      }
+      #trigger {
+        position: absolute;
+        left: 200px;
+        height: 40px;
+        width: 120px;
+        anchor-name: --fab;
+      }
+      #trigger.fixed {
+        position: fixed;
+      }
+      .list {
+        margin: 0;
+        padding: 0;
+        border: 1px solid #888;
+        background: #fff;
+        overflow-y: auto;
+        inset: auto;
+      }
+      .list div {
+        height: 48px;
+        padding: 12px 16px;
+        border-bottom: 1px solid #eee;
+        white-space: nowrap;
+      }
+      /* Menu: below the trigger, 4px away, 48px from the window's far edge; flip-block moves all of
+         that above it. The inset-modified containing block runs from the trigger to the window's
+         edge, and the box sits at its start. */
+      #menu {
+        position-anchor: auto;
+        top: calc(anchor(bottom) + 4px);
+        bottom: 0;
+        left: anchor(left);
+        margin-bottom: 48px;
+        align-self: start;
+        position-try-fallbacks: flip-block;
+        width: 200px;
+      }
+      #menu.order-most {
+        position-try-order: most-block-size;
+      }
+      /* FabMenu: from the window's top to the FAB's top, at its end */
+      #fab-list {
+        position-anchor: --fab;
+        top: 0;
+        bottom: anchor(top);
+        left: anchor(left);
+        align-self: end;
+        padding: 16px 16px 8px;
+        background: #def;
+        width: 200px;
+      }
+      .size-stretch,
+      .size-stretch-min {
+        max-height: -webkit-fill-available;
+        max-height: -moz-available;
+        max-height: stretch;
+      }
+      #fab-list.size-stretch-min {
+        min-height: 5rem;
+      }
+      /* size=fill: no sizing keyword. The (surfaceless) list fills the whole inset-modified
+         containing block, as an abspos box with both insets does, and its first item's auto
+         margin pushes the items to the bottom (unlike justify-content: end, it still scrolls). */
+      #fab-list.size-fill {
+        height: auto; /* the UA popover style is fit-content */
+        align-self: stretch;
+        display: flex;
+        flex-direction: column;
+        background: transparent;
+        border-color: transparent;
+      }
+      #fab-list.size-fill div {
+        flex: none;
+        background: #def;
+      }
+      #fab-list.size-fill div:first-child {
+        margin-top: auto;
+      }
+      #panel {
+        position: fixed;
+        top: 8px;
+        right: 8px;
+        width: 420px;
+        padding: 8px;
+        background: #222;
+        color: #eee;
+        font: 12px/1.35 ui-monospace, monospace;
+        white-space: pre;
+        z-index: 1;
+      }
+      .ruler {
+        position: fixed;
+        left: 0;
+        right: 0;
+        height: 0;
+        border-top: 1px dashed red;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="trigger" type="button">Trigger</button>
+    <div id="menu" class="list" popover="auto"></div>
+    <div id="fab-list" class="list" popover="auto"></div>
+    <div class="ruler" style="top: 48px"></div>
+    <div class="ruler" style="bottom: 48px; top: auto"></div>
+    <div id="panel"></div>
+
+    <script is:inline>
+      const params = new URLSearchParams(location.search);
+      const which = params.get("case") ?? "menu";
+      const y = Number(params.get("y") ?? 300);
+      const count = Number(params.get("items") ?? 30);
+      const size = params.get("size") ?? "stretch";
+      const order = params.get("order") ?? "most";
+      const isFixed = params.get("fixed") === "1";
+      const scrollStart = Number(params.get("scroll") ?? 1000);
+
+      const trigger = document.getElementById("trigger");
+      const list = document.getElementById(which === "fab" ? "fab-list" : "menu");
+      list.classList.add(`size-${size}`);
+      if (order === "most") list.classList.add("order-most");
+      for (let i = 1; i <= count; i++) {
+        const item = document.createElement("div");
+        item.textContent = `Item ${i}`;
+        list.append(item);
+      }
+
+      // The trigger's top is `y` in the window, after the page has scrolled to scrollStart
+      if (isFixed) {
+        trigger.classList.add("fixed");
+        trigger.style.top = `${y}px`;
+      } else {
+        trigger.style.top = `${scrollStart + y}px`;
+      }
+      scrollTo(0, scrollStart);
+
+      // The menu anchors to its opener (implicit anchor), as Menu does; the FAB list by name
+      trigger.addEventListener("click", () =>
+        list.togglePopover({ source: trigger })
+      );
+
+      const round = (n) => Math.round(n * 10) / 10;
+      window.measure = () => {
+        const t = trigger.getBoundingClientRect();
+        const l = list.getBoundingClientRect();
+        const cs = getComputedStyle(list);
+        const open = list.matches(":popover-open");
+        return {
+          ua: navigator.userAgent.match(/(Chrome|Firefox|Version)\/[\d.]+/)?.[0],
+          case: which,
+          size,
+          order,
+          items: count,
+          fixed: isFixed,
+          open,
+          innerHeight,
+          scrollY: round(scrollY),
+          triggerTop: round(t.top),
+          triggerBottom: round(t.bottom),
+          listTop: round(l.top),
+          listBottom: round(l.bottom),
+          listHeight: round(l.height),
+          side: !open ? "-" : l.top >= t.bottom - 1 ? "below" : l.bottom <= t.top + 1 ? "above" : "overlap",
+          scrolls: list.scrollHeight > list.clientHeight + 1,
+          inWindow: l.top >= -0.5 && l.bottom <= innerHeight + 0.5,
+          // where the items show: the first visible item's top (fill puts it below the box's top)
+          firstItemTop: round(list.firstElementChild.getBoundingClientRect().top),
+          lastItemBottom: round(list.lastElementChild.getBoundingClientRect().bottom),
+          maxHeight: cs.maxHeight,
+          alignSelf: cs.alignSelf,
+          tryOrder: cs.positionTryOrder ?? "(unsupported)",
+        };
+      };
+
+      const panel = document.getElementById("panel");
+      const draw = () => {
+        panel.textContent =
+          "PROTOTYPE #289 (throwaway)\n" +
+          JSON.stringify(window.measure(), null, 1).replace(/[{}"]/g, "").trim();
+        requestAnimationFrame(draw);
+      };
+      draw();
+    </script>
+  </body>
+</html>
