@@ -143,9 +143,11 @@ const bodyClasses = twMerge(
     </span>
     <Icon class="size-4.5" name="close" />
   </button>
+  {/* The edit field is as wide as its text (field-sizing), and no narrower than the chip's 88px.
+      A pixel more padding at the end leaves room for the caret. */}
   {isEditable && (
     <input
-      class="h-8 min-w-22 rounded-lg bg-transparent px-3 text-sm leading-5 font-medium tracking-[0.1px] text-(--theme-color-on-surface) outline-none"
+      class="field-sizing-content h-8 min-w-22 rounded-lg bg-transparent ps-3 pe-3.25 text-sm leading-5 font-medium tracking-[0.1px] text-(--theme-color-on-surface) outline-none"
       type="text"
       hidden
       aria-labelledby={`${idPrefix}-edit ${labelId}`}
@@ -257,21 +259,6 @@ const bodyClasses = twMerge(
     const field = partOf(chip, "edit");
     if (field) field.hidden = !isEditing;
   };
-  // The field is as wide as its text, measured in its own font: `size` counts average
-  // characters, too few for an address's @ and m. A pixel more leaves room for the caret.
-  let measure: CanvasRenderingContext2D | null = null;
-  const fit = (field: HTMLInputElement) => {
-    const style = getComputedStyle(field);
-    measure ??= document.createElement("canvas").getContext("2d");
-    if (!measure) return;
-    measure.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-    const text =
-      measure.measureText(field.value).width +
-      (parseFloat(style.letterSpacing) || 0) * field.value.length;
-    const padding =
-      parseFloat(style.paddingInlineStart) + parseFloat(style.paddingInlineEnd);
-    field.style.width = `${Math.ceil(text + padding) + 1}px`;
-  };
   // The text each open edit started from, so committing it unchanged changes nothing
   const openedWith = new WeakMap<Element, string>();
   const startEditing = (chip: Element) => {
@@ -290,7 +277,6 @@ const bodyClasses = twMerge(
     openedWith.set(chip, field.value);
     chip.setAttribute("data-ac-chip-input-editing", "");
     showField(chip, true);
-    fit(field);
     field.focus();
     field.select();
   };
@@ -382,11 +368,6 @@ const bodyClasses = twMerge(
     },
     true
   );
-
-  document.addEventListener("input", (event) => {
-    const field = event.target as HTMLInputElement;
-    if (field.matches?.("[data-ac-chip-input-part=edit]")) fit(field);
-  });
 
   document.addEventListener("focusout", (event) => {
     const field = event.target as Element;

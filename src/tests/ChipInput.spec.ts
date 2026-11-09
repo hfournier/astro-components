@@ -517,7 +517,11 @@ test.describe("ChipInput", () => {
     ]);
   });
 
-  // `size` counts average characters, too few for an address's @ and m
+  // A field sized by `size` counts average characters, too few for an address's @ and m. WebKit
+  // sizes the field to its text but scrolls the inner text box, inside the padding, so the caret
+  // at the end scrolls it by up to a pixel, which the 12px start padding takes: no text is clipped.
+  const caretSlack = 1;
+
   test("the edit field shows its whole text, as it opens and as it grows", async ({
     page,
   }) => {
@@ -526,9 +530,36 @@ test.describe("ChipInput", () => {
     const field = part(target, "edit");
     const clipped = () =>
       field.evaluate((el) => el.scrollWidth - el.clientWidth);
-    expect(await clipped()).toBeLessThanOrEqual(0);
+    expect(await clipped()).toBeLessThanOrEqual(caretSlack);
     await field.pressSequentially("mmmmmmmmmm@@@@@@@@@@WWWWWWWWWW");
-    expect(await clipped()).toBeLessThanOrEqual(0);
+    expect(await clipped()).toBeLessThanOrEqual(caretSlack);
+  });
+
+  // The field fits its text, down to the chip's 88px minimum, with the caret in view at the end
+  test("the edit field grows and shrinks with its text, never below 88px, its caret in view", async ({
+    page,
+  }) => {
+    const target = chip(page, "edit", "ziad@example.com");
+    await part(target, "body").click();
+    const field = part(target, "edit");
+    const width = async () => Math.round((await box(field)).width);
+    // scrolled, the start of the text is out of view, the caret having pushed it
+    const scrolled = () => field.evaluate((el) => el.scrollLeft);
+
+    const opened = await width();
+    await field.press("End");
+    await field.pressSequentially("mmmm");
+    const grown = await width();
+    expect(grown).toBeGreaterThan(opened);
+    expect(await scrolled()).toBeLessThanOrEqual(caretSlack);
+    for (let i = 0; i < 8; i++) await field.press("Backspace");
+    expect(await width()).toBeLessThan(opened);
+    expect(await scrolled()).toBeLessThanOrEqual(caretSlack);
+
+    await field.fill("");
+    expect(await width()).toBe(88);
+    await field.pressSequentially("il");
+    expect(await width()).toBe(88);
   });
 
   test("a page can refuse an edit, keeping the field open, and an emptied chip is removed", async ({
