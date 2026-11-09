@@ -303,6 +303,41 @@ TableOfContents.astro:61-84 closes the modal sheet on an in-page link and at the
 7. **`aria-expanded` mirroring.** Menu, ChipInput and Tooltip (persistent) set `aria-expanded` that the HTML-AAM already maps for `commandfor` and `popovertarget` invokers ([HTML-AAM §3.6.25, §3.6.109](https://w3c.github.io/html-aam/)). It stays because the CSS reads the attribute. A future `:open`-style selector for invokers would let it go.
 8. **Watch list.** When Firefox and Safari ship `interestfor` and `popover="hint"` (Tooltip, NavDrawer, Menu submenus), `focusgroup` (List, Tabs, Menu, and the groups if their ADRs change), and `interpolate-size` (BaseOverlay, ButtonGroup), the scripts could shrink by roughly 700 lines. Track them on [webstatus.dev](https://webstatus.dev/).
 
+### prop-for-that
+
+[prop-for-that](https://prop-for-that.netlify.app/docsite/) is a JavaScript library, not a platform feature. One import (`prop-for-that/auto`) binds every element that has a `data-props-for` attribute, through a MutationObserver, shared ResizeObservers and listeners. It writes what it reads into `--live-*` custom properties, at most once per animation frame. CSS reads continuous values with `var()` and flags with `@container style()`. So it moves script into a dependency rather than removing it, and it can only pay off where a component's script exists just to hand CSS a value. Three costs apply everywhere:
+
+- **A runtime dependency.** The components ship none today (`tailwind-merge` runs at build time only). Every consumer who copies a component would need the library too. The docsite gives no bundle size and no browser support.
+- **A frame late.** Values land on the next animation frame. Where a script decides something before the browser draws it, such as Menu's height as it opens, that's a frame drawn wrong.
+- **CSS only.** It can't set ARIA attributes, `tabindex`, validity or announcements. Most of the measuring in these components exists to drive exactly those.
+
+**Verdict: don't adopt.** Its idea is already the components' pattern: script works out the state, and CSS styles from it, through a data attribute (`data-ac-text-field-over-limit`, `data-ac-list-item-top`) where prop-for-that would use a custom property.
+
+#### Forms: `field`, `field-state`, `form-state` (BaseTextField)
+
+| Responsibility (BaseTextField.astro:615-658) | prop-for-that | Fit |
+| --- | --- | --- |
+| Show the character count | `field`'s `--live-length`, shown through a CSS `counter()` | One line saved. The count becomes generated content, which assistive tech exposes less consistently than the real text it is now. |
+| Count against the limit | `field`'s `--live-remaining` and `--live-fill-pct` | None. They're written only when the input has `maxlength`, which stops typing at the limit. M3's counter lets the text run past it and shows an error, which is why the field has no `maxlength`. |
+| Over-limit error: `setCustomValidity`, the announcement, `role="alert"` | Nothing | Stays: it's validity, ARIA and an announcement. |
+| Error styling only after interaction | `field-state`'s `--live-touched` and `--live-dirty` | Not needed: native `:user-invalid` does it, and the field uses it. |
+| (none) | `field`'s per-constraint flags (`--live-too-short`, `--live-pattern-mismatch` and the like) | These pick a message per failed constraint. The field has one supporting text, and a message per constraint would be a part M3 doesn't have. |
+| (none) | `form-state`'s valid counts, `--live-all-valid` and `--live-completion` | Form-wide aggregates belong to the page, not to a component. The demo's submit gate (`pointer-events: none`) also leaves Enter submitting the form. |
+
+#### Measurement: `size`, `truncated`, `viewport`, `visibility`, `pointer`
+
+| Component | What the script measures, and what for | prop-for-that | Fit |
+| --- | --- | --- | --- |
+| Menu | The room beside the anchor, to set `--ac-menu-max-height` before it opens (Menu.astro:231-240) | `viewport` has the window's size; nothing has the anchor's position | No. It's needed before the first frame, and from the anchor's box. |
+| Menu | A grouped menu that overflows takes the standard layout (Menu.astro:244-251) | `truncated`'s `--live-truncated-y` on the list | No. The standard layout is shorter (no gaps), so the flag would go back to 0 and the layout would flip back and forth. The script avoids that by resetting the layout and measuring in one go. |
+| BaseListItem | Its lines, and top alignment at 88px or taller (BaseListItem.astro:403-426) | `size`'s `--live-h`; nothing counts lines | No. The 88px check could become a style query on `--live-h`, if range style queries are available (unverified), but the line count, which sets the height, stays. |
+| SheetBottom | Overflow, to make the content a Tab stop; content against half the window, for one or two heights, `aria-expanded` and the handle's label (SheetBottom.astro:181-192, 218-284) | `truncated`, `size`, `viewport` | No. What it sets is attributes. |
+| Snackbar | The fixed elements it has to clear, and the width left beside them (Snackbar.astro:194-260) | `size` with `hoist` gives other elements' sizes, not their positions | No. |
+| ButtonGroup, BaseTextField, TextFieldChips | Boxes before and after a change, for their animations | Nothing: each is one measurement at one moment | No. |
+| NavRail, NavDrawer, FabMenu, Snackbar, TableOfContents | `matchMedia` breakpoints, to change behaviour (inert, modal, focus) | `viewport` | No. Media queries already reach CSS; the scripts change behaviour. |
+
+`visibility` and `pointer` have nothing to replace. No component reveals on scroll: Fab's scroll-dependent style uses `scroll-state()` queries. The one thing placed at the pointer, the context menu, needs the point in script to open there.
+
 ### Unverified
 
 - **Firefox's `:active` on a label and its input.** The ADRs rely on Firefox giving `:active` to neither, but no current Bugzilla bug was found confirming it as of Firefox 155. Related reports exist ([1795620](https://bugzilla.mozilla.org/show_bug.cgi?id=1795620), [1167862](https://bugzilla.mozilla.org/show_bug.cgi?id=1167862)). Re-tested in Firefox 157 (#288): a press on a label after an earlier press elsewhere, with focus still on the earlier input, matches `:active` on neither, so the helper stays.
@@ -310,6 +345,7 @@ TableOfContents.astro:61-84 closes the modal sheet on an in-page link and at the
 - **`position-try-order` with a bounded size.** MDN doesn't say how it interacts with `align-self: start` and a clamped height. Item 5 needs a prototype.
 - **Interest invokers on touch.** The long press, its timing and the accessibility mappings come from the Open UI explainer, not from the HTML spec or Chrome's release notes. No primary source confirmed which of them Chrome 142–149 ships.
 - **`focusgroup` syntax as shipped.** Chrome 150's post gives only `focusgroup="toolbar wrap"`. The token list here is the Open UI explainer's.
+- **prop-for-that's size and support.** Its docsite gives no bundle size and no browser support. Its discrete flags rely on `@container style()` queries on custom properties, and an 88px check would need range style queries; neither was checked against BCD for this section.
 - **Version numbers.** All versions come from BCD 8.1.8 and web-features 3.45.0 as fetched on 2026-11-08, including Safari 27 and Firefox 152–155. They weren't cross-checked against each vendor's release notes.
 
 ### Sources
@@ -338,6 +374,11 @@ MDN:
 - `field-sizing`: https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/field-sizing
 - `beforematch`: https://developer.mozilla.org/docs/Web/API/Element/beforematch_event
 - `formdata` event: https://developer.mozilla.org/docs/Web/API/HTMLFormElement/formdata_event
+
+prop-for-that (read 2026-11-09):
+
+- Overview: https://prop-for-that.netlify.app/docsite/
+- Demos: https://prop-for-that.netlify.app/docsite/demos/field/, https://prop-for-that.netlify.app/docsite/demos/field-state/, https://prop-for-that.netlify.app/docsite/demos/form-state/, https://prop-for-that.netlify.app/docsite/demos/size/, https://prop-for-that.netlify.app/docsite/demos/hoist/, https://prop-for-that.netlify.app/docsite/demos/truncated/, https://prop-for-that.netlify.app/docsite/demos/visibility/, https://prop-for-that.netlify.app/docsite/demos/pointer/
 - `HTMLInputElement.indeterminate`: https://developer.mozilla.org/docs/Web/API/HTMLInputElement/indeterminate
 
 Vendors and explainers:
