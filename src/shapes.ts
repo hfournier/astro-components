@@ -1027,9 +1027,11 @@ export const loadingIndicatorSequence = () => {
   return loadingSequence;
 };
 
-// A morph `progress` of the way along, as SVG path data in a 100 × 100 box, centered on its
-// bounds as Compose centers it. Past 1, as a spring overshoots, it carries on beyond the end shape.
-export const morphPathData = (
+// A morph `progress` of the way along, as a CSS shape() in percentages of its box, centered on
+// its bounds as Compose centers it. Past 1, as a spring overshoots, it carries on beyond the end
+// shape. To 0.1%, a quarter of a pixel at the largest size, 240px: against 0.01%, it shrinks the
+// generated keyframes by a fifth with no visible difference (#290).
+export const morphShape = (
   pairs: [Cubic, Cubic][],
   progress: number,
   scale: number
@@ -1042,13 +1044,114 @@ export const morphPathData = (
   const cx = (left + right) / 2;
   const cy = (top + bottom) / 2;
   const at = (x: number, y: number) =>
-    `${(50 + (x - cx) * 100 * scale).toFixed(2)} ${(50 + (y - cy) * 100 * scale).toFixed(2)}`;
+    `${(50 + (x - cx) * 100 * scale).toFixed(1)}% ${(50 + (y - cy) * 100 * scale).toFixed(1)}%`;
   const [x0, y0] = cubics[0].points;
-  let d = `M${at(x0, y0)}`;
-  for (const [, , c0x, c0y, c1x, c1y, a1x, a1y] of cubics.map(
-    (c) => c.points
-  )) {
-    d += `C${at(c0x, c0y)} ${at(c1x, c1y)} ${at(a1x, a1y)}`;
-  }
-  return `${d}Z`;
+  const curves = cubics.map(
+    ({ points: [, , c0x, c0y, c1x, c1y, a1x, a1y] }) =>
+      `curve to ${at(a1x, a1y)} with ${at(c0x, c0y)} / ${at(c1x, c1y)}`
+  );
+  return `shape(from ${at(x0, y0)}, ${curves.join(", ")}, close)`;
+};
+
+// Compose's timing: a morph starts every 650ms, on a spring (damping 0.6, stiffness 200) that
+// overshoots, turning a quarter as it goes. M3's Specs page gives none. Compose ends the spring
+// once it's within 0.1 of the end, about 298ms in, just past its overshoot, and snaps there.
+const morphIntervalMs = 650;
+const stiffness = 200;
+const dampingRatio = 0.6;
+const decay = dampingRatio * Math.sqrt(stiffness);
+const frequency = Math.sqrt(stiffness) * Math.sqrt(1 - dampingRatio ** 2);
+// Compose's estimate of when an underdamped spring settles within its visibility threshold
+const settleMs =
+  (Math.log(1 / Math.hypot(10, (10 * decay) / frequency)) / -decay) * 1000;
+const spring = (ms: number) => {
+  if (ms >= settleMs) return 1;
+  const t = ms / 1000;
+  return (
+    1 -
+    Math.exp(-decay * t) *
+      (Math.cos(frequency * t) + (decay / frequency) * Math.sin(frequency * t))
+  );
+};
+
+// Compose's first frame: SoftBurst, a quarter turn round, which reduced motion holds
+export const loadingIndicatorFirstFrame = () => {
+  const { morphs, scale } = loadingIndicatorSequence();
+  return morphShape(morphs[0], 0, scale);
+};
+
+// The loading indicator's animations, as CSS keyframes, precomputed from the sequence and the
+// spring. Two cycles run side by side:
+// - ac-progress-loading-morph, 4550ms: the seven morphs, 650ms apart. Each has two keyframes, its
+//   start and end shapes, eased by the spring as a linear() function, whose overshoot past 1
+//   carries the shape past the end, then holds there until the next morph. Each morph has its own
+//   number of curves, so a shape only interpolates within its morph, and switches at the next:
+//   from the end shape to the same shape, cut as the next morph cuts it.
+// - ac-progress-loading-turn, 2600ms: a quarter turn with each morph, on the same spring, four
+//   to a whole turn.
+export const loadingIndicatorKeyframes = () => {
+  const { morphs, scale } = loadingIndicatorSequence();
+  const cycleMs = morphs.length * morphIntervalMs;
+  const turns = 4; // quarter turns to a whole turn
+  const turnMs = turns * morphIntervalMs;
+  const offset = (ms: number, of: number) => `${((ms / of) * 100).toFixed(4)}%`;
+  // The spring, sampled every 1/40 of the way to settling, then its snap to the end
+  const samples = 40;
+  const easing = `linear(${[
+    ...Array.from(
+      { length: samples },
+      (_, k) =>
+        `${spring((settleMs * k) / samples).toFixed(4)} ${((k / samples) * 100).toFixed(2)}%`
+    ),
+    `${spring(settleMs - 1e-3).toFixed(4)} 99.99%`,
+    "1 100%",
+  ].join(", ")})`;
+
+  const morph = morphs.flatMap((pairs, i) => {
+    const start = i * morphIntervalMs;
+    const end = morphShape(pairs, 1, scale);
+    return [
+      `  ${offset(start, cycleMs)} {`,
+      `    clip-path: ${morphShape(pairs, 0, scale)};`,
+      `    animation-timing-function: ${easing};`,
+      "  }",
+      // half a millisecond before the next morph, so its switch is all but instant
+      `  ${offset(start + settleMs, cycleMs)}, ${offset(start + morphIntervalMs - 0.5, cycleMs)} {`,
+      `    clip-path: ${end};`,
+      "  }",
+    ];
+  });
+  const turn = Array.from({ length: turns }, (_, i) => {
+    const start = i * morphIntervalMs;
+    return [
+      `  ${offset(start, turnMs)} {`,
+      `    rotate: ${90 * (i + 1)}deg;`,
+      `    animation-timing-function: ${easing};`,
+      "  }",
+      `  ${offset(start + settleMs, turnMs)} {`,
+      `    rotate: ${90 * (i + 2)}deg;`,
+      "  }",
+    ];
+  }).flat();
+
+  return [
+    "/* Generated from src/shapes.ts by `pnpm generate:progress-loading`: don't edit it by hand.",
+    `   The loading indicator's ${cycleMs}ms morph cycle and ${turnMs}ms turn cycle (see`,
+    "   loadingIndicatorKeyframes). */",
+    "",
+    "@keyframes ac-progress-loading-morph {",
+    ...morph,
+    `  100% {`,
+    `    clip-path: ${morphShape(morphs.at(-1)!, 1, scale)};`,
+    "  }",
+    "}",
+    "",
+    "@keyframes ac-progress-loading-turn {",
+    ...turn,
+    "  100% {",
+    `    rotate: ${90 * (turns + 1)}deg;`,
+    "  }",
+    "}",
+    "",
+  ].join("\n");
 };

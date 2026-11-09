@@ -14,6 +14,7 @@
     "lint:tailwind": "node scripts/check-tailwind-classes.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "generate:progress-loading": "node --experimental-transform-types --disable-warning=ExperimentalWarning scripts/generate-progress-loading.ts",
     "test": "playwright test",
     "test:quick": "playwright test --project=chromium"
   },
