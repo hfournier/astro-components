@@ -1004,6 +1004,468 @@
     }
    ]
   },
+  "l-indeterminate-w640": {
+   "samples": 98,
+   "moved": {
+    "clip": true,
+    "dash": true
+   },
+   "clip": {
+    "mismatch": {
+     "median": 0.028,
+     "p95": 0.184,
+     "max": 0.3284
+    },
+    "peak": {
+     "median": 1,
+     "p95": 1,
+     "max": 1
+    }
+   },
+   "dash": {
+    "mismatch": {
+     "median": 0.0223,
+     "p95": 0.0561,
+     "max": 0.2175
+    },
+    "peak": {
+     "median": 0.4,
+     "p95": 0.5039,
+     "max": 0.5529
+    }
+   },
+   "worstDashFrames": [
+    {
+     "ms": 1222,
+     "dash": {
+      "mismatch": 0.02638504619354023,
+      "peak": 0.5529411761090159
+     }
+    },
+    {
+     "ms": 1703,
+     "dash": {
+      "mismatch": 0.21754363262698403,
+      "peak": 0.5362745132297277
+     }
+    },
+    {
+     "ms": 1185,
+     "dash": {
+      "mismatch": 0.023945024967450167,
+      "peak": 0.5176470596343279
+     }
+    }
+   ],
+   "worstDashMismatchFrames": [
+    {
+     "ms": 1703,
+     "dash": {
+      "mismatch": 0.21754363262698403,
+      "peak": 0.5362745132297277
+     }
+    },
+    {
+     "ms": 1740,
+     "dash": {
+      "mismatch": 0.18647757191451084,
+      "peak": 0.4656862746924162
+     }
+    },
+    {
+     "ms": 13,
+     "dash": {
+      "mismatch": 0.11861706694306215,
+      "peak": 0.41764706280082464
+     }
+    }
+   ]
+  },
+  "l-exactly-0": {
+   "samples": 78,
+   "moved": {
+    "clip": false,
+    "dash": false
+   },
+   "clip": {
+    "mismatch": {
+     "median": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "peak": {
+     "median": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "dash": {
+    "mismatch": {
+     "median": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "peak": {
+     "median": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "worstDashFrames": [
+    {
+     "ms": 0,
+     "dash": {
+      "mismatch": 0,
+      "peak": 0
+     }
+    },
+    {
+     "ms": 13,
+     "dash": {
+      "mismatch": 0,
+      "peak": 0
+     }
+    },
+    {
+     "ms": 26,
+     "dash": {
+      "mismatch": 0,
+      "peak": 0
+     }
+    }
+   ],
+   "worstDashMismatchFrames": [
+    {
+     "ms": 0,
+     "dash": {
+      "mismatch": 0,
+      "peak": 0
+     }
+    },
+    {
+     "ms": 13,
+     "dash": {
+      "mismatch": 0,
+      "peak": 0
+     }
+    },
+    {
+     "ms": 26,
+     "dash": {
+      "mismatch": 0,
+      "peak": 0
+     }
+    }
+   ]
+  },
+  "l-cap-clamped-0.5pct": {
+   "samples": 78,
+   "moved": {
+    "clip": false,
+    "dash": true
+   },
+   "clip": {
+    "mismatch": {
+     "median": 0.1299,
+     "p95": 0.1299,
+     "max": 0.1299
+    },
+    "peak": {
+     "median": 0.4912,
+     "p95": 0.4912,
+     "max": 0.4912
+    }
+   },
+   "dash": {
+    "mismatch": {
+     "median": 0.0648,
+     "p95": 0.0668,
+     "max": 0.0668
+    },
+    "peak": {
+     "median": 0.1137,
+     "p95": 0.1137,
+     "max": 0.1137
+    }
+   },
+   "worstDashFrames": [
+    {
+     "ms": 78,
+     "dash": {
+      "mismatch": 0.06478873251497072,
+      "peak": 0.11372549831867218
+     }
+    },
+    {
+     "ms": 104,
+     "dash": {
+      "mismatch": 0.06478873251497072,
+      "peak": 0.11372549831867218
+     }
+    },
+    {
+     "ms": 130,
+     "dash": {
+      "mismatch": 0.06478873251497072,
+      "peak": 0.11372549831867218
+     }
+    }
+   ],
+   "worstDashMismatchFrames": [
+    {
+     "ms": 507,
+     "dash": {
+      "mismatch": 0.06676056337425146,
+      "peak": 0.11372549831867218
+     }
+    },
+    {
+     "ms": 598,
+     "dash": {
+      "mismatch": 0.06676056337425146,
+      "peak": 0.11372549831867218
+     }
+    },
+    {
+     "ms": 624,
+     "dash": {
+      "mismatch": 0.06676056337425146,
+      "peak": 0.11372549831867218
+     }
+    }
+   ]
+  },
+  "l-exactly-1": {
+   "samples": 78,
+   "moved": {
+    "clip": false,
+    "dash": true
+   },
+   "clip": {
+    "mismatch": {
+     "median": 0.0023,
+     "p95": 0.0023,
+     "max": 0.0023
+    },
+    "peak": {
+     "median": 0.5971,
+     "p95": 0.5971,
+     "max": 0.5971
+    }
+   },
+   "dash": {
+    "mismatch": {
+     "median": 0.0002,
+     "p95": 0.0002,
+     "max": 0.0002
+    },
+    "peak": {
+     "median": 0.052,
+     "p95": 0.0549,
+     "max": 0.0627
+    }
+   },
+   "worstDashFrames": [
+    {
+     "ms": 715,
+     "dash": {
+      "mismatch": 0.0001865496910833881,
+      "peak": 0.0627450980246067
+     }
+    },
+    {
+     "ms": 884,
+     "dash": {
+      "mismatch": 0.00019729513730413567,
+      "peak": 0.05588235333561897
+     }
+    },
+    {
+     "ms": 507,
+     "dash": {
+      "mismatch": 0.00018117583200558796,
+      "peak": 0.054901961237192154
+     }
+    }
+   ],
+   "worstDashMismatchFrames": [
+    {
+     "ms": 884,
+     "dash": {
+      "mismatch": 0.00019729513730413567,
+      "peak": 0.05588235333561897
+     }
+    },
+    {
+     "ms": 715,
+     "dash": {
+      "mismatch": 0.0001865496910833881,
+      "peak": 0.0627450980246067
+     }
+    },
+    {
+     "ms": 507,
+     "dash": {
+      "mismatch": 0.00018117583200558796,
+      "peak": 0.054901961237192154
+     }
+    }
+   ]
+  },
+  "l-change-t8": {
+   "samples": 12,
+   "moved": {
+    "clip": true,
+    "dash": true
+   },
+   "clip": {
+    "mismatch": {
+     "median": 0.0218,
+     "p95": 0.044,
+     "max": 0.044
+    },
+    "peak": {
+     "median": 1,
+     "p95": 1,
+     "max": 1
+    }
+   },
+   "dash": {
+    "mismatch": {
+     "median": 0.0126,
+     "p95": 0.018,
+     "max": 0.018
+    },
+    "peak": {
+     "median": 0.2559,
+     "p95": 0.3059,
+     "max": 0.3059
+    }
+   },
+   "worstDashFrames": [
+    {
+     "ms": 52,
+     "dash": {
+      "mismatch": 0.012624203337240599,
+      "peak": 0.3058823496103287
+     }
+    },
+    {
+     "ms": 39,
+     "dash": {
+      "mismatch": 0.013741825847891602,
+      "peak": 0.2980392146855593
+     }
+    },
+    {
+     "ms": 0,
+     "dash": {
+      "mismatch": 0.017970512534150235,
+      "peak": 0.27843137085437775
+     }
+    }
+   ],
+   "worstDashMismatchFrames": [
+    {
+     "ms": 0,
+     "dash": {
+      "mismatch": 0.017970512534150235,
+      "peak": 0.27843137085437775
+     }
+    },
+    {
+     "ms": 13,
+     "dash": {
+      "mismatch": 0.015158538450195446,
+      "peak": 0.24215686321258545
+     }
+    },
+    {
+     "ms": 39,
+     "dash": {
+      "mismatch": 0.013741825847891602,
+      "peak": 0.2980392146855593
+     }
+    }
+   ]
+  },
+  "l-change-w640": {
+   "samples": 12,
+   "moved": {
+    "clip": true,
+    "dash": true
+   },
+   "clip": {
+    "mismatch": {
+     "median": 0.0262,
+     "p95": 0.0318,
+     "max": 0.0318
+    },
+    "peak": {
+     "median": 0.9314,
+     "p95": 1,
+     "max": 1
+    }
+   },
+   "dash": {
+    "mismatch": {
+     "median": 0.0246,
+     "p95": 0.0265,
+     "max": 0.0265
+    },
+    "peak": {
+     "median": 0.2324,
+     "p95": 0.2775,
+     "max": 0.2775
+    }
+   },
+   "worstDashFrames": [
+    {
+     "ms": 78,
+     "dash": {
+      "mismatch": 0.024472215032830043,
+      "peak": 0.2774509787559509
+     }
+    },
+    {
+     "ms": 13,
+     "dash": {
+      "mismatch": 0.025743829172315977,
+      "peak": 0.2637254912406206
+     }
+    },
+    {
+     "ms": 52,
+     "dash": {
+      "mismatch": 0.02457925416775109,
+      "peak": 0.2627451028674841
+     }
+    }
+   ],
+   "worstDashMismatchFrames": [
+    {
+     "ms": 0,
+     "dash": {
+      "mismatch": 0.02654437484061628,
+      "peak": 0.1970588155090809
+     }
+    },
+    {
+     "ms": 13,
+     "dash": {
+      "mismatch": 0.025743829172315977,
+      "peak": 0.2637254912406206
+     }
+    },
+    {
+     "ms": 26,
+     "dash": {
+      "mismatch": 0.024929926696438672,
+      "peak": 0.23235294688493013
+     }
+    }
+   ]
+  },
   "c-steady-24": {
    "samples": 78,
    "moved": {
@@ -1577,7 +2039,7 @@
     {
      "ms": 637,
      "dash": {
-      "mismatch": 0.015601785705429638,
+      "mismatch": 0.015775836695477594,
       "peak": 0.5460784323513508
      }
     },
@@ -1607,15 +2069,15 @@
     {
      "ms": 572,
      "dash": {
-      "mismatch": 0.015801621662590304,
+      "mismatch": 0.015822313806045263,
       "peak": 0.4696078449487686
      }
     },
     {
-     "ms": 286,
+     "ms": 637,
      "dash": {
-      "mismatch": 0.015656546686710966,
-      "peak": 0.37254901975393295
+      "mismatch": 0.015775836695477594,
+      "peak": 0.5460784323513508
      }
     }
    ]
@@ -1928,6 +2390,391 @@
     }
    ]
   },
+  "c-exactly-0": {
+   "samples": 78,
+   "moved": {
+    "clip": false,
+    "dash": false
+   },
+   "clip": {
+    "mismatch": {
+     "median": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "peak": {
+     "median": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "dash": {
+    "mismatch": {
+     "median": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "peak": {
+     "median": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "worstDashFrames": [
+    {
+     "ms": 0,
+     "dash": {
+      "mismatch": 0,
+      "peak": 0
+     }
+    },
+    {
+     "ms": 13,
+     "dash": {
+      "mismatch": 0,
+      "peak": 0
+     }
+    },
+    {
+     "ms": 26,
+     "dash": {
+      "mismatch": 0,
+      "peak": 0
+     }
+    }
+   ],
+   "worstDashMismatchFrames": [
+    {
+     "ms": 0,
+     "dash": {
+      "mismatch": 0,
+      "peak": 0
+     }
+    },
+    {
+     "ms": 13,
+     "dash": {
+      "mismatch": 0,
+      "peak": 0
+     }
+    },
+    {
+     "ms": 26,
+     "dash": {
+      "mismatch": 0,
+      "peak": 0
+     }
+    }
+   ]
+  },
+  "c-half-pct": {
+   "samples": 78,
+   "moved": {
+    "clip": false,
+    "dash": false
+   },
+   "clip": {
+    "mismatch": {
+     "median": 0.8723,
+     "p95": 0.8723,
+     "max": 0.8723
+    },
+    "peak": {
+     "median": 1,
+     "p95": 1,
+     "max": 1
+    }
+   },
+   "dash": {
+    "mismatch": {
+     "median": 0.0062,
+     "p95": 0.0062,
+     "max": 0.0062
+    },
+    "peak": {
+     "median": 0.0235,
+     "p95": 0.0235,
+     "max": 0.0235
+    }
+   },
+   "worstDashFrames": [
+    {
+     "ms": 0,
+     "dash": {
+      "mismatch": 0.006216250088113013,
+      "peak": 0.023529411759227514
+     }
+    },
+    {
+     "ms": 13,
+     "dash": {
+      "mismatch": 0.006216250088113013,
+      "peak": 0.023529411759227514
+     }
+    },
+    {
+     "ms": 26,
+     "dash": {
+      "mismatch": 0.006216250088113013,
+      "peak": 0.023529411759227514
+     }
+    }
+   ],
+   "worstDashMismatchFrames": [
+    {
+     "ms": 0,
+     "dash": {
+      "mismatch": 0.006216250088113013,
+      "peak": 0.023529411759227514
+     }
+    },
+    {
+     "ms": 13,
+     "dash": {
+      "mismatch": 0.006216250088113013,
+      "peak": 0.023529411759227514
+     }
+    },
+    {
+     "ms": 26,
+     "dash": {
+      "mismatch": 0.006216250088113013,
+      "peak": 0.023529411759227514
+     }
+    }
+   ]
+  },
+  "c-exactly-1": {
+   "samples": 78,
+   "moved": {
+    "clip": false,
+    "dash": false
+   },
+   "clip": {
+    "mismatch": {
+     "median": 0.0204,
+     "p95": 0.0204,
+     "max": 0.0204
+    },
+    "peak": {
+     "median": 0.1598,
+     "p95": 0.1598,
+     "max": 0.1598
+    }
+   },
+   "dash": {
+    "mismatch": {
+     "median": 0.0204,
+     "p95": 0.0204,
+     "max": 0.0204
+    },
+    "peak": {
+     "median": 0.1598,
+     "p95": 0.1598,
+     "max": 0.1598
+    }
+   },
+   "worstDashFrames": [
+    {
+     "ms": 0,
+     "dash": {
+      "mismatch": 0.020389544823142154,
+      "peak": 0.15980392694473267
+     }
+    },
+    {
+     "ms": 13,
+     "dash": {
+      "mismatch": 0.020389544823142154,
+      "peak": 0.15980392694473267
+     }
+    },
+    {
+     "ms": 26,
+     "dash": {
+      "mismatch": 0.020389544823142154,
+      "peak": 0.15980392694473267
+     }
+    }
+   ],
+   "worstDashMismatchFrames": [
+    {
+     "ms": 0,
+     "dash": {
+      "mismatch": 0.020389544823142154,
+      "peak": 0.15980392694473267
+     }
+    },
+    {
+     "ms": 13,
+     "dash": {
+      "mismatch": 0.020389544823142154,
+      "peak": 0.15980392694473267
+     }
+    },
+    {
+     "ms": 26,
+     "dash": {
+      "mismatch": 0.020389544823142154,
+      "peak": 0.15980392694473267
+     }
+    }
+   ]
+  },
+  "c-change-24": {
+   "samples": 12,
+   "moved": {
+    "clip": true,
+    "dash": true
+   },
+   "clip": {
+    "mismatch": {
+     "median": 0.0877,
+     "p95": 0.2268,
+     "max": 0.2268
+    },
+    "peak": {
+     "median": 1,
+     "p95": 1,
+     "max": 1
+    }
+   },
+   "dash": {
+    "mismatch": {
+     "median": 0.0274,
+     "p95": 0.0349,
+     "max": 0.0349
+    },
+    "peak": {
+     "median": 0.5941,
+     "p95": 0.7451,
+     "max": 0.7451
+    }
+   },
+   "worstDashFrames": [
+    {
+     "ms": 117,
+     "dash": {
+      "mismatch": 0.034856921216248865,
+      "peak": 0.7450980395078659
+     }
+    },
+    {
+     "ms": 104,
+     "dash": {
+      "mismatch": 0.03258662052400424,
+      "peak": 0.7245098035782576
+     }
+    },
+    {
+     "ms": 91,
+     "dash": {
+      "mismatch": 0.031628623382653535,
+      "peak": 0.6627450995147228
+     }
+    }
+   ],
+   "worstDashMismatchFrames": [
+    {
+     "ms": 117,
+     "dash": {
+      "mismatch": 0.034856921216248865,
+      "peak": 0.7450980395078659
+     }
+    },
+    {
+     "ms": 13,
+     "dash": {
+      "mismatch": 0.03336448416115617,
+      "peak": 0.6147058783099055
+     }
+    },
+    {
+     "ms": 104,
+     "dash": {
+      "mismatch": 0.03258662052400424,
+      "peak": 0.7245098035782576
+     }
+    }
+   ]
+  },
+  "c-change-240": {
+   "samples": 12,
+   "moved": {
+    "clip": true,
+    "dash": true
+   },
+   "clip": {
+    "mismatch": {
+     "median": 0.0175,
+     "p95": 0.0318,
+     "max": 0.0318
+    },
+    "peak": {
+     "median": 1,
+     "p95": 1,
+     "max": 1
+    }
+   },
+   "dash": {
+    "mismatch": {
+     "median": 0.0117,
+     "p95": 0.0126,
+     "max": 0.0126
+    },
+    "peak": {
+     "median": 0.1775,
+     "p95": 0.2716,
+     "max": 0.2716
+    }
+   },
+   "worstDashFrames": [
+    {
+     "ms": 52,
+     "dash": {
+      "mismatch": 0.011573613630117299,
+      "peak": 0.27156862430274487
+     }
+    },
+    {
+     "ms": 143,
+     "dash": {
+      "mismatch": 0.008091589216111424,
+      "peak": 0.22647058311849833
+     }
+    },
+    {
+     "ms": 104,
+     "dash": {
+      "mismatch": 0.012238342068579773,
+      "peak": 0.21666667331010103
+     }
+    }
+   ],
+   "worstDashMismatchFrames": [
+    {
+     "ms": 0,
+     "dash": {
+      "mismatch": 0.012596116584258405,
+      "peak": 0.14705882593989372
+     }
+    },
+    {
+     "ms": 104,
+     "dash": {
+      "mismatch": 0.012238342068579773,
+      "peak": 0.21666667331010103
+     }
+    },
+    {
+     "ms": 39,
+     "dash": {
+      "mismatch": 0.01214061043375531,
+      "peak": 0.1509804017841816
+     }
+    }
+   ]
+  },
   "c-indeterminate-24": {
    "samples": 213,
    "moved": {
@@ -2104,7 +2951,7 @@
     "mismatch": {
      "median": 0.0114,
      "p95": 0.0147,
-     "max": 0.0163
+     "max": 0.0161
     },
     "peak": {
      "median": 0.1657,
@@ -2137,17 +2984,17 @@
    ],
    "worstDashMismatchFrames": [
     {
-     "ms": 5921,
-     "dash": {
-      "mismatch": 0.01625255919256761,
-      "peak": 0.15980391949415207
-     }
-    },
-    {
      "ms": 52,
      "dash": {
       "mismatch": 0.01611856198806676,
       "peak": 0.25294117629528046
+     }
+    },
+    {
+     "ms": 5921,
+     "dash": {
+      "mismatch": 0.016093937088532462,
+      "peak": 0.15980391949415207
      }
     },
     {

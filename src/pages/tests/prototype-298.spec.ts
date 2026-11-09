@@ -6,7 +6,7 @@ import { test, type Page } from "@playwright/test";
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-const deviceScale = 2;
+const deviceScale = Number(process.env.PROTO_SCALE ?? 2);
 test.use({ viewport: { width: 2300, height: 1000 }, deviceScaleFactor: deviceScale });
 
 type Box = { x: number; y: number; w: number; h: number };
@@ -209,7 +209,12 @@ test("measure", async ({ page, browser, browserName }) => {
   );
 
   writeFileSync(
-    fileURLToPath(new URL(`./prototype-298-results-${browserName}.json`, import.meta.url)),
+    fileURLToPath(
+      new URL(
+        `./prototype-298-results-${browserName}${deviceScale === 2 ? "" : `-${deviceScale}x`}.json`,
+        import.meta.url
+      )
+    ),
     JSON.stringify({ browser: browserName, version: browser.version(), errors, scenarios }, null, 1)
   );
 });
