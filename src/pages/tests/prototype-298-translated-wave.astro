@@ -1,0 +1,523 @@
+---
+// PROTOTYPE (issue #298), throwaway: lives on branch prototype/298-translated-wave.
+//
+// Question: can ProgressLinear's and ProgressCircular's per-frame wave redraw become a wave drawn
+// once and moved by CSS? Every scenario has three layers, reading the same animated custom
+// properties off one root, so they can differ only in how they draw:
+//   1. current: the components' draw(), copied, and called by the scrubber
+//   2. clip: the wave translated (or rotated), cut to the active indicator's extent, as the issue
+//      proposes: clip-path: inset() on the linear, a conic mask on the circular
+//   3. dash: the same moving wave, its extent picked out by stroke-dasharray, with the offset
+//      running against the wave's motion, so the stroke keeps its real round caps
+// Only "current" has a script. clip and dash are static markup and CSS.
+//
+// Amplitude: the linear scales the wave vertically, with vector-effect: non-scaling-stroke. A
+// radial wave can't be scaled, so the circular's dash layer crossfades a flat ring and a wavy one.
+
+const amplitudeLinear = 3;
+const amplitudeCircular = 1.6;
+
+type Scenario = {
+  id: string;
+  kind: "linear" | "circular";
+  thickness: number;
+  // width of a linear, side of a circular
+  size: number;
+  value?: number;
+  // a value change: from `value` to this
+  to?: number;
+  // the last time (ms) this scenario is measured at
+  until: number;
+  // forces the amplitude: mid-transition, held still
+  amplitude?: number;
+};
+
+const linear = (id: string, rest: Partial<Scenario>): Scenario => ({
+  id,
+  kind: "linear",
+  thickness: 4,
+  size: 320,
+  until: 1000,
+  ...rest,
+});
+const circular = (id: string, rest: Partial<Scenario>): Scenario => ({
+  id,
+  kind: "circular",
+  thickness: 4,
+  size: 48,
+  until: 1000,
+  ...rest,
+});
+
+const scenarios: Scenario[] = [
+  linear("l-steady", { value: 0.5 }),
+  linear("l-steady-t8", { value: 0.5, thickness: 8 }),
+  linear("l-steady-w640", { value: 0.5, size: 640 }),
+  linear("l-flat-below-10", { value: 0.05 }),
+  linear("l-wavy-just-above-10", { value: 0.12 }),
+  linear("l-wavy-just-below-95", { value: 0.93 }),
+  linear("l-flat-from-95", { value: 0.97 }),
+  linear("l-amplitude-held-at-50", { value: 0.5, amplitude: 0.5 }),
+  linear("l-change-amplitude-rises", { value: 0.05, to: 0.5, until: 349 }),
+  linear("l-change-amplitude-falls", { value: 0.5, to: 0.97, until: 349 }),
+  linear("l-change-steady-amplitude", { value: 0.2, to: 0.7, until: 149 }),
+  linear("l-indeterminate", { until: 1750 }),
+  linear("l-indeterminate-t8", { until: 1750, thickness: 8 }),
+  circular("c-steady-24", { value: 0.5, size: 24 }),
+  circular("c-steady-48", { value: 0.5 }),
+  circular("c-steady-52-t8", { value: 0.5, size: 52, thickness: 8 }),
+  circular("c-steady-96", { value: 0.5, size: 96 }),
+  circular("c-steady-240", { value: 0.5, size: 240 }),
+  circular("c-flat-below-10", { value: 0.05 }),
+  circular("c-wavy-just-above-10", { value: 0.12 }),
+  circular("c-wavy-just-below-95", { value: 0.93 }),
+  circular("c-flat-from-95", { value: 0.97 }),
+  circular("c-change-amplitude-rises", { value: 0.05, to: 0.5, until: 349 }),
+  circular("c-change-amplitude-falls", { value: 0.5, to: 0.97, until: 349 }),
+  circular("c-change-steady-amplitude", { value: 0.2, to: 0.7, until: 149 }),
+  circular("c-indeterminate-24", { until: 6000, size: 24 }),
+  circular("c-indeterminate-48", { until: 6000 }),
+  circular("c-indeterminate-240", { until: 6000, size: 240 }),
+];
+
+const round = (n: number) => Math.round(n * 100) / 100;
+
+// Simpson's rule
+const integrate = (f: (x: number) => number, a: number, b: number, n = 2000) => {
+  const h = (b - a) / n;
+  let sum = f(a) + f(b);
+  for (let i = 1; i < n; i++) sum += f(a + i * h) * (i % 2 ? 4 : 2);
+  return (sum * h) / 3;
+};
+
+// The stroke's length per px along the track, for a wave of this share of M3's amplitude
+const stretch = (wavelength: number, share: number) => {
+  const half = wavelength / 2;
+  const peak = 4 * amplitudeLinear * share;
+  return integrate(
+    (r) => Math.sqrt(1 + ((peak / half) * (1 - 2 * r)) ** 2),
+    0,
+    1
+  );
+};
+
+// pathLength is measured on the path as drawn, at full amplitude, but the dash runs along the
+// scaled wave, which is shorter. This corrects a dash for that: stretch(a) / stretch(1), as
+// `g0 + c2 a² + c4 a⁴`, exact at the amplitudes 0, 0.5 and 1.
+const dashCorrection = (wavelength: number) => {
+  const full = stretch(wavelength, 1);
+  const g0 = 1 / full;
+  const half = stretch(wavelength, 0.5) / full - g0;
+  const sum = 1 - g0;
+  const c4 = (0.25 * sum - half) / 0.1875;
+  return { g0, c2: sum - c4, c4 };
+};
+
+// Alternating arches, as Compose's, from x = 0 on past the end of the track. Its pathLength is its
+// run along the track, so a dash is measured in px of track whatever the engine's own measure of
+// the curve, and whatever the amplitude.
+const linearWave = (wavelength: number, width: number) => {
+// A polyline, a point a px: Firefox and WebKit dash a curve along a coarser flattening than the
+// length they report for it, and that error builds up along the track. A polyline has only the one
+// length.
+  const half = wavelength / 2;
+  const arches = Math.ceil((width + 2 * wavelength) / half);
+  let d = "M0 0";
+  for (let i = 0; i < arches; i++) {
+    const sign = i % 2 === 0 ? 1 : -1;
+    for (let step = 1; step <= half; step++) {
+      const r = step / half;
+      const y = sign * 4 * amplitudeLinear * r * (1 - r);
+      d += `L${i * half + step} ${round(y)}`;
+    }
+  }
+  return { d, pathLength: arches * half };
+};
+
+const ringOf = (scenario: Scenario) => {
+  const radius =
+    scenario.size / 2 - scenario.thickness / 2 - amplitudeCircular;
+  const waves = Math.max(5, Math.round((2 * Math.PI * radius) / 15));
+  const rAt = (angle: number) =>
+    radius + amplitudeCircular * Math.sin(waves * angle);
+  // From two waves before the start to four past a full turn, so no dash reaches its ends
+  const period = (2 * Math.PI) / waves;
+  const from = -2 * period;
+  const to = 2 * Math.PI + 4 * period;
+  const steps = Math.ceil((to - from) * radius);
+  let d = "";
+  for (let i = 0; i <= steps; i++) {
+    const angle = from + ((to - from) * i) / steps;
+    const r = rAt(angle);
+    d += `${i ? "L" : "M"}${round(r * Math.cos(angle))} ${round(r * Math.sin(angle))}`;
+  }
+  // pathLength counts waves, so a dash is measured in waves around the ring
+  return { radius, waves, pathLength: waves + 6, d };
+};
+
+const linearLayers = (s: Scenario, indeterminate: boolean) => {
+  const wavelength = indeterminate ? 20 : 40;
+  const { d, pathLength } = linearWave(wavelength, s.size);
+  const lines = indeterminate
+    ? [
+        "--tail:var(--tail-1);--head:var(--head-1)",
+        "--tail:var(--tail-2);--head:var(--head-2)",
+      ]
+    : ["--tail:0;--head:var(--progress)"];
+  const { g0, c2, c4 } = dashCorrection(wavelength);
+  const vars = `--wavelength:${wavelength};--g0:${g0};--c2:${c2};--c4:${c4}`;
+  const current = `<svg class="ref"><path></path><path></path></svg>`;
+  const clip = lines
+    .map(
+      (line) =>
+        `<div class="line clipbox" style="${line}"><svg class="wave-svg"><path class="moved" d="${d}"></path></svg></div>`
+    )
+    .join("");
+  const dash = `<svg class="wave-svg">${lines
+    .map(
+      (line) =>
+        `<path class="line moved dashed" style="${line}" d="${d}" pathLength="${pathLength}"></path>`
+    )
+    .join("")}</svg>`;
+  return { current, clip, dash, vars };
+};
+
+const circularLayers = (s: Scenario) => {
+  const { radius, waves, pathLength, d } = ringOf(s);
+  const c = s.size / 2;
+  const box = `${-c} ${-c} ${s.size} ${s.size}`;
+  const current = `<svg class="ref turned" viewBox="0 0 ${s.size} ${s.size}" data-center="${c}" data-radius="${radius}" data-waves="${waves}"><path></path></svg>`;
+  const clip = `<div class="ring-mask turned"><svg class="whole" viewBox="${box}"><circle class="ring-whole-flat" r="${radius}"></circle><path class="ring-moved ring-whole-wave" d="${d}"></path></svg></div>`;
+  const dash = `<svg class="whole turned" viewBox="${box}"><circle class="ring-flat" r="${radius}"></circle><path class="ring-moved ring-dashed" d="${d}" pathLength="${pathLength}"></path></svg>`;
+  const vars = `--waves:${waves};--period:${360 / waves};--flat-ring:${2 * Math.PI * radius}`;
+  return { current, clip, dash, vars };
+};
+
+const rows = scenarios
+  .map((s) => {
+    const indeterminate = s.value === undefined;
+    const layers =
+      s.kind === "linear"
+        ? linearLayers(s, indeterminate)
+        : circularLayers(s);
+    const height = s.kind === "linear" ? s.thickness + 6 : s.size;
+    const style = [
+      `--thickness:${s.thickness}px`,
+      `--value:${s.value ?? 0}`,
+      layers.vars,
+      s.amplitude === undefined ? "" : `--amplitude:${s.amplitude}`,
+    ]
+      .filter(Boolean)
+      .join(";");
+    const layer = (variant: "current" | "clip" | "dash") =>
+      `<div class="layer" data-variant="${variant}" style="width:${s.size}px;height:${height}px">${layers[variant]}</div>`;
+    return `<section class="root" data-kind="${s.kind}" data-scenario="${s.id}" data-until="${s.until}" ${
+      s.to === undefined ? "" : `data-to="${s.to}"`
+    } style="${style}"><h2>${s.id}</h2><progress ${
+      indeterminate ? "" : `value="${s.value}"`
+    }></progress>${layer("current")}${layer("clip")}${layer("dash")}</section>`;
+  })
+  .join("");
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Prototype 298: translated wave</title>
+    <style is:global>
+      @property --progress { syntax: "<number>"; inherits: true; initial-value: 0; }
+      @property --amplitude { syntax: "<number>"; inherits: true; initial-value: 0; }
+      @property --phase { syntax: "<number>"; inherits: true; initial-value: 0; }
+      @property --head-1 { syntax: "<number>"; inherits: true; initial-value: 0; }
+      @property --tail-1 { syntax: "<number>"; inherits: true; initial-value: 0; }
+      @property --head-2 { syntax: "<number>"; inherits: true; initial-value: 0; }
+      @property --tail-2 { syntax: "<number>"; inherits: true; initial-value: 0; }
+      @property --rotation { syntax: "<number>"; inherits: true; initial-value: 0; }
+      @property --step { syntax: "<number>"; inherits: true; initial-value: 0; }
+      @property --sweep { syntax: "<number>"; inherits: true; initial-value: 0; }
+
+      :root {
+        --ease-spring-fast-spatial: cubic-bezier(0.42, 1.67, 0.21, 0.9);
+        --ease-spring-fast-effects: cubic-bezier(0.31, 0.94, 0.34, 1);
+        --ease-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+        --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+      }
+      body { margin: 8px; background: #fff; font: 10px sans-serif; }
+      h2 { width: 150px; margin: 0; font: inherit; color: #888; }
+      progress { position: absolute; opacity: 0; width: 0; height: 0; }
+
+      /* The components' animated state, on one root that all three layers inherit */
+      .root {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-block: 8px;
+        --progress: var(--value);
+        --amplitude: calc(clamp(0, (var(--value) - 0.1) * 1e6, 1) * clamp(0, (0.95 - var(--value)) * 1e6, 1));
+        --cap: calc(var(--thickness) / 2);
+        --fill: var(--progress);
+        --share: clamp(0, var(--amplitude), 1);
+        transition:
+          --progress 150ms var(--ease-spring-fast-effects),
+          --amplitude 350ms var(--ease-spring-fast-spatial);
+        animation: phase 1s linear infinite;
+      }
+      .root:has(progress:indeterminate) { --fill: var(--sweep); --share: 1; }
+      .root[data-kind="linear"]:has(progress:indeterminate) {
+        animation:
+          phase 1s linear infinite,
+          head-1 1750ms infinite,
+          tail-1 1750ms infinite,
+          head-2 1750ms infinite,
+          tail-2 1750ms infinite;
+      }
+      .root[data-kind="circular"]:has(progress:indeterminate) {
+        animation:
+          phase 1s linear infinite,
+          rotation 6000ms linear infinite,
+          step 6000ms linear infinite,
+          sweep 6000ms linear infinite;
+      }
+      @keyframes phase { to { --phase: 1; } }
+      @keyframes head-1 {
+        0% { --head-1: 0; animation-timing-function: var(--ease-emphasized-accelerate); }
+        57.142857%, 100% { --head-1: 1; }
+      }
+      @keyframes tail-1 {
+        0%, 14.285714% { --tail-1: 0; animation-timing-function: var(--ease-emphasized-accelerate); }
+        71.428571%, 100% { --tail-1: 1; }
+      }
+      @keyframes head-2 {
+        0%, 37.142857% { --head-2: 0; animation-timing-function: var(--ease-emphasized-accelerate); }
+        85.714286%, 100% { --head-2: 1; }
+      }
+      @keyframes tail-2 {
+        0%, 51.428571% { --tail-2: 0; animation-timing-function: var(--ease-emphasized-accelerate); }
+        100% { --tail-2: 1; }
+      }
+      @keyframes rotation { from { --rotation: 0; } to { --rotation: 1080; } }
+      @keyframes step {
+        0% { --step: 0; }
+        5%, 25% { --step: 90; }
+        30%, 50% { --step: 180; }
+        55%, 75% { --step: 270; }
+        80%, 100% { --step: 360; }
+      }
+      @keyframes sweep {
+        0%, 100% { --sweep: 0.1; }
+        50% { --sweep: 0.87; animation-timing-function: var(--ease-standard); }
+      }
+
+      .layer { position: relative; flex: none; container-type: inline-size; }
+      svg { overflow: visible; pointer-events: none; }
+      path, circle {
+        fill: none;
+        stroke: #000;
+        stroke-width: var(--thickness);
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .ref, .whole { position: absolute; inset: 0; width: 100%; height: 100%; }
+      .turned { rotate: calc((var(--rotation) + var(--step)) * 1deg - 90deg); }
+
+      /* Linear: y = 0 is the track's center line, so the scale leaves it there */
+      .wave-svg { position: absolute; left: 0; top: 50%; width: 100%; height: 1px; }
+      .line {
+        --from: clamp(var(--cap), calc(var(--tail) * 100cqw), calc(100cqw - var(--cap)));
+        --to: clamp(var(--cap), calc(var(--head) * 100cqw), calc(100cqw - var(--cap)));
+        opacity: clamp(0, (var(--head) - var(--tail)) * 1e6, 1);
+      }
+      .moved {
+        vector-effect: non-scaling-stroke;
+        translate: calc(var(--phase) * var(--wavelength) * -1px) 0;
+        scale: 1 max(var(--share), 0.0001);
+      }
+      .dashed {
+        --correction: calc(var(--g0) + var(--share) * var(--share) * (var(--c2) + var(--share) * var(--share) * var(--c4)));
+        stroke-dasharray: calc(max(0px, var(--to) - var(--from)) * var(--correction)) 100000px;
+        stroke-dashoffset: calc((var(--from) + var(--phase) * var(--wavelength) * 1px) * var(--correction) * -1);
+      }
+      .clipbox {
+        position: absolute;
+        inset: 0;
+        clip-path: inset(-8px calc(100% - var(--to) - var(--cap)) -8px calc(var(--from) - var(--cap)));
+      }
+
+      /* Circular: the view box is centered, so 0 0 is the ring's center */
+      .ring-moved { rotate: calc(var(--phase) * var(--period) * -1deg); }
+      .ring-dashed {
+        stroke-dasharray: calc(clamp(0, var(--fill), 1) * var(--waves) * 1px) 100000px;
+        stroke-dashoffset: calc((var(--phase) + 2) * -1px);
+        opacity: calc(clamp(0, var(--fill) * 1e6, 1) * var(--share));
+      }
+      .ring-whole-wave { opacity: var(--share); }
+      .ring-whole-flat { opacity: calc(1 - var(--share)); }
+      .ring-flat {
+        stroke-dasharray: calc(clamp(0, var(--fill), 1) * var(--flat-ring) * 1px) 100000px;
+        opacity: calc(clamp(0, var(--fill) * 1e6, 1) * (1 - var(--share)));
+      }
+      .ring-mask {
+        position: absolute;
+        inset: 0;
+        mask: conic-gradient(from 90deg, #000 calc(clamp(0, var(--fill), 1) * 360deg), #0000 0);
+      }
+    </style>
+  </head>
+  <body>
+    <Fragment set:html={rows} />
+
+    <script is:inline>
+      // The components' draw(), copied. Each reads the root's animated properties off its layer.
+      const amplitudePx = 3;
+      const wavelengths = { determinate: 40, indeterminate: 20 };
+
+      const wavePath = (from, to, shift, wavelength, amplitudeScale, centerY) => {
+        const round = (n) => Math.round(n * 100) / 100;
+        const half = wavelength / 2;
+        const peak = 4 * amplitudePx * amplitudeScale;
+        const arch = (x) => {
+          const index = Math.floor((x + shift) / half);
+          const r = (x + shift - index * half) / half;
+          const sign = index % 2 === 0 ? 1 : -1;
+          return {
+            index,
+            y: sign * peak * r * (1 - r),
+            slope: ((sign * peak) / half) * (1 - 2 * r),
+          };
+        };
+        let x = from;
+        let { index, y, slope } = arch(x);
+        let d = `M${round(x)} ${round(centerY + y)}`;
+        if (to <= from) return `${d}L${round(x)} ${round(centerY + y)}`;
+        while (x < to) {
+          const next = Math.min((index + 1) * half - shift, to);
+          const controlY = y + (slope * (next - x)) / 2;
+          const end = arch(next);
+          const endY = end.index === index ? end.y : 0;
+          d += `Q${round((x + next) / 2)} ${round(centerY + controlY)} ${round(next)} ${round(centerY + endY)}`;
+          x = next;
+          ({ index, y, slope } = arch(x));
+        }
+        return d;
+      };
+
+      const drawLinear = (root, layer) => {
+        const paths = layer.querySelectorAll("path");
+        const style = getComputedStyle(layer);
+        const read = (name) => parseFloat(style.getPropertyValue(`--${name}`));
+        const width = layer.clientWidth;
+        const cap = read("thickness") / 2;
+        const centerY = layer.clientHeight / 2;
+        const phase = read("phase");
+        const isIndeterminate = root.querySelector("progress").matches(":indeterminate");
+        const wavelength = isIndeterminate ? wavelengths.indeterminate : wavelengths.determinate;
+        const amplitudeScale = isIndeterminate ? 1 : Math.min(Math.max(read("amplitude"), 0), 1);
+        const lines = isIndeterminate
+          ? [
+              [read("tail-1"), read("head-1")],
+              [read("tail-2"), read("head-2")],
+            ]
+          : [
+              [0, read("progress")],
+              [0, 0],
+            ];
+        const clamp = (x) => Math.min(Math.max(x, cap), width - cap);
+        lines.forEach(([tail, head], i) => {
+          const d =
+            head > tail
+              ? wavePath(clamp(tail * width), clamp(head * width), (phase || 0) * wavelength, wavelength, amplitudeScale, centerY)
+              : "";
+          paths[i].setAttribute("d", d);
+        });
+      };
+
+      const drawCircular = (root, layer) => {
+        const svg = layer.querySelector("svg");
+        const path = layer.querySelector("path");
+        const style = getComputedStyle(layer);
+        const read = (name) => parseFloat(style.getPropertyValue(`--${name}`));
+        const radius = Number(svg.dataset.radius);
+        const center = Number(svg.dataset.center);
+        const waves = Number(svg.dataset.waves);
+        const phase = read("phase");
+        const amplitudeScale = root.querySelector("progress").matches(":indeterminate")
+          ? 1
+          : Math.min(Math.max(read("amplitude"), 0), 1);
+        const sweep = Math.min(Math.max(read("fill"), 0), 1) * 2 * Math.PI;
+        let d = "";
+        if (sweep > 0) {
+          const steps = Math.max(1, Math.ceil(sweep * radius));
+          const round = (n) => Math.round(n * 100) / 100;
+          for (let i = 0; i <= steps; i++) {
+            const angle = (sweep * i) / steps;
+            const r = radius + 1.6 * amplitudeScale * Math.sin(waves * angle + 2 * Math.PI * (phase || 0));
+            d += `${i ? "L" : "M"}${round(center + r * Math.cos(angle))} ${round(center + r * Math.sin(angle))}`;
+          }
+        }
+        path.setAttribute("d", d);
+      };
+
+      const roots = [...document.querySelectorAll(".root")];
+      const drawAll = () => {
+        for (const root of roots) {
+          const layer = root.querySelector('[data-variant="current"]');
+          (root.dataset.kind === "linear" ? drawLinear : drawCircular)(root, layer);
+        }
+      };
+
+      // Starts every value change and freezes all the animations. A paused CSSTransition on a custom
+      // property doesn't hold its value in WebKit, so a value change is the same two animations
+      // the components' transitions are, by the Web Animations API, which scrubs in every engine.
+      const change = (root, name, from, to, duration, easing) =>
+        root.animate(
+          [{ [name]: from }, { [name]: to }],
+          { duration, easing, fill: "both" }
+        );
+      window.enterScrub = () => {
+        for (const root of roots) {
+          if (root.dataset.to === undefined) continue;
+          const style = getComputedStyle(root);
+          const read = (name) => style.getPropertyValue(name).trim();
+          root.style.transition = "none";
+          const before = { progress: read("--progress"), amplitude: read("--amplitude") };
+          root.style.setProperty("--value", root.dataset.to);
+          const after = { progress: read("--progress"), amplitude: read("--amplitude") };
+          change(root, "--progress", before.progress, after.progress, 150, "cubic-bezier(0.31, 0.94, 0.34, 1)");
+          change(root, "--amplitude", before.amplitude, after.amplitude, 350, "cubic-bezier(0.42, 1.67, 0.21, 0.9)");
+        }
+        for (const root of roots) {
+          for (const animation of root.getAnimations()) animation.pause();
+        }
+      };
+
+      window.setTime = (ms) => {
+        for (const root of roots) {
+          for (const animation of root.getAnimations()) {
+            const end = animation.effect.getComputedTiming().endTime;
+            animation.currentTime = Number.isFinite(end) ? Math.min(ms, end - 0.01) : ms;
+          }
+        }
+        drawAll();
+      };
+
+      // Each layer's box in the full page's CSS px, with a margin for what overflows it
+      window.regions = () =>
+        roots.map((root) => {
+          const box = (variant) => {
+            const r = root.querySelector(`[data-variant="${variant}"]`).getBoundingClientRect();
+            return { x: r.x + scrollX - 4, y: r.y + scrollY - 4, w: r.width + 8, h: r.height + 8 };
+          };
+          return {
+            id: root.dataset.scenario,
+            until: Number(root.dataset.until),
+            current: box("current"),
+            clip: box("clip"),
+            dash: box("dash"),
+          };
+        });
+
+      drawAll();
+    </script>
+  </body>
+</html>
