@@ -249,6 +249,19 @@ test.describe("ProgressLoading", () => {
     ).toBe(false);
   });
 
+  // shape() is Baseline only from 2026, so a browser without it drops the shape and keeps the
+  // circle declared before it: a still circle the active indicator's size, not an unclipped square
+  test("falls back to a circle, M3's 38/48 of the box, where shape() isn't supported", async ({
+    page,
+  }) => {
+    const style = await activeIndicator(
+      indicator(page, "default", "Loading news article")
+    ).getAttribute("style");
+    expect(style).toMatch(
+      /^clip-path: circle\(39\.58%\); clip-path: shape\(from /
+    );
+  });
+
   // Each morph has two keyframes, its start and end shapes, eased by the spring: frozen near the
   // spring's peak, the shape sits past the end shape, the same share of the way as its quarter
   // turn does (so it's tweened between the two, not switched)

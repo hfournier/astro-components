@@ -1029,7 +1029,8 @@ export const loadingIndicatorSequence = () => {
 
 // A morph `progress` of the way along, as a CSS shape() in percentages of its box, centered on
 // its bounds as Compose centers it. Past 1, as a spring overshoots, it carries on beyond the end
-// shape.
+// shape. To 0.1%, a quarter of a pixel at the largest size, 240px: against 0.01%, it shrinks the
+// generated keyframes by a fifth with no visible difference (#290).
 export const morphShape = (
   pairs: [Cubic, Cubic][],
   progress: number,
@@ -1043,7 +1044,7 @@ export const morphShape = (
   const cx = (left + right) / 2;
   const cy = (top + bottom) / 2;
   const at = (x: number, y: number) =>
-    `${(50 + (x - cx) * 100 * scale).toFixed(2)}% ${(50 + (y - cy) * 100 * scale).toFixed(2)}%`;
+    `${(50 + (x - cx) * 100 * scale).toFixed(1)}% ${(50 + (y - cy) * 100 * scale).toFixed(1)}%`;
   const [x0, y0] = cubics[0].points;
   const curves = cubics.map(
     ({ points: [, , c0x, c0y, c1x, c1y, a1x, a1y] }) =>
