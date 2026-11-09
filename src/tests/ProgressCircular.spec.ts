@@ -1,6 +1,15 @@
 import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "./support/a11y-fixture";
-import { box, contrastRatio, resolvedColor, settled } from "./support/helpers";
+import {
+  box,
+  contrastRatio,
+  keepOnlyWavyIndicators,
+  pushPageOffScreen,
+  replaceWavyIndicatorsWithCopy,
+  resolvedColor,
+  settled,
+  styleReadsOverFrames,
+} from "./support/helpers";
 
 // Each case on /tests/progress-circular is a Section with
 // data-testid="progress-circular-<caseId>". Each indicator is named by its aria-label.
@@ -110,9 +119,11 @@ const ring = async (
 const degrees = (length: number, radius: number) =>
   (length / (2 * Math.PI * radius)) * 360;
 
-// The wave's radial extent, without its stroke: 0 when flat, twice the amplitude when wavy
-const waveDepth = (progress: Locator) =>
-  wave(progress)
+// The wave's radial extent, without its stroke: 0 when flat, twice the amplitude when wavy.
+// A wave is only drawn on screen, so this scrolls to it first.
+const waveDepth = async (progress: Locator) => {
+  await progress.scrollIntoViewIfNeeded();
+  return wave(progress)
     .first()
     .evaluate((path: SVGPathElement) => {
       if (!path.getAttribute("d")) return 0;
@@ -125,6 +136,7 @@ const waveDepth = (progress: Locator) =>
       });
       return Math.max(...radii) - Math.min(...radii);
     });
+};
 
 test.describe("ProgressCircular", () => {
   test.beforeEach(async ({ page }) => {
@@ -439,6 +451,45 @@ test.describe("ProgressCircular", () => {
     await expect.poll(() => waveDepth(thick)).toBeCloseTo(3.2, 0);
   });
 
+  test("wavy: an indicator added once no other is drawing is drawn", async ({
+    page,
+  }) => {
+    const halfway = indicator(page, "wavy", "Wavy, halfway");
+    await expect.poll(() => waveDepth(halfway)).toBeCloseTo(3.2, 0);
+    await replaceWavyIndicatorsWithCopy(root(halfway), "Added later");
+    await expect
+      .poll(() => waveDepth(indicator(page, "wavy", "Added later")))
+      .toBeCloseTo(3.2, 0);
+  });
+
+  test("wavy: flat waves do no work per frame, though their phase is running", async ({
+    page,
+  }) => {
+    const starting = indicator(page, "wavy", "Wavy, starting");
+    await expect.poll(() => waveDepth(starting)).toBeLessThan(0.1);
+    await keepOnlyWavyIndicators(page, ["Wavy, starting", "Wavy, nearly done"]);
+    expect(await styleReadsOverFrames(page)).toBe(0);
+  });
+
+  test("wavy: off screen nothing is drawn, and scrolled back it shows what changed", async ({
+    page,
+  }) => {
+    const halfway = indicator(page, "wavy", "Wavy, halfway");
+    await expect.poll(() => waveDepth(halfway)).toBeCloseTo(3.2, 0);
+    await pushPageOffScreen(page);
+    expect(await styleReadsOverFrames(page)).toBe(0);
+
+    const before = await wave(halfway).getAttribute("d");
+    await setValue(halfway, 0.97);
+    await settled(page);
+    expect(await styleReadsOverFrames(page)).toBe(0);
+    expect(await wave(halfway).getAttribute("d")).toBe(before);
+
+    await halfway.scrollIntoViewIfNeeded();
+    // M3's wave is flat from 95%
+    await expect.poll(() => waveDepth(halfway)).toBeLessThan(0.1);
+  });
+
   // M3: circular indicators don't need to be mirrored
   test("right to left, it still fills clockwise from the top", async ({
     page,
@@ -468,6 +519,26 @@ test.describe("ProgressCircular", () => {
       const before = await wave(halfway).getAttribute("d");
       await page.waitForTimeout(200);
       expect(await wave(halfway).getAttribute("d")).toBe(before);
+    });
+
+    test("nothing is drawn per frame at rest, and a new value or an added indicator is still drawn", async ({
+      page,
+    }) => {
+      const halfway = indicator(page, "wavy", "Wavy, halfway");
+      await expect.poll(() => waveDepth(halfway)).toBeCloseTo(3.2, 0);
+      expect(await styleReadsOverFrames(page)).toBe(0);
+
+      // M3's wave is flat from 95%
+      await setValue(halfway, 0.97);
+      await expect.poll(() => waveDepth(halfway)).toBeLessThan(0.1);
+      await setValue(halfway, 0.5);
+      await expect.poll(() => waveDepth(halfway)).toBeCloseTo(3.2, 0);
+      expect(await styleReadsOverFrames(page)).toBe(0);
+
+      await replaceWavyIndicatorsWithCopy(root(halfway), "Added later");
+      await expect
+        .poll(() => waveDepth(indicator(page, "wavy", "Added later")))
+        .toBeCloseTo(3.2, 0);
     });
 
     // ADR-0003: no animation, so the indeterminate indicator holds still, its active indicator

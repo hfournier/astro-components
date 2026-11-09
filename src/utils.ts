@@ -189,6 +189,157 @@ export const inertOutside = (keep: readonly Element[], scrim: string) => {
   };
 };
 
+type WaveDrawing = {
+  selector: string;
+  phase: string;
+  draw: (root: HTMLElement) => boolean;
+};
+
+const waveScheduler = () => {
+  const drawings: WaveDrawing[] = [];
+  // The indicators on screen. One off screen isn't drawn, and is when it comes back.
+  const visible = new Map<HTMLElement, WaveDrawing>();
+  // The visible ones to draw next frame. One stays here only while its drawing can change.
+  const stale = new Set<HTMLElement>();
+  let frame = 0;
+
+  const redraw = (root: HTMLElement) => {
+    if (!visible.has(root)) return;
+    stale.add(root);
+    frame ||= requestAnimationFrame(tick);
+  };
+
+  const tick = () => {
+    frame = 0;
+    const roots = [...stale];
+    stale.clear();
+    for (const root of roots) {
+      const { draw, phase } = visible.get(root)!;
+      const hasWave = draw(root);
+      // A flat wave looks the same wherever its phase is, so its phase doesn't count. A root
+      // that has just stopped moving was left stale, so it was drawn once more at rest, above.
+      const isMoving = root
+        .getAnimations({ subtree: true })
+        .some(
+          (animation) =>
+            animation.playState === "running" &&
+            (hasWave ||
+              !(animation instanceof CSSAnimation) ||
+              animation.animationName !== phase)
+        );
+      if (isMoving) redraw(root);
+    }
+  };
+
+  const rootsIn = (node: Element, selector: string) =>
+    [
+      ...(node.matches(selector) ? [node] : []),
+      ...node.querySelectorAll(selector),
+    ] as HTMLElement[];
+
+  const hide = (root: HTMLElement) => {
+    visible.delete(root);
+    stale.delete(root);
+  };
+
+  const onScreen = new IntersectionObserver((entries) => {
+    for (const { target, isIntersecting } of entries) {
+      const root = target as HTMLElement;
+      if (!isIntersecting) {
+        hide(root);
+        continue;
+      }
+      visible.set(
+        root,
+        drawings.find(({ selector }) => root.matches(selector))!
+      );
+      redraw(root);
+    }
+  });
+
+  // The linear wave is drawn to its indicator's width
+  const resized = new ResizeObserver((entries) => {
+    for (const { target } of entries) redraw(target as HTMLElement);
+  });
+
+  const track = (root: HTMLElement) => {
+    onScreen.observe(root);
+    resized.observe(root);
+    redraw(root);
+  };
+
+  const untrack = (root: HTMLElement) => {
+    onScreen.unobserve(root);
+    resized.unobserve(root);
+    hide(root);
+  };
+
+  // Indicators come and go with scripts, framework islands and Astro's ClientRouter, and a new
+  // value (its `value` or `max`) has to be drawn even with no transition to wake the loop.
+  new MutationObserver((records) => {
+    for (const { target, addedNodes, removedNodes } of records) {
+      if (target instanceof HTMLProgressElement && target.parentElement)
+        redraw(target.parentElement);
+      for (const { selector } of drawings) {
+        removedNodes.forEach((node) => {
+          if (node instanceof Element)
+            rootsIn(node, selector).forEach(
+              (root) => root.isConnected || untrack(root)
+            );
+        });
+        addedNodes.forEach((node) => {
+          if (node instanceof Element) rootsIn(node, selector).forEach(track);
+        });
+      }
+    }
+  }).observe(document.documentElement, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ["value", "max"],
+  });
+
+  // Motion that starts on an indicator already drawn at rest, e.g. when the page stops asking
+  // for reduced motion
+  document.addEventListener("animationstart", ({ target }) => {
+    for (const { selector } of drawings) {
+      const root = (target as Element).closest<HTMLElement>(selector);
+      if (root) redraw(root);
+    }
+  });
+
+  return (drawing: WaveDrawing) => {
+    drawings.push(drawing);
+    document.querySelectorAll<HTMLElement>(drawing.selector).forEach(track);
+  };
+};
+
+let addWaveDrawing: ReturnType<typeof waveScheduler> | undefined;
+
+/**
+ * Draws a component's wavy progress indicators from a script, in the one `requestAnimationFrame`
+ * loop every such component shares. The loop runs only while an indicator's drawing can change:
+ * its wave is travelling, or an indeterminate animation or a value or amplitude transition is
+ * under way. Otherwise each indicator is drawn once per change, and the page stays idle. One
+ * scrolled off screen isn't drawn, and is when it comes back.
+ *
+ * @param component - The component, whose name prefixes its `data-*-shape="wavy"` attribute and
+ * its `*-phase` keyframes, e.g. `"ac-progress-linear"`.
+ * @param draw - Draws one indicator. Returns whether its wave has any height, as a flat wave
+ * doesn't change as its phase runs.
+ */
+export const drawWaves = (
+  component: "ac-progress-linear" | "ac-progress-circular",
+  draw: WaveDrawing["draw"]
+) => {
+  addWaveDrawing ??= waveScheduler();
+  addWaveDrawing({
+    selector: `[data-${component}-shape="wavy"]`,
+    phase: `${component}-phase`,
+    draw,
+  });
+};
+
 /**
  * Marks an element pressed, as `:active` would, from the primary pointer pressing it to its
  * release, and, if `isPressKey` is given, while a press key is held on an input inside it. For a
