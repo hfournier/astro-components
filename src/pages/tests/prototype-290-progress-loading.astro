@@ -1,0 +1,412 @@
+---
+// PROTOTYPE (issue #290), throwaway: lives on branch prototype/290-progress-loading-precomputed.
+//
+// Question: can ProgressLoading's requestAnimationFrame morph loop become an animation computed at
+// build time, matching it by eye in every engine? Three indicators side by side:
+//   1. current: the component's loop (its draw(), copied, so the scrubber can set its time)
+//   2. SMIL: <animate attributeName="d"> sampled along the spring, plus <animateTransform>
+//   3. CSS: @keyframes on clip-path: shape(), only each morph's two ends, with a linear() spring
+//      as the easing between them (CSS interpolation carries it past the end shape as it overshoots)
+// The shape sequence repeats every 4550ms (7 morphs of 650ms) and the quarter turns every 2600ms
+// (4 of them), so each is its own animation. Every morph has its own number of cubics, so a path
+// can only be interpolated within a morph: at each morph's boundary it switches discretely, from
+// the end shape to the same shape cut the next morph's way.
+//
+// URL params: ?knots=<n> spring samples per morph for SMIL (default 12); &size=<px> (default 200)
+// Tick "Scrub" to freeze all three at the slider's time (ms), for comparing frames.
+import {
+  Cubic,
+  boundsOf,
+  loadingIndicatorSequence,
+  morphPathData,
+} from "../../shapes";
+
+const knots = Number(Astro.url.searchParams.get("knots") ?? 12);
+const size = Number(Astro.url.searchParams.get("size") ?? 200);
+
+// Compose's spring, as the component's script has it
+const intervalMs = 650;
+const stiffness = 200;
+const dampingRatio = 0.6;
+const decay = dampingRatio * Math.sqrt(stiffness);
+const frequency = Math.sqrt(stiffness) * Math.sqrt(1 - dampingRatio ** 2);
+const settleMs =
+  (Math.log(1 / Math.hypot(10, (10 * decay) / frequency)) / -decay) * 1000;
+const spring = (ms: number) => {
+  if (ms >= settleMs) return 1;
+  const t = ms / 1000;
+  return (
+    1 -
+    Math.exp(-decay * t) *
+      (Math.cos(frequency * t) + (decay / frequency) * Math.sin(frequency * t))
+  );
+};
+
+const { morphs, scale } = loadingIndicatorSequence();
+const cycleMs = morphs.length * intervalMs; // 4550
+const turnMs = 4 * intervalMs; // 2600
+
+// A morph's points in the 100 × 100 box, centered as morphPathData centers them
+const pointsAt = (pairs: [Cubic, Cubic][], p: number) => {
+  const cubics = pairs.map(
+    ([a, b]) => new Cubic(a.points.map((v, i) => v + (b.points[i] - v) * p))
+  );
+  const [l, t, r, b] = boundsOf(cubics);
+  const cx = (l + r) / 2;
+  const cy = (t + b) / 2;
+  const at = (x: number, y: number) => [
+    50 + (x - cx) * 100 * scale,
+    50 + (y - cy) * 100 * scale,
+  ];
+  return {
+    start: at(cubics[0].points[0], cubics[0].points[1]),
+    curves: cubics.map((c) => {
+      const [, , c0x, c0y, c1x, c1y, ax, ay] = c.points;
+      return [at(c0x, c0y), at(c1x, c1y), at(ax, ay)];
+    }),
+  };
+};
+const f = (n: number) => n.toFixed(2);
+const toShape = ({ start, curves }: ReturnType<typeof pointsAt>) =>
+  `shape(from ${f(start[0])}% ${f(start[1])}%, ` +
+  curves
+    .map(
+      ([c0, c1, a]) =>
+        `curve to ${f(a[0])}% ${f(a[1])}% with ${f(c0[0])}% ${f(c0[1])}% / ${f(c1[0])}% ${f(c1[1])}%`
+    )
+    .join(", ") +
+  ", close)";
+
+// --- SMIL: knots along each morph's spring, then a hold, then the next morph ----------------
+const dValues: string[] = [];
+const dTimes: number[] = [];
+morphs.forEach((pairs, i) => {
+  const t0 = i * intervalMs;
+  for (let k = 0; k <= knots; k++) {
+    // the last knot just before the spring settles, where Compose snaps to the end
+    const ms = Math.min((settleMs * k) / knots, settleMs - 0.5);
+    dTimes.push((t0 + ms) / cycleMs);
+    dValues.push(morphPathData(pairs, spring(ms), scale));
+  }
+  // Compose snaps to the end shape once the spring settles, and holds it
+  const end = morphPathData(pairs, 1, scale);
+  dTimes.push((t0 + settleMs) / cycleMs, (t0 + intervalMs - 0.5) / cycleMs);
+  dValues.push(end, end);
+});
+dTimes.push(1);
+dValues.push(dValues.at(-1)!);
+
+const rotValues: string[] = [];
+const rotTimes: number[] = [];
+for (let q = 0; q < 4; q++) {
+  const t0 = q * intervalMs;
+  for (let k = 0; k <= knots; k++) {
+    // the last knot just before the spring settles, where Compose snaps to the end
+    const ms = Math.min((settleMs * k) / knots, settleMs - 0.5);
+    rotTimes.push((t0 + ms) / turnMs);
+    rotValues.push(`${f(90 * (q + 1 + spring(ms)))} 50 50`);
+  }
+  rotTimes.push((t0 + settleMs) / turnMs);
+  rotValues.push(`${90 * (q + 2)} 50 50`);
+}
+rotTimes.push(1);
+rotValues.push(`450 50 50`);
+const times = (list: number[]) => list.map((t) => t.toFixed(5)).join(";");
+
+// --- CSS: each morph's two ends, with the spring as a linear() easing between them ----------
+const easingSteps = 40;
+const springEasing =
+  "linear(" +
+  Array.from({ length: easingSteps }, (_, k) => {
+    const u = k / easingSteps;
+    return `${spring(settleMs * u).toFixed(4)} ${(u * 100).toFixed(2)}%`;
+  }).join(", ") +
+  // the snap to the end, as Compose ends the spring
+  `, ${spring(settleMs * 0.99999).toFixed(4)} 99.99%, 1 100%)`;
+const pct = (ms: number, of: number) => `${((ms / of) * 100).toFixed(4)}%`;
+let shapeKeyframes = "";
+morphs.forEach((pairs, i) => {
+  const t0 = i * intervalMs;
+  const end = toShape(pointsAt(pairs, 1));
+  shapeKeyframes += `${pct(t0, cycleMs)} { clip-path: ${toShape(pointsAt(pairs, 0))}; animation-timing-function: ${springEasing}; }\n`;
+  shapeKeyframes += `${pct(t0 + settleMs, cycleMs)}, ${pct(t0 + intervalMs - 0.5, cycleMs)} { clip-path: ${end}; }\n`;
+});
+shapeKeyframes += `100% { clip-path: ${toShape(pointsAt(morphs.at(-1)!, 1))}; }\n`;
+let turnKeyframes = "";
+for (let q = 0; q < 4; q++) {
+  const t0 = q * intervalMs;
+  turnKeyframes += `${pct(t0, turnMs)} { rotate: ${90 * (q + 1)}deg; animation-timing-function: ${springEasing}; }\n`;
+  turnKeyframes += `${pct(t0 + settleMs, turnMs)} { rotate: ${90 * (q + 2)}deg; }\n`;
+}
+turnKeyframes += `100% { rotate: 450deg; }\n`;
+const firstShape = toShape(pointsAt(morphs[0], 0));
+const css = `
+@media (prefers-reduced-motion: no-preference) {
+  .css-shape { animation: proto-290-shape ${cycleMs}ms linear infinite; }
+  .css-turn { animation: proto-290-turn ${turnMs}ms linear infinite; }
+}
+@keyframes proto-290-shape {\n${shapeKeyframes}}
+@keyframes proto-290-turn {\n${turnKeyframes}}
+`;
+
+const firstFrame = morphPathData(morphs[0], 0, scale);
+// What each costs, per page (CSS, shared) or per indicator (SMIL, inline)
+const smilBytes =
+  dValues.join(";").length + rotValues.join(";").length + times(dTimes).length + times(rotTimes).length;
+const cssBytes = css.length;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PROTOTYPE 290 loading indicator</title>
+    <style is:inline>
+      body {
+        margin: 0;
+        padding: 16px;
+        font: 14px/1.4 system-ui, sans-serif;
+        background: #fff;
+        color: #111;
+      }
+      .row {
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+      }
+      figure {
+        margin: 0;
+      }
+      .box {
+        position: relative;
+        width: var(--size);
+        height: var(--size);
+        background: #fff;
+      }
+      /* The whole indicator's slow turn, as the component's; off while scrubbing compares frames */
+      @media (prefers-reduced-motion: no-preference) {
+        body:not(.scrub) .spin {
+          animation: proto-290-spin 4666ms linear infinite;
+        }
+      }
+      @keyframes proto-290-spin {
+        to {
+          rotate: 360deg;
+        }
+      }
+      .spin,
+      .css-turn,
+      .css-shape,
+      svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .css-turn {
+        rotate: 90deg;
+      }
+      .css-shape {
+        background: #000;
+        clip-path: var(--firstShape);
+      }
+      /* SMIL ignores reduced motion: a static first frame stands in */
+      .smil-static {
+        display: none;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .smil-animated {
+          display: none;
+        }
+        .smil-static {
+          display: block;
+        }
+      }
+      pre {
+        background: #f3f3f3;
+        padding: 8px;
+      }
+    </style>
+    <style is:inline set:html={css}></style>
+  </head>
+  <body style={`--size: ${size}px; --firstShape: ${firstShape}`}>
+    <h1>PROTOTYPE #290 (throwaway): ProgressLoading, precomputed</h1>
+    <p>
+      <label><input id="scrub" type="checkbox" /> Scrub</label>
+      <input id="time" type="range" min="0" max="18200" step="1" value="0" style="width: 600px" />
+      <output id="time-out">0</output> ms
+    </p>
+    <div class="row">
+      <figure>
+        <div class="box" data-variant="current">
+          <div class="spin">
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              <path id="current-path" d={firstFrame} transform="rotate(90 50 50)"></path>
+            </svg>
+          </div>
+        </div>
+        <figcaption>1. current (rAF loop)</figcaption>
+      </figure>
+      <figure>
+        <div class="box" data-variant="smil">
+          <div class="spin">
+            <svg id="smil-svg" class="smil-animated" viewBox="0 0 100 100" aria-hidden="true">
+              <path d={firstFrame}>
+                <animate
+                  attributeName="d"
+                  dur={`${cycleMs}ms`}
+                  repeatCount="indefinite"
+                  calcMode="linear"
+                  keyTimes={times(dTimes)}
+                  values={dValues.join(";")}></animate>
+                <animateTransform
+                  attributeName="transform"
+                  type="rotate"
+                  dur={`${turnMs}ms`}
+                  repeatCount="indefinite"
+                  calcMode="linear"
+                  keyTimes={times(rotTimes)}
+                  values={rotValues.join(";")}></animateTransform>
+              </path>
+            </svg>
+            <svg class="smil-static" viewBox="0 0 100 100" aria-hidden="true">
+              <path d={firstFrame} transform="rotate(90 50 50)"></path>
+            </svg>
+          </div>
+        </div>
+        <figcaption>2. SMIL ({knots} knots per morph)</figcaption>
+      </figure>
+      <figure>
+        <div class="box" data-variant="css">
+          <div class="spin">
+            <div class="css-turn"><div class="css-shape"></div></div>
+          </div>
+        </div>
+        <figcaption>3. CSS clip-path: shape() + linear()</figcaption>
+      </figure>
+    </div>
+    <pre id="state"></pre>
+
+    <script is:inline define:vars={{ smilBytes, cssBytes, knots, settleMs }}>
+      window.prototypeSizes = { smilBytes, cssBytes, knots, settleMs };
+    </script>
+    <script>
+      import { loadingIndicatorSequence, morphPathData } from "../../shapes";
+
+      // The component's draw(), with its clock passed in
+      const intervalMs = 650;
+      const stiffness = 200;
+      const dampingRatio = 0.6;
+      const decay = dampingRatio * Math.sqrt(stiffness);
+      const frequency = Math.sqrt(stiffness) * Math.sqrt(1 - dampingRatio ** 2);
+      const settleMs =
+        (Math.log(1 / Math.hypot(10, (10 * decay) / frequency)) / -decay) * 1000;
+      const spring = (ms: number) => {
+        if (ms >= settleMs) return 1;
+        const t = ms / 1000;
+        return (
+          1 -
+          Math.exp(-decay * t) *
+            (Math.cos(frequency * t) + (decay / frequency) * Math.sin(frequency * t))
+        );
+      };
+      const { morphs, scale } = loadingIndicatorSequence();
+      const path = document.getElementById("current-path")!;
+      const drawAt = (elapsed: number) => {
+        const morphCount = Math.floor(elapsed / intervalMs);
+        const progress = spring(elapsed - morphCount * intervalMs);
+        path.setAttribute("d", morphPathData(morphs[morphCount % morphs.length], progress, scale));
+        path.setAttribute("transform", `rotate(${(90 * (morphCount + 1 + progress)) % 360} 50 50)`);
+      };
+
+      const smil = document.getElementById("smil-svg") as unknown as SVGSVGElement;
+      const scrub = document.getElementById("scrub") as HTMLInputElement;
+      const time = document.getElementById("time") as HTMLInputElement;
+      const out = document.getElementById("time-out")!;
+      const state = document.getElementById("state")!;
+      const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+
+      // Every variant at the same time: the loop's draw, SMIL's document time, CSS's currentTime
+      const setTime = (ms: number) => {
+        drawAt(ms);
+        smil.pauseAnimations();
+        smil.setCurrentTime(ms / 1000);
+        document.getAnimations().forEach((a) => {
+          a.pause();
+          a.currentTime = ms;
+        });
+        out.textContent = String(ms);
+        state.textContent = JSON.stringify(
+          {
+            ms,
+            morph: Math.floor(ms / intervalMs) % morphs.length,
+            springMs: Math.round(ms % intervalMs),
+            progress: spring(ms % intervalMs).toFixed(3),
+            reducedMotion: reduced.matches,
+            ...(window as unknown as { prototypeSizes: object }).prototypeSizes,
+          },
+          null,
+          1
+        );
+      };
+      (window as unknown as { setTime: typeof setTime }).setTime = setTime;
+
+      // Live, the loop runs from its first frame, as the component's does
+      let start: number | undefined;
+      const loop = (now: number) => {
+        if (scrub.checked || reduced.matches) return;
+        start ??= now;
+        drawAt(now - start);
+        requestAnimationFrame(loop);
+      };
+      requestAnimationFrame(loop);
+
+      scrub.addEventListener("change", () => {
+        document.body.classList.toggle("scrub", scrub.checked);
+        if (scrub.checked) return setTime(Number(time.value));
+        smil.unpauseAnimations();
+        document.getAnimations().forEach((a) => a.play());
+        start = undefined;
+        requestAnimationFrame(loop);
+      });
+      time.addEventListener("input", () => {
+        if (!scrub.checked) {
+          scrub.checked = true;
+          document.body.classList.add("scrub");
+        }
+        setTime(Number(time.value));
+      });
+
+      // Two PNGs (data URLs) drawn to a canvas: the share of the filled area that differs,
+      // pixels filled in one but not the other over pixels filled in either
+      (window as unknown as Record<string, unknown>).diffPngs = async (a: string, b: string) => {
+        const load = (src: string) =>
+          new Promise<HTMLImageElement>((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.src = src;
+          });
+        const [ia, ib] = await Promise.all([load(a), load(b)]);
+        const read = (img: HTMLImageElement) => {
+          const c = document.createElement("canvas");
+          c.width = img.width;
+          c.height = img.height;
+          const ctx = c.getContext("2d")!;
+          ctx.drawImage(img, 0, 0);
+          return ctx.getImageData(0, 0, c.width, c.height).data;
+        };
+        const da = read(ia);
+        const db = read(ib);
+        let union = 0;
+        let xor = 0;
+        for (let i = 0; i < da.length; i += 4) {
+          const fa = da[i] < 128;
+          const fb = db[i] < 128;
+          if (fa || fb) union++;
+          if (fa !== fb) xor++;
+        }
+        return { union, xor, mismatch: union ? xor / union : 0 };
+      };
+    </script>
+  </body>
+</html>
