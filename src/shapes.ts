@@ -1091,8 +1091,9 @@ export const loadingIndicatorFirstFrame = () => {
 export const loadingIndicatorKeyframes = () => {
   const { morphs, scale } = loadingIndicatorSequence();
   const cycleMs = morphs.length * morphIntervalMs;
-  const turnMs = 4 * morphIntervalMs;
-  const at = (ms: number, of: number) => `${((ms / of) * 100).toFixed(4)}%`;
+  const turns = 4; // quarter turns to a whole turn
+  const turnMs = turns * morphIntervalMs;
+  const offset = (ms: number, of: number) => `${((ms / of) * 100).toFixed(4)}%`;
   // The spring, sampled every 1/40 of the way to settling, then its snap to the end
   const samples = 40;
   const easing = `linear(${[
@@ -1109,24 +1110,24 @@ export const loadingIndicatorKeyframes = () => {
     const start = i * morphIntervalMs;
     const end = morphShape(pairs, 1, scale);
     return [
-      `  ${at(start, cycleMs)} {`,
+      `  ${offset(start, cycleMs)} {`,
       `    clip-path: ${morphShape(pairs, 0, scale)};`,
       `    animation-timing-function: ${easing};`,
       "  }",
       // half a millisecond before the next morph, so its switch is all but instant
-      `  ${at(start + settleMs, cycleMs)}, ${at(start + morphIntervalMs - 0.5, cycleMs)} {`,
+      `  ${offset(start + settleMs, cycleMs)}, ${offset(start + morphIntervalMs - 0.5, cycleMs)} {`,
       `    clip-path: ${end};`,
       "  }",
     ];
   });
-  const turn = Array.from({ length: 4 }, (_, i) => {
+  const turn = Array.from({ length: turns }, (_, i) => {
     const start = i * morphIntervalMs;
     return [
-      `  ${at(start, turnMs)} {`,
+      `  ${offset(start, turnMs)} {`,
       `    rotate: ${90 * (i + 1)}deg;`,
       `    animation-timing-function: ${easing};`,
       "  }",
-      `  ${at(start + settleMs, turnMs)} {`,
+      `  ${offset(start + settleMs, turnMs)} {`,
       `    rotate: ${90 * (i + 2)}deg;`,
       "  }",
     ];
@@ -1147,7 +1148,7 @@ export const loadingIndicatorKeyframes = () => {
     "@keyframes ac-progress-loading-turn {",
     ...turn,
     "  100% {",
-    "    rotate: 450deg;",
+    `    rotate: ${90 * (turns + 1)}deg;`,
     "  }",
     "}",
     "",

@@ -1,7 +1,11 @@
 import type { Locator, Page } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { loadingIndicatorKeyframes } from "../shapes";
+import {
+  loadingIndicatorKeyframes,
+  loadingIndicatorSequence,
+  morphShape,
+} from "../shapes";
 import { test, expect } from "./support/a11y-fixture";
 import { box, resolvedColor } from "./support/helpers";
 
@@ -233,11 +237,49 @@ test.describe("ProgressLoading", () => {
         iterations: Infinity,
       },
     ]);
+    // Astro hoists a component's script out of the component, so look for it in the page. In
+    // dev, Vite loads stylesheets through module scripts too (ProgressLoading.css among them),
+    // so only the component's own script counts.
     expect(
-      await root(progress).evaluate(
-        (el) => el.querySelectorAll("script").length
+      await page.evaluate(() =>
+        Array.from(document.scripts).some((script) =>
+          script.src.includes("ProgressLoading.astro?astro&type=script")
+        )
       )
-    ).toBe(0);
+    ).toBe(false);
+  });
+
+  // Each morph has two keyframes, its start and end shapes, eased by the spring: frozen near the
+  // spring's peak, the shape sits past the end shape, the same share of the way as its quarter
+  // turn does (so it's tweened between the two, not switched)
+  test("between keyframes, the shape is tweened on the spring, overshooting the end shape", async ({
+    page,
+  }) => {
+    const progress = indicator(page, "default", "Loading news article");
+    const { morphs, scale } = loadingIndicatorSequence();
+    const numbers = (shape: string) =>
+      (shape.match(/-?[\d.]+(?=%)/g) ?? []).map(Number);
+    const start = numbers(morphShape(morphs[0], 0, scale));
+    const end = numbers(morphShape(morphs[0], 1, scale));
+    const frozen = await activeIndicator(progress).evaluate((el) => {
+      el.getAnimations().forEach((animation) => {
+        animation.pause();
+        animation.currentTime = 270;
+      });
+      const style = getComputedStyle(el);
+      return { shape: style.clipPath, turn: parseFloat(style.rotate) };
+    });
+    // the turn's share of its quarter, from 90deg
+    const progressMade = (frozen.turn - 90) / 90;
+    expect(progressMade).toBeGreaterThan(1.05);
+    const tweened = numbers(frozen.shape);
+    expect(tweened).toHaveLength(start.length);
+    tweened.forEach((value, i) =>
+      expect(value).toBeCloseTo(
+        start[i] + (end[i] - start[i]) * progressMade,
+        1
+      )
+    );
   });
 
   test("size scales the container and the active indicator together", async ({
