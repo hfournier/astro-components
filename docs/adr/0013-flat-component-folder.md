@@ -18,3 +18,4 @@ We rejected two alternatives. Rewriting imports into a generated flat copy at bu
 - What's in `src/components/` is exactly what a user copies. Instructions, a future registry or an agent can name files without translating paths.
 - A component's source and its docs are no longer side by side. Editing a component means opening `src/components/<Name>.astro` and `src/docs/<id>/`.
 - `src/components/` holds only components. Anything else there would be copied by users who take the whole folder.
+- The one exception is a file a component imports that has to be copied with it, named after the component: `ProgressLoading.css`, the keyframes generated from `src/shapes.ts` (#290). A user who takes the whole folder should get it, and a user who copies the component sees it in the component's imports.
