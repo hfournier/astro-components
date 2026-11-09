@@ -147,13 +147,13 @@ const sizeClasses = {
 }[width];
 
 // M3 outline width grows with size. The state layer extends over the border, so it insets by the
-// same amount, and so does the tooltip's anchor (see Tooltip).
+// same amount.
 const borderClasses = {
-  xs: "border before:-inset-px [--ac-tooltip-anchor-inset:-1px]",
-  sm: "border before:-inset-px [--ac-tooltip-anchor-inset:-1px]",
-  md: "border before:-inset-px [--ac-tooltip-anchor-inset:-1px]",
-  lg: "border-2 before:-inset-0.5 [--ac-tooltip-anchor-inset:-2px]",
-  xl: "border-3 before:-inset-0.75 [--ac-tooltip-anchor-inset:-3px]",
+  xs: "border before:-inset-px",
+  sm: "border before:-inset-px",
+  md: "border before:-inset-px",
+  lg: "border-2 before:-inset-0.5",
+  xl: "border-3 before:-inset-0.75",
 }[size];
 
 // The container is drawn here rather than by BaseButton, as its styles, touch target and motion

@@ -41,8 +41,6 @@ slots:
     description: Rich tooltips only. Up to two actions below the text, typically text Buttons, such as "Learn more".
     kind: any
 cssProps:
-  - name: --ac-tooltip-anchor-inset
-    description: Plain tooltips only. Set it on the tooltip's element to minus that element's border width (e.g. `[--ac-tooltip-anchor-inset:-1px]`), so the tooltip is placed from the outside of the border rather than the inside. ButtonIcon sets it for you.
   - name: --ac-tooltip-off
     description: Plain tooltips only. Set it to `1` on the tooltip's element while the tooltip isn't needed, such as while the element shows its label, and the tooltip won't show (nor hide another one). It's read each time the tooltip would show, so it can follow a media or container query (e.g. `rail-expanded:[--ac-tooltip-off:1]`). Fab sets it for you.
 ---
@@ -61,7 +59,7 @@ Don't hide critical information in a tooltip, where it's easy to miss. Use a Dia
 
 ## Placement
 
-A **plain** tooltip goes inside the element it labels, and the element must be positioned (e.g. `relative`). M3 puts it 4px above an element with a visible boundary, such as a button. Next to plain text, leave 8px instead by passing `class="mb-2"`. In an app bar, place it below with `placement="below"` (and `class="mt-2"` next to text). ButtonIcon already includes one, so you only need a plain Tooltip for other elements.
+A **plain** tooltip goes inside the element it labels. M3 puts it 4px above an element with a visible boundary, such as a button. Next to plain text, leave 8px instead by passing `class="mb-2"`. In an app bar, place it below with `placement="below"` (and `class="mt-2"` next to text). ButtonIcon already includes one, so you only need a plain Tooltip for other elements.
 
 A **rich** tooltip can hold buttons, which can't go inside another button or link, so it goes right after the element it describes, with that element's `id` as `for`. It's centered below its element, which M3 allows on desktop. It stays open while the pointer or focus is on either the element or the tooltip, so the pointer can move onto its actions. Keyboard users reach the actions with Tab.
 

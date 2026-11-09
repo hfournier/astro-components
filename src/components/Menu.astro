@@ -89,8 +89,11 @@ const surfaceClasses = [
 {/* Below its trigger, lined up with the trigger's start edge, 4px away; above it, or toward its
      other edge, when there isn't room, keeping 48px from the window's edge (its far margin,
      which flip-block moves to its top). Anchor insets rather than position-area, which Firefox
-     places wrongly right to left. The script anchors it to the trigger that opened it, and sets
-     data-ac-menu-placement for a submenu or a context menu. */}
+     places wrongly right to left. It anchors to the trigger that opened it, its implicit anchor
+     (a commandfor button, or the source the script passes to showPopover()); position-anchor is
+     written as auto, as its initial value differs between engines. A context menu anchors to a
+     point instead, which the script names. Its own box is the anchor its submenus open beside.
+     The script sets data-ac-menu-placement for a submenu or a context menu. */}
 <BaseOverlay
   as="div"
   bgColor={colors.bgColor}
@@ -117,7 +120,7 @@ const surfaceClasses = [
   popover="auto"
   role="menu"
   aria-label={label}
-  style={`position-anchor: --ac-menu-${id}`}
+  style={`position-anchor: ${isContextMenu ? `--ac-menu-${id}` : "auto"}; anchor-name: --ac-menu-box-${id}`}
   data-ac-menu
   data-ac-menu-layout={layout}
   data-ac-menu-context-for={isContextMenu ? contextFor : undefined}
@@ -188,26 +191,21 @@ const surfaceClasses = [
     const items = () =>
       Array.from(menu.querySelectorAll<HTMLElement>("[data-ac-menu-item]"));
     const isOpen = () => menu.matches(":popover-open");
-    const anchorName = `--ac-menu-${menu.id}`;
     const list = menu.querySelector<HTMLElement>("[data-ac-wrapper]");
     const layout = menu.dataset.acMenuLayout;
 
-    // Its own box, which its submenus open beside
-    menu.style.anchorName = `--ac-menu-box-${menu.id}`;
     if (isSubmenu) menu.dataset.acMenuPlacement = "submenu";
     if (contextTarget) menu.dataset.acMenuPlacement = "point";
 
     // The element the menu belongs to now: the trigger or parent item that opened it last, or a
     // context menu's target. It gets focus back as the menu closes. The menu sits beside its
-    // anchor: the trigger itself, or a context menu's point.
+    // anchor: the trigger itself, its implicit anchor, or a context menu's point.
     let trigger: HTMLElement | null = triggers[0] ?? contextTarget;
     let anchor: HTMLElement | null = trigger;
     const parentMenu = () =>
       isSubmenu ? trigger?.closest<HTMLElement>("[data-ac-menu]") : null;
 
     const useTrigger = (opener: HTMLElement, at: HTMLElement = opener) => {
-      if (anchor) anchor.style.anchorName = "";
-      at.style.anchorName = anchorName;
       anchor = at;
       trigger = opener;
       const parent = parentMenu();
@@ -250,21 +248,35 @@ const surfaceClasses = [
         list.scrollTop = list.scrollHeight;
     };
 
+    // The anchor it last opened beside, which the browser anchors it to until it closes; `anchor`
+    // can move ahead of it, as a trigger is pressed
+    let openedBeside: HTMLElement | null = null;
+
+    // Opening from script, the opener is the source, so it's the implicit anchor. Open from
+    // another, the menu closes first, since only opening sets the implicit anchor.
+    const showFrom = (opener: HTMLElement) => {
+      if (isOpen() && openedBeside !== opener) menu.hidePopover();
+      useTrigger(opener);
+      if (!isOpen()) menu.showPopover({ source: opener });
+    };
+
     triggers.forEach((button, index) => {
       button.setAttribute("aria-haspopup", "menu");
       button.setAttribute("aria-controls", menu.id);
       button.setAttribute("aria-expanded", "false");
       button.id ||= `${menu.id}-trigger${index === 0 ? "" : `-${index + 1}`}`;
     });
-    // Each trigger anchors the menu as it's pressed, before the browser opens it
+    // Each trigger becomes the menu's as it's pressed, before the browser opens it
     commandTriggers.forEach((button) => {
       button.addEventListener("pointerdown", () => useTrigger(button));
       // ArrowDown and ArrowUp open the menu on its first and last item
       button.addEventListener("keydown", (event) => {
-        useTrigger(button);
-        if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+        if (event.key !== "ArrowDown" && event.key !== "ArrowUp") {
+          useTrigger(button);
+          return;
+        }
         event.preventDefault();
-        if (!isOpen()) menu.showPopover();
+        showFrom(button);
         focusItem(event.key === "ArrowDown" ? 0 : -1);
       });
     });
@@ -274,7 +286,9 @@ const surfaceClasses = [
       menu.setAttribute("aria-labelledby", trigger.id);
 
     menu.addEventListener("beforetoggle", (event) => {
-      if ((event as ToggleEvent).newState === "open") fitToWindow();
+      if ((event as ToggleEvent).newState !== "open") return;
+      openedBeside = anchor;
+      fitToWindow();
     });
 
     // While open, the menu fits again as the page scrolls or the window resizes, moving its
@@ -344,8 +358,7 @@ const surfaceClasses = [
     // focusing its first item, or on hovering the item, without
     const openFrom = (item: HTMLElement, shouldFocus: boolean) => {
       if (item.getAttribute("aria-disabled") === "true") return;
-      useTrigger(item);
-      if (!isOpen()) menu.showPopover({ source: item });
+      showFrom(item);
       if (shouldFocus) focusItem(0);
     };
     const isRtl = (el: Element) => getComputedStyle(el).direction === "rtl";
@@ -535,9 +548,10 @@ const surfaceClasses = [
     if (!contextTarget) return;
 
     // A context menu sits beside a point: the pointer, or the target's top start corner from the
-    // keyboard. The point is an empty fixed element the menu anchors to.
+    // keyboard. The point is an empty fixed element the menu anchors to by name, as only an
+    // element that opens a popover is its implicit anchor.
     const point = document.createElement("span");
-    point.style.cssText = "position: fixed; pointer-events: none";
+    point.style.cssText = `position: fixed; pointer-events: none; anchor-name: --ac-menu-${menu.id}`;
     document.body.append(point);
     const openAt = (x: number, y: number) => {
       point.style.left = `${x}px`;

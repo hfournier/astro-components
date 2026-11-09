@@ -151,7 +151,10 @@ const randomId = crypto.randomUUID();
 
   // The button that opens it anchors it, in the button's direction, wherever the overlay sits in
   // the page: its toggle's source, a commandfor button or the one a page passes to
-  // showPopover({ source }). Without one, it's centred, as other overlays.
+  // showPopover({ source }). Without one, it's centred, as other overlays. A named anchor rather
+  // than the opener as its implicit anchor (position-anchor: auto): WebKit drops the implicit
+  // anchor as the popover starts to close, before beforetoggle, so the shrink back into the
+  // opener would start from wherever the overlay sits unanchored (#286).
   const anchorTo = (overlay: HTMLElement, opener: HTMLElement | undefined) => {
     const transform = transformOf(overlay);
     if (transform.opener && transform.opener !== opener)

@@ -4,14 +4,16 @@ import { box } from "./support/helpers";
 
 // Each case on /tests/tooltip is a Section with data-testid="tooltip-<caseId>": plain holds a plain
 // tooltip inside an icon-only link, plain-below the same placed below, plain-row four ButtonIcons
-// (Edit, Copy, Share, and Archive, which turns its tooltip off), plain-touch a ButtonIcon (Delete)
-// that counts its clicks in data-clicks, rich a rich tooltip with a subhead and an action after the
-// ButtonIcon it describes, and rich-persistent a persistent rich tooltip after the Button ("Release
-// notes") that toggles it.
+// (Edit, Copy, Share, and Archive, which turns its tooltip off), plain-bordered a large outlined
+// ButtonIcon (Settings) with a 2px border, plain-touch a ButtonIcon (Delete) that counts its clicks
+// in data-clicks, rich a rich tooltip with a subhead and an action after the ButtonIcon it
+// describes, and rich-persistent a persistent rich tooltip after the Button ("Release notes") that
+// toggles it.
 type TooltipCaseId =
   | "plain"
   | "plain-below"
   | "plain-row"
+  | "plain-bordered"
   | "plain-touch"
   | "rich"
   | "rich-persistent";
@@ -42,6 +44,20 @@ const persistentTooltip = (page: Page) =>
 
 const isOpen = (tooltip: Locator) =>
   tooltip.evaluate((el) => el.matches(":popover-open"));
+
+// A rich tooltip's place: 4px below its element, overlapping it across. Polled, as focusing the
+// element can scroll the page between the measurements.
+const expectBelow = (trigger: Locator, tooltip: Locator) =>
+  expect
+    .poll(async () => {
+      const from = await box(trigger);
+      const at = await box(tooltip);
+      return {
+        gap: Math.round(at.y - (from.y + from.height)),
+        overlaps: at.x < from.x + from.width && at.x + at.width > from.x,
+      };
+    })
+    .toEqual({ gap: 4, overlaps: true });
 
 // M3's delays: a tooltip shows 500ms into a hover, and stays 1.5s after the pointer leaves. These
 // tests install Playwright's clock and pause it, so time only moves with runFor. A paused clock
@@ -93,6 +109,23 @@ test.describe("Tooltip", () => {
           const trigger = await box(plainTrigger(page));
           const tooltip = await box(plainTooltip(page));
           return Math.round(trigger.y - (tooltip.y + tooltip.height));
+        })
+        .toBe(4);
+    });
+
+    test("sits 4px from the outside of its element's border", async ({
+      page,
+    }) => {
+      const trigger = tooltipCase(page, "plain-bordered").getByRole("button");
+      const tooltip = trigger.locator("[data-ac-tooltip]");
+      await trigger.focus();
+      await expect(tooltip).toBeVisible();
+
+      await expect
+        .poll(async () => {
+          const triggerBox = await box(trigger);
+          const tooltipBox = await box(tooltip);
+          return Math.round(triggerBox.y - (tooltipBox.y + tooltipBox.height));
         })
         .toBe(4);
     });
@@ -329,6 +362,12 @@ test.describe("Tooltip", () => {
       await expect(richTooltip(page)).toHaveAttribute("role", "tooltip");
     });
 
+    test("sits 4px below its element", async ({ page }) => {
+      await richTrigger(page).focus();
+      await expect(richTooltip(page)).toBeVisible();
+      await expectBelow(richTrigger(page), richTooltip(page));
+    });
+
     test("opens on hover, and closes 1.5s after the pointer has left", async ({
       page,
     }) => {
@@ -464,6 +503,32 @@ test.describe("Tooltip", () => {
       expect(await isOpen(persistentTooltip(page))).toBe(true);
 
       await plainTrigger(page).focus();
+      await expect.poll(() => isOpen(persistentTooltip(page))).toBe(false);
+    });
+
+    test("sits 4px below its element, whether its element or the page opened it", async ({
+      page,
+    }) => {
+      // the element pinned near the window's top, as the case is last on the page, so the
+      // tooltip has room below and doesn't flip
+      await persistentTrigger(page).evaluate((el) => {
+        el.style.position = "fixed";
+        el.style.top = "100px";
+      });
+      await persistentTrigger(page).click();
+      await expect(persistentTooltip(page)).toBeVisible();
+      await expectBelow(persistentTrigger(page), persistentTooltip(page));
+      await persistentTrigger(page).click();
+      await expect.poll(() => isOpen(persistentTooltip(page))).toBe(false);
+
+      // as a page opens one on load, with no source
+      await persistentTooltip(page).evaluate((el) =>
+        (el as HTMLElement).showPopover()
+      );
+      await expect(persistentTooltip(page)).toBeVisible();
+      await expectBelow(persistentTrigger(page), persistentTooltip(page));
+      // still its element's: a click on it closes it, rather than light dismiss reopening it
+      await persistentTrigger(page).click();
       await expect.poll(() => isOpen(persistentTooltip(page))).toBe(false);
     });
 

@@ -79,6 +79,18 @@ description: Tests for the Menu, MenuGroup, MenuItem, MenuItemCheckbox and MenuI
   </Menu>
 </Section>
 
+<Section data-testid="menu-shared" class="p-4 space-y-4">
+  <Heading level={2}>Shared by two triggers</Heading>
+  <div class="flex justify-between">
+    <Button command="toggle-popover" commandfor="shared-menu" variant="outlined">Sort files</Button>
+    <Button command="toggle-popover" commandfor="shared-menu" variant="outlined">Sort folders</Button>
+  </div>
+  <Menu id="shared-menu" label="Sort by">
+    <MenuItem label="Name" />
+    <MenuItem label="Date" />
+  </Menu>
+</Section>
+
 <Section data-testid="menu-submenus" class="p-4 space-y-4">
   <Heading level={2}>Submenus</Heading>
   <Button command="toggle-popover" commandfor="file-menu" variant="outlined">File</Button>

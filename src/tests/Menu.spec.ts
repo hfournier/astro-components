@@ -23,6 +23,8 @@ import {
 // - standard-checked: "View" opens a standard-color menu labelled "View options" by its `label`,
 //   with checkbox items "Show hidden files" (checked, with an icon) and "Show extensions".
 // - three-groups: "Arrange" opens a grouped menu of three one-item groups.
+// - shared: "Sort files" and "Sort folders", at either end of a row, both open one menu, labelled
+//   "Sort by", of Name and Date.
 type MenuCaseId =
   | "actions"
   | "standard-layout"
@@ -772,6 +774,53 @@ test.describe("Menu", () => {
       const button = await box(trigger(page, "standard-checked"));
       const opened = await box(surface(page, "standard-checked"));
       expect(opened.x + opened.width).toBeCloseTo(button.x + button.width, 0);
+      await page.keyboard.press("Escape");
+    });
+
+    test("a menu shared by two triggers sits beside the one that opened it, after switching too", async ({
+      page,
+    }) => {
+      // Two triggers at either end of a row (the "shared" case), both commandfor one menu
+      const section = page.getByTestId("menu-shared");
+      const files = section.getByRole("button", { name: "Sort files" });
+      const folders = section.getByRole("button", { name: "Sort folders" });
+      const shared = page.getByRole("menu", { name: "Sort by" });
+      const sharedSurface = shared.locator(":scope > [data-ac-wrapper]");
+      const expectBeside = async (button: Locator) => {
+        await expect(shared).toBeVisible();
+        await settled(page);
+        const from = await box(button);
+        const opened = await box(sharedSurface);
+        expect(opened.y - (from.y + from.height)).toBeCloseTo(4, 0);
+        expect(opened.x).toBeCloseTo(from.x, 0);
+        await expect(button).toHaveAttribute("aria-expanded", "true");
+      };
+
+      await files.click();
+      await expectBeside(files);
+      await expect(folders).toHaveAttribute("aria-expanded", "false");
+      await page.keyboard.press("Escape");
+      await folders.click();
+      await expectBeside(folders);
+      await expect(files).toHaveAttribute("aria-expanded", "false");
+      await page.keyboard.press("Escape");
+      // and back, from the keyboard: ArrowDown opens it from script
+      await files.focus();
+      await page.keyboard.press("ArrowDown");
+      await expectBeside(files);
+      await page.keyboard.press("Escape");
+      await folders.focus();
+      await page.keyboard.press("Enter");
+      await expectBeside(folders);
+      await page.keyboard.press("Escape");
+      // and while it's open from one, ArrowDown on the other moves it there
+      await files.click();
+      await expectBeside(files);
+      await folders.focus();
+      await expect(shared).toBeVisible();
+      await page.keyboard.press("ArrowDown");
+      await expectBeside(folders);
+      await expect(files).toHaveAttribute("aria-expanded", "false");
       await page.keyboard.press("Escape");
     });
 
