@@ -144,7 +144,8 @@ const bodyClasses = twMerge(
     <Icon class="size-4.5" name="close" />
   </button>
   {/* The edit field is as wide as its text (field-sizing), and no narrower than the chip's 88px.
-      A pixel more padding at the end leaves room for the caret. */}
+      A pixel more padding at the end leaves room for the caret, except in WebKit, which scrolls the
+      text by up to that pixel into the start padding instead. */}
   {isEditable && (
     <input
       class="field-sizing-content h-8 min-w-22 rounded-lg bg-transparent ps-3 pe-3.25 text-sm leading-5 font-medium tracking-[0.1px] text-(--theme-color-on-surface) outline-none"

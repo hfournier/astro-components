@@ -517,9 +517,10 @@ test.describe("ChipInput", () => {
     ]);
   });
 
-  // A field sized by `size` counts average characters, too few for an address's @ and m. WebKit
-  // sizes the field to its text but scrolls the inner text box, inside the padding, so the caret
-  // at the end scrolls it by up to a pixel, which the 12px start padding takes: no text is clipped.
+  // Wide glyphs, such as an address's @ and m, would overflow a field sized by average
+  // characters. WebKit sizes the field to its text but scrolls the inner text box, inside the
+  // padding, so the caret at the end scrolls it by up to a pixel, which the 12px start padding
+  // takes: no text is clipped.
   const caretSlack = 1;
 
   test("the edit field shows its whole text, as it opens and as it grows", async ({
