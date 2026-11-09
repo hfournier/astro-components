@@ -305,9 +305,9 @@ TableOfContents.astro:61-84 closes the modal sheet on an in-page link and at the
 
 ### prop-for-that
 
-[prop-for-that](https://prop-for-that.netlify.app/docsite/) is a JavaScript library, not a platform feature. One import (`prop-for-that/auto`) binds every element that has a `data-props-for` attribute, through a MutationObserver, shared ResizeObservers and listeners. It writes what it reads into `--live-*` custom properties, at most once per animation frame. CSS reads continuous values with `var()` and flags with `@container style()`. So it moves script into a dependency rather than removing it, and it can only pay off where a component's script exists just to hand CSS a value. Three costs apply everywhere:
+[prop-for-that](https://prop-for-that.netlify.app/docsite/) is a JavaScript library by Adam Argyle, not a platform feature. It is at 0.7.12, first published in May 2026, so before 1.0. One import (`prop-for-that/auto`) binds every element that has a `data-props-for` attribute, through a MutationObserver, shared ResizeObservers and listeners. It writes what it reads into `--live-*` custom properties, at most once per animation frame, and only the values that changed. Its element sources that sample continuously (`size`, `truncated`, `pointer-local`) pause while the element is off screen, and their values freeze until it comes back. CSS reads continuous values with `var()` and flags with `@container style()`, which matches on equality only: the library's own reference says range comparisons such as `style(--x < 5)` "are not stable yet", so a threshold needs a flag written for it. So it moves script into a dependency rather than removing it, and it can only pay off where a component's script exists just to hand CSS a value. Three costs apply everywhere:
 
-- **A runtime dependency.** The components ship none today (`tailwind-merge` runs at build time only). Every consumer who copies a component would need the library too. The docsite gives no bundle size and no browser support.
+- **A runtime dependency.** The components ship none today (`tailwind-merge` runs at build time only). Every consumer who copies a component would need the library too. Its core is 2.96 KB gzipped (bundlephobia), and `auto` loads each plugin as a separate chunk with a dynamic `import()`, so it has to be served as a module. Its documentation names no supported browsers. Its flags need container style queries, which are Baseline newly available since 2026-05-19: Chrome 111, Firefox 151, Safari 18 ([webstatus.dev](https://webstatus.dev/features/container-style-queries)).
 - **A frame late.** Values land on the next animation frame. Where a script decides something before the browser draws it, such as Menu's height as it opens, that's a frame drawn wrong.
 - **CSS only.** It can't set ARIA attributes, `tabindex`, validity or announcements. Most of the measuring in these components exists to drive exactly those.
 
@@ -330,7 +330,7 @@ TableOfContents.astro:61-84 closes the modal sheet on an in-page link and at the
 | --- | --- | --- | --- |
 | Menu | The room beside the anchor, to set `--ac-menu-max-height` before it opens (Menu.astro:231-240) | `viewport` has the window's size; nothing has the anchor's position | No. It's needed before the first frame, and from the anchor's box. |
 | Menu | A grouped menu that overflows takes the standard layout (Menu.astro:244-251) | `truncated`'s `--live-truncated-y` on the list | No. The standard layout is shorter (no gaps), so the flag would go back to 0 and the layout would flip back and forth. The script avoids that by resetting the layout and measuring in one go. |
-| BaseListItem | Its lines, and top alignment at 88px or taller (BaseListItem.astro:403-426) | `size`'s `--live-h`; nothing counts lines | No. The 88px check could become a style query on `--live-h`, if range style queries are available (unverified), but the line count, which sets the height, stays. |
+| BaseListItem | Its lines, and top alignment at 88px or taller (BaseListItem.astro:403-426) | `size`'s `--live-h`; nothing counts lines | No. A style query can't test `--live-h` against 88px, as style queries match on equality only, and nothing counts lines. |
 | SheetBottom | Overflow, to make the content a Tab stop; content against half the window, for one or two heights, `aria-expanded` and the handle's label (SheetBottom.astro:181-192, 218-284) | `truncated`, `size`, `viewport` | No. What it sets is attributes. |
 | Snackbar | The fixed elements it has to clear, and the width left beside them (Snackbar.astro:194-260) | `size` with `hoist` gives other elements' sizes, not their positions | No. |
 | ButtonGroup, BaseTextField, TextFieldChips | Boxes before and after a change, for their animations | Nothing: each is one measurement at one moment | No. |
@@ -345,7 +345,7 @@ TableOfContents.astro:61-84 closes the modal sheet on an in-page link and at the
 - **`position-try-order` with a bounded size.** MDN doesn't say how it interacts with `align-self: start` and a clamped height. Item 5 needs a prototype.
 - **Interest invokers on touch.** The long press, its timing and the accessibility mappings come from the Open UI explainer, not from the HTML spec or Chrome's release notes. No primary source confirmed which of them Chrome 142–149 ships.
 - **`focusgroup` syntax as shipped.** Chrome 150's post gives only `focusgroup="toolbar wrap"`. The token list here is the Open UI explainer's.
-- **prop-for-that's size and support.** Its docsite gives no bundle size and no browser support. Its discrete flags rely on `@container style()` queries on custom properties, and an 88px check would need range style queries; neither was checked against BCD for this section.
+- **prop-for-that's browser support.** Its README, llms.txt and docsite name no supported browsers. The APIs it relies on (ResizeObserver, IntersectionObserver, MutationObserver, dynamic `import()`, constructable stylesheets with an inline fallback) weren't checked against BCD for this section.
 - **Version numbers.** All versions come from BCD 8.1.8 and web-features 3.45.0 as fetched on 2026-11-08, including Safari 27 and Firefox 152–155. They weren't cross-checked against each vendor's release notes.
 
 ### Sources
@@ -354,7 +354,7 @@ Support data:
 
 - MDN browser-compat-data 8.1.8: https://github.com/mdn/browser-compat-data (keys cited inline)
 - web-features 3.45.0 (Baseline status): https://github.com/web-platform-dx/web-features, browsable at https://webstatus.dev/
-- webstatus.dev feature pages: https://webstatus.dev/features/dialog-closedby, https://webstatus.dev/features/field-sizing, https://webstatus.dev/features/has, https://webstatus.dev/features/inert, https://webstatus.dev/features/user-pseudos, https://webstatus.dev/features/interest-invokers, https://webstatus.dev/features/view-transitions, https://webstatus.dev/features/scroll-markers, https://webstatus.dev/features/scroll-into-view-container, https://webstatus.dev/features/shape-function, https://webstatus.dev/features/linear-easing, https://webstatus.dev/features/switch-control, https://webstatus.dev/features/customizable-select
+- webstatus.dev feature pages: https://webstatus.dev/features/dialog-closedby, https://webstatus.dev/features/field-sizing, https://webstatus.dev/features/has, https://webstatus.dev/features/inert, https://webstatus.dev/features/user-pseudos, https://webstatus.dev/features/interest-invokers, https://webstatus.dev/features/view-transitions, https://webstatus.dev/features/scroll-markers, https://webstatus.dev/features/scroll-into-view-container, https://webstatus.dev/features/shape-function, https://webstatus.dev/features/linear-easing, https://webstatus.dev/features/switch-control, https://webstatus.dev/features/customizable-select, https://webstatus.dev/features/container-style-queries
 
 Specs:
 
@@ -378,6 +378,10 @@ MDN:
 prop-for-that (read 2026-11-09):
 
 - Overview: https://prop-for-that.netlify.app/docsite/
+- llms.txt (entry points, the full property catalog, gotchas): https://prop-for-that.netlify.app/llms.txt
+- Repository and README: https://github.com/argyleink/prop-for-that
+- npm (0.7.12): https://www.npmjs.com/package/prop-for-that
+- Bundle size: https://bundlephobia.com/package/prop-for-that@0.7.12
 - Demos: https://prop-for-that.netlify.app/docsite/demos/field/, https://prop-for-that.netlify.app/docsite/demos/field-state/, https://prop-for-that.netlify.app/docsite/demos/form-state/, https://prop-for-that.netlify.app/docsite/demos/size/, https://prop-for-that.netlify.app/docsite/demos/hoist/, https://prop-for-that.netlify.app/docsite/demos/truncated/, https://prop-for-that.netlify.app/docsite/demos/visibility/, https://prop-for-that.netlify.app/docsite/demos/pointer/
 - `HTMLInputElement.indeterminate`: https://developer.mozilla.org/docs/Web/API/HTMLInputElement/indeterminate
 
