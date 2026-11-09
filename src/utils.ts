@@ -191,22 +191,27 @@ export const inertOutside = (keep: readonly Element[], scrim: string) => {
 
 type WaveDrawing = {
   selector: string;
-  phase: string;
+  phaseAnimation: string;
   draw: (root: HTMLElement) => boolean;
 };
 
 const waveScheduler = () => {
   const drawings: WaveDrawing[] = [];
-  // The indicators on screen. One off screen isn't drawn, and is when it comes back.
-  const visible = new Map<HTMLElement, WaveDrawing>();
-  // The visible ones to draw next frame. One stays here only while its drawing can change.
+  // Every indicator on the page, and how to draw it
+  const tracked = new Map<HTMLElement, WaveDrawing>();
+  // The ones on screen. One off screen isn't redrawn until it comes back.
+  const visible = new Set<HTMLElement>();
+  // The ones to draw next frame. One stays here only while its drawing can change.
   const stale = new Set<HTMLElement>();
   let frame = 0;
 
-  const redraw = (root: HTMLElement) => {
-    if (!visible.has(root)) return;
+  const scheduleDraw = (root: HTMLElement) => {
     stale.add(root);
     frame ||= requestAnimationFrame(tick);
+  };
+
+  const requestDraw = (root: HTMLElement) => {
+    if (visible.has(root)) scheduleDraw(root);
   };
 
   const tick = () => {
@@ -214,7 +219,7 @@ const waveScheduler = () => {
     const roots = [...stale];
     stale.clear();
     for (const root of roots) {
-      const { draw, phase } = visible.get(root)!;
+      const { draw, phaseAnimation } = tracked.get(root)!;
       const hasWave = draw(root);
       // A flat wave looks the same wherever its phase is, so its phase doesn't count. A root
       // that has just stopped moving was left stale, so it was drawn once more at rest, above.
@@ -225,9 +230,9 @@ const waveScheduler = () => {
             animation.playState === "running" &&
             (hasWave ||
               !(animation instanceof CSSAnimation) ||
-              animation.animationName !== phase)
+              animation.animationName !== phaseAnimation)
         );
-      if (isMoving) redraw(root);
+      if (isMoving) requestDraw(root);
     }
   };
 
@@ -237,41 +242,38 @@ const waveScheduler = () => {
       ...node.querySelectorAll(selector),
     ] as HTMLElement[];
 
-  const hide = (root: HTMLElement) => {
-    visible.delete(root);
-    stale.delete(root);
-  };
-
-  const onScreen = new IntersectionObserver((entries) => {
+  const visibilityObserver = new IntersectionObserver((entries) => {
     for (const { target, isIntersecting } of entries) {
       const root = target as HTMLElement;
-      if (!isIntersecting) {
-        hide(root);
-        continue;
+      // an entry already queued can arrive after its root has been removed
+      if (isIntersecting && tracked.has(root)) {
+        visible.add(root);
+        requestDraw(root);
+      } else {
+        visible.delete(root);
       }
-      visible.set(
-        root,
-        drawings.find(({ selector }) => root.matches(selector))!
-      );
-      redraw(root);
     }
   });
 
   // The linear wave is drawn to its indicator's width
-  const resized = new ResizeObserver((entries) => {
-    for (const { target } of entries) redraw(target as HTMLElement);
+  const resizeObserver = new ResizeObserver((entries) => {
+    for (const { target } of entries) requestDraw(target as HTMLElement);
   });
 
-  const track = (root: HTMLElement) => {
-    onScreen.observe(root);
-    resized.observe(root);
-    redraw(root);
+  // Drawn once wherever it is, so one that's never on screen still shows if the page is printed
+  const track = (root: HTMLElement, drawing: WaveDrawing) => {
+    tracked.set(root, drawing);
+    visibilityObserver.observe(root);
+    resizeObserver.observe(root);
+    scheduleDraw(root);
   };
 
   const untrack = (root: HTMLElement) => {
-    onScreen.unobserve(root);
-    resized.unobserve(root);
-    hide(root);
+    visibilityObserver.unobserve(root);
+    resizeObserver.unobserve(root);
+    tracked.delete(root);
+    visible.delete(root);
+    stale.delete(root);
   };
 
   // Indicators come and go with scripts, framework islands and Astro's ClientRouter, and a new
@@ -279,16 +281,19 @@ const waveScheduler = () => {
   new MutationObserver((records) => {
     for (const { target, addedNodes, removedNodes } of records) {
       if (target instanceof HTMLProgressElement && target.parentElement)
-        redraw(target.parentElement);
-      for (const { selector } of drawings) {
+        requestDraw(target.parentElement);
+      for (const drawing of drawings) {
         removedNodes.forEach((node) => {
           if (node instanceof Element)
-            rootsIn(node, selector).forEach(
+            rootsIn(node, drawing.selector).forEach(
               (root) => root.isConnected || untrack(root)
             );
         });
         addedNodes.forEach((node) => {
-          if (node instanceof Element) rootsIn(node, selector).forEach(track);
+          if (node instanceof Element)
+            rootsIn(node, drawing.selector).forEach((root) =>
+              track(root, drawing)
+            );
         });
       }
     }
@@ -304,13 +309,15 @@ const waveScheduler = () => {
   document.addEventListener("animationstart", ({ target }) => {
     for (const { selector } of drawings) {
       const root = (target as Element).closest<HTMLElement>(selector);
-      if (root) redraw(root);
+      if (root) requestDraw(root);
     }
   });
 
   return (drawing: WaveDrawing) => {
     drawings.push(drawing);
-    document.querySelectorAll<HTMLElement>(drawing.selector).forEach(track);
+    document
+      .querySelectorAll<HTMLElement>(drawing.selector)
+      .forEach((root) => track(root, drawing));
   };
 };
 
@@ -321,7 +328,7 @@ let addWaveDrawing: ReturnType<typeof waveScheduler> | undefined;
  * loop every such component shares. The loop runs only while an indicator's drawing can change:
  * its wave is travelling, or an indeterminate animation or a value or amplitude transition is
  * under way. Otherwise each indicator is drawn once per change, and the page stays idle. One
- * scrolled off screen isn't drawn, and is when it comes back.
+ * off screen is drawn when it's added, and not again until it comes back.
  *
  * @param component - The component, whose name prefixes its `data-*-shape="wavy"` attribute and
  * its `*-phase` keyframes, e.g. `"ac-progress-linear"`.
@@ -335,7 +342,7 @@ export const drawWaves = (
   addWaveDrawing ??= waveScheduler();
   addWaveDrawing({
     selector: `[data-${component}-shape="wavy"]`,
-    phase: `${component}-phase`,
+    phaseAnimation: `${component}-phase`,
     draw,
   });
 };

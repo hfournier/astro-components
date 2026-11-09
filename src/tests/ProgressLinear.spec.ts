@@ -370,6 +370,20 @@ test.describe("ProgressLinear", () => {
     expect(await styleReadsOverFrames(page)).toBe(0);
   });
 
+  // So that printing the page, say, shows it
+  test("wavy: an indicator that hasn't been on screen is still drawn once", async ({
+    page,
+  }) => {
+    await pushPageOffScreen(page);
+    await expect
+      .poll(() =>
+        wave(indicator(page, "rtl", "Right to left, wavy"))
+          .first()
+          .getAttribute("d")
+      )
+      .toBeTruthy();
+  });
+
   test("wavy: off screen nothing is drawn, and scrolled back it shows what changed", async ({
     page,
   }) => {
