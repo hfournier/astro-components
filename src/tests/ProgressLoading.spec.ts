@@ -1,4 +1,7 @@
 import type { Locator, Page } from "@playwright/test";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { loadingIndicatorKeyframes } from "../shapes";
 import { test, expect } from "./support/a11y-fixture";
 import { box, resolvedColor } from "./support/helpers";
 
@@ -23,20 +26,24 @@ const activeIndicator = (progress: Locator) =>
 const colorRole = (page: Page, name: string) =>
   resolvedColor(page, `var(--theme-color-${name})`);
 
-// The active indicator's outline, frame by frame for `ms`: how many curves it's drawn with (each
-// morph in the sequence has its own count) and how far it's turned
+// The whole indicator, which turns once every 4666ms around the active indicator's own turns
+const spin = (progress: Locator) =>
+  root(progress).locator("[aria-hidden=true]");
+
+// The active indicator's outline, frame by frame for `ms`, as the browser has it animated: how
+// many curves its clip-path's shape() is drawn with (each morph in the sequence has its own
+// count) and how far it's turned
 const record = (progress: Locator, ms: number) =>
   activeIndicator(progress).evaluate(
-    (path, ms) =>
+    (el, ms) =>
       new Promise<{ curves: number; turn: number }[]>((resolve) => {
         const frames: { curves: number; turn: number }[] = [];
         const start = performance.now();
         const frame = (now: number) => {
+          const style = getComputedStyle(el);
           frames.push({
-            curves: path.getAttribute("d")!.split("C").length - 1,
-            turn: Number(
-              path.getAttribute("transform")!.match(/rotate\(([\d.]+)/)![1]
-            ),
+            curves: style.clipPath.split("curve").length - 1,
+            turn: parseFloat(style.rotate),
           });
           if (now - start < ms) requestAnimationFrame(frame);
           else resolve(frames);
@@ -52,18 +59,30 @@ const turnSteps = (frames: { turn: number }[]) =>
     .slice(1)
     .map((frame, i) => ((frame.turn - frames[i].turn + 540) % 360) - 180);
 
-// The furthest the active indicator reaches from the center of its 100 × 100 box
+// The furthest the active indicator's outline reaches from the center of its box, in % of the
+// box's side: its shape() read back as `from x y` then `curve to x y with c0 / c1` for each curve,
+// sampled along each curve. Turning doesn't move a point's distance from the center.
 const reach = (progress: Locator) =>
-  activeIndicator(progress).evaluate((path: SVGPathElement) => {
-    const length = path.getTotalLength();
-    const matrix = path.transform.baseVal.consolidate()?.matrix;
-    return Math.max(
-      ...Array.from({ length: 400 }, (_, i) => {
-        let point = path.getPointAtLength((length * i) / 400);
-        if (matrix) point = point.matrixTransform(matrix);
-        return Math.hypot(point.x - 50, point.y - 50);
-      })
-    );
+  activeIndicator(progress).evaluate((el) => {
+    const numbers = (
+      getComputedStyle(el).clipPath.match(/-?[\d.]+(?=%)/g) ?? []
+    ).map(Number);
+    let [x0, y0] = numbers;
+    let furthest = Math.hypot(x0 - 50, y0 - 50);
+    for (let i = 2; i + 5 < numbers.length; i += 6) {
+      const [ax, ay, c0x, c0y, c1x, c1y] = numbers.slice(i, i + 6);
+      for (let s = 1; s <= 20; s++) {
+        const t = s / 20;
+        const u = 1 - t;
+        const x =
+          u ** 3 * x0 + 3 * u * u * t * c0x + 3 * u * t * t * c1x + t ** 3 * ax;
+        const y =
+          u ** 3 * y0 + 3 * u * u * t * c0y + 3 * u * t * t * c1y + t ** 3 * ay;
+        furthest = Math.max(furthest, Math.hypot(x - 50, y - 50));
+      }
+      [x0, y0] = [ax, ay];
+    }
+    return furthest;
   });
 
 test.describe("ProgressLoading", () => {
@@ -90,8 +109,9 @@ test.describe("ProgressLoading", () => {
     const { width, height } = await box(root(progress));
     expect(width).toBe(48);
     expect(height).toBe(48);
-    // the svg turns, so its own size, not its turned box
-    await expect(root(progress).locator("svg")).toHaveCSS("width", "48px");
+    // it turns, so its own size, not its turned box
+    await expect(spin(progress)).toHaveCSS("width", "48px");
+    await expect(activeIndicator(progress)).toHaveCSS("width", "48px");
     for (let i = 0; i < 5; i++) {
       expect(await reach(progress)).toBeLessThanOrEqual((38 / 48) * 50 + 0.5);
       await page.waitForTimeout(130);
@@ -106,7 +126,7 @@ test.describe("ProgressLoading", () => {
       await page.emulateMedia({ colorScheme: scheme });
       const plain = indicator(page, "default", "Loading news article");
       await expect(activeIndicator(plain)).toHaveCSS(
-        "fill",
+        "background-color",
         await colorRole(page, "primary")
       );
       await expect(root(plain)).toHaveCSS(
@@ -115,7 +135,7 @@ test.describe("ProgressLoading", () => {
       );
       const contained = indicator(page, "contained", "Refreshing page");
       await expect(activeIndicator(contained)).toHaveCSS(
-        "fill",
+        "background-color",
         await colorRole(page, "on-primary-container")
       );
       await expect(root(contained)).toHaveCSS(
@@ -169,8 +189,8 @@ test.describe("ProgressLoading", () => {
     page,
   }) => {
     const progress = indicator(page, "default", "Loading news article");
-    const animations = await root(progress).evaluate((el) =>
-      el.getAnimations({ subtree: true }).map((animation) => ({
+    const animations = await spin(progress).evaluate((el) =>
+      el.getAnimations().map((animation) => ({
         ...animation.effect!.getComputedTiming(),
         keyframes: (animation.effect as KeyframeEffect)
           .getKeyframes()
@@ -186,6 +206,40 @@ test.describe("ProgressLoading", () => {
     expect(animations[0].keyframes.at(-1)).toBe("360deg");
   });
 
+  // Computed at build time rather than drawn frame by frame: CSS animations of the shape (a cycle
+  // of seven 650ms morphs) and of its quarter turns (a cycle of four), with no script
+  test("the active indicator morphs and turns on CSS animations, with no script", async ({
+    page,
+  }) => {
+    const progress = indicator(page, "default", "Loading news article");
+    const animations = await activeIndicator(progress).evaluate((el) =>
+      el
+        .getAnimations()
+        .map((animation) => ({
+          name: (animation as CSSAnimation).animationName,
+          ...animation.effect!.getComputedTiming(),
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name))
+    );
+    expect(animations).toMatchObject([
+      {
+        name: "ac-progress-loading-morph",
+        duration: 4550,
+        iterations: Infinity,
+      },
+      {
+        name: "ac-progress-loading-turn",
+        duration: 2600,
+        iterations: Infinity,
+      },
+    ]);
+    expect(
+      await root(progress).evaluate(
+        (el) => el.querySelectorAll("script").length
+      )
+    ).toBe(0);
+  });
+
   test("size scales the container and the active indicator together", async ({
     page,
   }) => {
@@ -195,7 +249,7 @@ test.describe("ProgressLoading", () => {
     expect((await box(root(small))).width).toBe(24);
     // the shape keeps its share of the box, which scales with the container
     expect(await reach(large)).toBeLessThanOrEqual((38 / 48) * 50 + 0.5);
-    await expect(root(large).locator("svg")).toHaveCSS("width", "96px");
+    await expect(activeIndicator(large)).toHaveCSS("width", "96px");
   });
 
   test("right to left, it still turns clockwise", async ({ page }) => {
@@ -204,8 +258,8 @@ test.describe("ProgressLoading", () => {
     const steps = turnSteps(frames);
     expect(Math.min(...steps)).toBeGreaterThan(-10);
     expect(steps.reduce((sum, step) => sum + step, 0)).toBeGreaterThan(45);
-    const keyframes = await root(rtl).evaluate((el) =>
-      (el.getAnimations({ subtree: true })[0].effect as KeyframeEffect)
+    const keyframes = await spin(rtl).evaluate((el) =>
+      (el.getAnimations()[0].effect as KeyframeEffect)
         .getKeyframes()
         .map((k) => k.rotate)
     );
@@ -223,7 +277,6 @@ test.describe("ProgressLoading", () => {
         .querySelectorAll("[data-ac-progress-loading]")
         .forEach((el) => el.remove())
     );
-    // a frame or two for the loop to find nothing to draw, and stop
     await page.waitForTimeout(100);
     await page.evaluate((html) => {
       const holder = document.createElement("div");
@@ -253,16 +306,29 @@ test.describe("ProgressLoading", () => {
           (el) => el.getAnimations({ subtree: true }).length
         )
       ).toBe(0);
-      const before = await activeIndicator(progress).getAttribute("d");
+      const [before] = await record(progress, 0);
       await page.waitForTimeout(700);
-      await expect(activeIndicator(progress)).toHaveAttribute("d", before!);
-      expect(before!.split("C").length - 1).toBe(58);
-      await expect(activeIndicator(progress)).toHaveAttribute(
-        "transform",
-        "rotate(90 50 50)"
-      );
+      const [after] = await record(progress, 0);
+      expect(after).toEqual(before);
+      expect(before.curves).toBe(58);
+      expect(before.turn).toBe(90);
     });
   });
+});
+
+// The keyframes are generated from src/shapes.ts into ProgressLoading.css, which is committed so
+// the component copies as plain files. `pnpm generate:progress-loading` rewrites it.
+test("ProgressLoading.css is what src/shapes.ts generates", () => {
+  const committed = readFileSync(
+    fileURLToPath(
+      new URL("../components/ProgressLoading.css", import.meta.url)
+    ),
+    "utf8"
+  );
+  expect(
+    committed === loadingIndicatorKeyframes(),
+    "ProgressLoading.css is out of date: run `pnpm generate:progress-loading`"
+  ).toBe(true);
 });
 
 // A size outside M3's fails the build rather than drawing something other than was asked for.
