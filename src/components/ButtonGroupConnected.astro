@@ -289,42 +289,16 @@ const lastIndex = options.length - 1;
 </div>
 
 <script>
+  import { markPressed } from "../utils";
+
   // Marks the option being pressed, with the pointer or by holding Space or Enter on its input,
   // as Button's :active would; see the pressed classes above
-  const pressedAttribute = "data-ac-button-group-connected-pressed";
-  const optionOf = (target: EventTarget | null) =>
-    target instanceof Element
-      ? target.closest<HTMLElement>(
-          "[data-ac-button-group-connected-part=option]"
-        )
-      : null;
-
-  document.addEventListener("pointerdown", (event) => {
-    if (!event.isPrimary || event.button !== 0) return;
-    const option = optionOf(event.target);
-    if (!option) return;
-    option.setAttribute(pressedAttribute, "");
-    const end = () => {
-      option.removeAttribute(pressedAttribute);
-      document.removeEventListener("pointerup", end);
-      document.removeEventListener("pointercancel", end);
-    };
-    document.addEventListener("pointerup", end);
-    document.addEventListener("pointercancel", end);
-  });
-  const isPressKey = (event: KeyboardEvent) =>
-    event.key === " " || (event.key === "Enter" && !!groupOf(event.target));
-  document.addEventListener("keydown", (event) => {
-    if (isPressKey(event) && !event.repeat)
-      optionOf(event.target)?.setAttribute(pressedAttribute, "");
-  });
-  document.addEventListener("keyup", (event) => {
-    if (isPressKey(event))
-      optionOf(event.target)?.removeAttribute(pressedAttribute);
-  });
-  document.addEventListener("focusout", (event) => {
-    optionOf(event.target)?.removeAttribute(pressedAttribute);
-  });
+  markPressed(
+    "[data-ac-button-group-connected-part=option]",
+    "data-ac-button-group-connected-pressed",
+    (event) =>
+      event.key === " " || (event.key === "Enter" && !!groupOf(event.target))
+  );
 
   // Radios already keep one checked and move with the arrow keys. A multi-select group's
   // checkboxes don't, so, as M3's Accessibility page asks: the left and right arrow keys move

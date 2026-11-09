@@ -122,38 +122,16 @@ const variantClasses = {
 </Tag>
 
 <script>
+  import { markPressed } from "../utils";
+
   // M3's pressed state on a <label> chip, from the pointer pressing it, or Space held on its input,
   // to its release, which Firefox doesn't give :active; see the chip-active variant in theme.css.
   // A <button> or <a> chip has :active in every browser.
-  const pressed = "data-ac-base-chip-pressed";
-  document.addEventListener("pointerdown", (event) => {
-    if (!event.isPrimary || event.button !== 0) return;
-    const chip = (event.target as Element).closest?.(
-      "label[data-ac-base-chip]"
-    );
-    if (!chip) return;
-    chip.setAttribute(pressed, "");
-    const end = () => {
-      chip.removeAttribute(pressed);
-      document.removeEventListener("pointerup", end);
-      document.removeEventListener("pointercancel", end);
-    };
-    document.addEventListener("pointerup", end);
-    document.addEventListener("pointercancel", end);
-  });
-  const labelChipOf = (target: EventTarget | null) =>
-    target instanceof HTMLInputElement
-      ? target.closest("label[data-ac-base-chip]")
-      : null;
-  document.addEventListener("keydown", (event) => {
-    if (event.key === " " && !event.repeat)
-      labelChipOf(event.target)?.setAttribute(pressed, "");
-  });
-  for (const type of ["keyup", "focusout"] as const) {
-    document.addEventListener(type, (event) => {
-      labelChipOf(event.target)?.removeAttribute(pressed);
-    });
-  }
+  markPressed(
+    "label[data-ac-base-chip]",
+    "data-ac-base-chip-pressed",
+    (event) => event.key === " "
+  );
 
   // M3's dragged state, for a chip the page makes draggable: marked from dragstart to dragend
   document.addEventListener("dragstart", (event) => {

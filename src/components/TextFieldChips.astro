@@ -184,6 +184,8 @@ if (!label && !attrs["aria-label"] && !attrs["aria-labelledby"]) {
 </BaseTextField>
 
 <script>
+  import { springTiming } from "../utils";
+
   const FIELD = "[data-ac-text-field-chips]";
   const CHIP = "[data-ac-chip-input]";
 
@@ -312,15 +314,6 @@ if (!label && !attrs["aria-label"] && !attrs["aria-labelledby"]) {
   // where they were, as CSS can't transition a change of place. `except` is a chip the pointer
   // is carrying, which goes where the pointer is.
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
-  const spring = () => {
-    const root = getComputedStyle(document.documentElement);
-    return {
-      duration: parseFloat(
-        root.getPropertyValue("--theme-duration-spring-fast-spatial")
-      ),
-      easing: root.getPropertyValue("--ease-spring-fast-spatial").trim(),
-    };
-  };
   const rearrange = (
     fields: Element[],
     change: () => void,
@@ -330,7 +323,7 @@ if (!label && !attrs["aria-label"] && !attrs["aria-labelledby"]) {
     const from = new Map(chips.map((c) => [c, c.getBoundingClientRect()]));
     change();
     if (reducedMotion.matches) return;
-    const timing = spring();
+    const timing = springTiming("fast-spatial");
     for (const [chip, was] of from) {
       if (chip === except || !chip.isConnected) continue;
       for (const animation of chip.getAnimations()) animation.cancel();
@@ -666,7 +659,7 @@ if (!label && !attrs["aria-label"] && !attrs["aria-labelledby"]) {
     if (!reducedMotion.matches && (parseFloat(x) || parseFloat(y)))
       chip.animate(
         [{ translate: `${x} ${y}` }, { translate: "0 0" }],
-        spring()
+        springTiming("fast-spatial")
       );
   };
 

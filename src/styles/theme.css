@@ -9,8 +9,8 @@
 
 /* breakpoints: M3's window size classes in place of Tailwind's sm-2xl, which are cleared so a
    leftover lg: generates nothing rather than quietly meaning another width. Compact is below
-   medium, so it has no variant. In rem, so they follow the reader's font size. NavRail and
-   NavDrawer repeat medium and large in their matchMedia() calls. */
+   medium, so it has no variant. In rem, so they follow the reader's font size. Scripts
+   read medium and large from breakpoints in src/utils.ts, which repeats them. */
 @theme {
   --breakpoint-*: initial;
   --breakpoint-medium: 37.5rem; /* 600px */

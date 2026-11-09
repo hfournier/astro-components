@@ -398,6 +398,8 @@ const controlProps = control === "switch" && icons ? { icons } : {};
 </style>
 
 <script>
+  import { markPressed } from "../utils";
+
   // M3's heights follow the item's lines of text, and supporting text that wraps makes three, as
   // Compose counts it; an item 88px or taller, such as one whose label wraps, top-aligns its
   // parts. Both depend on the item's width, so they're kept up to date as it resizes (ADR-0027).
@@ -435,20 +437,5 @@ const controlProps = control === "switch" && icons ? { icons } : {};
   // M3's pressed state on a selection item, from the pointer pressing it to its release, which
   // Firefox doesn't give :active, as BaseChip marks a <label> chip. A link or button item has
   // :active in every browser.
-  const pressed = "data-ac-list-item-pressed";
-  document.addEventListener("pointerdown", (event) => {
-    if (!event.isPrimary || event.button !== 0) return;
-    const item = (event.target as Element).closest?.(
-      "label[data-ac-list-item]"
-    );
-    if (!item) return;
-    item.setAttribute(pressed, "");
-    const end = () => {
-      item.removeAttribute(pressed);
-      document.removeEventListener("pointerup", end);
-      document.removeEventListener("pointercancel", end);
-    };
-    document.addEventListener("pointerup", end);
-    document.addEventListener("pointercancel", end);
-  });
+  markPressed("label[data-ac-list-item]", "data-ac-list-item-pressed");
 </script>

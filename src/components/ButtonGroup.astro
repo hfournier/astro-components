@@ -28,6 +28,8 @@ const { class: classList, ...attrs }: Props = Astro.props;
 </div>
 
 <script>
+  import { springTiming } from "../utils";
+
   // Compose's standard button group: a pressed button grows by 15% of its width, taking it from
   // its neighbours, so the group's width doesn't change. A middle button takes half from each
   // side, an end button all of it from its one neighbour. Each neighbour gives up no more than
@@ -85,12 +87,8 @@ const { class: classList, ...attrs }: Props = Astro.props;
 
   // Animates each item from its current width to `to`, holding it there
   const animate = (items: HTMLElement[], from: number[], to: number[]) => {
-    const root = getComputedStyle(document.documentElement);
     const timing: KeyframeAnimationOptions = {
-      duration: parseFloat(
-        root.getPropertyValue("--theme-duration-spring-fast-spatial")
-      ),
-      easing: root.getPropertyValue("--ease-spring-fast-spatial").trim(),
+      ...springTiming("fast-spatial"),
       fill: "forwards",
     };
     return items.flatMap((item, i) =>

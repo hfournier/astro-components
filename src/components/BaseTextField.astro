@@ -564,6 +564,8 @@ const controlHtml = await Astro.slots.render("default", [controlFor]);
 </style>
 
 <script>
+  import { springTiming } from "../utils";
+
   // A press anywhere in the container that isn't on the input or a control of its own (the
   // padding, the label, an icon, the prefix or suffix) focuses the input, as a press on a
   // native field does. Delegated, so it covers fields brought in by Astro's ClientRouter.
@@ -600,13 +602,10 @@ const controlHtml = await Astro.slots.render("default", [controlFor]);
     heights.set(input, to);
     // a hidden field has no height to move from or to
     if (!from || !to || from === to || reducedMotion.matches) return;
-    const root = getComputedStyle(document.documentElement);
-    input.animate([{ height: `${from}px` }, { height: `${to}px` }], {
-      duration: parseFloat(
-        root.getPropertyValue("--theme-duration-spring-fast-spatial")
-      ),
-      easing: root.getPropertyValue("--ease-spring-fast-spatial").trim(),
-    });
+    input.animate(
+      [{ height: `${from}px` }, { height: `${to}px` }],
+      springTiming("fast-spatial")
+    );
   };
 
   // Keeps each field in step with its input: the counter's count, and the input's validity past
