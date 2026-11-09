@@ -62,6 +62,69 @@ export const settled = (page: Page) =>
     )
   );
 
+/**
+ * Replaces every wavy progress indicator on the page with one undrawn copy of `root`, named
+ * `name`, in `root`'s place, a few frames after the others have gone so nothing is still drawing.
+ */
+export const replaceWavyIndicatorsWithCopy = (root: Locator, name: string) =>
+  root.evaluate(async (el, name) => {
+    const copy = el.cloneNode(true) as HTMLElement;
+    copy.querySelector("progress")!.setAttribute("aria-label", name);
+    copy.querySelectorAll("path").forEach((path) => path.removeAttribute("d"));
+    const parent = el.parentElement!;
+    document
+      .querySelectorAll(
+        '[data-ac-progress-linear-shape="wavy"], [data-ac-progress-circular-shape="wavy"]'
+      )
+      .forEach((wavy) => wavy.remove());
+    for (let frames = 0; frames < 3; frames++)
+      await new Promise(requestAnimationFrame);
+    parent.append(copy);
+  }, name);
+
+/** Moves the whole page below the viewport, by a spacer above it; a locator scrolls it back. */
+export const pushPageOffScreen = (page: Page) =>
+  page.evaluate(() => {
+    const spacer = document.createElement("div");
+    spacer.style.height = "300vh";
+    document.body.prepend(spacer);
+    window.scrollTo({ top: 0, behavior: "instant" });
+  });
+
+/** Removes every wavy progress indicator but those named `names`. */
+export const keepOnlyWavyIndicators = (page: Page, names: string[]) =>
+  page.evaluate((names) => {
+    document
+      .querySelectorAll(
+        '[data-ac-progress-linear-shape="wavy"], [data-ac-progress-circular-shape="wavy"]'
+      )
+      .forEach((wavy) => {
+        const name = wavy.querySelector("progress")!.getAttribute("aria-label");
+        if (!names.includes(name!)) wavy.remove();
+      });
+  }, names);
+
+/**
+ * How many times the page calls `getComputedStyle` over a few frames, after giving work already
+ * under way a few frames to end: 0 when nothing is drawing per frame.
+ */
+export const styleReadsOverFrames = (page: Page) =>
+  page.evaluate(async () => {
+    const frames = async (count: number) => {
+      for (let i = 0; i < count; i++) await new Promise(requestAnimationFrame);
+    };
+    await frames(5);
+    const original = window.getComputedStyle;
+    let reads = 0;
+    window.getComputedStyle = (...args) => {
+      reads++;
+      return original.apply(window, args);
+    };
+    await frames(10);
+    window.getComputedStyle = original;
+    return reads;
+  });
+
 /** The box of an element's own text: its first non-empty direct text node. */
 export const textBox = (target: Locator) =>
   target.evaluate((el) => {

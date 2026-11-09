@@ -333,6 +333,8 @@ const indeterminateOnly =
 </style>
 
 <script>
+  import { drawWaves } from "../utils";
+
   // The drawn parts read the progress's position from --ac-progress-linear-value.
   // Setting a progress's `value` (or `max`) sets its attribute, so one observer on the document
   // keeps every indicator in step, including those brought in by Astro's ClientRouter.
@@ -405,7 +407,7 @@ const indeterminateOnly =
       'path[data-ac-progress-linear-part="active-indicator"]'
     );
     const svg = root.querySelector("svg");
-    if (!progress || paths.length < 2 || !svg) return;
+    if (!progress || paths.length < 2 || !svg) return false;
     const style = getComputedStyle(root);
     const read = (name: string) =>
       parseFloat(style.getPropertyValue(`--ac-progress-linear-${name}`));
@@ -449,21 +451,8 @@ const indeterminateOnly =
           : "";
       if (paths[i].getAttribute("d") !== d) paths[i].setAttribute("d", d);
     });
+    return amplitudeScale > 0;
   };
 
-  // One loop draws every wavy indicator on the page, while there are any. The browser pauses it
-  // in a background tab.
-  let frame = 0;
-  const loop = () => {
-    const roots = document.querySelectorAll<HTMLElement>(
-      '[data-ac-progress-linear-shape="wavy"]'
-    );
-    roots.forEach(draw);
-    frame = roots.length ? requestAnimationFrame(loop) : 0;
-  };
-  const start = () => {
-    if (!frame) loop();
-  };
-  start();
-  document.addEventListener("astro:after-swap", start);
+  drawWaves("ac-progress-linear", draw);
 </script>

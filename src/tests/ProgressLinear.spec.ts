@@ -1,6 +1,15 @@
 import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "./support/a11y-fixture";
-import { box, contrastRatio, resolvedColor, settled } from "./support/helpers";
+import {
+  box,
+  contrastRatio,
+  keepOnlyWavyIndicators,
+  pushPageOffScreen,
+  replaceWavyIndicatorsWithCopy,
+  resolvedColor,
+  settled,
+  styleReadsOverFrames,
+} from "./support/helpers";
 
 // Each case on /tests/progress-linear is a Section with
 // data-testid="progress-linear-<caseId>". Each indicator is named by its aria-label.
@@ -61,13 +70,16 @@ const setValue = (progress: Locator, value: number | null) =>
     else el.value = v;
   }, value);
 
-// The wave's vertical extent, without its stroke: 0 when flat, twice the amplitude when wavy
-const waveHeight = (progress: Locator) =>
-  wave(progress)
+// The wave's vertical extent, without its stroke: 0 when flat, twice the amplitude when wavy.
+// A wave is only drawn on screen, so this scrolls to it first.
+const waveHeight = async (progress: Locator) => {
+  await progress.scrollIntoViewIfNeeded();
+  return wave(progress)
     .first()
     .evaluate((path: SVGPathElement) =>
       path.getAttribute("d") ? path.getBBox().height : 0
     );
+};
 
 test.describe("ProgressLinear", () => {
   test.beforeEach(async ({ page }) => {
@@ -328,6 +340,7 @@ test.describe("ProgressLinear", () => {
     page,
   }) => {
     const halfway = indicator(page, "wavy", "Wavy, halfway");
+    await expect.poll(() => waveHeight(halfway)).toBeCloseTo(6, 0);
     const before = await wave(halfway).first().getAttribute("d");
     await expect
       .poll(() => wave(halfway).first().getAttribute("d"))
@@ -335,6 +348,59 @@ test.describe("ProgressLinear", () => {
 
     const indeterminate = indicator(page, "wavy", "Wavy, indeterminate");
     await expect.poll(() => waveHeight(indeterminate)).toBeCloseTo(6, 0);
+  });
+
+  test("wavy: an indicator added once no other is drawing is drawn", async ({
+    page,
+  }) => {
+    const halfway = indicator(page, "wavy", "Wavy, halfway");
+    await expect.poll(() => waveHeight(halfway)).toBeCloseTo(6, 0);
+    await replaceWavyIndicatorsWithCopy(root(halfway), "Added later");
+    await expect
+      .poll(() => waveHeight(indicator(page, "wavy", "Added later")))
+      .toBeCloseTo(6, 0);
+  });
+
+  test("wavy: flat waves do no work per frame, though their phase is running", async ({
+    page,
+  }) => {
+    const starting = indicator(page, "wavy", "Wavy, starting");
+    await expect.poll(() => waveHeight(starting)).toBe(0);
+    await keepOnlyWavyIndicators(page, ["Wavy, starting", "Wavy, nearly done"]);
+    expect(await styleReadsOverFrames(page)).toBe(0);
+  });
+
+  // So that printing the page, say, shows it
+  test("wavy: an indicator that hasn't been on screen is still drawn once", async ({
+    page,
+  }) => {
+    await pushPageOffScreen(page);
+    await expect
+      .poll(() =>
+        wave(indicator(page, "rtl", "Right to left, wavy"))
+          .first()
+          .getAttribute("d")
+      )
+      .toBeTruthy();
+  });
+
+  test("wavy: off screen nothing is drawn, and scrolled back it shows what changed", async ({
+    page,
+  }) => {
+    const halfway = indicator(page, "wavy", "Wavy, halfway");
+    await expect.poll(() => waveHeight(halfway)).toBeCloseTo(6, 0);
+    await pushPageOffScreen(page);
+    expect(await styleReadsOverFrames(page)).toBe(0);
+
+    const before = await wave(halfway).first().getAttribute("d");
+    await setValue(halfway, 0.97);
+    await settled(page);
+    expect(await styleReadsOverFrames(page)).toBe(0);
+    expect(await wave(halfway).first().getAttribute("d")).toBe(before);
+
+    await halfway.scrollIntoViewIfNeeded();
+    // M3's wave is flat from 95%
+    await expect.poll(() => waveHeight(halfway)).toBe(0);
   });
 
   test("mirrors right to left: it fills from the right, and the stop indicator is on the left", async ({
@@ -373,6 +439,42 @@ test.describe("ProgressLinear", () => {
       const before = await wave(halfway).first().getAttribute("d");
       await page.waitForTimeout(200);
       expect(await wave(halfway).first().getAttribute("d")).toBe(before);
+    });
+
+    test("nothing is drawn per frame at rest, and a new value or an added indicator is still drawn", async ({
+      page,
+    }) => {
+      const halfway = indicator(page, "wavy", "Wavy, halfway");
+      await expect.poll(() => waveHeight(halfway)).toBeCloseTo(6, 0);
+      expect(await styleReadsOverFrames(page)).toBe(0);
+
+      // M3's wave is flat from 95%
+      await setValue(halfway, 0.97);
+      await expect.poll(() => waveHeight(halfway)).toBe(0);
+      await setValue(halfway, 0.5);
+      await expect.poll(() => waveHeight(halfway)).toBeCloseTo(6, 0);
+      expect(await styleReadsOverFrames(page)).toBe(0);
+
+      await replaceWavyIndicatorsWithCopy(root(halfway), "Added later");
+      await expect
+        .poll(() => waveHeight(indicator(page, "wavy", "Added later")))
+        .toBeCloseTo(6, 0);
+    });
+
+    test("a wave at rest is redrawn to a new width", async ({ page }) => {
+      const halfway = indicator(page, "wavy", "Wavy, halfway");
+      await expect.poll(() => waveHeight(halfway)).toBeCloseTo(6, 0);
+      await root(halfway).evaluate((el: HTMLElement) => {
+        el.style.width = "120px";
+      });
+      // half of 120px, from a cap inside the track's start
+      await expect
+        .poll(() =>
+          wave(halfway)
+            .first()
+            .evaluate((path: SVGPathElement) => path.getBBox().width)
+        )
+        .toBeCloseTo(58, 0);
     });
 
     // ADR-0003: no animation, so the indeterminate indicator holds one line in a fixed place,
