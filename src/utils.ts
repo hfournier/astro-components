@@ -348,6 +348,76 @@ export const drawWaves = (
 };
 
 /**
+ * A slider's value as the browser keeps a range input's: within `min` and `max`, on a step from
+ * `min` (the last whole one when `max` isn't), or anywhere between with step `"any"`.
+ *
+ * @param value - The value to snap, e.g. one the pointer is at.
+ * @param range - The input's `min`, `max` and `step`.
+ */
+export const snapSliderValue = (
+  value: number,
+  { min, max, step }: { min: number; max: number; step: number | "any" }
+) => {
+  const clamped = Math.min(max, Math.max(min, value));
+  if (step === "any") return clamped;
+  const stepped = min + Math.round((clamped - min) / step) * step;
+  return stepped > max ? stepped - step : stepped;
+};
+
+/**
+ * The custom properties Slider's CSS draws its tracks and handles from (ADR-0033): the two
+ * places its active track runs between, `from` and `to`. A standard slider's runs from the
+ * track's start to its handle, a centered one's between the middle and its handle, and a range
+ * one's between its handles. Each place is its fraction of the range; whether it's inset, a
+ * handle on a stop between the ends, which Compose places 6px in from them; and whether it's a
+ * handle, with a gap each side. The server renders them and the script sets them on each change,
+ * so both draw a slider alike.
+ *
+ * @param slider - Its variant, range, whether it has stops, and its handles' values: one, or a
+ * range slider's start and end.
+ * @returns Each custom property's name and value, e.g. `"--ac-slider-to": "0.3"`.
+ */
+export const sliderPlaces = ({
+  variant,
+  min,
+  max,
+  hasStops,
+  values,
+}: {
+  variant: "standard" | "centered" | "range";
+  min: number;
+  max: number;
+  hasStops: boolean;
+  values: readonly number[];
+}) => {
+  const placeOf = (value: number) => ({
+    fraction: (value - min) / (max - min),
+    inset: hasStops && value > min && value < max ? 1 : 0,
+    handle: 1,
+  });
+  const trackStart = { fraction: 0, inset: 0, handle: 0 };
+  const trackMiddle = { fraction: 0.5, inset: 0, handle: 0 };
+  const [first = min, second = max] = values;
+  const middle = min + (max - min) / 2;
+  const places =
+    variant === "range"
+      ? { from: placeOf(first), to: placeOf(second) }
+      : variant === "centered"
+        ? {
+            from: first <= middle ? placeOf(first) : trackMiddle,
+            to: first >= middle ? placeOf(first) : trackMiddle,
+          }
+        : { from: trackStart, to: placeOf(first) };
+  return Object.fromEntries(
+    Object.entries(places).flatMap(([side, { fraction, inset, handle }]) => [
+      [`--ac-slider-${side}`, String(fraction)],
+      [`--ac-slider-${side}-inset`, String(inset)],
+      [`--ac-slider-${side}-handle`, String(handle)],
+    ])
+  );
+};
+
+/**
  * Marks an element pressed, as `:active` would, from the primary pointer pressing it to its
  * release, and, if `isPressKey` is given, while a press key is held on an input inside it. For a
  * `<label>` drawn as a control around its native input, as Firefox doesn't reliably give `:active`

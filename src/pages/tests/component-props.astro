@@ -265,6 +265,31 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     "slider-step": [Slider, { step: "0" }],
     "slider-stops-step": [Slider, { showStops: true, step: "30" }],
     "slider-stops-any": [Slider, { showStops: true, step: "any" }],
+    "slider-variant": [Slider, { variant: "stepped" }],
+    "slider-icon-variant": [
+      Slider,
+      { variant: "centered", size: "md", icon: "light_mode" },
+    ],
+    "slider-handles-variant": [
+      Slider,
+      { handleStart: { "aria-label": "Start" } },
+    ],
+    "slider-range-attribute": [
+      Slider,
+      { variant: "range", "aria-label": "Price" },
+    ],
+    "slider-range-shared": [
+      Slider,
+      { variant: "range", handleEnd: { disabled: true } },
+    ],
+    "slider-range-cross": [
+      Slider,
+      {
+        variant: "range",
+        handleStart: { value: "60" },
+        handleEnd: { value: "40" },
+      },
+    ],
     "snackbar-duration": [Snackbar, { id: "snackbar", duration: "brief" }],
     "snackbar-action-duration": [
       Snackbar,
