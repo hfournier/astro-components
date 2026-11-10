@@ -1,0 +1,70 @@
+---
+name: Slider
+description: A Material 3 Expressive standard slider, extending HTML's `<input type="range">` element. It picks one value from a range along M3's track, with a handle that narrows when pressed, in five sizes, horizontal or vertical, with optional stops, a value indicator and an inset icon. Being a native input, it submits, resets and validates with its form.
+category: Forms
+role: pattern
+meta:
+  title: Slider | astro-components HenriFournier.dev
+  description: A Material 3 Expressive standard slider on a native range input, in five sizes, horizontal or vertical, with stops, a value indicator and an inset icon.
+extends:
+  kind: element
+  tag: [input]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/range
+props:
+  - name: size
+    type: '"xs" | "sm" | "md" | "lg" | "xl"'
+    required: false
+    default: '"xs"'
+    description: M3's sizes, each a track thickness and handle height. `xs` is 16px with a 44px handle, `sm` 24px with a 44px handle, `md` 40px with a 52px handle, `lg` 56px with a 68px handle and `xl` 96px with a 108px handle. Keep `xl` for a slider that's the focus of its page. Any other value fails the build.
+  - name: orientation
+    type: '"horizontal" | "vertical"'
+    required: false
+    default: '"horizontal"'
+    description: Which way the track runs. A vertical slider runs up from its minimum at the bottom, and is 300px tall unless `class` gives it another height. Any other value fails the build.
+  - name: showStops
+    type: boolean
+    required: false
+    default: "false"
+    description: M3's stops configuration. A stop indicator marks every `step` from `min` to `max`, and the handle snaps to the nearest one. The steps must divide the range evenly, so a `step` that doesn't, or `"any"`, fails the build. Keep the stops few enough to tell apart.
+  - name: showStopIndicator
+    type: boolean
+    required: false
+    default: "true"
+    description: Shows M3's stop indicator at the end of the inactive track, which keeps the track's end at 3:1 contrast with the page. Turn it off only when the inactive track has that contrast with every surface around it, or icons or text outside the slider mark its ends. With `showStops`, the last stop is there anyway.
+  - name: showValueIndicator
+    type: boolean
+    required: false
+    default: "false"
+    description: Shows the value in M3's value indicator above the handle (beside it when vertical) while the handle is pressed or the slider is focused from the keyboard. It reads the input's `value`. Leave it off when the value is shown elsewhere, such as in a text field beside the slider. Leave room above the slider for it, as it covers what's there.
+  - name: icon
+    type: SvgIconNameTypes
+    required: false
+    default: undefined
+    description: M3's inset icon, inside the track at its start, showing what the slider controls. When the active track is too short to hold it, it moves to the start of the inactive track. M3 gives it to `md`, `lg` and `xl` sliders only; on `xs` or `sm` it fails the build. It's decoration, hidden from assistive tech.
+---
+
+## Attributes
+
+Every attribute except `class` goes on the `<input>`: `name`, `min`, `max`, `step`, `value`, `disabled`, `form`, `id`, `aria-*` and the rest. `class` goes on the element around it, which draws the slider, so it can size and place it. A horizontal slider spans the width of its container; inside a flex row, give it a width.
+
+The range is the input's: `min` 0, `max` 100 and `step` 1 unless set, and `value` halfway unless set. `max` must be more than `min` and `step` more than 0 (or `"any"`), or the build fails. Listen for the input's `input` event to follow the value as it moves, and `change` for the value once it's set: when the pointer is released, or for each key press. Apply a change at once: M3's sliders take effect as they move, so people see what their choice does.
+
+To set the value from a script, set the input's `value` and dispatch an `input` event on it, so the slider redraws. A form's reset redraws it on its own.
+
+## Anatomy
+
+- **Active track:** `primary`, from the start of the track to 6px before the handle. Its outer corners are M3's size (8px for `xs` and `sm`, 12px `md`, 16px `lg`, 28px `xl`) and the ones beside the handle 2px. Shorter than its outer corner, near the start, it isn't drawn, as Compose's isn't.
+- **Handle:** a `primary` line, 4px wide, across the track at the value. Pressed or focused from the keyboard, it narrows to 2px.
+- **Inactive track:** `secondary-container`, from 6px after the handle to the end, with its corners the other way round.
+- **Stop indicator:** a 4px circle, 4px in from the end of the inactive track, in `on-secondary-container`. M3's Specs page gives it this color; Compose draws it `primary`.
+- **Stops:** with `showStops`, 4px circles evenly from 4px in from the start to the stop indicator: `on-primary` on the active track and `on-secondary-container` on the inactive one. Between the ends, the handle sits over its stop, which the gap hides, so the stops between are placed 6px in from the track's ends, as Compose places them.
+- **Value indicator:** the value in M3's Label Large weight (14px, 500), `inverse-on-surface` on an `inverse-surface` pill at least 48 by 44px, 12px above the handle.
+- **Inset icon:** 24px on `md` and `lg` sliders and 32px on `xl`, 6px in from the start of its track (8px on `xl`): `on-primary` on the active track, `on-secondary-container` on the inactive one.
+
+Disabled, the handle and active track are `on-surface` at 38% and the inactive track at 12%, with the stops `inverse-on-surface` on the active track and `on-surface` at 38% on the inactive one.
+
+The slider is at least 48px across its track, the handle's height when that's more, so it's always a large enough target. It mirrors in right-to-left layouts, starting from the right, and the left and right arrows follow it.
+
+## Motion
+
+The handle narrows and widens on the fast spatial spring, so it briefly overshoots, and colors, the focus ring and the value indicator change on fast effects (ADR-0018). The handle and tracks move to a new value at once, under the pointer, rather than animating. Under reduced motion, every state changes at once.

@@ -1,0 +1,537 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import type { SvgIconNameTypes } from "../svgs";
+import Icon from "./Icon.astro";
+
+// M3 Expressive's standard slider on a native <input type="range">, so it submits, resets and
+// validates with its form, and assistive tech announces it as a slider with its value. Every
+// attribute but `class` goes on the input (`name`, `min`, `max`, `step`, `value`, `disabled`,
+// `aria-*`), and `class` on the element around it, which draws M3's track, handle, stops, icon
+// and value indicator. Name it with `aria-label`, `aria-labelledby` or a `<label for>`.
+type Props = Omit<HTMLAttributes<"input">, "type"> & {
+  // M3's sizes, each a track thickness: 16, 24, 40, 56 and 96px
+  size?: "xs" | "sm" | "md" | "lg" | "xl";
+  orientation?: "horizontal" | "vertical";
+  // M3's stops configuration: a stop indicator at every `step`, which the handle snaps to
+  showStops?: boolean;
+  // The stop indicator at the end of the inactive track, which keeps its end at 3:1 contrast
+  showStopIndicator?: boolean;
+  // The value above the handle while it's pressed or focused from the keyboard
+  showValueIndicator?: boolean;
+  // M3's inset icon, inside the track at its start, on "md", "lg" and "xl" sliders only
+  icon?: SvgIconNameTypes;
+};
+
+const {
+  size = "xs",
+  orientation = "horizontal",
+  showStops = false,
+  showStopIndicator = true,
+  showValueIndicator = false,
+  icon,
+  class: classList,
+  ...attrs
+}: Props = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["xs", "sm", "md", "lg", "xl"].includes(size)) {
+  throw new Error(
+    `Slider: M3's sizes are "xs", "sm", "md", "lg" and "xl", but this one's \`size\` is "${size}".`
+  );
+}
+if (!["horizontal", "vertical"].includes(orientation)) {
+  throw new Error(
+    `Slider: M3's orientations are "horizontal" and "vertical", but this one's \`orientation\` is "${orientation}".`
+  );
+}
+if (icon && ["xs", "sm"].includes(size)) {
+  throw new Error(
+    `Slider: M3 puts an inset icon only on "md", "lg" and "xl" sliders, but this one's \`size\` is "${size}".`
+  );
+}
+
+// The input's range, read as the browser would: min 0, max 100 and step 1 unless given
+const min = attrs.min === undefined ? 0 : Number(attrs.min);
+const max = attrs.max === undefined ? 100 : Number(attrs.max);
+const isAnyStep = attrs.step === "any";
+const step = attrs.step === undefined || isAnyStep ? 1 : Number(attrs.step);
+// A value as a message quotes it: a number as it is, anything else as text
+const quoted = (read: number, given: unknown) =>
+  Number.isFinite(read) ? read : `"${given}"`;
+if (!Number.isFinite(min)) {
+  throw new Error(
+    `Slider: its \`min\` must be a number, but this one's \`min\` is "${attrs.min}".`
+  );
+}
+if (!Number.isFinite(max) || max <= min) {
+  throw new Error(
+    `Slider: its \`max\` must be a number more than its \`min\` (${min}), but this one's \`max\` is ${quoted(max, attrs.max)}.`
+  );
+}
+if (!isAnyStep && !(step > 0)) {
+  throw new Error(
+    `Slider: its \`step\` must be a number more than 0, or "any", but this one's \`step\` is ${quoted(step, attrs.step)}.`
+  );
+}
+// M3's stops divide the track evenly, the first at `min` and the last at `max`
+const intervals = (max - min) / step;
+if (
+  showStops &&
+  (isAnyStep || Math.abs(intervals - Math.round(intervals)) > 1e-9)
+) {
+  throw new Error(
+    `Slider: stops divide the track evenly from \`min\` to \`max\` (${min} to ${max}), but this one's \`step\` is ${isAnyStep ? '"any"' : step}.`
+  );
+}
+
+// The value the browser starts it at: the given one, or the middle, snapped to a step
+const given = attrs.value === undefined ? NaN : Number(attrs.value);
+const unsnapped = Math.min(
+  max,
+  Math.max(min, Number.isFinite(given) ? given : min + (max - min) / 2)
+);
+const steps = isAnyStep ? unsnapped : Math.round((unsnapped - min) / step);
+const snapped = isAnyStep ? unsnapped : min + steps * step;
+const value = snapped > max ? snapped - step : snapped;
+const fraction = (value - min) / (max - min);
+// With stops, the handle sits over a stop: the first and last at the track's ends, the others
+// between stops inset 6px from them (Compose's placing, with M3's stop spacing)
+const isInset = showStops && value > min && value < max;
+
+const stopFractions = showStops
+  ? Array.from({ length: Math.round(intervals) + 1 }, (_, i) => i / intervals)
+  : showStopIndicator
+    ? [1]
+    : [];
+
+// M3's measurements per size: track thickness, handle height, the track's outer corners, and the
+// inset icon's size and padding
+const sizes = {
+  xs: "[--ac-slider-thickness:16px] [--ac-slider-handle:44px] [--ac-slider-corner:8px]",
+  sm: "[--ac-slider-thickness:24px] [--ac-slider-handle:44px] [--ac-slider-corner:8px]",
+  md: "[--ac-slider-thickness:40px] [--ac-slider-handle:52px] [--ac-slider-corner:12px] [--ac-slider-icon:24px] [--ac-slider-icon-padding:6px]",
+  lg: "[--ac-slider-thickness:56px] [--ac-slider-handle:68px] [--ac-slider-corner:16px] [--ac-slider-icon:24px] [--ac-slider-icon-padding:6px]",
+  xl: "[--ac-slider-thickness:96px] [--ac-slider-handle:108px] [--ac-slider-corner:28px] [--ac-slider-icon:32px] [--ac-slider-icon-padding:8px]",
+}[size];
+const isVertical = orientation === "vertical";
+
+// A stop indicator, or the inset icon, is drawn on both tracks at the same place, each track
+// clipping it, so it shows in whichever track holds it, in that track's color. A stop's center
+// is 6px in from the track's start (M3's 4px trailing space and half the 4px stop) at the first
+// and from its end at the last, with the others evenly between: the active track places it from
+// its start and the inactive one from its end, the end both share with the track.
+const stopClass =
+  "absolute inset-bs-[calc(50%-2px)] size-1 rounded-full bg-current";
+const iconClass =
+  "absolute inset-bs-[calc(50%-var(--ac-slider-icon)/2)] size-(--ac-slider-icon)";
+---
+
+<div
+  class:list={twMerge(
+    "relative block-[max(var(--ac-slider-handle),48px)] cursor-pointer select-none has-disabled:cursor-default",
+    // Vertical, the slider is laid out in a vertical writing mode whose inline axis runs from
+    // the bottom up, so every logical inset and size below turns with it. Its value indicator
+    // sits on the side the text starts from.
+    isVertical
+      ? "h-75 touch-pan-x [direction:rtl] [writing-mode:vertical-lr] rtl:[writing-mode:vertical-rl]"
+      : "w-full touch-pan-y",
+    sizes,
+    classList
+  )}
+  style={`--ac-slider-fraction: ${fraction}; --ac-slider-inset: ${isInset ? 1 : 0}`}
+  data-ac-slider
+  data-ac-slider-orientation={orientation}
+  data-ac-slider-stops={showStops ? "" : undefined}
+>
+  {/* The script draws pointer and key changes, so the input takes no pointer events of its own */}
+  <input
+    class="pointer-events-none absolute inset-0 m-0 size-full appearance-none opacity-0"
+    type="range"
+    aria-orientation={isVertical ? "vertical" : undefined}
+    {...attrs}
+  />
+  {/* The track spans the slider less half the 4px handle at each end, so the handle stays
+      inside it. It's the container its parts measure, 100cqi long. */}
+  <span
+    class="pointer-events-none absolute inset-s-0.5 inset-e-0.5 inset-bs-[calc(50%-var(--ac-slider-thickness)/2)] block-(--ac-slider-thickness) @container"
+    data-ac-slider-part="track"
+  >
+    <span
+      class="absolute inset-s-0 inset-bs-0 inset-be-0 rounded-s-(--ac-slider-corner) rounded-e-xs bg-(--theme-color-primary) text-(--theme-color-on-primary) motion-safe:transition-colors"
+      data-ac-slider-part="active-track"
+    >
+      {stopFractions.map((stop) => (
+        <span
+          class:list={[
+            stopClass,
+            "inset-s-[calc(4px+(100cqi-12px)*var(--ac-slider-stop))]",
+          ]}
+          style={`--ac-slider-stop: ${stop}`}
+          data-ac-slider-part="stop"
+        />
+      ))}
+      {icon && (
+        <Icon
+          name={icon}
+          class={twMerge(iconClass, "inset-s-(--ac-slider-icon-at)")}
+          data-ac-slider-part="icon"
+        />
+      )}
+    </span>
+    <span
+      class="absolute inset-e-0 inset-bs-0 inset-be-0 rounded-s-xs rounded-e-(--ac-slider-corner) bg-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container) motion-safe:transition-colors"
+      data-ac-slider-part="inactive-track"
+    >
+      {stopFractions.map((stop) => (
+        <span
+          class:list={[
+            stopClass,
+            "inset-e-[calc(4px+(100cqi-12px)*(1-var(--ac-slider-stop)))]",
+          ]}
+          style={`--ac-slider-stop: ${stop}`}
+          data-ac-slider-part="stop"
+        />
+      ))}
+      {icon && (
+        <Icon
+          name={icon}
+          class={twMerge(
+            iconClass,
+            "inset-e-[calc(100cqi-var(--ac-slider-icon-at)-var(--ac-slider-icon))]"
+          )}
+          data-ac-slider-part="icon"
+        />
+      )}
+    </span>
+    {/* M3's handle: 4px wide, 2px while pressed or focused, centered on the value */}
+    <span
+      class="absolute inset-s-[calc(var(--ac-slider-at)-2px)] inset-bs-[calc(50%-var(--ac-slider-handle)/2)] flex inline-1 block-(--ac-slider-handle) justify-center"
+      data-ac-slider-part="handle-position"
+    >
+      <span
+        class="inline-1 block-full rounded-full bg-(--theme-color-primary)"
+        data-ac-slider-part="handle"
+      ></span>
+      {showValueIndicator && (
+        <span
+          class="absolute -inset-s-12 -inset-e-12 inset-be-[calc(100%+12px)] flex justify-center opacity-0 motion-safe:transition-opacity"
+          data-ac-slider-part="value-indicator"
+        >
+          <span
+            class="flex h-11 min-w-12 items-center justify-center rounded-full bg-(--theme-color-inverse-surface) px-2 text-sm leading-5 font-medium tracking-normal text-(--theme-color-inverse-on-surface) [writing-mode:horizontal-tb]"
+            aria-hidden="true"
+            data-ac-slider-part="value"
+          >
+            {value}
+          </span>
+        </span>
+      )}
+    </span>
+  </span>
+</div>
+
+<style>
+  /* The geometry every part reads, along the track (100cqi long) from its start. The handle's
+     center is at the value's fraction of the track, or, between stops, of the track less 6px at
+     each end. The active track runs from the start to 8px before it (half the handle and M3's
+     6px gap), and the inactive one from 8px after it to the end. A track shorter than its outer
+     corner isn't drawn, as Compose's isn't: max(0px, min(L, (L - corner) * 100000)) is L when L
+     is longer than the corner, and 0 when it isn't. */
+  [data-ac-slider-part="track"] {
+    --ac-slider-at: calc(
+      var(--ac-slider-inset) * 6px + (100cqi - var(--ac-slider-inset) * 12px) *
+        var(--ac-slider-fraction)
+    );
+    --ac-slider-active: calc(var(--ac-slider-at) - 8px);
+    --ac-slider-inactive: calc(100cqi - var(--ac-slider-at) - 8px);
+    /* The inset icon sits its padding in from the start of the active track while it fits there,
+       with its padding either side, and from the start of the inactive track when it doesn't */
+    --ac-slider-icon-at: min(
+      var(--ac-slider-at) + 8px + var(--ac-slider-icon-padding),
+      var(--ac-slider-icon-padding) +
+        max(
+          0px,
+          (
+              var(--ac-slider-icon) + 2 * var(--ac-slider-icon-padding) -
+                var(--ac-slider-active)
+            ) *
+            100000
+        )
+    );
+  }
+
+  [data-ac-slider-part="active-track"] {
+    overflow: hidden;
+    inline-size: max(
+      0px,
+      min(
+        var(--ac-slider-active),
+        (var(--ac-slider-active) - var(--ac-slider-corner)) * 100000
+      )
+    );
+  }
+
+  [data-ac-slider-part="inactive-track"] {
+    overflow: hidden;
+    inline-size: max(
+      0px,
+      min(
+        var(--ac-slider-inactive),
+        (var(--ac-slider-inactive) - var(--ac-slider-corner)) * 100000
+      )
+    );
+  }
+
+  /* Pressed or focused from the keyboard, the handle narrows to 2px, and shows the value
+     indicator if it has one. Focused, it shows the theme focus ring. */
+  [data-ac-slider-pressed] [data-ac-slider-part="handle"],
+  input:focus-visible ~ * [data-ac-slider-part="handle"] {
+    inline-size: 2px;
+  }
+
+  input:focus-visible ~ * [data-ac-slider-part="handle"] {
+    box-shadow:
+      0 0 0 2px var(--theme-color-wrapper-bg),
+      0 0 0 5px var(--theme-color-focus-ring-on-bg);
+  }
+
+  [data-ac-slider-pressed] [data-ac-slider-part="value-indicator"],
+  input:focus-visible ~ * [data-ac-slider-part="value-indicator"] {
+    opacity: 1;
+  }
+
+  /* M3's disabled colors: the handle and active track in on-surface at 38%, the inactive track
+     at 12%, the stops on the active track in inverse-on-surface and on the inactive one in
+     on-surface at 38% */
+  input:disabled ~ * [data-ac-slider-part="handle"] {
+    background-color: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 38%,
+      transparent
+    );
+  }
+
+  input:disabled ~ * [data-ac-slider-part="active-track"] {
+    background-color: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 38%,
+      transparent
+    );
+    color: var(--theme-color-inverse-on-surface);
+  }
+
+  input:disabled ~ * [data-ac-slider-part="inactive-track"] {
+    background-color: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 12%,
+      transparent
+    );
+    color: color-mix(in oklab, var(--theme-color-on-surface) 38%, transparent);
+  }
+
+  /* ADR-0018: the handle narrows on fast spatial, so it briefly overshoots, and its color and
+     focus ring change on fast effects. It moves to a new value at once, under the pointer. */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-ac-slider-part="handle"] {
+      transition:
+        inline-size var(--theme-duration-spring-fast-spatial)
+          var(--ease-spring-fast-spatial),
+        background-color var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects),
+        box-shadow var(--theme-duration-spring-fast-effects)
+          var(--ease-spring-fast-effects);
+    }
+  }
+</style>
+
+<script>
+  // The input takes no pointer events, so the slider sets its value from the pointer and the
+  // keys itself, the same way in every browser, orientation and direction, and draws it by
+  // setting the fraction its CSS reads. Delegated from the document, so it covers sliders added
+  // later, as by Astro's ClientRouter.
+  const sliderOf = (target: EventTarget | null) =>
+    target instanceof Element
+      ? target.closest<HTMLElement>("[data-ac-slider]")
+      : null;
+  const inputOf = (slider: HTMLElement) =>
+    slider.querySelector<HTMLInputElement>(":scope > input")!;
+  const rangeOf = (input: HTMLInputElement) => {
+    const min = input.min === "" ? 0 : Number(input.min);
+    const max = input.max === "" ? 100 : Number(input.max);
+    return { min, max };
+  };
+
+  const draw = (slider: HTMLElement) => {
+    const input = inputOf(slider);
+    const { min, max } = rangeOf(input);
+    const value = input.valueAsNumber;
+    const isInset =
+      slider.hasAttribute("data-ac-slider-stops") && value > min && value < max;
+    slider.style.setProperty(
+      "--ac-slider-fraction",
+      String((value - min) / (max - min))
+    );
+    slider.style.setProperty("--ac-slider-inset", isInset ? "1" : "0");
+    const label = slider.querySelector('[data-ac-slider-part="value"]');
+    if (label) label.textContent = input.value;
+  };
+
+  const drawAll = (root: ParentNode = document) =>
+    root
+      .querySelectorAll<HTMLElement>("[data-ac-slider]")
+      .forEach((slider) => draw(slider));
+
+  // Sets the value, as a person would: input fires, and change once it's committed
+  const setValue = (
+    input: HTMLInputElement,
+    value: number,
+    isCommitted: boolean
+  ) => {
+    const before = input.value;
+    input.value = String(value);
+    if (input.value === before) return false;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    if (isCommitted)
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    return true;
+  };
+
+  // The value under the pointer: along the track from its start (its left, or its right in
+  // right to left, or its bottom when vertical), snapped to the nearest stop if it has stops,
+  // or by the browser to the nearest step if not
+  const valueAt = (slider: HTMLElement, event: PointerEvent) => {
+    const input = inputOf(slider);
+    const { min, max } = rangeOf(input);
+    const track = slider
+      .querySelector('[data-ac-slider-part="track"]')!
+      .getBoundingClientRect();
+    const isVertical =
+      slider.getAttribute("data-ac-slider-orientation") === "vertical";
+    const length = isVertical ? track.height : track.width;
+    const along = isVertical
+      ? track.bottom - event.clientY
+      : getComputedStyle(slider).direction === "rtl"
+        ? track.right - event.clientX
+        : event.clientX - track.left;
+    if (!slider.hasAttribute("data-ac-slider-stops"))
+      return min + Math.min(1, Math.max(0, along / length)) * (max - min);
+    // The stops' places, as the CSS draws them: the ends at 0 and the full length, the others
+    // between 6px in from each end
+    const step = Number(input.step || 1);
+    const count = Math.round((max - min) / step);
+    let nearest = 0;
+    let nearestDistance = Infinity;
+    for (let i = 0; i <= count; i++) {
+      const at =
+        i === 0 ? 0 : i === count ? length : 6 + ((length - 12) * i) / count;
+      const distance = Math.abs(at - along);
+      if (distance < nearestDistance) {
+        nearest = i;
+        nearestDistance = distance;
+      }
+    }
+    return min + nearest * step;
+  };
+
+  document.addEventListener("pointerdown", (event) => {
+    const slider = sliderOf(event.target);
+    if (!slider || !event.isPrimary || event.button !== 0) return;
+    const input = inputOf(slider);
+    if (input.disabled) return;
+    // Keeps the press from moving focus off the input, which it focuses instead
+    event.preventDefault();
+    input.focus({ preventScroll: true, focusVisible: false });
+    slider.setPointerCapture(event.pointerId);
+    slider.setAttribute("data-ac-slider-pressed", "");
+    const start = input.value;
+    setValue(input, valueAt(slider, event), false);
+
+    const move = (moveEvent: PointerEvent) => {
+      if (moveEvent.pointerId === event.pointerId)
+        setValue(input, valueAt(slider, moveEvent), false);
+    };
+    const end = (endEvent: PointerEvent) => {
+      if (endEvent.pointerId !== event.pointerId) return;
+      slider.removeAttribute("data-ac-slider-pressed");
+      slider.removeEventListener("pointermove", move);
+      slider.removeEventListener("pointerup", end);
+      slider.removeEventListener("pointercancel", end);
+      if (input.value !== start)
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+    };
+    slider.addEventListener("pointermove", move);
+    slider.addEventListener("pointerup", end);
+    slider.addEventListener("pointercancel", end);
+  });
+
+  // M3's keyboard table: the arrows move one step (or one stop), Page Up and Page Down, or an
+  // arrow with Space held, a larger interval, and Home and End go to the ends. Left and right
+  // follow the track's direction, so they swap in right to left.
+  let isSpaceHeld = false;
+  document.addEventListener("keydown", (event) => {
+    const { target } = event;
+    if (
+      !(target instanceof HTMLInputElement) ||
+      !target.matches("[data-ac-slider] > input")
+    )
+      return;
+    const slider = sliderOf(target)!;
+    if (event.key === " ") {
+      // Space only changes what the arrows do, and doesn't scroll the page
+      event.preventDefault();
+      isSpaceHeld = true;
+      return;
+    }
+    const { min, max } = rangeOf(target);
+    const isAnyStep = target.step === "any";
+    const step = isAnyStep ? (max - min) / 100 : Number(target.step || 1);
+    // Compose's larger interval: a tenth of the steps, from 1 to 10 of them
+    const page = Math.min(10, Math.max(1, Math.floor((max - min) / step / 10)));
+    const isRtl =
+      slider.getAttribute("data-ac-slider-orientation") !== "vertical" &&
+      getComputedStyle(slider).direction === "rtl";
+    const arrow = isSpaceHeld ? page : 1;
+    const steps: Record<string, number> = {
+      ArrowUp: arrow,
+      ArrowDown: -arrow,
+      ArrowRight: isRtl ? -arrow : arrow,
+      ArrowLeft: isRtl ? arrow : -arrow,
+      PageUp: page,
+      PageDown: -page,
+    };
+    let value: number;
+    if (event.key === "Home") value = min;
+    else if (event.key === "End") value = max;
+    else if (event.key in steps)
+      value = Math.min(
+        max,
+        Math.max(min, target.valueAsNumber + steps[event.key]! * step)
+      );
+    else return;
+    event.preventDefault();
+    setValue(target, value, true);
+  });
+
+  document.addEventListener("keyup", (event) => {
+    if (event.key === " ") isSpaceHeld = false;
+  });
+  document.addEventListener("focusout", () => {
+    isSpaceHeld = false;
+  });
+
+  document.addEventListener("input", ({ target }) => {
+    const slider = sliderOf(target);
+    if (slider && target instanceof HTMLInputElement) draw(slider);
+  });
+
+  // A form's reset restores its inputs after the reset event, so they're drawn a task later
+  document.addEventListener("reset", ({ target }) => {
+    if (target instanceof HTMLFormElement) setTimeout(() => drawAll(target));
+  });
+
+  // The browser can restore a value the page wasn't rendered with, as on going back
+  drawAll();
+  document.addEventListener("astro:page-load", () => drawAll());
+</script>

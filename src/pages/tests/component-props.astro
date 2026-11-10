@@ -39,6 +39,7 @@ import NavRail from "../../components/NavRail.astro";
 import Popover from "../../components/Popover.astro";
 import RadioButton from "../../components/RadioButton.astro";
 import SheetSide from "../../components/SheetSide.astro";
+import Slider from "../../components/Slider.astro";
 import Snackbar from "../../components/Snackbar.astro";
 import Switch from "../../components/Switch.astro";
 import Tab from "../../components/Tab.astro";
@@ -256,6 +257,14 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     ],
     "radio-button-as": [RadioButton, { as: "div" }],
     "sheet-side-edge": [SheetSide, { edge: "left" }],
+    "slider-size": [Slider, { size: "medium" }],
+    "slider-orientation": [Slider, { orientation: "diagonal" }],
+    "slider-icon-size": [Slider, { size: "sm", icon: "light_mode" }],
+    "slider-min": [Slider, { min: "low" }],
+    "slider-max": [Slider, { min: "10", max: "5" }],
+    "slider-step": [Slider, { step: "0" }],
+    "slider-stops-step": [Slider, { showStops: true, step: "30" }],
+    "slider-stops-any": [Slider, { showStops: true, step: "any" }],
     "snackbar-duration": [Snackbar, { id: "snackbar", duration: "brief" }],
     "snackbar-action-duration": [
       Snackbar,
