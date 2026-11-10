@@ -1,0 +1,87 @@
+---
+title: AppBar
+description: Tests for the AppBar component
+---
+
+<Heading level={1}>AppBar Tests</Heading>
+
+<Section data-testid="app-bar-anatomy" class="p-4 space-y-4">
+  <Heading level={2}>Anatomy</Heading>
+  <AppBar headline="Inbox" subtitle="12 unread">
+    <ButtonIcon slot="navigation" icon="arrow_back" label="Back" />
+    <ButtonIcon slot="actions" icon="search" label="Search" />
+    <ButtonIcon slot="actions" icon="calendar_month" label="Calendar" />
+  </AppBar>
+</Section>
+
+<Section data-testid="app-bar-headline-only" class="p-4 space-y-4">
+  <Heading level={2}>Headline only</Heading>
+  <AppBar headline="Settings" />
+</Section>
+
+<Section data-testid="app-bar-centered" class="p-4 space-y-4">
+  <Heading level={2}>Centered</Heading>
+  <AppBar headline="Product" subtitle="Spring catalogue" align="center">
+    <ButtonIcon slot="navigation" icon="menu" label="Menu" />
+    <ButtonIcon slot="actions" icon="search" label="Search" />
+    <ButtonIcon slot="actions" icon="share" label="Share" />
+  </AppBar>
+</Section>
+
+<Section data-testid="app-bar-long" class="p-4 space-y-4">
+  <Heading level={2}>Long headline</Heading>
+  <AppBar headline="A headline far too long to fit on one line in a small app bar, which never wraps it">
+    <ButtonIcon slot="navigation" icon="arrow_back" label="Back" />
+    <ButtonIcon slot="actions" icon="edit" label="Edit" />
+  </AppBar>
+  <AppBar
+    headline="A centered headline far too long to fit on one line in a small app bar, which never wraps it"
+    align="center"
+  >
+    <ButtonIcon slot="navigation" icon="arrow_back" label="Back" />
+    <ButtonIcon slot="actions" icon="edit" label="Edit" />
+    <ButtonIcon slot="actions" icon="share" label="Share" />
+  </AppBar>
+</Section>
+
+<Section data-testid="app-bar-filled-action" class="p-4 space-y-4">
+  <Heading level={2}>Filled action</Heading>
+  <AppBar headline="Draft">
+    <ButtonIcon slot="navigation" icon="close" label="Close" />
+    <ButtonIcon slot="actions" icon="send" label="Send" variant="filled" width="wide" />
+  </AppBar>
+</Section>
+
+<Section data-testid="app-bar-scroll" class="p-4 space-y-4">
+  <Heading level={2}>Scrolling under a sticky app bar</Heading>
+  <div class="h-64 overflow-y-auto rounded-xl border border-(--theme-color-outline-variant)" tabindex="0" aria-label="Messages">
+    <AppBar headline="Messages" class="sticky top-0 z-1">
+      <ButtonIcon slot="navigation" icon="arrow_back" label="Back" />
+      <ButtonIcon slot="actions" icon="search" label="Search" />
+    </AppBar>
+    <div class="space-y-4 p-4">
+      <p>The app bar starts on surface, as the content behind it.</p>
+      <p>Scrolled, the content passes under it and it fills with surface container.</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      <p>Ut enim ad minim veniam, quis nostrud exercitation.</p>
+      <p>Duis aute irure dolor in reprehenderit in voluptate velit esse.</p>
+      <p>Excepteur sint occaecat cupidatat non proident.</p>
+      <p>Sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    </div>
+  </div>
+</Section>
+
+<Section data-testid="app-bar-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <AppBar headline="البريد" subtitle="12 غير مقروءة">
+    <ButtonIcon slot="navigation" icon="arrow_forward" label="رجوع" />
+    <ButtonIcon slot="actions" icon="search" label="بحث" />
+    <ButtonIcon slot="actions" icon="calendar_month" label="التقويم" />
+  </AppBar>
+  <AppBar headline="المنتج" align="center">
+    <ButtonIcon slot="navigation" icon="menu" label="القائمة" />
+    <ButtonIcon slot="actions" icon="search" label="بحث" />
+    <ButtonIcon slot="actions" icon="share" label="مشاركة" />
+  </AppBar>
+</Section>
