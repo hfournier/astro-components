@@ -1,0 +1,38 @@
+---
+// An AppBar as a page uses it: in the page's header landmark (a <header> outside <main> and any
+// sectioning element), the header pinned to the top of the window, and the page scrolling under
+// it. The site's own layout has a header already, so this page has its own layout rather than
+// BaseLayout's. See src/tests/AppBar.spec.ts.
+import "../../styles/global.css";
+import BaseHead from "../../internal/BaseHead.astro";
+import AppBar from "../../components/AppBar.astro";
+import ButtonIcon from "../../components/ButtonIcon.astro";
+import Header from "../../components/Header.astro";
+import Main from "../../components/Main.astro";
+---
+
+<html lang="en">
+  <BaseHead
+    title="AppBar in the page header"
+    description="An AppBar in the page's header landmark, pinned as the page scrolls"
+  />
+  <body class="bg-(--theme-color-surface) text-(--theme-color-on-surface)">
+    <Header class="sticky top-0 z-1">
+      <AppBar headline="Photos" subtitle="Last 30 days">
+        <ButtonIcon slot="navigation" icon="menu" label="Menu" />
+        <ButtonIcon slot="actions" icon="search" label="Search" />
+        <ButtonIcon slot="actions" icon="share" label="Share" />
+      </AppBar>
+    </Header>
+
+    <Main class="space-y-4 px-4">
+      <h1>Photos</h1>
+      {Array.from({ length: 40 }, (_, i) => (
+        <p id={`photo-${i + 1}`}>
+          Photo {i + 1}: the page scrolls under the app bar, which fills with
+          surface container.
+        </p>
+      ))}
+    </Main>
+  </body>
+</html>

@@ -1,5 +1,6 @@
 /* eslint-disable */
 // @ts-nocheck
+export { default as AppBar } from "./components/AppBar.astro";
 export { default as Aside } from "./components/Aside.astro";
 export { default as Badge } from "./components/Badge.astro";
 export { default as BaseListItem } from "./components/BaseListItem.astro";

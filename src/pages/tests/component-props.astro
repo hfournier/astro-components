@@ -6,6 +6,7 @@ import { experimental_AstroContainer } from "astro/container";
 import type { AstroComponentFactory } from "astro/runtime/server/index.js";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Main from "../../components/Main.astro";
+import AppBar from "../../components/AppBar.astro";
 import Badge from "../../components/Badge.astro";
 import BaseButton from "../../components/BaseButton.astro";
 import BaseChip from "../../components/BaseChip.astro";
@@ -73,6 +74,7 @@ const split = { menuId: "split-menu", menuLabel: "More options" };
 // attributes as strings, so the number cases do too, and a valid one lists what it drew.
 const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
   {
+    "app-bar-align": [AppBar, { headline: "Inbox", align: "end" }],
     "badge-placement": [Badge, { placement: "floating" }],
     "base-chip-as": [BaseChip, { as: "div" }],
     "base-chip-variant": [BaseChip, { variant: "outlined" }],

@@ -5,6 +5,7 @@ import { test, expect } from "./support/a11y-fixture";
 const sizes = `"xs", "sm", "md", "lg" and "xl"`;
 const fabSizes = `"default", "md" and "lg"`;
 const expected: Record<string, string | RegExp> = {
+  "app-bar-align": `AppBar: M3's alignments are "start" and "center", but this one's \`align\` is "end".`,
   "badge-placement": `Badge: its placements are "anchored" and "inline", but this one's \`placement\` is "floating".`,
   "base-chip-as": `BaseChip: its elements are "button", "a" and "label", but this one's \`as\` is "div".`,
   "base-chip-variant": `BaseChip: M3's chip styles are "flat" and "elevated", but this one's \`variant\` is "outlined".`,

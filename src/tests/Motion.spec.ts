@@ -315,6 +315,16 @@ test.describe("motion", () => {
     });
   });
 
+  test("AppBar: fills with its on-scroll color on fast effects", async ({
+    page,
+  }) => {
+    await page.goto("/tests/app-bar");
+    const appBar = page
+      .getByTestId("app-bar-anatomy")
+      .locator("[data-ac-app-bar]");
+    await expectTransitions(appBar, { "background-color": FAST_EFFECTS });
+  });
+
   test("SheetBottom: a modal sheet enters on emphasized decelerate and leaves on emphasized accelerate", async ({
     page,
   }) => {

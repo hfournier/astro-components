@@ -1,0 +1,185 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import BaseWrapper from "./BaseWrapper.astro";
+
+// M3 Expressive's small app bar, at the top of the page: an optional leading button (the
+// `navigation` slot, such as a back or menu ButtonIcon), the headline and an optional subtitle,
+// left-aligned or centered, and up to two trailing buttons (the `actions` slot). It goes in the
+// page's header landmark, <Header>, which a page pins with `sticky top-0`.
+//
+// M3 fixes its colors: Surface, filling with Surface Container while content scrolls under it.
+// The script (below) marks it scrolled while it's pinned (sticky or fixed, itself or an
+// ancestor) and its scroll container has scrolled content under it (ADR-0034).
+// No `title` attribute: a tooltip on the whole bar isn't part of M3's, and the name would read as
+// the headline's
+type Props = Omit<HTMLAttributes<"div">, "title"> & {
+  // M3's headline: the page, the section or the product. Title Large, on one line.
+  headline: string;
+  // M3's subtitle, more context below the headline, in Label Medium
+  subtitle?: string;
+  // M3's text alignment: the headline and subtitle at the leading edge or centered in the bar
+  align?: "start" | "center";
+};
+
+const {
+  headline,
+  subtitle,
+  align = "start",
+  class: classList,
+  ...attrs
+} = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["start", "center"].includes(align)) {
+  throw new Error(
+    `AppBar: M3's alignments are "start" and "center", but this one's \`align\` is "${align}".`
+  );
+}
+
+// Compose's TopAppBar: the title starts at least 12dp in from the 4dp padding, or after the
+// leading button, and its own 4dp either side.
+//
+// Centered, it's centered in the whole bar, not between the buttons, unless it would run into
+// them: the side columns share what's left equally but never shrink below their buttons, and
+// the headline takes no more room than is left (Compose's TopAppBarMeasurePolicy).
+const alignClasses = {
+  start: { bar: "grid-cols-[auto_minmax(0,1fr)_auto]", text: "text-start" },
+  center: {
+    bar: "grid-cols-[minmax(max-content,1fr)_minmax(0,max-content)_minmax(max-content,1fr)]",
+    text: "text-center",
+  },
+}[align];
+
+// Each button sits in a cell at least 48dp wide, its touch target, so the measurements are
+// M3's for any size of button: 4dp, the 48dp target, and 4dp before the headline; at the end,
+// the targets side by side and 4dp after the last. A wider one, such as a wide filled icon
+// button, takes its own width.
+const slotClasses =
+  "grid grid-flow-col auto-cols-[minmax(--spacing(12),auto)] place-items-center";
+---
+
+<BaseWrapper
+  bgColor="surface"
+  class={twMerge(
+    "grid h-16 w-full items-center px-1",
+    alignClasses.bar,
+    // M3's on-scroll color, without its shadow (M3 Expressive). Set as the wrapper background,
+    // so focus rings' offsets follow it. Colors change on fast effects (ADR-0018).
+    "data-ac-app-bar-scrolled:[--theme-color-wrapper-bg:var(--theme-color-surface-container)]",
+    "motion-safe:transition-[background-color] motion-safe:duration-(--theme-duration-spring-fast-effects) motion-safe:ease-spring-fast-effects",
+    classList
+  )}
+  data-ac-app-bar={align}
+  {...attrs}
+>
+  {/* The leading button on on-surface, where the actions keep the surface's on-surface-variant
+       (ButtonIcon's standard color reads --theme-color-on-bg-variant). At least 8dp wide, so a
+       headline with nothing before it starts 16dp in. */}
+  <div
+    class:list={[
+      slotClasses,
+      "min-w-2 justify-start [--theme-color-on-bg-variant:var(--theme-color-on-surface)]",
+    ]}
+  >
+    <slot name="navigation" />
+  </div>
+
+  <div class:list={["min-w-0 px-1", alignClasses.text]}>
+    {/* M3: the headline isn't wrapped in a small app bar, so one too long is cut short */}
+    <div
+      class="truncate text-[1.375rem] leading-7 font-normal text-(--theme-color-on-surface)"
+      data-ac-app-bar-part="headline"
+    >
+      {headline}
+    </div>
+    {subtitle && (
+      <div
+        class="truncate text-xs leading-4 font-medium tracking-[0.5px] text-(--theme-color-on-surface-variant)"
+        data-ac-app-bar-part="subtitle"
+      >
+        {subtitle}
+      </div>
+    )}
+  </div>
+
+  <div class:list={[slotClasses, "justify-end"]}>
+    <slot name="actions" />
+  </div>
+</BaseWrapper>
+
+<script>
+  // Marks each app bar scrolled while content is under it: while it's pinned (it or an ancestor
+  // is sticky at the top or fixed) and its scroll container has scrolled. A bar that scrolls with
+  // its page has nothing under it, so it stays Surface (ADR-0034).
+  //
+  // One listener for the whole page, in the capture phase so it hears every scroll container's
+  // scroll as well as the window's, and each bar is found and measured when it runs, so bars added
+  // later and containers that start or stop scrolling are covered.
+
+  // The nearest ancestor that scrolls vertically, or null for the window. Overflow alone isn't
+  // enough: overflow-x: hidden makes overflow-y compute to auto on an element that never scrolls,
+  // and a bar fixed inside one still has the window scrolling under it.
+  const scrollerOf = (el: Element): Element | null => {
+    for (let node = el.parentElement; node; node = node.parentElement) {
+      if (node === document.body || node === document.documentElement) break;
+      if (
+        node.scrollHeight > node.clientHeight &&
+        /auto|scroll|overlay/.test(getComputedStyle(node).overflowY)
+      )
+        return node;
+    }
+    return null;
+  };
+
+  // The bar or the ancestor below its scroll container that pins it, with its computed style
+  const pinnedOf = (bar: Element, scroller: Element | null) => {
+    for (
+      let node: Element | null = bar;
+      node && node !== scroller;
+      node = node.parentElement
+    ) {
+      const style = getComputedStyle(node);
+      if (style.position === "sticky" || style.position === "fixed")
+        return { node, style };
+    }
+    return null;
+  };
+
+  const isScrolled = (bar: Element) => {
+    const scroller = scrollerOf(bar);
+    const scrollTop = scroller ? scroller.scrollTop : window.scrollY;
+    if (scrollTop <= 0) return false;
+    const pinned = pinnedOf(bar, scroller);
+    if (!pinned) return false;
+    if (pinned.style.position === "fixed") return true;
+    // a sticky element is pinned once it's at its `top` in the scroll container's view
+    const top = parseFloat(pinned.style.top);
+    const viewTop = scroller
+      ? scroller.getBoundingClientRect().top + scroller.clientTop
+      : 0;
+    return (
+      !Number.isNaN(top) &&
+      pinned.node.getBoundingClientRect().top - viewTop <= top + 0.5
+    );
+  };
+
+  let frame = 0;
+  const update = () => {
+    frame = 0;
+    document.querySelectorAll("[data-ac-app-bar]").forEach((bar) => {
+      bar.toggleAttribute("data-ac-app-bar-scrolled", isScrolled(bar));
+    });
+  };
+  const schedule = () => {
+    frame ||= requestAnimationFrame(update);
+  };
+
+  update();
+  document.addEventListener("scroll", schedule, {
+    capture: true,
+    passive: true,
+  });
+  window.addEventListener("resize", schedule, { passive: true });
+</script>

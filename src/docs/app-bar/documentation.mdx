@@ -1,0 +1,48 @@
+---
+name: AppBar
+description: Material 3 Expressive's small app bar, at the top of the page. It holds an optional leading button for navigation, a headline with an optional subtitle, aligned to the leading edge or centered, and up to two trailing actions. It goes in the page's header landmark. While content scrolls under it, it fills with surface container.
+category: Content sectioning
+role: pattern
+meta:
+  title: AppBar | astro-components HenriFournier.dev
+  description: Material 3 Expressive's small app bar, with a leading button, a headline and subtitle and trailing actions, filling with color as content scrolls under it.
+extends:
+  kind: element
+  tag: [div]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/header
+props:
+  - name: headline
+    type: string
+    required: true
+    description: M3's headline, naming the current page, its section or the product. It's Material 3 Title Large on one line. A small app bar never wraps it, so a headline too long for the bar is cut short with an ellipsis. Keep it short.
+  - name: subtitle
+    type: string
+    required: false
+    description: Optional context below the headline, in Material 3 Label Medium on one line.
+  - name: align
+    type: '"start" | "center"'
+    required: false
+    default: '"start"'
+    description: Where the headline and subtitle sit. `start` puts them at the leading edge, after the leading button. `center` centers them in the whole bar, not just between the buttons, unless they'd run into the buttons. Any other value fails the build.
+slots:
+  - name: navigation
+    description: Optional leading button that navigates, such as a back arrow or a menu that opens a navigation drawer. Use a standard ButtonIcon, which takes M3's on-surface color here.
+    kind: any
+  - name: actions
+    description: One or two trailing actions, such as standard ButtonIcons, which take M3's on-surface-variant color here. Put the most used action first. To make one action stand out, use a single filled or tonal ButtonIcon, in the default or wide width. An avatar can go here too.
+    kind: any
+---
+
+## Placement
+
+Put the app bar in the page's `<Header>`, outside `<main>`, so it's in the page's banner landmark. Let it span the full width of the window, and keep its height and square corners.
+
+To keep it at the top while the page scrolls, pin the header with `class="sticky top-0 z-1"`. The app bar fills with surface container while content is under it, so it stands apart from the content. An app bar that scrolls with its page has nothing under it, so it stays on surface. Inside a scrolling box instead of the page, pin the app bar itself with the same classes. It fills while that box is scrolled.
+
+## Actions
+
+M3 asks for one action, two if you need them. They should change or leave the whole page, such as Send, Save or Edit. If a page has more, put them in a toolbar. Avoid an overflow menu in the app bar where you can.
+
+## Headline
+
+The headline can name the current page, its section or the product. So it isn't a heading: the page's own `<h1>` stays in `<main>`. Keep the headline short enough to fit. Don't wrap it or make it larger. If it's long, a medium or large flexible app bar has room for two lines.
