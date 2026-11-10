@@ -338,9 +338,7 @@ test.describe("motion", () => {
       { "background-color": FAST_EFFECTS }
     );
     await expectTransitions(
-      appBar
-        .locator('[data-ac-app-bar-part="collapsed-headline"]')
-        .locator(".."),
+      appBar.locator('[data-ac-app-bar-part="collapsed-text"]'),
       { opacity: FAST_EFFECTS }
     );
   });

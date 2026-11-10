@@ -37,13 +37,13 @@ type AppBarPart =
   | "subtitle"
   | "top-row"
   | "collapsed-headline"
-  | "collapsed-subtitle";
+  | "collapsed-subtitle"
+  | "collapsed-text";
 const part = (target: Locator, name: AppBarPart) =>
   target.locator(`[data-ac-app-bar-part="${name}"]`);
 
 // A flexible bar's small headline and subtitle, which fade in together once it's collapsed
-const collapsedText = (target: Locator) =>
-  part(target, "collapsed-headline").locator("..");
+const collapsedText = (target: Locator) => part(target, "collapsed-text");
 
 // The page's own app bar, on /tests/app-bar-page
 const bannerBar = (page: Page) =>

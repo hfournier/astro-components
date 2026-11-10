@@ -26,7 +26,7 @@ type Props = Omit<HTMLAttributes<"div">, "title"> & {
   subtitle?: string;
   // M3's text alignment: the headline and subtitle at the leading edge or centered in the bar
   align?: "start" | "center";
-  // M3's variant: small, medium flexible or large flexible
+  // M3's small, medium flexible or large flexible app bar
   size?: "sm" | "md" | "lg";
 };
 
@@ -158,6 +158,7 @@ const fill = `motion-safe:transition-[background-color] ${fastEffects}`;
         ],
       ]}
       aria-hidden={flexible ? "true" : undefined}
+      data-ac-app-bar-part={flexible ? "collapsed-text" : undefined}
     >
       <div
         class:list={[smallText.headline, "text-(--theme-color-on-surface)"]}
