@@ -159,7 +159,7 @@ const iconClass =
     data-ac-slider-part="track"
   >
     <span
-      class="absolute inset-s-0 inset-bs-0 inset-be-0 rounded-s-(--ac-slider-corner) rounded-e-xs bg-(--theme-color-primary) text-(--theme-color-on-primary) motion-safe:transition-colors"
+      class="absolute inset-s-0 inset-bs-0 inset-be-0 overflow-hidden rounded-s-(--ac-slider-corner) rounded-e-xs bg-(--theme-color-primary) text-(--theme-color-on-primary) motion-safe:transition-colors"
       data-ac-slider-part="active-track"
     >
       {stopFractions.map((stop) => (
@@ -181,7 +181,7 @@ const iconClass =
       )}
     </span>
     <span
-      class="absolute inset-e-0 inset-bs-0 inset-be-0 rounded-s-xs rounded-e-(--ac-slider-corner) bg-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container) motion-safe:transition-colors"
+      class="absolute inset-e-0 inset-bs-0 inset-be-0 overflow-hidden rounded-s-xs rounded-e-(--ac-slider-corner) bg-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container) motion-safe:transition-colors"
       data-ac-slider-part="inactive-track"
     >
       {stopFractions.map((stop) => (
@@ -233,6 +233,15 @@ const iconClass =
 </div>
 
 <style>
+  /* M3's disabled on-surface at 38%: the handle, the active track and the inactive track's stops */
+  [data-ac-slider] {
+    --ac-slider-disabled: color-mix(
+      in oklab,
+      var(--theme-color-on-surface) 38%,
+      transparent
+    );
+  }
+
   /* The geometry every part reads, along the track (100cqi long) from its start. The handle's
      center is at the value's fraction of the track, or, between stops, of the track less 6px at
      each end. The active track runs from the start to 8px before it (half the handle and M3's
@@ -263,7 +272,6 @@ const iconClass =
   }
 
   [data-ac-slider-part="active-track"] {
-    overflow: hidden;
     inline-size: max(
       0px,
       min(
@@ -274,7 +282,6 @@ const iconClass =
   }
 
   [data-ac-slider-part="inactive-track"] {
-    overflow: hidden;
     inline-size: max(
       0px,
       min(
@@ -306,19 +313,11 @@ const iconClass =
      at 12%, the stops on the active track in inverse-on-surface and on the inactive one in
      on-surface at 38% */
   input:disabled ~ * [data-ac-slider-part="handle"] {
-    background-color: color-mix(
-      in oklab,
-      var(--theme-color-on-surface) 38%,
-      transparent
-    );
+    background-color: var(--ac-slider-disabled);
   }
 
   input:disabled ~ * [data-ac-slider-part="active-track"] {
-    background-color: color-mix(
-      in oklab,
-      var(--theme-color-on-surface) 38%,
-      transparent
-    );
+    background-color: var(--ac-slider-disabled);
     color: var(--theme-color-inverse-on-surface);
   }
 
@@ -328,7 +327,7 @@ const iconClass =
       var(--theme-color-on-surface) 12%,
       transparent
     );
-    color: color-mix(in oklab, var(--theme-color-on-surface) 38%, transparent);
+    color: var(--ac-slider-disabled);
   }
 
   /* ADR-0018: the handle narrows on fast spatial, so it briefly overshoots, and its color and
@@ -362,13 +361,24 @@ const iconClass =
     const max = input.max === "" ? 100 : Number(input.max);
     return { min, max };
   };
+  // One step: the input's, or with step="any", a hundredth of the range, as Compose's keys move
+  const stepOf = (input: HTMLInputElement) => {
+    const { min, max } = rangeOf(input);
+    return input.step === "any" ? (max - min) / 100 : Number(input.step || 1);
+  };
+  const hasStops = (slider: HTMLElement) =>
+    slider.hasAttribute("data-ac-slider-stops");
+  const isVertical = (slider: HTMLElement) =>
+    slider.getAttribute("data-ac-slider-orientation") === "vertical";
+  // A horizontal slider in right to left runs from its right
+  const isReversed = (slider: HTMLElement) =>
+    !isVertical(slider) && getComputedStyle(slider).direction === "rtl";
 
   const draw = (slider: HTMLElement) => {
     const input = inputOf(slider);
     const { min, max } = rangeOf(input);
     const value = input.valueAsNumber;
-    const isInset =
-      slider.hasAttribute("data-ac-slider-stops") && value > min && value < max;
+    const isInset = hasStops(slider) && value > min && value < max;
     slider.style.setProperty(
       "--ac-slider-fraction",
       String((value - min) / (max - min))
@@ -407,19 +417,17 @@ const iconClass =
     const track = slider
       .querySelector('[data-ac-slider-part="track"]')!
       .getBoundingClientRect();
-    const isVertical =
-      slider.getAttribute("data-ac-slider-orientation") === "vertical";
-    const length = isVertical ? track.height : track.width;
-    const along = isVertical
+    const length = isVertical(slider) ? track.height : track.width;
+    const along = isVertical(slider)
       ? track.bottom - event.clientY
-      : getComputedStyle(slider).direction === "rtl"
+      : isReversed(slider)
         ? track.right - event.clientX
         : event.clientX - track.left;
-    if (!slider.hasAttribute("data-ac-slider-stops"))
+    if (!hasStops(slider))
       return min + Math.min(1, Math.max(0, along / length)) * (max - min);
     // The stops' places, as the CSS draws them: the ends at 0 and the full length, the others
     // between 6px in from each end
-    const step = Number(input.step || 1);
+    const step = stepOf(input);
     const count = Math.round((max - min) / step);
     let nearest = 0;
     let nearestDistance = Infinity;
@@ -466,9 +474,10 @@ const iconClass =
     slider.addEventListener("pointercancel", end);
   });
 
-  // M3's keyboard table: the arrows move one step (or one stop), Page Up and Page Down, or an
-  // arrow with Space held, a larger interval, and Home and End go to the ends. Left and right
-  // follow the track's direction, so they swap in right to left.
+  // M3's keyboard table: the arrows move one step, an arrow with Space held a larger interval,
+  // and Home and End go to the ends. With stops, an arrow moves one stop with or without Space.
+  // Page Up and Page Down move the larger interval too, as Compose's do. Left and right follow
+  // the track's direction, so they swap in right to left.
   let isSpaceHeld = false;
   document.addEventListener("keydown", (event) => {
     const { target } = event;
@@ -485,14 +494,11 @@ const iconClass =
       return;
     }
     const { min, max } = rangeOf(target);
-    const isAnyStep = target.step === "any";
-    const step = isAnyStep ? (max - min) / 100 : Number(target.step || 1);
+    const step = stepOf(target);
     // Compose's larger interval: a tenth of the steps, from 1 to 10 of them
     const page = Math.min(10, Math.max(1, Math.floor((max - min) / step / 10)));
-    const isRtl =
-      slider.getAttribute("data-ac-slider-orientation") !== "vertical" &&
-      getComputedStyle(slider).direction === "rtl";
-    const arrow = isSpaceHeld ? page : 1;
+    const isRtl = isReversed(slider);
+    const arrow = isSpaceHeld && !hasStops(slider) ? page : 1;
     const steps: Record<string, number> = {
       ArrowUp: arrow,
       ArrowDown: -arrow,

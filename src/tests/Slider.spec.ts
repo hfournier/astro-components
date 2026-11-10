@@ -242,21 +242,54 @@ test.describe("Slider", () => {
     ).toHaveCount(0);
   });
 
-  test("colors: primary handle and active track, secondary-container inactive track", async ({
+  for (const colorScheme of ["light", "dark"] as const) {
+    test(`colors, ${colorScheme}: primary handle and active track, secondary-container inactive track, inverse value indicator`, async ({
+      page,
+    }) => {
+      await page.emulateMedia({ colorScheme: "light" });
+      const lightPrimary = await colorRole(page, "primary");
+      await page.emulateMedia({ colorScheme });
+      // The dark run checks the dark roles, which differ from the light ones
+      expect(lightPrimary === (await colorRole(page, "primary"))).toBe(
+        colorScheme === "light"
+      );
+      const input = slider(page, "stops", "Every 10");
+      await expect(part(input, "handle")).toHaveCSS(
+        "background-color",
+        await colorRole(page, "primary")
+      );
+      await expect(part(input, "active-track")).toHaveCSS(
+        "background-color",
+        await colorRole(page, "primary")
+      );
+      await expect(part(input, "inactive-track")).toHaveCSS(
+        "background-color",
+        await colorRole(page, "secondary-container")
+      );
+      await expect(partIn(input, "active-track", "stop").first()).toHaveCSS(
+        "background-color",
+        await colorRole(page, "on-primary")
+      );
+      await expect(partIn(input, "inactive-track", "stop").last()).toHaveCSS(
+        "background-color",
+        await colorRole(page, "on-secondary-container")
+      );
+      await expect(
+        part(slider(page, "value-indicator", "Volume"), "value")
+      ).toHaveCSS("background-color", await colorRole(page, "inverse-surface"));
+    });
+  }
+
+  test("hovered, the pointer becomes a hand, as M3 asks; nothing else changes", async ({
     page,
   }) => {
     const input = slider(page, "values", "At 30");
+    await root(input).hover();
+    await expect(root(input)).toHaveCSS("cursor", "pointer");
+    await expect(part(input, "handle")).toHaveCSS("width", "4px");
     await expect(part(input, "handle")).toHaveCSS(
       "background-color",
       await colorRole(page, "primary")
-    );
-    await expect(part(input, "active-track")).toHaveCSS(
-      "background-color",
-      await colorRole(page, "primary")
-    );
-    await expect(part(input, "inactive-track")).toHaveCSS(
-      "background-color",
-      await colorRole(page, "secondary-container")
     );
   });
 
@@ -475,6 +508,12 @@ test.describe("Slider", () => {
       partIn(input, "active-track", "stop").nth(4)
     );
     expect(await handleAt(input)).toBeCloseTo((start + end) / 2, 0);
+
+    // With Space held too, as M3's table asks: one stop
+    await page.keyboard.down("Space");
+    await page.keyboard.press("ArrowRight");
+    await expect(input).toHaveValue("50");
+    await page.keyboard.up("Space");
   });
 
   test("focused from the keyboard: the focus ring around the narrowed handle, and the value indicator", async ({

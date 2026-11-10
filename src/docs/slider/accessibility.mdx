@@ -6,7 +6,8 @@ Keyboard interaction follows M3:
 
 - **Tab** moves focus to the slider, which shows the theme focus ring around its handle.
 - **Arrow keys** move the value one step, or one stop with `showStops`. Right and up increase it; in right-to-left layouts, left increases it, following the track.
-- **Page Up** and **Page Down**, or an arrow with **Space** held, move it a larger interval: a tenth of the steps, from one to ten of them.
+- An arrow with **Space** held moves it a larger interval: a tenth of the steps, from one to ten of them. With `showStops`, it moves one stop, as the arrows alone do.
+- **Page Up** and **Page Down** move it the larger interval too, as Compose's sliders do. M3's table doesn't list them.
 - **Home** and **End** set it to the minimum and maximum.
 
 The value indicator and the inset icon are decoration, hidden from assistive tech: the input's own value is what it announces.
