@@ -1,0 +1,22 @@
+---
+title: Collapsing
+description: Pinned with `sticky top-0 z-1`, a medium or large flexible app bar collapses into a small one as the content scrolls under it. Its headline's row passes under the row of buttons, which stays pinned, shows the headline in small, and fills with surface container. It expands again once scrolled back to the top.
+---
+
+<div class="h-80 overflow-y-auto rounded-xl border border-(--theme-color-outline-variant)" tabindex="0" role="region" aria-label="Albums">
+  <AppBar headline="Albums" subtitle="24 shared" size="lg" class="sticky top-0 z-1">
+    <ButtonIcon slot="navigation" icon="arrow_back" label="Back" />
+    <ButtonIcon slot="actions" icon="search" label="Search" />
+  </AppBar>
+  <div class="space-y-4 p-4">
+    <p>Scroll this box to see the app bar collapse.</p>
+    <p>Summer trip: 48 photos, shared with Ana and Ben.</p>
+    <p>Garden: 12 photos.</p>
+    <p>Birthday: 96 photos, shared with the family.</p>
+    <p>Recipes: 20 photos.</p>
+    <p>Hiking: 64 photos, shared with Ben.</p>
+    <p>City walks: 31 photos.</p>
+    <p>Concerts: 18 photos, shared with Ana.</p>
+    <p>Pets: 140 photos.</p>
+  </div>
+</div>

@@ -325,6 +325,26 @@ test.describe("motion", () => {
     await expectTransitions(appBar, { "background-color": FAST_EFFECTS });
   });
 
+  test("AppBar: a flexible bar's row of buttons fills, and its small headline fades in, on fast effects", async ({
+    page,
+  }) => {
+    await page.goto("/tests/app-bar");
+    const appBar = page
+      .getByTestId("app-bar-flexible-scroll")
+      .locator("[data-ac-app-bar]");
+    await expectTransitions(appBar, { "background-color": FAST_EFFECTS });
+    await expectTransitions(
+      appBar.locator('[data-ac-app-bar-part="top-row"]'),
+      { "background-color": FAST_EFFECTS }
+    );
+    await expectTransitions(
+      appBar
+        .locator('[data-ac-app-bar-part="collapsed-headline"]')
+        .locator(".."),
+      { opacity: FAST_EFFECTS }
+    );
+  });
+
   test("SheetBottom: a modal sheet enters on emphasized decelerate and leaves on emphasized accelerate", async ({
     page,
   }) => {

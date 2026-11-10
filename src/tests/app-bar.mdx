@@ -72,6 +72,84 @@ description: Tests for the AppBar component
   </div>
 </Section>
 
+<Section data-testid="app-bar-medium" class="p-4 space-y-4">
+  <Heading level={2}>Medium flexible</Heading>
+  <AppBar headline="Inbox" size="md">
+    <ButtonIcon slot="navigation" icon="arrow_back" label="Back" />
+    <ButtonIcon slot="actions" icon="search" label="Search" />
+    <ButtonIcon slot="actions" icon="calendar_month" label="Calendar" />
+  </AppBar>
+  <AppBar headline="Inbox" subtitle="12 unread" size="md">
+    <ButtonIcon slot="navigation" icon="arrow_back" label="Back" />
+    <ButtonIcon slot="actions" icon="search" label="Search" />
+    <ButtonIcon slot="actions" icon="calendar_month" label="Calendar" />
+  </AppBar>
+</Section>
+
+<Section data-testid="app-bar-large" class="p-4 space-y-4">
+  <Heading level={2}>Large flexible</Heading>
+  <AppBar headline="Inbox" size="lg">
+    <ButtonIcon slot="navigation" icon="arrow_back" label="Back" />
+    <ButtonIcon slot="actions" icon="search" label="Search" />
+    <ButtonIcon slot="actions" icon="calendar_month" label="Calendar" />
+  </AppBar>
+  <AppBar headline="Inbox" subtitle="12 unread" size="lg">
+    <ButtonIcon slot="navigation" icon="arrow_back" label="Back" />
+    <ButtonIcon slot="actions" icon="search" label="Search" />
+    <ButtonIcon slot="actions" icon="calendar_month" label="Calendar" />
+  </AppBar>
+</Section>
+
+<Section data-testid="app-bar-flexible-centered" class="p-4 space-y-4">
+  <Heading level={2}>Medium and large flexible, centered</Heading>
+  <AppBar headline="Product" subtitle="Spring catalogue" size="md" align="center">
+    <ButtonIcon slot="navigation" icon="menu" label="Menu" />
+    <ButtonIcon slot="actions" icon="search" label="Search" />
+    <ButtonIcon slot="actions" icon="share" label="Share" />
+  </AppBar>
+  <AppBar headline="Product" subtitle="Spring catalogue" size="lg" align="center">
+    <ButtonIcon slot="navigation" icon="menu" label="Menu" />
+    <ButtonIcon slot="actions" icon="search" label="Search" />
+    <ButtonIcon slot="actions" icon="share" label="Share" />
+  </AppBar>
+</Section>
+
+<Section data-testid="app-bar-flexible-long" class="p-4 space-y-4 max-w-sm">
+  <Heading level={2}>Flexible, long headline</Heading>
+  <AppBar headline="Quarterly report for the northern region" size="md">
+    <ButtonIcon slot="navigation" icon="arrow_back" label="Back" />
+    <ButtonIcon slot="actions" icon="edit" label="Edit" />
+  </AppBar>
+  <AppBar headline="Quarterly report for the northern region" subtitle="Draft, edited today" size="lg" align="center">
+    <ButtonIcon slot="navigation" icon="arrow_back" label="Back" />
+    <ButtonIcon slot="actions" icon="edit" label="Edit" />
+  </AppBar>
+</Section>
+
+<Section data-testid="app-bar-flexible-scroll" class="p-4 space-y-4">
+  <Heading level={2}>A large flexible app bar collapsing as its box scrolls</Heading>
+  <div class="h-80 overflow-y-auto rounded-xl border border-(--theme-color-outline-variant)" tabindex="0" role="region" aria-label="Albums">
+    <AppBar headline="Albums" subtitle="24 shared" size="lg" class="sticky top-0 z-1">
+      <ButtonIcon slot="navigation" icon="arrow_back" label="Back" />
+      <ButtonIcon slot="actions" icon="search" label="Search" />
+    </AppBar>
+    <div class="space-y-4 p-4">
+      <p>The app bar starts expanded, its headline in a row of its own.</p>
+      <p>Scrolled, the headline's row passes under the buttons' row, which stays pinned as a small app bar.</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      <p>Ut enim ad minim veniam, quis nostrud exercitation.</p>
+      <p>Duis aute irure dolor in reprehenderit in voluptate velit esse.</p>
+      <p>Excepteur sint occaecat cupidatat non proident.</p>
+      <p>Sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      <p>Ut enim ad minim veniam, quis nostrud exercitation.</p>
+      <p>Duis aute irure dolor in reprehenderit in voluptate velit esse.</p>
+    </div>
+  </div>
+</Section>
+
 <Section data-testid="app-bar-rtl" class="p-4 space-y-4" dir="rtl">
   <Heading level={2}>Right to left</Heading>
   <AppBar headline="البريد" subtitle="12 غير مقروءة">
@@ -83,5 +161,10 @@ description: Tests for the AppBar component
     <ButtonIcon slot="navigation" icon="menu" label="القائمة" />
     <ButtonIcon slot="actions" icon="search" label="بحث" />
     <ButtonIcon slot="actions" icon="share" label="مشاركة" />
+  </AppBar>
+  <AppBar headline="البريد" subtitle="12 غير مقروءة" size="md">
+    <ButtonIcon slot="navigation" icon="arrow_forward" label="رجوع" />
+    <ButtonIcon slot="actions" icon="search" label="بحث" />
+    <ButtonIcon slot="actions" icon="calendar_month" label="التقويم" />
   </AppBar>
 </Section>

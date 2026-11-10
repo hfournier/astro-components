@@ -3,10 +3,15 @@ import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import BaseWrapper from "./BaseWrapper.astro";
 
-// M3 Expressive's small app bar, at the top of the page: an optional leading button (the
-// `navigation` slot, such as a back or menu ButtonIcon), the headline and an optional subtitle,
-// left-aligned or centered, and up to two trailing buttons (the `actions` slot). It goes in the
-// page's header landmark, <Header>, which a page pins with `sticky top-0`.
+// M3 Expressive's app bar, at the top of the page: an optional leading button (the `navigation`
+// slot, such as a back or menu ButtonIcon), the headline and an optional subtitle, left-aligned
+// or centered, and up to two trailing buttons (the `actions` slot). It goes in the page's header
+// landmark, <Header>, which a page pins with `sticky top-0`.
+//
+// `size` picks M3's small app bar, on one 64dp row, or the medium flexible or large flexible app
+// bar: the small bar's row of buttons with the headline and subtitle larger, in a row of their own
+// below, where they wrap. Pinned, a flexible bar collapses into the small one as content scrolls
+// under it, and expands again at the top (ADR-0035).
 //
 // M3 fixes its colors: Surface, filling with Surface Container while content scrolls under it.
 // The script (below) marks it scrolled while it's pinned (sticky or fixed, itself or an
@@ -14,18 +19,22 @@ import BaseWrapper from "./BaseWrapper.astro";
 // No `title` attribute: a tooltip on the whole bar isn't part of M3's, and the name would read as
 // the headline's
 type Props = Omit<HTMLAttributes<"div">, "title"> & {
-  // M3's headline: the page, the section or the product. Title Large, on one line.
+  // M3's headline: the page, the section or the product. Title Large on one line in a small app
+  // bar; Headline Medium or Display Small, wrapping, in a medium or large flexible one.
   headline: string;
-  // M3's subtitle, more context below the headline, in Label Medium
+  // M3's subtitle, more context below the headline: Label Medium, Label Large or Title Medium
   subtitle?: string;
   // M3's text alignment: the headline and subtitle at the leading edge or centered in the bar
   align?: "start" | "center";
+  // M3's variant: small, medium flexible or large flexible
+  size?: "sm" | "md" | "lg";
 };
 
 const {
   headline,
   subtitle,
   align = "start",
+  size = "sm",
   class: classList,
   ...attrs
 } = Astro.props;
@@ -37,6 +46,13 @@ if (!["start", "center"].includes(align)) {
     `AppBar: M3's alignments are "start" and "center", but this one's \`align\` is "${align}".`
   );
 }
+if (!["sm", "md", "lg"].includes(size)) {
+  throw new Error(
+    `AppBar: M3's sizes are "sm", "md" and "lg", but this one's \`size\` is "${size}".`
+  );
+}
+
+const flexible = size !== "sm";
 
 // Compose's TopAppBar: the title starts at least 12dp in from the 4dp padding, or after the
 // leading button, and its own 4dp either side.
@@ -52,67 +68,156 @@ const alignClasses = {
   },
 }[align];
 
+// M3's Specs: the heights (the least, for a flexible bar, which grows to hold a wrapped headline)
+// and the type of the headline and subtitle. The small bar's never wrap, so one too long is cut
+// short; the flexible bars' wrap rather than being cut short (M3's Guidelines).
+const smallText = {
+  headline: "truncate text-[1.375rem] leading-7",
+  subtitle: "truncate text-xs leading-4 tracking-[0.5px]",
+};
+const sizeClasses = {
+  sm: { bar: "h-16", ...smallText },
+  md: {
+    bar: subtitle ? "min-h-34" : "min-h-28",
+    headline: "text-[1.75rem] leading-9",
+    subtitle: "text-sm leading-5 tracking-[0.1px]",
+  },
+  lg: {
+    bar: subtitle ? "min-h-38" : "min-h-30",
+    headline: "text-[2.25rem] leading-11",
+    subtitle: "text-base leading-6 tracking-[0.15px]",
+  },
+}[size];
+
 // Each button sits in a cell at least 48dp wide, its touch target, so the measurements are
 // M3's for any size of button: 4dp, the 48dp target, and 4dp before the headline; at the end,
 // the targets side by side and 4dp after the last. A wider one, such as a wide filled icon
 // button, takes its own width.
 const slotClasses =
   "grid grid-flow-col auto-cols-[minmax(--spacing(12),auto)] place-items-center";
+
+// Colors change on fast effects (ADR-0018)
+const fastEffects =
+  "motion-safe:duration-(--theme-duration-spring-fast-effects) motion-safe:ease-spring-fast-effects";
+const fill = `motion-safe:transition-[background-color] ${fastEffects}`;
 ---
 
 <BaseWrapper
   bgColor="surface"
   class={twMerge(
-    "grid h-16 w-full items-center px-1",
-    alignClasses.bar,
+    "group/app-bar flex w-full flex-col",
+    sizeClasses.bar,
     // M3's on-scroll color, without its shadow (M3 Expressive). Set as the wrapper background,
-    // so focus rings' offsets follow it. Colors change on fast effects (ADR-0018).
+    // so focus rings' offsets follow it.
     "data-ac-app-bar-scrolled:[--theme-color-wrapper-bg:var(--theme-color-surface-container)]",
-    "motion-safe:transition-[background-color] motion-safe:duration-(--theme-duration-spring-fast-effects) motion-safe:ease-spring-fast-effects",
+    fill,
     classList
   )}
   data-ac-app-bar={align}
+  data-ac-app-bar-size={size}
   {...attrs}
 >
-  {/* The leading button on on-surface, where the actions keep the surface's on-surface-variant
-       (ButtonIcon's standard color reads --theme-color-on-bg-variant). At least 8dp wide, so a
-       headline with nothing before it starts 16dp in. */}
+  {/* The small app bar's row: the whole of a small bar, the top of a flexible one. In a flexible
+       bar it's opaque, so the headline's row passes under it as the bar collapses, and it sticks
+       at the top the bar's pinned at, which the script sets as --ac-app-bar-pin-top while it's
+       pinned. Unset, the row's top is auto, so it doesn't stick. */}
   <div
     class:list={[
-      slotClasses,
-      "min-w-2 justify-start [--theme-color-on-bg-variant:var(--theme-color-on-surface)]",
+      "grid h-16 shrink-0 items-center px-1",
+      alignClasses.bar,
+      flexible && [
+        "sticky top-(--ac-app-bar-pin-top) z-1 bg-(--theme-color-wrapper-bg)",
+        fill,
+      ],
     ]}
+    data-ac-app-bar-part="top-row"
   >
-    <slot name="navigation" />
-  </div>
-
-  <div class:list={["min-w-0 px-1", alignClasses.text]}>
-    {/* M3: the headline isn't wrapped in a small app bar, so one too long is cut short */}
+    {/* The leading button on on-surface, where the actions keep the surface's on-surface-variant
+         (ButtonIcon's standard color reads --theme-color-on-bg-variant). At least 8dp wide, so a
+         headline with nothing before it starts 16dp in. */}
     <div
-      class="truncate text-[1.375rem] leading-7 font-normal text-(--theme-color-on-surface)"
-      data-ac-app-bar-part="headline"
+      class:list={[
+        slotClasses,
+        "min-w-2 justify-start [--theme-color-on-bg-variant:var(--theme-color-on-surface)]",
+      ]}
     >
-      {headline}
+      <slot name="navigation" />
     </div>
-    {subtitle && (
+
+    {/* A flexible bar's small headline and subtitle show only once it's collapsed, fading in on
+         fast effects. They repeat the ones below, which stay in the accessibility tree, so
+         they're hidden from it. */}
+    <div
+      class:list={[
+        "min-w-0 px-1 font-normal",
+        alignClasses.text,
+        flexible && [
+          "opacity-0 group-data-ac-app-bar-collapsed/app-bar:opacity-100",
+          "motion-safe:transition-opacity",
+          fastEffects,
+        ],
+      ]}
+      aria-hidden={flexible ? "true" : undefined}
+    >
       <div
-        class="truncate text-xs leading-4 font-medium tracking-[0.5px] text-(--theme-color-on-surface-variant)"
-        data-ac-app-bar-part="subtitle"
+        class:list={[smallText.headline, "text-(--theme-color-on-surface)"]}
+        data-ac-app-bar-part={flexible ? "collapsed-headline" : "headline"}
       >
-        {subtitle}
+        {headline}
       </div>
-    )}
+      {subtitle && (
+        <div
+          class:list={[
+            smallText.subtitle,
+            "font-medium text-(--theme-color-on-surface-variant)",
+          ]}
+          data-ac-app-bar-part={flexible ? "collapsed-subtitle" : "subtitle"}
+        >
+          {subtitle}
+        </div>
+      )}
+    </div>
+
+    <div class:list={[slotClasses, "justify-end"]}>
+      <slot name="actions" />
+    </div>
   </div>
 
-  <div class:list={[slotClasses, "justify-end"]}>
-    <slot name="actions" />
-  </div>
+  {/* A flexible bar's headline and subtitle, in their own row: 16dp in (Compose's 4dp padding and
+       12dp inset) and 12dp from the bottom (M3's Specs). The bar's least height leaves room above
+       them, and a wrapped headline grows the bar. */}
+  {flexible && (
+    <div class:list={["mt-auto px-4 pb-3 font-normal", alignClasses.text]}>
+      <div
+        class:list={[sizeClasses.headline, "text-(--theme-color-on-surface)"]}
+        data-ac-app-bar-part="headline"
+      >
+        {headline}
+      </div>
+      {subtitle && (
+        <div
+          class:list={[
+            sizeClasses.subtitle,
+            "font-medium text-(--theme-color-on-surface-variant)",
+          ]}
+          data-ac-app-bar-part="subtitle"
+        >
+          {subtitle}
+        </div>
+      )}
+    </div>
+  )}
 </BaseWrapper>
 
 <script>
   // Marks each app bar scrolled while content is under it: while it's pinned (it or an ancestor
   // is sticky at the top or fixed) and its scroll container has scrolled. A bar that scrolls with
   // its page has nothing under it, so it stays Surface (ADR-0034).
+  //
+  // A medium or large flexible bar pinned with sticky collapses as its container scrolls: its
+  // pinned element sticks higher by the height of the headline's row, so that row scrolls away
+  // under the top row, which sticks where the page pinned the bar. Collapsed, it's marked so, and
+  // shows the small app bar's headline (ADR-0035).
   //
   // One listener for the whole page, in the capture phase so it hears every scroll container's
   // scroll as well as the window's, and each bar is found and measured when it runs, so bars added
@@ -142,36 +247,68 @@ const slotClasses =
     ) {
       const style = getComputedStyle(node);
       if (style.position === "sticky" || style.position === "fixed")
-        return { node, style };
+        return { node: node as HTMLElement, style };
     }
     return null;
   };
 
-  const isScrolled = (bar: Element) => {
-    const scroller = scrollerOf(bar);
-    const scrollTop = scroller ? scroller.scrollTop : window.scrollY;
-    if (scrollTop <= 0) return false;
-    const pinned = pinnedOf(bar, scroller);
-    if (!pinned) return false;
-    if (pinned.style.position === "fixed") return true;
-    // a sticky element is pinned once it's at its `top` in the scroll container's view
-    const top = parseFloat(pinned.style.top);
-    const viewTop = scroller
-      ? scroller.getBoundingClientRect().top + scroller.clientTop
-      : 0;
-    return (
-      !Number.isNaN(top) &&
-      pinned.node.getBoundingClientRect().top - viewTop <= top + 0.5
+  // Each pinned element's `top` as the page set it, before a flexible bar moved it up
+  const pageTops = new WeakMap<HTMLElement, number>();
+
+  // Sticks a flexible bar's pinned element higher by the height of the headline's row, and its
+  // top row where the page pinned the bar
+  const collapseOnScroll = (bar: HTMLElement, pinned: HTMLElement) => {
+    const topRow = bar.querySelector<HTMLElement>(
+      '[data-ac-app-bar-part="top-row"]'
     );
+    if (!topRow) return;
+    if (!pageTops.has(pinned)) {
+      const top = parseFloat(getComputedStyle(pinned).top);
+      if (Number.isNaN(top)) return;
+      pageTops.set(pinned, top);
+    }
+    const pageTop = pageTops.get(pinned)!;
+    const top = `${pageTop - (bar.offsetHeight - topRow.offsetHeight)}px`;
+    if (pinned.style.top !== top) pinned.style.top = top;
+    bar.style.setProperty("--ac-app-bar-pin-top", `${pageTop}px`);
+  };
+
+  const update = () => {
+    frame = 0;
+    document
+      .querySelectorAll<HTMLElement>("[data-ac-app-bar]")
+      .forEach((bar) => {
+        const scroller = scrollerOf(bar);
+        const pinned = pinnedOf(bar, scroller);
+        const sticky = pinned?.style.position === "sticky";
+        const flexible = bar.dataset.acAppBarSize !== "sm";
+        if (pinned && flexible && sticky) collapseOnScroll(bar, pinned.node);
+
+        let scrolled = false;
+        const scrollTop = scroller ? scroller.scrollTop : window.scrollY;
+        if (pinned && scrollTop > 0) {
+          if (!sticky) scrolled = true;
+          else {
+            // a sticky element is pinned once it's at its `top` in the scroll container's view,
+            // read again, as a flexible bar may just have moved it
+            const top = parseFloat(getComputedStyle(pinned.node).top);
+            const viewTop = scroller
+              ? scroller.getBoundingClientRect().top + scroller.clientTop
+              : 0;
+            scrolled =
+              !Number.isNaN(top) &&
+              pinned.node.getBoundingClientRect().top - viewTop <= top + 0.5;
+          }
+        }
+        bar.toggleAttribute("data-ac-app-bar-scrolled", scrolled);
+        bar.toggleAttribute(
+          "data-ac-app-bar-collapsed",
+          scrolled && flexible && sticky
+        );
+      });
   };
 
   let frame = 0;
-  const update = () => {
-    frame = 0;
-    document.querySelectorAll("[data-ac-app-bar]").forEach((bar) => {
-      bar.toggleAttribute("data-ac-app-bar-scrolled", isScrolled(bar));
-    });
-  };
   const schedule = () => {
     frame ||= requestAnimationFrame(update);
   };
@@ -182,4 +319,6 @@ const slotClasses =
     passive: true,
   });
   window.addEventListener("resize", schedule, { passive: true });
+  // a web font can change how a flexible bar's headline wraps, and so its height
+  document.fonts?.ready.then(schedule);
 </script>

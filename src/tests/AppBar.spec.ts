@@ -18,6 +18,11 @@ type AppBarCaseId =
   | "long"
   | "filled-action"
   | "scroll"
+  | "medium"
+  | "large"
+  | "flexible-centered"
+  | "flexible-long"
+  | "flexible-scroll"
   | "rtl";
 
 const section = (page: Page, caseId: AppBarCaseId) =>
@@ -27,8 +32,18 @@ const section = (page: Page, caseId: AppBarCaseId) =>
 const bars = (page: Page, caseId: AppBarCaseId) =>
   section(page, caseId).locator("[data-ac-app-bar]");
 const bar = (page: Page, caseId: AppBarCaseId) => bars(page, caseId).first();
-const part = (target: Locator, name: "headline" | "subtitle") =>
+type AppBarPart =
+  | "headline"
+  | "subtitle"
+  | "top-row"
+  | "collapsed-headline"
+  | "collapsed-subtitle";
+const part = (target: Locator, name: AppBarPart) =>
   target.locator(`[data-ac-app-bar-part="${name}"]`);
+
+// A flexible bar's small headline and subtitle, which fade in together once it's collapsed
+const collapsedText = (target: Locator) =>
+  part(target, "collapsed-headline").locator("..");
 
 // The page's own app bar, on /tests/app-bar-page
 const bannerBar = (page: Page) =>
@@ -348,6 +363,318 @@ test.describe("AppBar", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     const appBar = bar(page, "scroll");
     await expect(appBar).toHaveCSS("transition-duration", "0s");
+  });
+});
+
+// M3 Expressive's medium flexible and large flexible app bars: the small app bar's row of buttons
+// on top, the headline and subtitle in a row of their own below, larger and wrapping
+test.describe("AppBar: medium and large flexible", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/tests/app-bar");
+  });
+
+  // M3's Specs, tokens: medium flexible 112dp high, 136dp with a subtitle; large flexible 120dp,
+  // 152dp with a subtitle. Measurements: the buttons' row is the small app bar's (8dp, 48dp
+  // targets, 4dp at the sides), the headline 16dp in and the text 12dp from the bottom.
+  for (const [size, heights] of [
+    ["medium", [112, 136]],
+    ["large", [120, 152]],
+  ] as const) {
+    test(`${size} flexible takes M3's heights and measurements`, async ({
+      page,
+    }) => {
+      const [plain, withSubtitle] = await bars(page, size).all();
+      for (const [appBar, height] of [
+        [plain!, heights[0]],
+        [withSubtitle!, heights[1]],
+      ] as const) {
+        const outer = await box(appBar);
+        expect(outer.height).toBe(height);
+
+        const back = appBar.getByRole("button", { name: "Back" });
+        const calendar = appBar.getByRole("button", { name: "Calendar" });
+        expect(center(await box(back)) - outer.x).toBeCloseTo(28, 0);
+        expect(outer.x + outer.width - center(await box(calendar))).toBeCloseTo(
+          28,
+          0
+        );
+        for (const button of [back, calendar]) {
+          const target = await box(button);
+          // centered in the top 64px: 8px above the 48px target
+          expect(target.y + target.height / 2 - outer.y).toBeCloseTo(32, 0);
+        }
+
+        const headline = part(appBar, "headline");
+        expect((await textBox(headline)).x - outer.x).toBeCloseTo(16, 0);
+        // the text's last line ends 12px from the bottom, the headline below the buttons' row
+        const last = await box(
+          height === heights[0] ? headline : part(appBar, "subtitle")
+        );
+        expect(outer.y + outer.height - (last.y + last.height)).toBeCloseTo(
+          12,
+          0
+        );
+        expect((await box(headline)).y - outer.y).toBeGreaterThanOrEqual(64);
+      }
+    });
+  }
+
+  // M3's Guidelines: medium flexible in Headline Medium with a Label Large subtitle, large
+  // flexible in Display Small with a Title Medium subtitle
+  test("sets each size's headline and subtitle in M3's type", async ({
+    page,
+  }) => {
+    const medium = bars(page, "medium").nth(1);
+    await expect(part(medium, "headline")).toHaveCSS("font-size", "28px");
+    await expect(part(medium, "headline")).toHaveCSS("line-height", "36px");
+    await expect(part(medium, "headline")).toHaveCSS("font-weight", "400");
+    await expect(part(medium, "subtitle")).toHaveCSS("font-size", "14px");
+    await expect(part(medium, "subtitle")).toHaveCSS("line-height", "20px");
+    await expect(part(medium, "subtitle")).toHaveCSS("font-weight", "500");
+    await expect(part(medium, "subtitle")).toHaveCSS("letter-spacing", "0.1px");
+
+    const large = bars(page, "large").nth(1);
+    await expect(part(large, "headline")).toHaveCSS("font-size", "36px");
+    await expect(part(large, "headline")).toHaveCSS("line-height", "44px");
+    await expect(part(large, "headline")).toHaveCSS("font-weight", "400");
+    await expect(part(large, "subtitle")).toHaveCSS("font-size", "16px");
+    await expect(part(large, "subtitle")).toHaveCSS("line-height", "24px");
+    await expect(part(large, "subtitle")).toHaveCSS("font-weight", "500");
+    await expect(part(large, "subtitle")).toHaveCSS("letter-spacing", "0.15px");
+  });
+
+  // M3's Specs, color: the same roles as the small app bar
+  test("takes M3's color roles, in light and dark", async ({ page }) => {
+    for (const scheme of ["light", "dark"] as const) {
+      await page.emulateMedia({ colorScheme: scheme });
+      await settled(page);
+      const appBar = bars(page, "large").nth(1);
+      await expect(appBar).toHaveCSS(
+        "background-color",
+        await role(page, "surface")
+      );
+      expect(await castsNoShadow(appBar)).toBe(true);
+      await expect(appBar).toHaveCSS("border-top-left-radius", "0px");
+      await expect(appBar.getByRole("button", { name: "Back" })).toHaveCSS(
+        "color",
+        await role(page, "on-surface")
+      );
+      await expect(part(appBar, "headline")).toHaveCSS(
+        "color",
+        await role(page, "on-surface")
+      );
+      await expect(part(appBar, "subtitle")).toHaveCSS(
+        "color",
+        await role(page, "on-surface-variant")
+      );
+      await expect(appBar.getByRole("button", { name: "Search" })).toHaveCSS(
+        "color",
+        await role(page, "on-surface-variant")
+      );
+    }
+  });
+
+  // Expanded, the small app bar's headline isn't shown: only the large one is
+  test("shows the headline once, below the buttons, while expanded", async ({
+    page,
+  }) => {
+    const appBar = bars(page, "medium").nth(1);
+    await expect(collapsedText(appBar)).toHaveCSS("opacity", "0");
+    await expect(appBar).toMatchAriaSnapshot(`
+      - button "Back"
+      - button "Search"
+      - button "Calendar"
+      - text: Inbox 12 unread
+    `);
+    await expect(appBar.getByRole("heading")).toHaveCount(0);
+  });
+
+  test("centers the headline and subtitle in the bar", async ({ page }) => {
+    for (const appBar of await bars(page, "flexible-centered").all()) {
+      const outer = await box(appBar);
+      for (const name of ["headline", "subtitle"] as const) {
+        expect(center(await textBox(part(appBar, name)))).toBeCloseTo(
+          center(outer),
+          0
+        );
+      }
+      expect(
+        center(await box(appBar.getByRole("button", { name: "Menu" }))) -
+          outer.x
+      ).toBeCloseTo(28, 0);
+    }
+  });
+
+  // M3's Guidelines: in medium and large flexible app bars the headline wraps rather than being
+  // cut short, and the bar grows to hold it
+  test("wraps a long headline, and grows to hold it", async ({ page }) => {
+    for (const appBar of await bars(page, "flexible-long").all()) {
+      const headline = part(appBar, "headline");
+      await expect(headline).not.toHaveCSS("white-space", "nowrap");
+      expect(
+        await headline.evaluate((el) => el.scrollWidth <= el.clientWidth)
+      ).toBe(true);
+      const lineHeight = parseFloat(
+        await headline.evaluate((el) => getComputedStyle(el).lineHeight)
+      );
+      expect((await box(headline)).height).toBeGreaterThanOrEqual(
+        2 * lineHeight
+      );
+
+      const outer = await box(appBar);
+      const last = await box(appBar.locator("[data-ac-app-bar-part]").last());
+      expect(outer.y + outer.height - (last.y + last.height)).toBeCloseTo(
+        12,
+        0
+      );
+      expect((await box(headline)).y - outer.y).toBeCloseTo(64, 0);
+    }
+  });
+
+  test("Tab reaches the leading button first, then the actions, each with a focus ring", async ({
+    page,
+  }) => {
+    const appBar = bars(page, "medium").first();
+    await section(page, "medium").getByRole("heading").click();
+    for (const name of ["Back", "Search", "Calendar"]) {
+      await page.keyboard.press("Tab");
+      const button = appBar.getByRole("button", { name });
+      await expect(button).toBeFocused();
+      await expectFocusRing(button);
+    }
+  });
+
+  // M3's Behavior: scrolled, a flexible app bar becomes a small one, its headline's row passing
+  // under the buttons' row, and stays small until scrolled back to the top
+  test("collapses into a small app bar as its box scrolls, and expands at the top", async ({
+    page,
+  }) => {
+    const appBar = bar(page, "flexible-scroll");
+    const scroller = appBar.locator("..");
+    await scroller.scrollIntoViewIfNeeded();
+    const top = (await box(scroller)).y + 1;
+    const topRow = part(appBar, "top-row");
+
+    expect((await box(appBar)).y).toBeCloseTo(top, 0);
+    await expect(collapsedText(appBar)).toHaveCSS("opacity", "0");
+
+    // part way: the headline's row is passing under the buttons' row, still on surface
+    await scroller.evaluate((el) => el.scrollTo({ top: 40 }));
+    await expect
+      .poll(async () => (await box(appBar)).y)
+      .toBeCloseTo(top - 40, 0);
+    expect((await box(topRow)).y).toBeCloseTo(top, 0);
+    await expect(appBar).toHaveCSS(
+      "background-color",
+      await role(page, "surface")
+    );
+
+    // collapsed: the 64px row of buttons, pinned, filled, with the small app bar's headline
+    await scroller.evaluate((el) => el.scrollTo({ top: 300 }));
+    await expect
+      .poll(async () => (await box(appBar)).y)
+      .toBeCloseTo(top - (152 - 64), 0);
+    expect((await box(topRow)).y).toBeCloseTo(top, 0);
+    expect((await box(topRow)).height).toBe(64);
+    await expect(topRow).toHaveCSS(
+      "background-color",
+      await role(page, "surface-container")
+    );
+    await expect(collapsedText(appBar)).toHaveCSS("opacity", "1");
+    const collapsed = part(appBar, "collapsed-headline");
+    await expect(collapsed).toHaveCSS("font-size", "22px");
+    await expect(collapsed).toHaveCSS("white-space", "nowrap");
+    await expect(part(appBar, "collapsed-subtitle")).toHaveCSS(
+      "font-size",
+      "12px"
+    );
+    expect((await textBox(collapsed)).x - (await box(appBar)).x).toBeCloseTo(
+      56,
+      0
+    );
+    // its buttons are still there to use
+    await expect(appBar.getByRole("button", { name: "Back" })).toBeInViewport();
+
+    // scrolled back up a little, it stays small; at the top, it expands
+    await scroller.evaluate((el) => el.scrollTo({ top: 200 }));
+    await expect
+      .poll(async () => (await box(appBar)).y)
+      .toBeCloseTo(top - (152 - 64), 0);
+    await scroller.evaluate((el) => el.scrollTo({ top: 0 }));
+    await expect.poll(async () => (await box(appBar)).y).toBeCloseTo(top, 0);
+    await expect(collapsedText(appBar)).toHaveCSS("opacity", "0");
+    await expect(topRow).toHaveCSS(
+      "background-color",
+      await role(page, "surface")
+    );
+  });
+
+  test("mirrors in right to left", async ({ page }) => {
+    const appBar = bars(page, "rtl").nth(2);
+    const outer = await box(appBar);
+    const right = outer.x + outer.width;
+    expect(
+      right - center(await box(appBar.getByRole("button", { name: "رجوع" })))
+    ).toBeCloseTo(28, 0);
+    const headline = await textBox(part(appBar, "headline"));
+    expect(right - (headline.x + headline.width)).toBeCloseTo(16, 0);
+  });
+
+  test("respects reduced motion: the small headline and color change at once", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    const appBar = bar(page, "flexible-scroll");
+    await expect(part(appBar, "top-row")).toHaveCSS(
+      "transition-duration",
+      "0s"
+    );
+    await expect(collapsedText(appBar)).toHaveCSS("transition-duration", "0s");
+  });
+});
+
+// A flexible app bar in the page's header, collapsing as the page scrolls
+test.describe("AppBar: flexible, in the page header", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/tests/app-bar-flexible-page");
+  });
+
+  test("collapses into a small app bar as the page scrolls, and expands at the top", async ({
+    page,
+  }) => {
+    const appBar = bannerBar(page);
+    await expect(appBar).toHaveCSS("height", "136px");
+    await expect(part(appBar, "headline")).toBeInViewport();
+
+    await page.evaluate(() => window.scrollTo({ top: 400 }));
+    await expect.poll(async () => (await box(appBar)).y).toBe(-(136 - 64));
+    expect((await box(part(appBar, "top-row"))).y).toBe(0);
+    await expect(part(appBar, "top-row")).toHaveCSS(
+      "background-color",
+      await role(page, "surface-container")
+    );
+    await expect(collapsedText(appBar)).toHaveCSS("opacity", "1");
+    // the page's content passes under the buttons' row, not over it
+    const under = await page.evaluate(() => {
+      const el = document.elementFromPoint(window.innerWidth / 2, 32);
+      return !!el?.closest("[data-ac-app-bar]");
+    });
+    expect(under).toBe(true);
+
+    await page.evaluate(() => window.scrollTo({ top: 0 }));
+    await expect.poll(async () => (await box(appBar)).y).toBe(0);
+    await expect(collapsedText(appBar)).toHaveCSS("opacity", "0");
+  });
+
+  // A page loaded part way down starts collapsed
+  test("starts collapsed when the page loads scrolled", async ({ page }) => {
+    await page.goto("/tests/app-bar-flexible-page#photo-30");
+    const appBar = bannerBar(page);
+    await expect
+      .poll(() => page.evaluate(() => window.scrollY))
+      .toBeGreaterThan(0);
+    await expect.poll(async () => (await box(appBar)).y).toBe(-(136 - 64));
+    await expect(collapsedText(appBar)).toHaveCSS("opacity", "1");
   });
 });
 
