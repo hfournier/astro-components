@@ -117,6 +117,13 @@ const expected: Record<string, string | RegExp> = {
   "slider-stops-step":
     "Slider: stops divide the track evenly from `min` to `max` (0 to 100), but this one's `step` is 30.",
   "slider-stops-any": `Slider: stops divide the track evenly from \`min\` to \`max\` (0 to 100), but this one's \`step\` is "any".`,
+  "slider-variant": `Slider: M3's sliders are "standard", "centered" and "range", but this one's \`variant\` is "stepped".`,
+  "slider-icon-variant": `Slider: M3 puts an inset icon only on standard sliders, as it hides where a centered or range slider starts, but this one's \`variant\` is "centered".`,
+  "slider-handles-variant": `Slider: only a range slider has \`handleStart\` and \`handleEnd\`, but this one's \`variant\` is "standard".`,
+  "slider-range-attribute": `Slider: a range slider takes each handle's \`value\`, \`name\`, \`id\` and \`aria-*\` in \`handleStart\` and \`handleEnd\`, but this one's \`aria-label\` is "Price".`,
+  "slider-range-shared": `Slider: a range slider's handles share its \`min\`, \`max\`, \`step\`, \`disabled\` and \`form\`, but this one's \`handleEnd.disabled\` is true.`,
+  "slider-range-cross":
+    "Slider: a range slider's handles can't cross, so its `handleStart.value` must be no more than its `handleEnd.value` (40), but this one's `handleStart.value` is 60.",
   "snackbar-duration": `Snackbar: its durations are "short", "long" and "indefinite", but this one's \`duration\` is "brief".`,
   "snackbar-action-duration": `Snackbar: M3 doesn't time out a snackbar with an action, but this one's \`duration\` is "short".`,
   "snackbar-indefinite": `Snackbar: an "indefinite" snackbar needs an action or a close button to hide it by, but this one's \`showCloseX\` is false.`,

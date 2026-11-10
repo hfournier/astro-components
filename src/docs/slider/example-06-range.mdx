@@ -1,0 +1,15 @@
+---
+title: Range slider
+description: Set `variant="range"` to pick a minimum and a maximum with two handles. Give each handle its own value, name and accessible name in `handleStart` and `handleEnd`.
+---
+
+<div class="pt-16">
+  <Slider
+    variant="range"
+    max="500"
+    step="10"
+    showValueIndicator
+    handleStart={{ name: "min-price", value: "100", "aria-label": "Minimum price" }}
+    handleEnd={{ name: "max-price", value: "400", "aria-label": "Maximum price" }}
+  />
+</div>

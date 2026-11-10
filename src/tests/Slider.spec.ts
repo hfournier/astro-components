@@ -13,7 +13,10 @@ type SliderCaseId =
   | "vertical"
   | "disabled"
   | "form"
-  | "rtl";
+  | "rtl"
+  | "centered"
+  | "variant-sizes"
+  | "range";
 
 const section = (page: Page, caseId: SliderCaseId) =>
   page.getByTestId(`slider-${caseId}`);
@@ -22,12 +25,14 @@ const slider = (page: Page, caseId: SliderCaseId, name: string) =>
   section(page, caseId).getByRole("slider", { name, exact: true });
 
 // The element around the input, which draws the slider
-const root = (input: Locator) => input.locator("xpath=..");
+const root = (input: Locator) =>
+  input.locator("xpath=ancestor::*[@data-ac-slider][1]");
 
 type Part =
   | "track"
   | "active-track"
   | "inactive-track"
+  | "inactive-track-start"
   | "handle-position"
   | "handle"
   | "stop"
@@ -38,10 +43,19 @@ type Part =
 const part = (input: Locator, name: Part) =>
   root(input).locator(`[data-ac-slider-part="${name}"]`);
 
-// The stops (or the icon) drawn in one track: each is drawn in both, and clipped by each
+// A part of the handle an input moves: on a range slider, each input has its own
+const handlePart = (
+  input: Locator,
+  name: "handle-position" | "handle" | "value-indicator" | "value"
+) =>
+  name === "handle-position"
+    ? input.locator("xpath=..")
+    : input.locator(`xpath=..//*[@data-ac-slider-part="${name}"]`);
+
+// The stops (or the icon) drawn in one track: each is drawn in every track, and clipped by each
 const partIn = (
   input: Locator,
-  track: "active-track" | "inactive-track",
+  track: "active-track" | "inactive-track" | "inactive-track-start",
   name: "stop" | "icon"
 ) => part(input, track).locator(`[data-ac-slider-part="${name}"]`);
 
@@ -277,6 +291,33 @@ test.describe("Slider", () => {
       await expect(
         part(slider(page, "value-indicator", "Volume"), "value")
       ).toHaveCSS("background-color", await colorRole(page, "inverse-surface"));
+
+      // A centered and a range slider's tracks, the inactive one at the start too, and both
+      // handles
+      const centered = slider(page, "centered", "Centered with stops");
+      const start = slider(page, "range", "From");
+      const end = slider(page, "range", "To");
+      for (const input of [centered, start]) {
+        await expect(part(input, "inactive-track-start")).toHaveCSS(
+          "background-color",
+          await colorRole(page, "secondary-container")
+        );
+        await expect(
+          partIn(input, "inactive-track-start", "stop").first()
+        ).toHaveCSS(
+          "background-color",
+          await colorRole(page, "on-secondary-container")
+        );
+        await expect(part(input, "active-track")).toHaveCSS(
+          "background-color",
+          await colorRole(page, "primary")
+        );
+      }
+      for (const input of [centered, start, end])
+        await expect(handlePart(input, "handle")).toHaveCSS(
+          "background-color",
+          await colorRole(page, "primary")
+        );
     });
   }
 
@@ -767,6 +808,641 @@ test.describe("Slider", () => {
         );
       }
     });
+  });
+});
+
+// Where a part's center is along the track
+const centerAlong = async (input: Locator, target: Locator, isRtl = false) => {
+  const { start, end } = await along(input, target, isRtl);
+  return (start + end) / 2;
+};
+
+test.describe("Slider, centered", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/tests/slider");
+  });
+
+  test("above the middle, the active track fills from the middle to 6px before the handle", async ({
+    page,
+  }) => {
+    const input = slider(page, "centered", "Centered, above");
+    const { length } = await along(input, part(input, "track"));
+    const at = await handleAt(input);
+    // 20 from -50 to 50
+    expect(at).toBeCloseTo(length * 0.7, 0);
+
+    const start = await along(input, part(input, "inactive-track-start"));
+    const active = await along(input, part(input, "active-track"));
+    const inactive = await along(input, part(input, "inactive-track"));
+    expect(start.start).toBe(0);
+    // The inactive track before the middle stops M3's 6px gap short of it
+    expect(start.end).toBeCloseTo(length / 2 - 6, 0);
+    expect(active.start).toBeCloseTo(length / 2, 0);
+    expect(active.end).toBeCloseTo(at - 8, 0);
+    expect(inactive.start).toBeCloseTo(at + 8, 0);
+    expect(inactive.end).toBeCloseTo(length, 0);
+
+    // The active track's corners are all 2px; each inactive track's outer one is M3's size
+    for (const corner of ["border-top-left-radius", "border-top-right-radius"])
+      await expect(part(input, "active-track")).toHaveCSS(corner, "2px");
+    await expect(part(input, "inactive-track-start")).toHaveCSS(
+      "border-top-left-radius",
+      "8px"
+    );
+    await expect(part(input, "inactive-track-start")).toHaveCSS(
+      "border-top-right-radius",
+      "2px"
+    );
+    await expect(part(input, "inactive-track")).toHaveCSS(
+      "border-top-right-radius",
+      "8px"
+    );
+  });
+
+  test("below the middle, the active track fills from 6px after the handle to the middle", async ({
+    page,
+  }) => {
+    const input = slider(page, "centered", "Centered, below");
+    const { length } = await along(input, part(input, "track"));
+    const at = await handleAt(input);
+    expect(at).toBeCloseTo(length * 0.2, 0);
+
+    const start = await along(input, part(input, "inactive-track-start"));
+    const active = await along(input, part(input, "active-track"));
+    const inactive = await along(input, part(input, "inactive-track"));
+    expect(start.end).toBeCloseTo(at - 8, 0);
+    expect(active.start).toBeCloseTo(at + 8, 0);
+    expect(active.end).toBeCloseTo(length / 2, 0);
+    expect(inactive.start).toBeCloseTo(length / 2 + 6, 0);
+  });
+
+  test("at the middle, there's no active track, and the inactive tracks meet the handle's gaps", async ({
+    page,
+  }) => {
+    const input = slider(page, "centered", "Centered, at the middle");
+    await expect(input).toHaveValue("0");
+    const { length } = await along(input, part(input, "track"));
+    expect(await handleAt(input)).toBeCloseTo(length / 2, 0);
+    expect((await box(part(input, "active-track"))).width).toBe(0);
+    expect(
+      (await along(input, part(input, "inactive-track-start"))).end
+    ).toBeCloseTo(length / 2 - 8, 0);
+    expect(
+      (await along(input, part(input, "inactive-track"))).start
+    ).toBeCloseTo(length / 2 + 8, 0);
+  });
+
+  test("a stop indicator at each end, 4px in from it", async ({ page }) => {
+    const input = slider(page, "centered", "Centered, above");
+    const first = partIn(input, "inactive-track-start", "stop").first();
+    const last = partIn(input, "inactive-track", "stop").last();
+    const { length } = await along(input, part(input, "track"));
+    expect((await along(input, first)).start).toBeCloseTo(4, 0);
+    expect(length - (await along(input, last)).end).toBeCloseTo(4, 0);
+    expect(await showsIn(first, part(input, "inactive-track-start"))).toBe(
+      true
+    );
+    expect(await showsIn(last, part(input, "inactive-track"))).toBe(true);
+    for (const stop of [first, last])
+      await expect(stop).toHaveCSS(
+        "background-color",
+        await colorRole(page, "on-secondary-container")
+      );
+
+    await expect(
+      part(slider(page, "centered", "Centered without stop indicators"), "stop")
+    ).toHaveCount(0);
+  });
+
+  test("stops: each shows in the track that holds it, and none at the middle, which the gap covers", async ({
+    page,
+  }) => {
+    const input = slider(page, "centered", "Centered with stops");
+    const { length } = await along(input, part(input, "track"));
+    // -50 to 50 every 10, less the one at 0
+    const tracks = [
+      "inactive-track-start",
+      "active-track",
+      "inactive-track",
+    ] as const;
+    for (const track of tracks)
+      await expect(partIn(input, track, "stop")).toHaveCount(10);
+    const fractions = [0, 1, 2, 3, 4, 6, 7, 8, 9, 10].map((i) => i / 10);
+    const shown = await Promise.all(
+      fractions.map(async (fraction, i) => {
+        const center = await centerAlong(
+          input,
+          partIn(input, "active-track", "stop").nth(i)
+        );
+        expect(center).toBeCloseTo(6 + (length - 12) * fraction, 0);
+        for (const track of tracks)
+          if (
+            await showsIn(
+              partIn(input, track, "stop").nth(i),
+              part(input, track)
+            )
+          )
+            return track;
+        return "none";
+      })
+    );
+    // 20 is the seventh stop: the handle's gap hides it, and the active track holds the one at 10
+    expect(shown).toEqual([
+      "inactive-track-start",
+      "inactive-track-start",
+      "inactive-track-start",
+      "inactive-track-start",
+      "inactive-track-start",
+      "active-track",
+      "none",
+      "inactive-track",
+      "inactive-track",
+      "inactive-track",
+    ]);
+    await expect(partIn(input, "active-track", "stop").nth(5)).toHaveCSS(
+      "background-color",
+      await colorRole(page, "on-primary")
+    );
+  });
+
+  test("stops: with an odd number of intervals, no stop is at the middle, so every one is drawn", async ({
+    page,
+  }) => {
+    const input = slider(page, "centered", "Centered, odd stops");
+    // -5 to 5 every 2: -5, -3, -1, 1, 3, 5
+    const stops = partIn(input, "active-track", "stop");
+    await expect(stops).toHaveCount(6);
+    const { length } = await along(input, part(input, "track"));
+    // At 1, the fourth stop, the active track runs from the middle to the handle's gap
+    expect(await handleAt(input)).toBeCloseTo(
+      await centerAlong(input, stops.nth(3)),
+      0
+    );
+    expect((await along(input, part(input, "active-track"))).start).toBeCloseTo(
+      length / 2,
+      0
+    );
+    // The stops either side of the middle each show, in their own track
+    expect(
+      await showsIn(
+        partIn(input, "inactive-track-start", "stop").nth(2),
+        part(input, "inactive-track-start")
+      )
+    ).toBe(true);
+    expect(
+      await showsIn(
+        partIn(input, "inactive-track", "stop").nth(4),
+        part(input, "inactive-track")
+      )
+    ).toBe(true);
+  });
+
+  test("the pointer and keys move its one handle, across the middle", async ({
+    page,
+  }) => {
+    const input = slider(page, "centered", "Centered, above");
+    const { length } = await along(input, part(input, "track"));
+    const point = await pointAlong(input, length * 0.3);
+    await page.mouse.click(point.x, point.y);
+    await expect(input).toHaveValue("-20");
+    await expect(input).toBeFocused();
+    expect(await handleAt(input)).toBeCloseTo(length * 0.3, 0);
+    expect((await along(input, part(input, "active-track"))).end).toBeCloseTo(
+      length / 2,
+      0
+    );
+    await page.keyboard.press("End");
+    await expect(input).toHaveValue("50");
+    expect((await box(part(input, "inactive-track"))).width).toBe(0);
+    await page.keyboard.press("Home");
+    await expect(input).toHaveValue("-50");
+    expect((await box(part(input, "inactive-track-start"))).width).toBe(0);
+  });
+
+  test("the value indicator shows its value, negative too", async ({
+    page,
+  }) => {
+    const input = slider(page, "centered", "Centered with stops");
+    await input.focus();
+    await page.keyboard.press("Tab");
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Home");
+    await expect(handlePart(input, "value-indicator")).toHaveCSS(
+      "opacity",
+      "1"
+    );
+    await expect(handlePart(input, "value")).toHaveText("-50");
+  });
+
+  test("vertical: it fills from the middle, up or down", async ({ page }) => {
+    const input = slider(page, "centered", "Centered, vertical");
+    await root(input).scrollIntoViewIfNeeded();
+    const track = await box(part(input, "track"));
+    const handle = await box(part(input, "handle"));
+    // -25: a quarter of the way up
+    expect(track.y + track.height - (handle.y + handle.height / 2)).toBeCloseTo(
+      track.height * 0.25,
+      0
+    );
+    const active = await box(part(input, "active-track"));
+    expect(active.y).toBeCloseTo(track.y + track.height / 2, 0);
+    expect(active.y + active.height).toBeCloseTo(
+      handle.y + handle.height / 2 - 8,
+      0
+    );
+  });
+
+  test("mirrors right to left: it fills from the middle towards the left", async ({
+    page,
+  }) => {
+    const input = slider(page, "rtl", "Centered, right to left");
+    const { length } = await along(input, part(input, "track"), true);
+    const at = await handleAt(input, true);
+    expect(at).toBeCloseTo(length * 0.7, 0);
+    const active = await along(input, part(input, "active-track"), true);
+    expect(active.start).toBeCloseTo(length / 2, 0);
+    expect(active.end).toBeCloseTo(at - 8, 0);
+    await expect(part(input, "inactive-track-start")).toHaveCSS(
+      "border-top-right-radius",
+      "8px"
+    );
+  });
+});
+
+test.describe("Slider, centered and range sizes", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/tests/slider");
+  });
+
+  for (const [size, thickness, handle, corner] of [
+    ["small", 24, 44, 8],
+    ["large", 56, 68, 16],
+    ["extra large", 96, 108, 28],
+  ] as const) {
+    test(`matches M3's measurements: ${size}`, async ({ page }) => {
+      for (const inputs of [
+        [slider(page, "variant-sizes", `Centered, ${size}`)],
+        [
+          slider(page, "variant-sizes", `Range start, ${size}`),
+          slider(page, "variant-sizes", `Range end, ${size}`),
+        ],
+      ]) {
+        const first = inputs[0]!;
+        expect((await box(part(first, "track"))).height).toBe(thickness);
+        for (const input of inputs) {
+          const handleBox = await box(handlePart(input, "handle"));
+          expect([handleBox.width, handleBox.height]).toEqual([4, handle]);
+        }
+        // The outer corners are M3's size; the ones beside a handle or the middle 2px
+        await expect(part(first, "inactive-track-start")).toHaveCSS(
+          "border-top-left-radius",
+          `${corner}px`
+        );
+        await expect(part(first, "inactive-track")).toHaveCSS(
+          "border-top-right-radius",
+          `${corner}px`
+        );
+        await expect(part(first, "active-track")).toHaveCSS(
+          "border-top-left-radius",
+          "2px"
+        );
+      }
+    });
+  }
+});
+
+test.describe("Slider, range", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/tests/slider");
+  });
+
+  test("two native range inputs, each with its own name and value, from the minimum and maximum unless given", async ({
+    page,
+  }) => {
+    const start = slider(page, "range", "Minimum");
+    const end = slider(page, "range", "Maximum");
+    await expect(start).toHaveAttribute("type", "range");
+    await expect(end).toHaveAttribute("type", "range");
+    await expect(start).toHaveValue("20");
+    await expect(end).toHaveValue("60");
+    expect(
+      await root(start).evaluate(
+        (el, other) => el === other,
+        await root(end).elementHandle()
+      )
+    ).toBe(true);
+    await expect(slider(page, "range", "Lowest")).toHaveValue("0");
+    await expect(slider(page, "range", "Highest")).toHaveValue("100");
+    // Each handle's value indicator repeats its value, hidden from assistive tech
+    await expect(
+      handlePart(slider(page, "range", "From"), "value")
+    ).toHaveAttribute("aria-hidden", "true");
+  });
+
+  test("the active track runs between the handles, with M3's 6px gap to each, and the inactive tracks outside them", async ({
+    page,
+  }) => {
+    const start = slider(page, "range", "Minimum");
+    const end = slider(page, "range", "Maximum");
+    const { length } = await along(start, part(start, "track"));
+    const from = await centerAlong(start, handlePart(start, "handle-position"));
+    const to = await centerAlong(end, handlePart(end, "handle-position"));
+    expect(from).toBeCloseTo(length * 0.2, 0);
+    expect(to).toBeCloseTo(length * 0.6, 0);
+
+    const before = await along(start, part(start, "inactive-track-start"));
+    const active = await along(start, part(start, "active-track"));
+    const after = await along(start, part(start, "inactive-track"));
+    expect(before.start).toBe(0);
+    expect(before.end).toBeCloseTo(from - 8, 0);
+    expect(active.start).toBeCloseTo(from + 8, 0);
+    expect(active.end).toBeCloseTo(to - 8, 0);
+    expect(after.start).toBeCloseTo(to + 8, 0);
+    expect(after.end).toBeCloseTo(length, 0);
+    for (const corner of ["border-top-left-radius", "border-top-right-radius"])
+      await expect(part(start, "active-track")).toHaveCSS(corner, "2px");
+    await expect(part(start, "inactive-track-start")).toHaveCSS(
+      "border-top-left-radius",
+      "8px"
+    );
+
+    // A stop indicator at each end
+    expect(
+      await showsIn(
+        partIn(start, "inactive-track-start", "stop").first(),
+        part(start, "inactive-track-start")
+      )
+    ).toBe(true);
+    expect(
+      await showsIn(
+        partIn(start, "inactive-track", "stop").last(),
+        part(start, "inactive-track")
+      )
+    ).toBe(true);
+  });
+
+  test("a press moves the nearer handle there, and dragging it stops at the other", async ({
+    page,
+  }) => {
+    const start = slider(page, "range", "Minimum");
+    const end = slider(page, "range", "Maximum");
+    await end.evaluate((el: HTMLInputElement) => {
+      el.dataset.changes = "0";
+      el.addEventListener("change", () => {
+        el.dataset.changes = String(Number(el.dataset.changes) + 1);
+      });
+    });
+    const { length } = await along(start, part(start, "track"));
+
+    // 45 is nearer 60 than 20
+    const near = await pointAlong(start, length * 0.45);
+    await page.mouse.move(near.x, near.y);
+    await page.mouse.down();
+    await expect(end).toHaveValue("45");
+    await expect(start).toHaveValue("20");
+    await expect(end).toBeFocused();
+    await expect(handlePart(end, "handle")).toHaveCSS("width", "2px");
+    await expect(handlePart(start, "handle")).toHaveCSS("width", "4px");
+    // Dragged below the start, it stops at it
+    const below = await pointAlong(start, length * 0.1);
+    await page.mouse.move(below.x, below.y, { steps: 4 });
+    await expect(end).toHaveValue("20");
+    await expect(start).toHaveValue("20");
+    await page.mouse.up();
+    await expect(end).toHaveAttribute("data-changes", "1");
+
+    // From the same place, a press below the handles moves the start one
+    const low = await pointAlong(start, length * 0.05);
+    await page.mouse.click(low.x, low.y);
+    await expect(start).toHaveValue("5");
+    await expect(end).toHaveValue("20");
+    await expect(start).toBeFocused();
+  });
+
+  test("with both handles at one value, a drag moves the one on the side it goes", async ({
+    page,
+  }) => {
+    const start = slider(page, "range", "Minimum");
+    const end = slider(page, "range", "Maximum");
+    await start.evaluate((el: HTMLInputElement) => {
+      el.value = "40";
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await end.evaluate((el: HTMLInputElement) => {
+      el.value = "40";
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    const { length } = await along(start, part(start, "track"));
+    const at = await pointAlong(start, length * 0.4);
+    await page.mouse.move(at.x, at.y);
+    await page.mouse.down();
+    const up = await pointAlong(start, length * 0.7);
+    await page.mouse.move(up.x, up.y, { steps: 4 });
+    await page.mouse.up();
+    await expect(end).toHaveValue("70");
+    await expect(start).toHaveValue("40");
+
+    await page.mouse.move(at.x, at.y);
+    await page.mouse.down();
+    const down = await pointAlong(start, length * 0.1);
+    await page.mouse.move(down.x, down.y, { steps: 4 });
+    await page.mouse.up();
+    await expect(start).toHaveValue("10");
+  });
+
+  test("keyboard: Tab goes from the start handle to the end one, and neither passes the other", async ({
+    page,
+  }) => {
+    const start = slider(page, "range", "Minimum");
+    const end = slider(page, "range", "Maximum");
+    await start.focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(start).toHaveValue("21");
+    await page.keyboard.press("End");
+    await expect(start).toHaveValue("60");
+    await page.keyboard.press("ArrowRight");
+    await expect(start).toHaveValue("60");
+    await page.keyboard.press("Home");
+    await expect(start).toHaveValue("0");
+
+    await page.keyboard.press("Tab");
+    await expect(end).toBeFocused();
+    await page.keyboard.press("Home");
+    await expect(end).toHaveValue("0");
+    await page.keyboard.press("End");
+    await expect(end).toHaveValue("100");
+  });
+
+  test("a value set past the other handle, as by assistive tech, stops at it", async ({
+    page,
+  }) => {
+    const start = slider(page, "range", "Minimum");
+    await start.evaluate((el: HTMLInputElement) => {
+      el.value = "90";
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await expect(start).toHaveValue("60");
+  });
+
+  test("the value indicator and focus ring show on the focused or pressed handle only", async ({
+    page,
+  }) => {
+    const start = slider(page, "range", "From");
+    const end = slider(page, "range", "To");
+    await start.focus();
+    await page.keyboard.press("Tab");
+    await page.keyboard.press("Shift+Tab");
+    await expect(start).toBeFocused();
+    await expectFocusRing(handlePart(start, "handle"));
+    await expect(handlePart(end, "handle")).toHaveCSS("box-shadow", "none");
+    await expect(handlePart(start, "value-indicator")).toHaveCSS(
+      "opacity",
+      "1"
+    );
+    await expect(handlePart(end, "value-indicator")).toHaveCSS("opacity", "0");
+    await expect(handlePart(start, "value")).toHaveText("30");
+    await page.keyboard.press("ArrowRight");
+    // With stops, one stop
+    await expect(handlePart(start, "value")).toHaveText("40");
+
+    const { length } = await along(end, part(end, "track"));
+    const point = await pointAlong(end, 6 + (length - 12) * 0.81);
+    await page.mouse.move(point.x, point.y);
+    await page.mouse.down();
+    await expect(end).toHaveValue("80");
+    await expect(handlePart(end, "value-indicator")).toHaveCSS("opacity", "1");
+    await expect(handlePart(start, "value-indicator")).toHaveCSS(
+      "opacity",
+      "0"
+    );
+    await page.mouse.up();
+  });
+
+  test("stops: on-primary between the handles, on-secondary-container outside them", async ({
+    page,
+  }) => {
+    const input = slider(page, "range", "From");
+    // 30 to 70 every 10: the stops at 40 to 60 are on the active track
+    const shownIn = async (i: number) => {
+      for (const track of [
+        "inactive-track-start",
+        "active-track",
+        "inactive-track",
+      ] as const)
+        if (
+          await showsIn(partIn(input, track, "stop").nth(i), part(input, track))
+        )
+          return track;
+      return "none";
+    };
+    const shown = await Promise.all(
+      Array.from({ length: 11 }, (_, i) => shownIn(i))
+    );
+    expect(shown).toEqual([
+      "inactive-track-start",
+      "inactive-track-start",
+      "inactive-track-start",
+      "none",
+      "active-track",
+      "active-track",
+      "active-track",
+      "none",
+      "inactive-track",
+      "inactive-track",
+      "inactive-track",
+    ]);
+  });
+
+  test("disabled: both handles, in M3's disabled colors", async ({ page }) => {
+    const start = slider(page, "range", "Disabled start");
+    const end = slider(page, "range", "Disabled end");
+    await expect(start).toBeDisabled();
+    await expect(end).toBeDisabled();
+    for (const input of [start, end])
+      await expect(handlePart(input, "handle")).toHaveCSS(
+        "background-color",
+        await roleAt(page, "on-surface", 38)
+      );
+    await expect(part(start, "active-track")).toHaveCSS(
+      "background-color",
+      await roleAt(page, "on-surface", 38)
+    );
+    for (const track of ["inactive-track-start", "inactive-track"] as const)
+      await expect(part(start, track)).toHaveCSS(
+        "background-color",
+        await roleAt(page, "on-surface", 12)
+      );
+    await expect(
+      partIn(start, "inactive-track-start", "stop").first()
+    ).toHaveCSS("background-color", await roleAt(page, "on-surface", 38));
+
+    const { length } = await along(start, part(start, "track"));
+    const point = await pointAlong(start, length * 0.9);
+    await page.mouse.click(point.x, point.y);
+    await expect(end).toHaveValue("60");
+  });
+
+  test("works in a native form: submits both values, and a reset draws them again", async ({
+    page,
+  }) => {
+    const start = slider(page, "range", "Minimum price");
+    const end = slider(page, "range", "Maximum price");
+    await expect(start).toHaveAccessibleDescription("Price");
+    const form = section(page, "range").locator("form");
+    const values = () =>
+      form.evaluate((el: HTMLFormElement) => {
+        const data = new FormData(el);
+        return [data.get("min-price"), data.get("max-price")];
+      });
+    expect(await values()).toEqual(["10", "90"]);
+    await end.focus();
+    await page.keyboard.press("Home");
+    expect(await values()).toEqual(["10", "10"]);
+    await form.getByRole("button", { name: "Reset" }).click();
+    await expect(end).toHaveValue("90");
+    const { length } = await along(end, part(end, "track"));
+    await expect
+      .poll(() => centerAlong(end, handlePart(end, "handle-position")))
+      .toBeCloseTo(length * 0.9, 0);
+  });
+
+  test("mirrors right to left: the start handle is on the right, and the arrows follow the track", async ({
+    page,
+  }) => {
+    const start = slider(page, "rtl", "Range start, right to left");
+    const { length } = await along(start, part(start, "track"), true);
+    expect(
+      await centerAlong(start, handlePart(start, "handle-position"), true)
+    ).toBeCloseTo(length * 0.2, 0);
+    expect(
+      (await along(start, part(start, "inactive-track-start"), true)).start
+    ).toBe(0);
+    await start.focus();
+    await page.keyboard.press("ArrowLeft");
+    await expect(start).toHaveValue("21");
+  });
+
+  test("vertical: the start handle is the lower one", async ({ page }) => {
+    const start = slider(page, "range", "Vertical start");
+    const end = slider(page, "range", "Vertical end");
+    await root(start).scrollIntoViewIfNeeded();
+    await expect(start).toHaveAttribute("aria-orientation", "vertical");
+    const track = await box(part(start, "track"));
+    const low = await box(handlePart(start, "handle"));
+    const high = await box(handlePart(end, "handle"));
+    expect(track.y + track.height - (low.y + low.height / 2)).toBeCloseTo(
+      track.height * 0.25,
+      0
+    );
+    expect(track.y + track.height - (high.y + high.height / 2)).toBeCloseTo(
+      track.height * 0.75,
+      0
+    );
+    await page.mouse.click(
+      track.x + track.width / 2,
+      track.y + track.height * 0.1
+    );
+    await expect(end).toHaveValue("90");
   });
 });
 

@@ -1,4 +1,5 @@
 import type { CollectionEntry } from "astro:content";
+import type { HTMLAttributes } from "astro/types";
 import type { SvgIconNameTypes } from "./svgs";
 
 // Each `as const` list here is what a component checks that prop against, and its type comes from
@@ -50,6 +51,9 @@ export const popoverBgColors = [
 export type PopoverBgColorType = (typeof popoverBgColors)[number];
 
 export type ButtonPropsType = { id?: string; text: string; value: string };
+
+// A range slider handle's own input attributes: its `value`, `name`, `id` and `aria-*`
+export type SliderHandlePropsType = Omit<HTMLAttributes<"input">, "type">;
 
 export const componentCategories = [
   "Base",

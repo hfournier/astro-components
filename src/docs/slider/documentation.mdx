@@ -1,16 +1,31 @@
 ---
 name: Slider
-description: A Material 3 Expressive standard slider, extending HTML's `<input type="range">` element. It picks one value from a range along M3's track, with a handle that narrows when pressed, in five sizes, horizontal or vertical, with optional stops, a value indicator and an inset icon. Being a native input, it submits, resets and validates with its form.
+description: Material 3 Expressive's sliders, extending HTML's `<input type="range">` element. A standard slider picks a value filling from the start of M3's track, a centered one a value filling from its middle, and a range one two values, with a handle each. Its handles narrow when pressed, in five sizes, horizontal or vertical, with optional stops, a value indicator and an inset icon. Being native inputs, they submit, reset and validate with their form.
 category: Forms
 role: pattern
 meta:
   title: Slider | astro-components HenriFournier.dev
-  description: A Material 3 Expressive standard slider on a native range input, in five sizes, horizontal or vertical, with stops, a value indicator and an inset icon.
+  description: Material 3 Expressive's standard, centered and range sliders on native range inputs, in five sizes, horizontal or vertical, with stops and a value indicator.
 extends:
   kind: element
   tag: [input]
 mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/range
 props:
+  - name: variant
+    type: '"standard" | "centered" | "range"'
+    required: false
+    default: '"standard"'
+    description: M3's variants. `standard` fills the active track from the start of the track to the handle. `centered` fills it from the middle of the range to the handle, either way, for a range of negative and positive values. `range` has two handles, each its own input, with the active track between them. Any other value fails the build.
+  - name: handleStart
+    type: SliderHandlePropsType
+    required: false
+    default: undefined
+    description: A range slider's start handle's own input attributes, such as `value`, `name`, `id` and `aria-label`. Its value starts at `min` unless set. The handles share the slider's `min`, `max`, `step`, `disabled` and `form`, so those here fail the build. Only a range slider has it; on another, it fails the build.
+  - name: handleEnd
+    type: SliderHandlePropsType
+    required: false
+    default: undefined
+    description: A range slider's end handle's own input attributes, as for `handleStart`. Its value starts at `max` unless set, and a `handleStart` value more than it fails the build.
   - name: size
     type: '"xs" | "sm" | "md" | "lg" | "xl"'
     required: false
@@ -30,17 +45,17 @@ props:
     type: boolean
     required: false
     default: "true"
-    description: Shows M3's stop indicator at the end of the inactive track, which keeps the track's end at 3:1 contrast with the page. Turn it off only when the inactive track has that contrast with every surface around it, or icons or text outside the slider mark its ends. With `showStops`, the last stop is there anyway.
+    description: Shows M3's stop indicator at the end of the inactive track, or at each end of a centered or range slider, which keeps the track's ends at 3:1 contrast with the page. Turn it off only when the inactive track has that contrast with every surface around it, or icons or text outside the slider mark its ends. With `showStops`, the stops at the ends are there anyway.
   - name: showValueIndicator
     type: boolean
     required: false
     default: "false"
-    description: Shows the value in M3's value indicator above the handle (beside it when vertical) while the handle is pressed or the slider is focused from the keyboard. It reads the input's `value`. Leave it off when the value is shown elsewhere, such as in a text field beside the slider. Leave room above the slider for it, as it covers what's there.
+    description: Shows the value in M3's value indicator above the handle (beside it when vertical) while the handle is pressed or focused from the keyboard. It reads the input's `value`. On a range slider, each handle shows its own, one at a time. Leave it off when the value is shown elsewhere, such as in a text field beside the slider. Leave room above the slider for it, as it covers what's there.
   - name: icon
     type: SvgIconNameTypes
     required: false
     default: undefined
-    description: M3's inset icon, inside the track at its start, showing what the slider controls. When the active track is too short to hold it, it moves to the start of the inactive track. M3 gives it to `md`, `lg` and `xl` sliders only; on `xs` or `sm` it fails the build. It's decoration, hidden from assistive tech.
+    description: M3's inset icon, inside the track at its start, showing what the slider controls. When the active track is too short to hold it, it moves to the start of the inactive track. M3 gives it to `md`, `lg` and `xl` standard sliders only, as on a centered or range slider it hides where the slider starts; on another it fails the build. It's decoration, hidden from assistive tech.
 ---
 
 ## Attributes
@@ -51,20 +66,35 @@ The range is the input's: `min` 0, `max` 100 and `step` 1 unless set, and `value
 
 To set the value from a script, set the input's `value` and dispatch an `input` event on it, so the slider redraws. A form's reset redraws it on its own.
 
+A centered slider's middle is halfway between `min` and `max`, such as 0 from -50 to 50. Its value starts there unless set.
+
+A range slider's two inputs share its `min`, `max`, `step`, `disabled` and `form`, and take their own `value`, `name`, `id` and `aria-*` from `handleStart` and `handleEnd`. Given at the top, those would go on both inputs, so they fail the build, as do shared attributes given to one handle. The handles can't cross: each stops at the other, whether it's moved by the pointer, the keys or a script. A press moves the nearer handle there, or with both at one value, the one on the side the pointer moves to.
+
+```astro
+<Slider
+  variant="range"
+  min="0"
+  max="500"
+  step="10"
+  handleStart={{ name: "min-price", value: "100", "aria-label": "Minimum price" }}
+  handleEnd={{ name: "max-price", value: "400", "aria-label": "Maximum price" }}
+/>
+```
+
 ## Anatomy
 
-- **Active track:** `primary`, from the start of the track to 6px before the handle. Its outer corners are M3's size (8px for `xs` and `sm`, 12px `md`, 16px `lg`, 28px `xl`) and the ones beside the handle 2px. Shorter than its outer corner, near the start, it isn't drawn, as Compose's isn't.
+- **Active track:** `primary`. A standard slider's runs from the start of the track to 6px before the handle; a centered one's from the middle to 6px before the handle; a range one's from 6px after the start handle to 6px before the end one. Its outer corners are M3's size (8px for `xs` and `sm`, 12px `md`, 16px `lg`, 28px `xl`) and the ones beside a handle or the middle 2px. Shorter than its corner, it isn't drawn, as Compose's isn't.
 - **Handle:** a `primary` line, 4px wide, across the track at the value. Pressed or focused from the keyboard, it narrows to 2px.
-- **Inactive track:** `secondary-container`, from 6px after the handle to the end, with its corners the other way round.
-- **Stop indicator:** a 4px circle, 4px in from the end of the inactive track, in `on-secondary-container`. M3's Specs page gives it this color; Compose draws it `primary`.
-- **Stops:** with `showStops`, 4px circles evenly from 4px in from the start to the stop indicator: `on-primary` on the active track and `on-secondary-container` on the inactive one. Between the ends, the handle sits over its stop, which the gap hides, so the stops between are placed 6px in from the track's ends, as Compose places them.
+- **Inactive track:** `secondary-container`, from 6px after the handle to the end, with its corners the other way round. A centered or range slider has one at the start too, up to 6px before its handle or the middle.
+- **Stop indicator:** a 4px circle, 4px in from the end of the inactive track (from each end on a centered or range slider), in `on-secondary-container`. M3's Specs page gives it this color; Compose draws it `primary`.
+- **Stops:** with `showStops`, 4px circles evenly from 4px in from the start to the stop indicator: `on-primary` on the active track and `on-secondary-container` on the inactive ones. Between the ends, the handle sits over its stop, which the gap hides, so the stops between are placed 6px in from the track's ends, as Compose places them. A centered slider has none at its middle, which the gap beside the active track covers.
 - **Value indicator:** the value in M3's Label Large weight (14px, 500), `inverse-on-surface` on an `inverse-surface` pill at least 48 by 44px, 12px above the handle.
 - **Inset icon:** 24px on `md` and `lg` sliders and 32px on `xl`, 6px in from the start of its track (8px on `xl`): `on-primary` on the active track, `on-secondary-container` on the inactive one.
 
-Disabled, the handle and active track are `on-surface` at 38% and the inactive track at 12%, with the stops `inverse-on-surface` on the active track and `on-surface` at 38% on the inactive one.
+Disabled, the handles and active track are `on-surface` at 38% and the inactive tracks at 12%, with the stops `inverse-on-surface` on the active track and `on-surface` at 38% on the inactive ones.
 
 The slider is at least 48px across its track, the handle's height when that's more, so it's always a large enough target. It mirrors in right-to-left layouts, starting from the right, and the left and right arrows follow it.
 
 ## Motion
 
-The handle narrows and widens on the fast spatial spring, so it briefly overshoots, and colors, the focus ring and the value indicator change on fast effects (ADR-0018). The handle and tracks move to a new value at once, under the pointer, rather than animating. Under reduced motion, every state changes at once.
+A handle narrows and widens on the fast spatial spring, so it briefly overshoots, and colors, the focus ring and the value indicator change on fast effects (ADR-0018). The handle and tracks move to a new value at once, under the pointer, rather than animating. Under reduced motion, every state changes at once.

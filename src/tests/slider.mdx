@@ -68,4 +68,45 @@ description: Tests for the Slider component
   <Heading level={2}>Right to left</Heading>
   <Slider value="30" aria-label="Right to left" />
   <Slider size="md" icon="light_mode" showStops step="10" value="60" showValueIndicator aria-label="Right to left with stops" />
+  <Slider variant="centered" min="-50" max="50" value="20" aria-label="Centered, right to left" />
+  <Slider variant="range" handleStart={{ value: "20", "aria-label": "Range start, right to left" }} handleEnd={{ value: "60", "aria-label": "Range end, right to left" }} />
+</Section>
+
+<Section data-testid="slider-centered" class="p-4 pt-20 space-y-4">
+  <Heading level={2}>Centered</Heading>
+  <Slider variant="centered" min="-50" max="50" value="20" aria-label="Centered, above" />
+  <Slider variant="centered" min="-50" max="50" value="-30" aria-label="Centered, below" />
+  <Slider variant="centered" min="-50" max="50" aria-label="Centered, at the middle" />
+  <Slider variant="centered" min="-50" max="50" showStops step="10" value="20" size="md" showValueIndicator aria-label="Centered with stops" />
+  <Slider variant="centered" min="-50" max="50" showStopIndicator={false} value="20" aria-label="Centered without stop indicators" />
+  <Slider variant="centered" min="-5" max="5" step="2" showStops value="1" aria-label="Centered, odd stops" />
+  <div class="flex gap-12 ps-16">
+    <Slider variant="centered" orientation="vertical" min="-50" max="50" value="-25" aria-label="Centered, vertical" />
+  </div>
+</Section>
+
+<Section data-testid="slider-variant-sizes" class="p-4 space-y-4">
+  <Heading level={2}>Centered and range sizes</Heading>
+  <Slider variant="centered" size="sm" value="70" aria-label="Centered, small" />
+  <Slider variant="centered" size="lg" value="70" aria-label="Centered, large" />
+  <Slider variant="centered" size="xl" value="70" aria-label="Centered, extra large" />
+  <Slider variant="range" size="sm" handleStart={{ value: "30", "aria-label": "Range start, small" }} handleEnd={{ value: "70", "aria-label": "Range end, small" }} />
+  <Slider variant="range" size="lg" handleStart={{ value: "30", "aria-label": "Range start, large" }} handleEnd={{ value: "70", "aria-label": "Range end, large" }} />
+  <Slider variant="range" size="xl" handleStart={{ value: "30", "aria-label": "Range start, extra large" }} handleEnd={{ value: "70", "aria-label": "Range end, extra large" }} />
+</Section>
+
+<Section data-testid="slider-range" class="p-4 pt-20 space-y-4">
+  <Heading level={2}>Range</Heading>
+  <Slider variant="range" handleStart={{ value: "20", "aria-label": "Minimum" }} handleEnd={{ value: "60", "aria-label": "Maximum" }} />
+  <Slider variant="range" handleStart={{ "aria-label": "Lowest" }} handleEnd={{ "aria-label": "Highest" }} />
+  <Slider variant="range" size="md" showStops step="10" showValueIndicator handleStart={{ value: "30", "aria-label": "From" }} handleEnd={{ value: "70", "aria-label": "To" }} />
+  <Slider variant="range" disabled showStops step="20" handleStart={{ value: "20", "aria-label": "Disabled start" }} handleEnd={{ value: "60", "aria-label": "Disabled end" }} />
+  <div class="flex gap-12 ps-16">
+    <Slider variant="range" orientation="vertical" handleStart={{ value: "25", "aria-label": "Vertical start" }} handleEnd={{ value: "75", "aria-label": "Vertical end" }} />
+  </div>
+  <form class="space-y-2" onsubmit="event.preventDefault()">
+    <span id="slider-range-price">Price</span>
+    <Slider variant="range" step="5" handleStart={{ name: "min-price", value: "10", "aria-label": "Minimum price", "aria-describedby": "slider-range-price" }} handleEnd={{ name: "max-price", value: "90", "aria-label": "Maximum price", "aria-describedby": "slider-range-price" }} />
+    <Button type="reset" variant="outlined">Reset</Button>
+  </form>
 </Section>
