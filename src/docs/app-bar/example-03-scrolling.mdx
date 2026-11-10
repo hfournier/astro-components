@@ -3,7 +3,7 @@ title: Scrolling
 description: Pinned with `sticky top-0 z-1`, the app bar fills with surface container while the content scrolls under it, and goes back to surface at the top. On a page, pin the `<Header>` that holds it instead.
 ---
 
-<div class="h-64 overflow-y-auto rounded-xl border border-(--theme-color-outline-variant)" tabindex="0" aria-label="Messages">
+<div class="h-64 overflow-y-auto rounded-xl border border-(--theme-color-outline-variant)" tabindex="0" role="region" aria-label="Messages">
   <AppBar headline="Messages" class="sticky top-0 z-1">
     <ButtonIcon slot="navigation" icon="arrow_back" label="Back" />
     <ButtonIcon slot="actions" icon="search" label="Search" />

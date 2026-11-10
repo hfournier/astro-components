@@ -54,7 +54,7 @@ description: Tests for the AppBar component
 
 <Section data-testid="app-bar-scroll" class="p-4 space-y-4">
   <Heading level={2}>Scrolling under a sticky app bar</Heading>
-  <div class="h-64 overflow-y-auto rounded-xl border border-(--theme-color-outline-variant)" tabindex="0" aria-label="Messages">
+  <div class="h-64 overflow-y-auto rounded-xl border border-(--theme-color-outline-variant)" tabindex="0" role="region" aria-label="Messages">
     <AppBar headline="Messages" class="sticky top-0 z-1">
       <ButtonIcon slot="navigation" icon="arrow_back" label="Back" />
       <ButtonIcon slot="actions" icon="search" label="Search" />

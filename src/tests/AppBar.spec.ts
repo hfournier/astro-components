@@ -30,6 +30,10 @@ const bar = (page: Page, caseId: AppBarCaseId) => bars(page, caseId).first();
 const part = (target: Locator, name: "headline" | "subtitle") =>
   target.locator(`[data-ac-app-bar-part="${name}"]`);
 
+// The page's own app bar, on /tests/app-bar-page
+const bannerBar = (page: Page) =>
+  page.getByRole("banner").locator("[data-ac-app-bar]");
+
 const role = (page: Page, name: string) =>
   resolvedColor(page, `var(--theme-color-${name})`);
 
@@ -284,6 +288,22 @@ test.describe("AppBar", () => {
     );
   });
 
+  // The script finds each bar as the page scrolls, so one added after the page loaded fills too
+  test("a bar added after the page loaded fills too", async ({ page }) => {
+    const scroller = bar(page, "scroll").locator("..");
+    await scroller.evaluate((el) => {
+      const added = el.querySelector("[data-ac-app-bar]")!.cloneNode(true);
+      (added as Element).setAttribute("data-testid", "added-bar");
+      el.prepend(added);
+    });
+    const added = page.getByTestId("added-bar");
+    await scroller.evaluate((el) => el.scrollTo({ top: 80 }));
+    await expect(added).toHaveCSS(
+      "background-color",
+      await role(page, "surface-container")
+    );
+  });
+
   // Content passes under a bar only when it's pinned: one scrolling with the page stays surface
   test("a bar that scrolls with its page stays surface", async ({ page }) => {
     const appBar = bar(page, "anatomy");
@@ -338,7 +358,7 @@ test.describe("AppBar in the page header", () => {
   });
 
   test("sits in the page's banner landmark", async ({ page }) => {
-    const appBar = page.getByRole("banner").locator("[data-ac-app-bar]");
+    const appBar = bannerBar(page);
     await expect(appBar).toBeVisible();
     await expect(part(appBar, "headline")).toHaveText("Photos");
   });
@@ -346,7 +366,7 @@ test.describe("AppBar in the page header", () => {
   test("fills with surface container while the page scrolls under it", async ({
     page,
   }) => {
-    const appBar = page.getByRole("banner").locator("[data-ac-app-bar]");
+    const appBar = bannerBar(page);
     await expect(appBar).toHaveCSS(
       "background-color",
       await role(page, "surface")
@@ -368,7 +388,7 @@ test.describe("AppBar in the page header", () => {
   // A page loaded part way down, such as at a link to a fragment, starts filled
   test("starts filled when the page loads scrolled", async ({ page }) => {
     await page.goto("/tests/app-bar-page#photo-30");
-    const appBar = page.getByRole("banner").locator("[data-ac-app-bar]");
+    const appBar = bannerBar(page);
     await expect
       .poll(() => page.evaluate(() => window.scrollY))
       .toBeGreaterThan(0);
