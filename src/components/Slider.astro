@@ -3,6 +3,7 @@ import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import type { SvgIconNameTypes } from "../svgs";
 import type { SliderHandlePropsType } from "../types";
+import { sliderPlaces, snapSliderValue } from "../utils";
 import Icon from "./Icon.astro";
 
 // M3 Expressive's sliders on native <input type="range">s, so they submit, reset and validate with
@@ -137,13 +138,11 @@ if (
 // The value the browser starts an input at: the given one, or the fallback, snapped to a step
 const snapped = (given: unknown, fallback: number) => {
   const read = given === undefined ? NaN : Number(given);
-  const value = Math.min(
+  return snapSliderValue(Number.isFinite(read) ? read : fallback, {
+    min,
     max,
-    Math.max(min, Number.isFinite(read) ? read : fallback)
-  );
-  if (isAnyStep) return value;
-  const stepped = min + Math.round((value - min) / step) * step;
-  return stepped > max ? stepped - step : stepped;
+    step: isAnyStep ? "any" : step,
+  });
 };
 const middle = min + (max - min) / 2;
 
@@ -183,34 +182,18 @@ if (isRange && handles[0]!.value > handles[1]!.value) {
   );
 }
 
-// Where the active track starts and ends, as its CSS reads them (the script works them out the
-// same way): each a fraction of the range, whether it's inset (a handle on a stop between the
-// ends, which Compose places 6px in from them) and whether it's a handle, with its gaps. Standard
-// starts at the track's start; centered, between the middle and the handle; range, between the
-// handles.
-const placeOf = (value: number) => ({
-  fraction: (value - min) / (max - min),
-  inset: showStops && value > min && value < max ? 1 : 0,
-  handle: 1,
-});
-const trackStart = { fraction: 0, inset: 0, handle: 0 };
-const trackMiddle = { fraction: 0.5, inset: 0, handle: 0 };
-const firstValue = handles[0]!.value;
-const place =
-  variant === "range"
-    ? { from: placeOf(firstValue), to: placeOf(handles[1]!.value) }
-    : variant === "centered"
-      ? {
-          from: firstValue <= middle ? placeOf(firstValue) : trackMiddle,
-          to: firstValue >= middle ? placeOf(firstValue) : trackMiddle,
-        }
-      : { from: trackStart, to: placeOf(firstValue) };
-const style = Object.entries(place)
-  .flatMap(([side, { fraction, inset, handle }]) => [
-    `--ac-slider-${side}: ${fraction}`,
-    `--ac-slider-${side}-inset: ${inset}`,
-    `--ac-slider-${side}-handle: ${handle}`,
-  ])
+// Where the active track starts and ends, as its CSS reads them, so the slider is drawn before
+// its script runs; the script sets them the same way on each change
+const style = Object.entries(
+  sliderPlaces({
+    variant,
+    min,
+    max,
+    hasStops: showStops,
+    values: handles.map(({ value }) => value),
+  })
+)
+  .map(([property, value]) => `${property}: ${value}`)
   .join("; ");
 
 // A stop at every step, or the stop indicator at the end of each inactive track: a standard
@@ -543,6 +526,8 @@ const inactiveTrackClass =
 </style>
 
 <script>
+  import { sliderPlaces, snapSliderValue } from "../utils";
+
   // The inputs take no pointer events, so the slider sets their values from the pointer and the
   // keys itself, the same way in every browser, orientation and direction, and draws them by
   // setting the places its CSS reads. Delegated from the document, so it covers sliders added
@@ -566,7 +551,8 @@ const inactiveTrackClass =
     return input.step === "any" ? (max - min) / 100 : Number(input.step || 1);
   };
   const variantOf = (slider: HTMLElement) =>
-    slider.getAttribute("data-ac-slider-variant");
+    slider.getAttribute("data-ac-slider-variant") as
+      "standard" | "centered" | "range";
   const hasStops = (slider: HTMLElement) =>
     slider.hasAttribute("data-ac-slider-stops");
   const isVertical = (slider: HTMLElement) =>
@@ -588,35 +574,18 @@ const inactiveTrackClass =
       : { min: start.valueAsNumber, max };
   };
 
-  // Sets the places the CSS draws the active track between, as the server renders them: a
-  // standard slider's from the track's start to its handle, a centered one's between the middle
-  // and its handle, and a range one's between its handles
+  // Sets the places the CSS draws the active track between, as the server renders them, and
+  // each handle's value indicator
   const draw = (slider: HTMLElement) => {
     const inputs = inputsOf(slider);
-    const { min, max } = rangeOf(inputs[0]!);
-    const placeOf = (value: number) => ({
-      fraction: (value - min) / (max - min),
-      inset: hasStops(slider) && value > min && value < max ? 1 : 0,
-      handle: 1,
+    const places = sliderPlaces({
+      variant: variantOf(slider),
+      ...rangeOf(inputs[0]!),
+      hasStops: hasStops(slider),
+      values: inputs.map((input) => input.valueAsNumber),
     });
-    const trackStart = { fraction: 0, inset: 0, handle: 0 };
-    const trackMiddle = { fraction: 0.5, inset: 0, handle: 0 };
-    const firstValue = inputs[0]!.valueAsNumber;
-    const middle = min + (max - min) / 2;
-    const place =
-      variantOf(slider) === "range"
-        ? { from: placeOf(firstValue), to: placeOf(inputs[1]!.valueAsNumber) }
-        : variantOf(slider) === "centered"
-          ? {
-              from: firstValue <= middle ? placeOf(firstValue) : trackMiddle,
-              to: firstValue >= middle ? placeOf(firstValue) : trackMiddle,
-            }
-          : { from: trackStart, to: placeOf(firstValue) };
-    for (const [side, { fraction, inset, handle }] of Object.entries(place)) {
-      slider.style.setProperty(`--ac-slider-${side}`, String(fraction));
-      slider.style.setProperty(`--ac-slider-${side}-inset`, String(inset));
-      slider.style.setProperty(`--ac-slider-${side}-handle`, String(handle));
-    }
+    for (const [property, value] of Object.entries(places))
+      slider.style.setProperty(property, value);
     for (const input of inputs) {
       const label = input.parentElement!.querySelector(
         '[data-ac-slider-part="value"]'
@@ -664,11 +633,11 @@ const inactiveTrackClass =
         ? track.right - event.clientX
         : event.clientX - track.left;
     if (!hasStops(slider)) {
-      const value =
-        min + Math.min(1, Math.max(0, along / length)) * (max - min);
-      return input.step === "any"
-        ? value
-        : Math.min(max, min + Math.round((value - min) / step) * step);
+      return snapSliderValue(min + (along / length) * (max - min), {
+        min,
+        max,
+        step: input.step === "any" ? "any" : step,
+      });
     }
     // The stops' places, as the CSS draws them: the ends at 0 and the full length, the others
     // between 6px in from each end
