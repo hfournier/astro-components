@@ -107,6 +107,16 @@ const expected: Record<string, string | RegExp> = {
   "popover-bg-color": `Popover: M3's popover surfaces are "surface-container", "surface-container-high" and "inverse-surface", but this one's \`bgColor\` is "surface-container-low".`,
   "radio-button-as": `RadioButton: its elements are "label" and "span", but this one's \`as\` is "div".`,
   "sheet-side-edge": `SheetSide: its edges are "start" and "end", but this one's \`edge\` is "left".`,
+  "slider-size": `Slider: M3's sizes are "xs", "sm", "md", "lg" and "xl", but this one's \`size\` is "medium".`,
+  "slider-orientation": `Slider: M3's orientations are "horizontal" and "vertical", but this one's \`orientation\` is "diagonal".`,
+  "slider-icon-size": `Slider: M3 puts an inset icon only on "md", "lg" and "xl" sliders, but this one's \`size\` is "sm".`,
+  "slider-min": `Slider: its \`min\` must be a number, but this one's \`min\` is "low".`,
+  "slider-max":
+    "Slider: its `max` must be a number more than its `min` (10), but this one's `max` is 5.",
+  "slider-step": `Slider: its \`step\` must be a number more than 0, or "any", but this one's \`step\` is 0.`,
+  "slider-stops-step":
+    "Slider: stops divide the track evenly from `min` to `max` (0 to 100), but this one's `step` is 30.",
+  "slider-stops-any": `Slider: stops divide the track evenly from \`min\` to \`max\` (0 to 100), but this one's \`step\` is "any".`,
   "snackbar-duration": `Snackbar: its durations are "short", "long" and "indefinite", but this one's \`duration\` is "brief".`,
   "snackbar-action-duration": `Snackbar: M3 doesn't time out a snackbar with an action, but this one's \`duration\` is "short".`,
   "snackbar-indefinite": `Snackbar: an "indefinite" snackbar needs an action or a close button to hide it by, but this one's \`showCloseX\` is false.`,

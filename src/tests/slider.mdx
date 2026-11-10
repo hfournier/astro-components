@@ -1,0 +1,71 @@
+---
+title: Slider
+description: Tests for the Slider component
+---
+
+<Heading level={1}>Slider Tests</Heading>
+
+<Section data-testid="slider-sizes" class="p-4 space-y-4">
+  <Heading level={2}>Sizes</Heading>
+  <Slider size="xs" aria-label="Extra small" />
+  <Slider size="sm" aria-label="Small" />
+  <Slider size="md" aria-label="Medium" />
+  <Slider size="lg" aria-label="Large" />
+  <Slider size="xl" aria-label="Extra large" />
+</Section>
+
+<Section data-testid="slider-values" class="p-4 space-y-4">
+  <Heading level={2}>Values</Heading>
+  <Slider value="0" aria-label="At the minimum" />
+  <Slider value="30" aria-label="At 30" />
+  <Slider value="100" aria-label="At the maximum" />
+  <Slider min="-10" max="10" step="0.5" value="2.5" aria-label="From -10 to 10" />
+  <Slider showStopIndicator={false} value="30" aria-label="Without a stop indicator" />
+</Section>
+
+<Section data-testid="slider-stops" class="p-4 space-y-4">
+  <Heading level={2}>Stops</Heading>
+  <Slider showStops step="10" value="30" aria-label="Every 10" />
+  <Slider showStops size="md" min="1" max="5" value="1" aria-label="From 1 to 5" />
+</Section>
+
+<Section data-testid="slider-value-indicator" class="p-4 pt-20 space-y-4">
+  <Heading level={2}>Value indicator</Heading>
+  <Slider showValueIndicator value="40" aria-label="Volume" />
+  <Slider showValueIndicator showStops step="25" size="lg" aria-label="Quarters" />
+</Section>
+
+<Section data-testid="slider-icon" class="p-4 space-y-4">
+  <Heading level={2}>Inset icon</Heading>
+  <Slider size="md" icon="light_mode" value="60" aria-label="Brightness, medium" />
+  <Slider size="lg" icon="light_mode" value="5" aria-label="Brightness, large, low" />
+  <Slider size="xl" icon="light_mode" value="70" aria-label="Brightness, extra large" />
+</Section>
+
+<Section data-testid="slider-vertical" class="p-4 space-y-4">
+  <Heading level={2}>Vertical</Heading>
+  <div class="flex gap-12 ps-16">
+    <Slider orientation="vertical" value="25" aria-label="Vertical" />
+    <Slider orientation="vertical" size="md" icon="light_mode" showStops step="20" value="60" showValueIndicator aria-label="Vertical with stops" />
+  </div>
+</Section>
+
+<Section data-testid="slider-disabled" class="p-4 space-y-4">
+  <Heading level={2}>Disabled</Heading>
+  <Slider disabled showStops step="20" value="40" aria-label="Disabled" />
+</Section>
+
+<Section data-testid="slider-form" class="p-4 space-y-4">
+  <Heading level={2}>In a form</Heading>
+  <form class="space-y-2" onsubmit="event.preventDefault()">
+    <label for="slider-form-volume">Volume</label>
+    <Slider id="slider-form-volume" name="volume" value="20" />
+    <Button type="reset" variant="outlined">Reset</Button>
+  </form>
+</Section>
+
+<Section data-testid="slider-rtl" class="p-4 pt-20 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <Slider value="30" aria-label="Right to left" />
+  <Slider size="md" icon="light_mode" showStops step="10" value="60" showValueIndicator aria-label="Right to left with stops" />
+</Section>

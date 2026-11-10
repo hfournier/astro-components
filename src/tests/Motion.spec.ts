@@ -284,6 +284,26 @@ test.describe("motion", () => {
     await expectTransitions(tooltip, { opacity: FAST_EFFECTS });
   });
 
+  test("Slider: the handle narrows on fast spatial, its colors and the value indicator on fast effects", async ({
+    page,
+  }) => {
+    await page.goto("/tests/slider");
+    const slider = page
+      .getByTestId("slider-value-indicator")
+      .getByRole("slider")
+      .first()
+      .locator("..");
+    await expectTransitions(slider.locator('[data-ac-slider-part="handle"]'), {
+      "inline-size": FAST_SPATIAL,
+      "background-color": FAST_EFFECTS,
+      "box-shadow": FAST_EFFECTS,
+    });
+    await expectTransitions(
+      slider.locator('[data-ac-slider-part="value-indicator"]'),
+      { opacity: FAST_EFFECTS }
+    );
+  });
+
   test("Snackbar: fades on fast effects while it scales on fast spatial", async ({
     page,
   }) => {

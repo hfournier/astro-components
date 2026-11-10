@@ -1,0 +1,15 @@
+Slider is a native `<input type="range">`, so assistive tech announces its name, its role as a slider and its value. A vertical slider says so with `aria-orientation`.
+
+Name every slider, usually with the text beside it: a `<label for>` pointing at its `id`, or `aria-labelledby`. Without visible text, give it `aria-label`. Assistive tech reads the name followed by the role, so say what the slider controls ("Volume", not "Slider"). When the value alone doesn't say enough, such as a temperature or a time, set `aria-valuetext` on the input to a fuller text ("21 degrees"), and update it with the value.
+
+Keyboard interaction follows M3:
+
+- **Tab** moves focus to the slider, which shows the theme focus ring around its handle.
+- **Arrow keys** move the value one step, or one stop with `showStops`. Right and up increase it; in right-to-left layouts, left increases it, following the track.
+- An arrow with **Space** held moves it a larger interval: a tenth of the steps, from one to ten of them. With `showStops`, it moves one stop, as the arrows alone do.
+- **Page Up** and **Page Down** move it the larger interval too, as Compose's sliders do. M3's table doesn't list them.
+- **Home** and **End** set it to the minimum and maximum.
+
+The value indicator and the inset icon are decoration, hidden from assistive tech: the input's own value is what it announces.
+
+The slider is at least 48px across its track, so it's a large enough target for touch. A press anywhere on it sets the value there, and dragging follows the pointer. Keep the stop indicator, or icons or text with 3:1 contrast at the slider's ends, so the end of the inactive track is easy to find.
