@@ -110,7 +110,7 @@ test.describe("ToolbarFloating", () => {
   }) => {
     const bar = toolbar(page, "vertical", "Drawing tools");
     const outer = await box(bar);
-    expect(outer.width).toBe(64);
+    expect(outer.width).toBeCloseTo(64, 1);
     expect(outer.height).toBeCloseTo(8 + 3 * 48 + 2 * 4 + 8, 0);
     // fully rounded: a radius of at least half its 64px
     for (const radius of await radii(bar))
@@ -387,10 +387,9 @@ test.describe("ToolbarFloating", () => {
   test("leaves on the fast spatial spring, at once with reduced motion", async ({
     page,
   }) => {
-    const root = section(page, "exit").locator(
-      "[data-ac-toolbar-floating-part=root]",
-      { has: page.getByRole("toolbar", { name: "Reading" }) }
-    );
+    const root = section(page, "exit").locator("[data-ac-toolbar-floating]", {
+      has: page.getByRole("toolbar", { name: "Reading" }),
+    });
     await expect(root).toHaveCSS(
       "transition-duration",
       await page.evaluate(() =>

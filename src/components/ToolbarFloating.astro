@@ -62,9 +62,10 @@ const colorClasses = toolbarColorClasses[color];
 
 // M3's Specs, FAB: secondary container beside a standard toolbar, tertiary container beside a
 // vibrant one (the page picks it with the Fab's `color`), at elevation level 1, raised a level on
-// hover as a FAB's states are. ! so it wins over the Fab's own elevation, hover included.
+// hover and back at rest while pressed, as a FAB's states are. ! so it wins over the Fab's own
+// elevation, its states included.
 const fabClasses =
-  "[&>[data-ac-fab]]:shadow-theme-elevation-1! [&>[data-ac-fab]:hover]:shadow-theme-elevation-2!";
+  "[&>[data-ac-fab]]:shadow-theme-elevation-1! [&>[data-ac-fab]:hover]:shadow-theme-elevation-2! [&>[data-ac-fab]:active]:shadow-theme-elevation-1!";
 ---
 
 {/* The toolbar and its FAB, side by side 8dp apart (M3's Specs, FAB between space), the FAB
@@ -79,7 +80,7 @@ const fabClasses =
     "motion-safe:transition-transform motion-safe:duration-(--theme-duration-spring-fast-spatial) motion-safe:ease-spring-fast-spatial",
     classList
   )}
-  data-ac-toolbar-floating-part="root"
+  data-ac-toolbar-floating={color}
   data-ac-toolbar-floating-orientation={orientation}
   data-ac-toolbar-floating-scroll-behavior={scrollBehavior}
 >
@@ -99,7 +100,7 @@ const fabClasses =
     )}
     role="toolbar"
     aria-orientation={isVertical ? "vertical" : undefined}
-    data-ac-toolbar-floating={color}
+    data-ac-toolbar-floating-part="toolbar"
     {...attrs}
   >
     <slot />
@@ -111,7 +112,7 @@ const fabClasses =
   import { moveFocusWithArrows, pinnedOf, scrollerOf } from "../utils";
 
   // M3's Accessibility page: Tab or the arrow keys move between a toolbar's controls (ADR-0036)
-  moveFocusWithArrows("[data-ac-toolbar-floating]");
+  moveFocusWithArrows('[data-ac-toolbar-floating-part="toolbar"]');
 
   // Compose's exit-always scroll behavior: a toolbar leaves its view as its content scrolls
   // down, and comes back as soon as the content scrolls up. Only one that's pinned (it or an
@@ -170,6 +171,7 @@ const fabClasses =
     root.style.transform = "";
   };
 
+  let frame = 0;
   const update = () => {
     frame = 0;
     document.querySelectorAll<HTMLElement>(rootSelector).forEach((root) => {
@@ -186,7 +188,6 @@ const fabClasses =
     });
   };
 
-  let frame = 0;
   const schedule = () => {
     frame ||= requestAnimationFrame(update);
   };
@@ -196,6 +197,20 @@ const fabClasses =
     capture: true,
     passive: true,
   });
+  // A resize moves the view's edges, so a toolbar that has left moves to stay past them
+  window.addEventListener(
+    "resize",
+    () => {
+      document
+        .querySelectorAll<HTMLElement>(
+          `${rootSelector}[data-ac-toolbar-floating-exited]`
+        )
+        .forEach((root) => {
+          root.style.transform = exitOffset(root, scrollerOf(root));
+        });
+    },
+    { passive: true }
+  );
   document.addEventListener("focusin", (event) => {
     const root = (event.target as Element).closest?.<HTMLElement>(rootSelector);
     if (root) comeBack(root);
