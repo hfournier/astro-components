@@ -152,6 +152,12 @@
   --theme-color-focus-ring-on-bg: var(--theme-color-secondary);
   /* lower-emphasis content on the background, such as a standard icon button's icon */
   --theme-color-on-bg-variant: var(--theme-color-on-surface-variant);
+  /* a tonal toggle icon button's container and icon, unselected and selected. A toolbar
+     (ToolbarDocked) re-points them to its own button and selected-button colors. */
+  --theme-color-tonal-toggle: var(--theme-color-secondary-container);
+  --theme-color-on-tonal-toggle: var(--theme-color-on-secondary-container);
+  --theme-color-tonal-toggle-selected: var(--theme-color-secondary);
+  --theme-color-on-tonal-toggle-selected: var(--theme-color-on-secondary);
   /* the surface behind the content (the body's background), for focus-ring offsets */
   --theme-color-wrapper-bg: var(--theme-color-surface);
 }

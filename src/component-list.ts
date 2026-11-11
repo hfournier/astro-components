@@ -67,4 +67,5 @@ export { default as Tab } from "./components/Tab.astro";
 export { default as Tabs } from "./components/Tabs.astro";
 export { default as TextField } from "./components/TextField.astro";
 export { default as TextFieldChips } from "./components/TextFieldChips.astro";
+export { default as ToolbarDocked } from "./components/ToolbarDocked.astro";
 export { default as Tooltip } from "./components/Tooltip.astro";

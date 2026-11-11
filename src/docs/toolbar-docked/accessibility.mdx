@@ -1,0 +1,7 @@
+- **Role and name:** it's a `<div>` with `role="toolbar"`, as M3 asks on the web, so assistive technology announces its controls as one set. Give it a name with `aria-label` or `aria-labelledby`; a toolbar without one fails the build.
+- **Keyboard:** the toolbar itself isn't focusable. Tab lands on its first control and moves through the rest, and the left and right arrow keys move between them too, mirrored right to left. The arrow keys stop at the ends and skip disabled controls. Space or Enter activates the focused one. Each shows a focus ring.
+- **Controls that use the arrow keys:** in a text field, the arrows move the caret, so Tab moves on from it. A ButtonGroup or ChipGroup inside moves between its own items first, and the arrows leave it at its ends. A menu opened from the toolbar keeps its own keys.
+- **Names:** name each icon button after what it does with its `label`, such as "Archive" or "Delete". The label is also its tooltip. A toggle button announces whether it's selected through `aria-pressed`, and shows its filled icon when selected, so its state doesn't rest on color alone.
+- **Targets:** each control has at least a 48px target, and the toolbar spaces its items by their targets, so they never overlap.
+- **Right to left:** the toolbar mirrors, its first control at the right. If the order of the actions matters, such as Next at the trailing edge, it stays at the trailing edge, now at the left.
+- **Reachable while scrolling:** pinned to the bottom of the window, its actions stay reachable however far the page scrolls.

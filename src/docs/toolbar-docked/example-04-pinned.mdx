@@ -1,0 +1,21 @@
+---
+title: Pinned
+description: With `sticky bottom-0 z-1` as the last element of a scrolling box, the toolbar stays at the box's bottom while the content scrolls above it. On a page, pin it to the bottom of the window the same way.
+---
+
+<div class="h-64 overflow-y-auto rounded-xl border border-(--theme-color-outline-variant)" tabindex="0" role="region" aria-label="Message">
+  <div class="space-y-4 p-4">
+    <p>Scroll this box: the toolbar stays at its bottom.</p>
+    <p>Hi Ana, here are the notes from Friday's meeting.</p>
+    <p>We agreed to move the launch to the second week of June.</p>
+    <p>Ben will update the schedule and share it on Monday.</p>
+    <p>The design review is now on Wednesday at ten.</p>
+    <p>Let me know if I missed anything.</p>
+    <p>Thanks, Sam</p>
+  </div>
+  <ToolbarDocked aria-label="Message actions" class="sticky bottom-0 z-1">
+    <ButtonIcon icon="share" label="Share" />
+    <ButtonIcon icon="archive" label="Archive" />
+    <ButtonIcon icon="delete" label="Delete" />
+  </ToolbarDocked>
+</div>

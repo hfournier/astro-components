@@ -174,8 +174,9 @@ const variantClasses = {
   standard: isToggle
     ? "bg-transparent border-transparent text-(--theme-color-on-bg-variant) not-disabled:aria-pressed:text-(--theme-color-primary)"
     : "bg-transparent border-transparent text-(--theme-color-on-bg-variant)",
+  // a tonal toggle's colors are role tokens, which a toolbar re-points to its own
   tonal: isToggle
-    ? `bg-(--theme-color-secondary-container) border-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container) not-disabled:aria-pressed:bg-(--theme-color-secondary) not-disabled:aria-pressed:border-(--theme-color-secondary) not-disabled:aria-pressed:text-(--theme-color-on-secondary) ${disabledContainer}`
+    ? `bg-(--theme-color-tonal-toggle) border-(--theme-color-tonal-toggle) text-(--theme-color-on-tonal-toggle) not-disabled:aria-pressed:bg-(--theme-color-tonal-toggle-selected) not-disabled:aria-pressed:border-(--theme-color-tonal-toggle-selected) not-disabled:aria-pressed:text-(--theme-color-on-tonal-toggle-selected) ${disabledContainer}`
     : `bg-(--theme-color-secondary-container) border-(--theme-color-secondary-container) text-(--theme-color-on-secondary-container) ${disabledContainer}`,
 }[variant];
 ---

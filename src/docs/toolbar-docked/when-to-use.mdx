@@ -1,0 +1,13 @@
+Use a docked toolbar at the bottom of the window for actions that relate to the current page, especially global ones that stay the same across several pages, such as reply, archive and delete on each message. It holds more actions than an app bar, and grows to show more in larger windows.
+
+Pick the color style for the emphasis:
+
+- **Standard** (`variant="standard"`, the default) keeps attention on the page's content.
+- **Vibrant** (`variant="vibrant"`) draws attention to the controls, or shows a temporary change in the page, such as entering edit mode.
+
+### When not to use it
+
+- **With a navigation bar:** both sit at the bottom of the window. Show the [NavBar](/components/nav-bar) on top-level pages, and the toolbar on the pages under them.
+- **Moving between the app's top-level destinations:** use a [NavBar](/components/nav-bar) or [NavRail](/components/nav-rail).
+- **One or two actions for the page:** put them in the [AppBar](/components/app-bar).
+- **At the top of the page or floating over its content:** M3 docks this toolbar only at the bottom. A toolbar that floats over the content is the floating toolbar.

@@ -1,0 +1,148 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import BaseWrapper from "./BaseWrapper.astro";
+
+// M3 Expressive's docked toolbar, which replaces the bottom app bar: a full-width bar of the
+// page's actions at the bottom of the window. It holds icon buttons, buttons, a text field or
+// other controls, one of which can be an embedded primary action, such as a filled icon button.
+// The page pins it to the bottom, as it does the header.
+//
+// It's a `toolbar` (M3's Accessibility page: "On web, the toolbar container should have the
+// toolbar role"), named with `aria-label` or `aria-labelledby`. Tab moves through its controls,
+// and so do the left and right arrow keys (the script below).
+type Props = Omit<HTMLAttributes<"div">, "role"> & {
+  // M3's color styles: standard, low emphasis, keeps attention on the content; vibrant, high
+  // emphasis, draws it to the controls, or shows a mode such as editing
+  variant?: "standard" | "vibrant";
+};
+
+const { variant = "standard", class: classList, ...attrs } = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["standard", "vibrant"].includes(variant)) {
+  throw new Error(
+    `ToolbarDocked: M3's color styles are "standard" and "vibrant", but this one's \`variant\` is "${variant}".`
+  );
+}
+// An unnamed toolbar is announced as just "toolbar", with nothing to say what its actions are for
+if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
+  throw new Error(
+    "ToolbarDocked: a toolbar needs a name, from an `aria-label` or `aria-labelledby`, but this one has neither."
+  );
+}
+
+// M3's Specs, color: the container, and through BaseWrapper the icon buttons' on-bg-variant
+// (on-surface-variant, or on-primary-container) and focus ring. A selected button takes the
+// selected button's container and icon, and an unselected one the toolbar's own: it re-points
+// a tonal toggle icon button's role tokens to them.
+const variantClasses = {
+  standard: {
+    bg: "surface-container",
+    toggles:
+      "[--theme-color-tonal-toggle:var(--theme-color-surface-container)] [--theme-color-on-tonal-toggle:var(--theme-color-on-surface-variant)] [--theme-color-tonal-toggle-selected:var(--theme-color-secondary-container)] [--theme-color-on-tonal-toggle-selected:var(--theme-color-on-secondary-container)]",
+  },
+  vibrant: {
+    bg: "primary-container",
+    toggles:
+      "[--theme-color-tonal-toggle:var(--theme-color-primary-container)] [--theme-color-on-tonal-toggle:var(--theme-color-on-primary-container)] [--theme-color-tonal-toggle-selected:var(--theme-color-surface-container)] [--theme-color-on-tonal-toggle-selected:var(--theme-color-on-surface)]",
+  },
+}[variant] as {
+  bg: "surface-container" | "primary-container";
+  toggles: string;
+};
+---
+
+{/* M3's Specs: 64dp high with square corners, its items 16dp in from each edge. Each item sits
+    in a cell at least 48dp wide, its touch target, as Compose lays out an icon button, so the
+    spacing is between targets. In a compact window the items spread evenly (Compose's
+    SpaceBetween, from the 4dp min spacing up); from medium they're centered with the 32dp max
+    spacing between them (Compose's fixed arrangement), as M3's Guidelines lay them out. Below,
+    it keeps clear of a phone's home indicator (Compose's window insets). */}
+<BaseWrapper
+  bgColor={variantClasses.bg}
+  class={twMerge(
+    "box-content grid h-16 auto-cols-[minmax(--spacing(12),auto)] grid-flow-col place-items-center justify-between gap-1 px-4 pb-[env(safe-area-inset-bottom,0px)] medium:justify-center medium:gap-8",
+    variantClasses.toggles,
+    classList
+  )}
+  role="toolbar"
+  data-ac-toolbar-docked={variant}
+  {...attrs}
+>
+  <slot />
+</BaseWrapper>
+
+<script>
+  // M3's Accessibility page: Tab or the arrow keys move between a toolbar's controls. Tab
+  // already does; the left and right arrows move to the previous or next control, in the order
+  // Tab takes, mirrored right to left. They stop at the ends and skip disabled controls.
+  //
+  // A control that uses the arrow keys itself keeps them: a text field moves its caret, a
+  // slider its value, a radio its selection. A group inside the toolbar that moves between its
+  // own items, such as a ButtonGroup or ChipGroup, handles them first, as it listens on the
+  // document; this listens on the window, after it, and moves on only once the group stops.
+  const toolbarSelector = "[data-ac-toolbar-docked]";
+  const tabbableSelector =
+    "a[href], button, input, select, textarea, [tabindex], [contenteditable]";
+  const ownsArrowsSelector = [
+    "input:not([type=button], [type=checkbox], [type=image], [type=reset], [type=submit])",
+    "textarea",
+    "select",
+    "[contenteditable]:not([contenteditable=false])",
+    "[role=slider]",
+    "[role=spinbutton]",
+    "[role=textbox]",
+    "[role=combobox]",
+    "[role=radio]",
+  ].join(", ");
+  // Popovers and dialogs opened from the toolbar, such as a menu, handle their own keys
+  const layerSelector = "[popover], dialog";
+
+  // The toolbar's controls that Tab stops at, in its order
+  const controlsOf = (toolbar: Element) =>
+    [...toolbar.querySelectorAll<HTMLElement>(tabbableSelector)].filter(
+      (el) =>
+        el.tabIndex >= 0 &&
+        !el.matches(":disabled") &&
+        el.closest(layerSelector)?.closest(toolbarSelector) !== toolbar &&
+        el.getClientRects().length > 0 &&
+        getComputedStyle(el).visibility !== "hidden"
+    );
+
+  window.addEventListener("keydown", (event) => {
+    if (event.defaultPrevented) return;
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
+      return;
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    const toolbar = target.closest(toolbarSelector);
+    if (!toolbar || target.matches(ownsArrowsSelector)) return;
+    if (target.closest(layerSelector)?.closest(toolbarSelector) === toolbar)
+      return;
+
+    const isRtl = getComputedStyle(toolbar).direction === "rtl";
+    const forward = (event.key === "ArrowRight") !== isRtl;
+    const controls = controlsOf(toolbar);
+    // the next control after the focused one, or the last before it, in document order, so it
+    // also works from an item that Tab skips, such as a roving one in a group
+    const following = (el: Element) =>
+      !!(
+        target.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING
+      ) && !target.contains(el);
+    const next = forward
+      ? controls.find(following)
+      : controls.findLast(
+          (el) =>
+            el !== target &&
+            !el.contains(target) &&
+            !following(el) &&
+            !target.contains(el)
+        );
+    if (!next) return;
+    event.preventDefault();
+    next.focus();
+  });
+</script>
