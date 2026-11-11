@@ -160,7 +160,7 @@ const expected: Record<string, string | RegExp> = {
     "TextFieldChips: its chips are a group named by the field's label, but this one has no label, `aria-label` or `aria-labelledby`.",
   "toolbar-docked-name":
     "ToolbarDocked: a toolbar needs a name, from an `aria-label` or `aria-labelledby`, but this one has neither.",
-  "toolbar-docked-variant": `ToolbarDocked: M3's color styles are "standard" and "vibrant", but this one's \`variant\` is "tonal".`,
+  "toolbar-docked-color": `ToolbarDocked: M3's color styles are "standard" and "vibrant", but this one's \`color\` is "tonal".`,
   "tooltip-placement": `Tooltip: its placements are "above" and "below", but this one's \`placement\` is "left".`,
   "tooltip-variant": `Tooltip: M3's tooltips are "plain" and "rich", but this one's \`variant\` is "tooltip".`,
 };

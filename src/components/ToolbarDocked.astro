@@ -14,16 +14,16 @@ import BaseWrapper from "./BaseWrapper.astro";
 type Props = Omit<HTMLAttributes<"div">, "role"> & {
   // M3's color styles: standard, low emphasis, keeps attention on the content; vibrant, high
   // emphasis, draws it to the controls, or shows a mode such as editing
-  variant?: "standard" | "vibrant";
+  color?: "standard" | "vibrant";
 };
 
-const { variant = "standard", class: classList, ...attrs } = Astro.props;
+const { color = "standard", class: classList, ...attrs } = Astro.props;
 
 // Values outside these fail the build, rather than drawing something other than was asked for
 // (ADR-0021)
-if (!["standard", "vibrant"].includes(variant)) {
+if (!["standard", "vibrant"].includes(color)) {
   throw new Error(
-    `ToolbarDocked: M3's color styles are "standard" and "vibrant", but this one's \`variant\` is "${variant}".`
+    `ToolbarDocked: M3's color styles are "standard" and "vibrant", but this one's \`color\` is "${color}".`
   );
 }
 // An unnamed toolbar is announced as just "toolbar", with nothing to say what its actions are for
@@ -37,21 +37,20 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
 // (on-surface-variant, or on-primary-container) and focus ring. A selected button takes the
 // selected button's container and icon, and an unselected one the toolbar's own: it re-points
 // a tonal toggle icon button's role tokens to them.
-const variantClasses = {
-  standard: {
-    bg: "surface-container",
-    toggles:
-      "[--theme-color-tonal-toggle:var(--theme-color-surface-container)] [--theme-color-on-tonal-toggle:var(--theme-color-on-surface-variant)] [--theme-color-tonal-toggle-selected:var(--theme-color-secondary-container)] [--theme-color-on-tonal-toggle-selected:var(--theme-color-on-secondary-container)]",
-  },
-  vibrant: {
-    bg: "primary-container",
-    toggles:
-      "[--theme-color-tonal-toggle:var(--theme-color-primary-container)] [--theme-color-on-tonal-toggle:var(--theme-color-on-primary-container)] [--theme-color-tonal-toggle-selected:var(--theme-color-surface-container)] [--theme-color-on-tonal-toggle-selected:var(--theme-color-on-surface)]",
-  },
-}[variant] as {
-  bg: "surface-container" | "primary-container";
-  toggles: string;
-};
+const colorClasses = (
+  {
+    standard: {
+      bg: "surface-container",
+      toggles:
+        "[--theme-color-tonal-toggle:var(--theme-color-surface-container)] [--theme-color-on-tonal-toggle:var(--theme-color-on-surface-variant)] [--theme-color-tonal-toggle-selected:var(--theme-color-secondary-container)] [--theme-color-on-tonal-toggle-selected:var(--theme-color-on-secondary-container)]",
+    },
+    vibrant: {
+      bg: "primary-container",
+      toggles:
+        "[--theme-color-tonal-toggle:var(--theme-color-primary-container)] [--theme-color-on-tonal-toggle:var(--theme-color-on-primary-container)] [--theme-color-tonal-toggle-selected:var(--theme-color-surface-container)] [--theme-color-on-tonal-toggle-selected:var(--theme-color-on-surface)]",
+    },
+  } as const
+)[color];
 ---
 
 {/* M3's Specs: 64dp high with square corners, its items 16dp in from each edge. Each item sits
@@ -61,14 +60,14 @@ const variantClasses = {
     spacing between them (Compose's fixed arrangement), as M3's Guidelines lay them out. Below,
     it keeps clear of a phone's home indicator (Compose's window insets). */}
 <BaseWrapper
-  bgColor={variantClasses.bg}
+  bgColor={colorClasses.bg}
   class={twMerge(
     "box-content grid h-16 auto-cols-[minmax(--spacing(12),auto)] grid-flow-col place-items-center justify-between gap-1 px-4 pb-[env(safe-area-inset-bottom,0px)] medium:justify-center medium:gap-8",
-    variantClasses.toggles,
+    colorClasses.toggles,
     classList
   )}
   role="toolbar"
-  data-ac-toolbar-docked={variant}
+  data-ac-toolbar-docked={color}
   {...attrs}
 >
   <slot />
@@ -87,7 +86,7 @@ const variantClasses = {
   const tabbableSelector =
     "a[href], button, input, select, textarea, [tabindex], [contenteditable]";
   const ownsArrowsSelector = [
-    "input:not([type=button], [type=checkbox], [type=image], [type=reset], [type=submit])",
+    "input:not([type=button], [type=checkbox], [type=color], [type=file], [type=image], [type=reset], [type=submit])",
     "textarea",
     "select",
     "[contenteditable]:not([contenteditable=false])",
@@ -99,6 +98,9 @@ const variantClasses = {
   ].join(", ");
   // Popovers and dialogs opened from the toolbar, such as a menu, handle their own keys
   const layerSelector = "[popover], dialog";
+  // Whether an element is in a popover or dialog opened from this toolbar
+  const inLayerOf = (el: Element, toolbar: Element) =>
+    el.closest(layerSelector)?.closest(toolbarSelector) === toolbar;
 
   // The toolbar's controls that Tab stops at, in its order
   const controlsOf = (toolbar: Element) =>
@@ -106,7 +108,7 @@ const variantClasses = {
       (el) =>
         el.tabIndex >= 0 &&
         !el.matches(":disabled") &&
-        el.closest(layerSelector)?.closest(toolbarSelector) !== toolbar &&
+        !inLayerOf(el, toolbar) &&
         el.getClientRects().length > 0 &&
         getComputedStyle(el).visibility !== "hidden"
     );
@@ -120,27 +122,22 @@ const variantClasses = {
     if (!(target instanceof HTMLElement)) return;
     const toolbar = target.closest(toolbarSelector);
     if (!toolbar || target.matches(ownsArrowsSelector)) return;
-    if (target.closest(layerSelector)?.closest(toolbarSelector) === toolbar)
-      return;
+    if (inLayerOf(target, toolbar)) return;
 
     const isRtl = getComputedStyle(toolbar).direction === "rtl";
     const forward = (event.key === "ArrowRight") !== isRtl;
     const controls = controlsOf(toolbar);
     // the next control after the focused one, or the last before it, in document order, so it
     // also works from an item that Tab skips, such as a roving one in a group
-    const following = (el: Element) =>
-      !!(
-        target.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING
-      ) && !target.contains(el);
-    const next = forward
-      ? controls.find(following)
-      : controls.findLast(
-          (el) =>
-            el !== target &&
-            !el.contains(target) &&
-            !following(el) &&
-            !target.contains(el)
-        );
+    // (neither inside it nor holding it)
+    const position = (el: Element) => target.compareDocumentPosition(el);
+    const follows = (el: Element) =>
+      !!(position(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+      !target.contains(el);
+    const precedes = (el: Element) =>
+      !!(position(el) & Node.DOCUMENT_POSITION_PRECEDING) &&
+      !el.contains(target);
+    const next = forward ? controls.find(follows) : controls.findLast(precedes);
     if (!next) return;
     event.preventDefault();
     next.focus();
