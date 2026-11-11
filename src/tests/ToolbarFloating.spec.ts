@@ -61,8 +61,23 @@ const rect = (target: Locator) =>
     const { x, y, width, height } = el.getBoundingClientRect();
     return { x, y, width, height };
   });
-// Waits until an element has stopped changing size or place, such as a toolbar collapsing
+// Waits until an element has stopped changing size or place, such as a toolbar collapsing. A
+// scroll's update runs on a later frame and starts its animation then, and on a slow machine
+// frames can stall mid-animation, so a box that's the same twice running isn't enough: first
+// wait out a few frames and then any animation running on the element or inside it.
 const settledRect = async (target: Locator) => {
+  await target.evaluate(async (el) => {
+    for (let i = 0; i < 3; i++)
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    await Promise.all(
+      el
+        .getAnimations({ subtree: true })
+        .filter(
+          (animation) => animation.effect?.getTiming().iterations !== Infinity
+        )
+        .map((animation) => animation.finished.catch(() => {}))
+    );
+  });
   let last = "";
   await expect
     .poll(async () => {
