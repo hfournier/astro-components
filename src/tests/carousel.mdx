@@ -1,0 +1,82 @@
+---
+title: Carousel
+description: Tests for the Carousel and CarouselItem components
+---
+
+<Heading level={1}>Carousel Tests</Heading>
+
+<Section data-testid="carousel-multi-browse" class="p-4 space-y-4">
+  <Heading level={2}>Multi-browse, 412px wide</Heading>
+  <Button variant="text">Before the carousel</Button>
+  <div class="w-[412px]">
+    <Carousel aria-label="Trip photos">
+      <CarouselItem href="#lake"><img src="/carousel/lake.svg" alt="Lake at sunrise" /></CarouselItem>
+      <CarouselItem href="#forest"><img src="/carousel/forest.svg" alt="Forest trail" /></CarouselItem>
+      <CarouselItem href="#desert"><img src="/carousel/desert.svg" alt="Desert dunes" /></CarouselItem>
+      <CarouselItem href="#mountains"><img src="/carousel/mountains.svg" alt="Mountain ridge" /></CarouselItem>
+      <CarouselItem href="#sunset"><img src="/carousel/sunset.svg" alt="Sunset over the bay" /></CarouselItem>
+      <CarouselItem href="#meadow"><img src="/carousel/meadow.svg" alt="Meadow in spring" /></CarouselItem>
+      <CarouselItem href="#lake-2"><img src="/carousel/lake.svg" alt="Lake at dusk" /></CarouselItem>
+      <CarouselItem href="#forest-2"><img src="/carousel/forest.svg" alt="Forest in fog" /></CarouselItem>
+    </Carousel>
+  </div>
+  <Button variant="text">After the carousel</Button>
+</Section>
+
+<Section data-testid="carousel-wide" class="p-4 space-y-4">
+  <Heading level={2}>Multi-browse, 840px wide</Heading>
+  <div class="w-[840px] max-w-full">
+    <Carousel aria-label="Albums" preferredItemWidth={240}>
+      <CarouselItem href="#a1"><img src="/carousel/mountains.svg" alt="Mountains" /></CarouselItem>
+      <CarouselItem href="#a2"><img src="/carousel/sunset.svg" alt="Sunsets" /></CarouselItem>
+      <CarouselItem href="#a3"><img src="/carousel/meadow.svg" alt="Meadows" /></CarouselItem>
+      <CarouselItem href="#a4"><img src="/carousel/lake.svg" alt="Lakes" /></CarouselItem>
+      <CarouselItem href="#a5"><img src="/carousel/forest.svg" alt="Forests" /></CarouselItem>
+      <CarouselItem href="#a6"><img src="/carousel/desert.svg" alt="Deserts" /></CarouselItem>
+      <CarouselItem href="#a7"><img src="/carousel/mountains.svg" alt="Peaks" /></CarouselItem>
+      <CarouselItem href="#a8"><img src="/carousel/sunset.svg" alt="Dusk" /></CarouselItem>
+      <CarouselItem href="#a9"><img src="/carousel/meadow.svg" alt="Fields" /></CarouselItem>
+      <CarouselItem href="#a10"><img src="/carousel/lake.svg" alt="Shores" /></CarouselItem>
+    </Carousel>
+  </div>
+</Section>
+
+<Section data-testid="carousel-label" class="p-4 space-y-4">
+  <Heading level={2}>Item text</Heading>
+  <div class="w-[412px]">
+    <Carousel aria-label="Places">
+      <CarouselItem href="#p1"><img src="/carousel/lake.svg" alt="" /><span slot="label">Lake Louise</span></CarouselItem>
+      <CarouselItem href="#p2"><img src="/carousel/forest.svg" alt="" /><span slot="label">Black Forest</span></CarouselItem>
+      <CarouselItem href="#p3"><img src="/carousel/desert.svg" alt="" /><span slot="label">Sahara</span></CarouselItem>
+      <CarouselItem href="#p4"><img src="/carousel/mountains.svg" alt="" /><span slot="label">Dolomites</span></CarouselItem>
+      <CarouselItem href="#p5"><img src="/carousel/sunset.svg" alt="" /><span slot="label">Big Sur</span></CarouselItem>
+    </Carousel>
+  </div>
+</Section>
+
+<Section data-testid="carousel-buttons" class="p-4 space-y-4">
+  <Heading level={2}>Button items, one disabled</Heading>
+  <div class="w-[412px]">
+    <Carousel aria-label="Filters">
+      <CarouselItem as="button"><img src="/carousel/sunset.svg" alt="Warm" /></CarouselItem>
+      <CarouselItem as="button"><img src="/carousel/lake.svg" alt="Cool" /></CarouselItem>
+      <CarouselItem as="button" disabled><img src="/carousel/meadow.svg" alt="Vivid" /></CarouselItem>
+      <CarouselItem as="button"><img src="/carousel/mountains.svg" alt="Muted" /></CarouselItem>
+      <CarouselItem as="button"><img src="/carousel/desert.svg" alt="Sepia" /></CarouselItem>
+    </Carousel>
+  </div>
+</Section>
+
+<Section data-testid="carousel-rtl" class="p-4 space-y-4" dir="rtl" lang="ar">
+  <Heading level={2}>من اليمين إلى اليسار</Heading>
+  <div class="w-[412px]">
+    <Carousel aria-label="صور الرحلة">
+      <CarouselItem href="#r1"><img src="/carousel/lake.svg" alt="بحيرة" /></CarouselItem>
+      <CarouselItem href="#r2"><img src="/carousel/forest.svg" alt="غابة" /></CarouselItem>
+      <CarouselItem href="#r3"><img src="/carousel/desert.svg" alt="صحراء" /></CarouselItem>
+      <CarouselItem href="#r4"><img src="/carousel/mountains.svg" alt="جبال" /></CarouselItem>
+      <CarouselItem href="#r5"><img src="/carousel/sunset.svg" alt="غروب" /></CarouselItem>
+      <CarouselItem href="#r6"><img src="/carousel/meadow.svg" alt="مرج" /></CarouselItem>
+    </Carousel>
+  </div>
+</Section>

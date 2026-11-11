@@ -1,0 +1,84 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+
+// M3's carousel item, in a Carousel: a visual, such as a photo, with optional text, that's a link
+// or button. The `<li>` keeps the large size in the row; the item inside it is as large as the
+// Carousel's script makes it, centered on the `<li>` and moved by its keyline, with its visual
+// staying at the large size so it moves at another speed (ADR-0038).
+type Props = (
+  | (Omit<HTMLAttributes<"a">, "type"> & { as?: "a" })
+  | (HTMLAttributes<"button"> & { as: "button" })
+) & { class?: string };
+
+const { as = "a", class: classList, ...attrs } = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (as !== "a" && as !== "button") {
+  throw new Error(
+    `CarouselItem: its elements are "a" and "button", but this one's \`as\` is "${as}".`
+  );
+}
+// M3's Accessibility page: people activate a carousel item, and Tab reaches each one
+if (as === "a" && !("href" in attrs && attrs.href)) {
+  throw new Error(
+    'CarouselItem: a link item needs an `href`, or it isn\'t a link and Tab skips it; use `as="button"` for an item that runs a script.'
+  );
+}
+if (as === "a" && "disabled" in attrs && attrs.disabled) {
+  throw new Error(
+    "CarouselItem: only a button item can be disabled, as a link can't be, but this one's `as` is \"a\" with `disabled`."
+  );
+}
+
+const Tag = as;
+const hasLabel = Astro.slots.has("label");
+---
+
+<li
+  class="relative w-(--ac-carousel-item-size) max-w-full flex-none snap-start"
+  data-ac-carousel-item
+>
+  <Tag
+    class={twMerge(
+      // M3's Specs: corner extra large (28dp), the visual cropped to the item's shape
+      "absolute inset-y-0 inset-s-(--ac-carousel-mask-start,0px) w-(--ac-carousel-mask-size,100%) overflow-hidden rounded-[28px] text-start",
+      "cursor-pointer disabled:cursor-default",
+      // M3's state layer (the tokens leave its color open; on-surface, as a card's): 8% hovered,
+      // 10% focused or pressed. It covers the visual and takes no clicks.
+      "before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:bg-(--theme-color-on-surface) before:opacity-0 motion-safe:before:transition-opacity",
+      "hover:before:opacity-8 focus-visible:before:opacity-10 active:before:opacity-10 disabled:before:opacity-0",
+      // M3's Specs: elevation level 1 hovered, 0 otherwise
+      "hover:shadow-theme-elevation-1 active:shadow-none disabled:shadow-none motion-safe:transition-shadow",
+      // M3's focus indicator: 3px, 2px outside the item
+      "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-(--theme-color-focus-ring-on-bg)",
+      // M3's Specs: a disabled item's container at 38%
+      "disabled:opacity-38",
+      classList
+    )}
+    type={as === "button" ? "button" : undefined}
+    data-ac-carousel-item-part="item"
+    {...attrs}
+  >
+    {/* The visual stays at the large size, centered where the item is laid out, so the item's
+        edges move over it as it changes size: M3's parallax */}
+    <span
+      class="absolute inset-y-0 inset-s-(--ac-carousel-visual-start,0px) block w-(--ac-carousel-item-size) *:size-full *:object-cover"
+      data-ac-carousel-item-part="visual"
+    >
+      <slot />
+    </span>
+    {hasLabel && (
+      // M3's Guidelines: brief text over the visual, at its start, which adapts to the item's
+      // size. It stays at the item's starting edge and fades out over the first 80dp the item
+      // shrinks, as MDC's carousel does, and is light on a scrim so it reads on any visual.
+      <span
+        class="absolute inset-s-0 bottom-0 z-2 block w-(--ac-carousel-item-size) bg-linear-to-t from-(--theme-color-scrim)/60 to-transparent px-4 pt-8 pb-4 text-base leading-6 font-medium tracking-[0.15px] text-white opacity-(--ac-carousel-label-opacity,1)"
+        data-ac-carousel-item-part="label"
+      >
+        <slot name="label" />
+      </span>
+    )}
+  </Tag>
+</li>
