@@ -1,0 +1,203 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import BaseWrapper from "./BaseWrapper.astro";
+import { toolbarColorClasses } from "../utils";
+
+// M3 Expressive's floating toolbar: a pill of contextual actions that floats over the page's
+// content, horizontal or vertical, alone or paired with a FAB. It holds icon buttons, buttons,
+// a text field or other controls, one of which can be an embedded primary action. The page
+// places it, usually fixed or sticky near the bottom of the window or, vertical, at a side.
+//
+// It's a `toolbar` (M3's Accessibility page: "On web, the toolbar container should have the
+// toolbar role"), named with `aria-label` or `aria-labelledby`. Tab moves through its controls,
+// and so do the arrow keys (the script below): left and right, or up and down in a vertical one.
+type Props = Omit<HTMLAttributes<"div">, "role" | "aria-orientation"> & {
+  // M3's color styles: standard, low emphasis, keeps attention on the content; vibrant, high
+  // emphasis, draws it to the controls, or shows a mode such as editing
+  color?: "standard" | "vibrant";
+  // M3's layouts: a row, or a column for the side of a larger window. Set as aria-orientation.
+  orientation?: "horizontal" | "vertical";
+  // What it does as its content scrolls. "exit-always", Compose's behavior: it leaves the view
+  // as the content scrolls down and comes back as soon as it scrolls up.
+  scrollBehavior?: "none" | "exit-always";
+};
+
+const {
+  color = "standard",
+  orientation = "horizontal",
+  scrollBehavior = "none",
+  class: classList,
+  ...attrs
+} = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["standard", "vibrant"].includes(color)) {
+  throw new Error(
+    `ToolbarFloating: M3's color styles are "standard" and "vibrant", but this one's \`color\` is "${color}".`
+  );
+}
+if (!["horizontal", "vertical"].includes(orientation)) {
+  throw new Error(
+    `ToolbarFloating: M3's layouts are "horizontal" and "vertical", but this one's \`orientation\` is "${orientation}".`
+  );
+}
+if (!["none", "exit-always"].includes(scrollBehavior)) {
+  throw new Error(
+    `ToolbarFloating: its scroll behaviors are "none" and "exit-always", but this one's \`scrollBehavior\` is "${scrollBehavior}".`
+  );
+}
+// An unnamed toolbar is announced as just "toolbar", with nothing to say what its actions are for
+if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
+  throw new Error(
+    "ToolbarFloating: a toolbar needs a name, from an `aria-label` or `aria-labelledby`, but this one has neither."
+  );
+}
+
+const isVertical = orientation === "vertical";
+
+// M3's Specs, color: the same roles as the docked toolbar's (ADR-0036)
+const colorClasses = toolbarColorClasses[color];
+
+// M3's Specs, FAB: secondary container beside a standard toolbar, tertiary container beside a
+// vibrant one (the page picks it with the Fab's `color`), at elevation level 1, raised a level on
+// hover as a FAB's states are. ! so it wins over the Fab's own elevation, hover included.
+const fabClasses =
+  "[&>[data-ac-fab]]:shadow-theme-elevation-1! [&>[data-ac-fab]:hover]:shadow-theme-elevation-2!";
+---
+
+{/* The toolbar and its FAB, side by side 8dp apart (M3's Specs, FAB between space), the FAB
+    centered on the toolbar: after it, at the end of a row or below a column, as Compose puts it.
+    The page places this pair with `class`. Leaving on scroll, the pair moves together, on M3's
+    fast spatial spring (Compose's floating toolbar animation spec). */}
+<div
+  class={twMerge(
+    "inline-flex items-center gap-2",
+    isVertical && "flex-col",
+    fabClasses,
+    "motion-safe:transition-transform motion-safe:duration-(--theme-duration-spring-fast-spatial) motion-safe:ease-spring-fast-spatial",
+    classList
+  )}
+  data-ac-toolbar-floating-part="root"
+  data-ac-toolbar-floating-orientation={orientation}
+  data-ac-toolbar-floating-scroll-behavior={scrollBehavior}
+>
+  {/* M3's Specs: 64dp across, fully rounded, at elevation level 3, with 8dp leading and
+      trailing space and 4dp between items. Each item sits in a cell at least 48dp long, its
+      touch target, as Compose lays out an icon button, so the spaces are between targets and
+      a 40dp icon button is 8dp from the edge with its target. It's only as long as its items
+      (M3's Guidelines). */}
+  <BaseWrapper
+    bgColor={colorClasses.bg}
+    class={twMerge(
+      "grid shrink-0 place-items-center gap-1 rounded-full p-2 shadow-theme-elevation-3",
+      isVertical
+        ? "min-w-16 auto-rows-[minmax(--spacing(12),auto)] grid-flow-row"
+        : "min-h-16 auto-cols-[minmax(--spacing(12),auto)] grid-flow-col",
+      colorClasses.toggles
+    )}
+    role="toolbar"
+    aria-orientation={isVertical ? "vertical" : undefined}
+    data-ac-toolbar-floating={color}
+    {...attrs}
+  >
+    <slot />
+  </BaseWrapper>
+  <slot name="fab" />
+</div>
+
+<script>
+  import { moveFocusWithArrows, pinnedOf, scrollerOf } from "../utils";
+
+  // M3's Accessibility page: Tab or the arrow keys move between a toolbar's controls (ADR-0036)
+  moveFocusWithArrows("[data-ac-toolbar-floating]");
+
+  // Compose's exit-always scroll behavior: a toolbar leaves its view as its content scrolls
+  // down, and comes back as soon as the content scrolls up. Only one that's pinned (it or an
+  // ancestor below its scroll container is sticky or fixed) leaves, since one that scrolls with
+  // the content goes out of view anyway. A row leaves through the nearer of the view's top and
+  // bottom edges, a column through the nearer side. It comes back when one of its controls takes
+  // focus, and stays while focus is in it, so its controls are always reachable (M3's
+  // Accessibility page).
+  //
+  // One listener for the whole page, in the capture phase so it hears every scroll container's
+  // scroll as well as the window's, as AppBar's does (ADR-0034).
+  const rootSelector =
+    '[data-ac-toolbar-floating-scroll-behavior="exit-always"]';
+  // how far past the view's edge it goes, so its shadow leaves too
+  const clearance = 16;
+  const lastScrollTops = new WeakMap<HTMLElement, number>();
+
+  // The move that takes the toolbar out of its scroll container's view, as a transform
+  const exitOffset = (root: HTMLElement, scroller: Element | null) => {
+    const view = scroller
+      ? scroller.getBoundingClientRect()
+      : new DOMRect(0, 0, window.innerWidth, window.innerHeight);
+    // where it rests: its box, less any way it's already moved
+    const transform = getComputedStyle(root).transform;
+    const moved =
+      transform === "none" ? new DOMMatrix() : new DOMMatrix(transform);
+    const rect = root.getBoundingClientRect();
+    const rest = new DOMRect(
+      rect.x - moved.m41,
+      rect.y - moved.m42,
+      rect.width,
+      rect.height
+    );
+    if (root.dataset.acToolbarFloatingOrientation === "vertical") {
+      const toEnd = rest.x + rest.width / 2 > view.x + view.width / 2;
+      const x = toEnd
+        ? view.right - rest.left + clearance
+        : view.left - rest.right - clearance;
+      return `translate(${x}px, 0)`;
+    }
+    const toBottom = rest.y + rest.height / 2 > view.y + view.height / 2;
+    const y = toBottom
+      ? view.bottom - rest.top + clearance
+      : view.top - rest.bottom - clearance;
+    return `translate(0, ${y}px)`;
+  };
+
+  const leave = (root: HTMLElement, scroller: Element | null) => {
+    if (root.hasAttribute("data-ac-toolbar-floating-exited")) return;
+    root.setAttribute("data-ac-toolbar-floating-exited", "");
+    root.style.transform = exitOffset(root, scroller);
+  };
+  const comeBack = (root: HTMLElement) => {
+    if (!root.hasAttribute("data-ac-toolbar-floating-exited")) return;
+    root.removeAttribute("data-ac-toolbar-floating-exited");
+    root.style.transform = "";
+  };
+
+  const update = () => {
+    frame = 0;
+    document.querySelectorAll<HTMLElement>(rootSelector).forEach((root) => {
+      const scroller = scrollerOf(root);
+      const scrollTop = scroller ? scroller.scrollTop : window.scrollY;
+      const last = lastScrollTops.get(root) ?? scrollTop;
+      lastScrollTops.set(root, scrollTop);
+      if (!pinnedOf(root, scroller) || root.matches(":focus-within")) {
+        comeBack(root);
+        return;
+      }
+      if (scrollTop > last && scrollTop > 0) leave(root, scroller);
+      else if (scrollTop < last) comeBack(root);
+    });
+  };
+
+  let frame = 0;
+  const schedule = () => {
+    frame ||= requestAnimationFrame(update);
+  };
+
+  update();
+  document.addEventListener("scroll", schedule, {
+    capture: true,
+    passive: true,
+  });
+  document.addEventListener("focusin", (event) => {
+    const root = (event.target as Element).closest?.<HTMLElement>(rootSelector);
+    if (root) comeBack(root);
+  });
+</script>

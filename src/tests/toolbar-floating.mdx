@@ -1,0 +1,145 @@
+---
+title: ToolbarFloating
+description: Tests for the ToolbarFloating component
+---
+
+<Heading level={1}>ToolbarFloating Tests</Heading>
+
+<Section data-testid="toolbar-floating-anatomy" class="p-4 space-y-4">
+  <Heading level={2}>Anatomy</Heading>
+  <ToolbarFloating aria-label="Message actions">
+    <ButtonIcon icon="arrow_back" label="Back" />
+    <ButtonIcon icon="archive" label="Archive" />
+    <ButtonIcon icon="delete" label="Delete" />
+    <ButtonIcon icon="mail" label="Mark unread" />
+    <ButtonIcon icon="more_vert" label="More" />
+  </ToolbarFloating>
+</Section>
+
+<Section data-testid="toolbar-floating-vibrant" class="p-4 space-y-4">
+  <Heading level={2}>Vibrant, with an embedded primary action</Heading>
+  <ToolbarFloating aria-label="Editing" color="vibrant">
+    <ButtonIcon icon="arrow_back" label="Back" />
+    <ButtonIcon icon="arrow_forward" label="Forward" />
+    <ButtonIcon icon="add" label="Add" variant="filled" />
+    <ButtonIcon icon="edit" label="Edit" />
+    <ButtonIcon icon="delete" label="Delete" />
+  </ToolbarFloating>
+</Section>
+
+<Section data-testid="toolbar-floating-vertical" class="p-4 space-y-4">
+  <Heading level={2}>Vertical, standard and vibrant</Heading>
+  <div class="flex gap-6">
+    <ToolbarFloating aria-label="Drawing tools" orientation="vertical">
+      <ButtonIcon icon="edit" label="Draw" />
+      <ButtonIcon icon="image" label="Insert image" />
+      <ButtonIcon icon="link" label="Insert link" />
+    </ToolbarFloating>
+    <ToolbarFloating aria-label="Vibrant drawing tools" orientation="vertical" color="vibrant">
+      <ButtonIcon icon="edit" label="Draw" />
+      <ButtonIcon icon="image" label="Insert image" />
+      <ButtonIcon icon="link" label="Insert link" />
+    </ToolbarFloating>
+  </div>
+</Section>
+
+<Section data-testid="toolbar-floating-selected" class="p-4 space-y-4">
+  <Heading level={2}>Selected toggles, standard and vibrant</Heading>
+  <ToolbarFloating aria-label="Standard toggles">
+    <ButtonIcon icon="favorite" label="Favorite" variant="tonal" isToggle isSelected />
+    <ButtonIcon icon="bookmark" label="Bookmark" variant="tonal" isToggle />
+    <ButtonIcon icon="star" label="Star" variant="tonal" isToggle />
+  </ToolbarFloating>
+  <ToolbarFloating aria-label="Vibrant toggles" color="vibrant">
+    <ButtonIcon icon="favorite" label="Favorite" variant="tonal" isToggle isSelected />
+    <ButtonIcon icon="bookmark" label="Bookmark" variant="tonal" isToggle />
+    <ButtonIcon icon="star" label="Star" variant="tonal" isToggle />
+  </ToolbarFloating>
+</Section>
+
+<Section data-testid="toolbar-floating-fab" class="p-4 space-y-6">
+  <Heading level={2}>With a FAB, standard, vibrant and vertical</Heading>
+  <ToolbarFloating aria-label="Photo actions">
+    <ButtonIcon icon="share" label="Share" />
+    <ButtonIcon icon="favorite" label="Favorite" />
+    <ButtonIcon icon="delete" label="Delete" />
+    <Fab slot="fab" icon="edit" label="Edit photo" color="secondary-container" />
+  </ToolbarFloating>
+  <ToolbarFloating aria-label="Vibrant photo actions" color="vibrant">
+    <ButtonIcon icon="share" label="Share" />
+    <ButtonIcon icon="favorite" label="Favorite" />
+    <ButtonIcon icon="delete" label="Delete" />
+    <Fab slot="fab" icon="edit" label="Edit photo" color="tertiary-container" />
+  </ToolbarFloating>
+  <ToolbarFloating aria-label="Vertical photo actions" orientation="vertical">
+    <ButtonIcon icon="share" label="Share" />
+    <ButtonIcon icon="favorite" label="Favorite" />
+    <ButtonIcon icon="delete" label="Delete" />
+    <Fab slot="fab" icon="edit" label="Edit photo" color="secondary-container" />
+  </ToolbarFloating>
+</Section>
+
+<Section data-testid="toolbar-floating-exit" class="p-4 space-y-4">
+  <Heading level={2}>Exits on scroll, horizontal and vertical</Heading>
+  <div class="relative h-80 overflow-y-auto rounded-xl border border-(--theme-color-outline-variant)" tabindex="0" role="region" aria-label="Article">
+    <div class="sticky top-0 flex h-0 justify-end pe-6 pt-6">
+      <ToolbarFloating aria-label="Side tools" orientation="vertical" scrollBehavior="exit-always" class="h-max">
+        <ButtonIcon icon="arrow_back" label="Back" />
+        <ButtonIcon icon="arrow_forward" label="Forward" />
+      </ToolbarFloating>
+    </div>
+    <div class="space-y-4 p-4 pe-24">
+      <p>Scroll down: both toolbars leave. Scroll up: they come back.</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      <p>Ut enim ad minim veniam, quis nostrud exercitation.</p>
+      <p>Duis aute irure dolor in reprehenderit in voluptate velit esse.</p>
+      <p>Excepteur sint occaecat cupidatat non proident.</p>
+      <p>Sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      <p>Ut enim ad minim veniam, quis nostrud exercitation.</p>
+      <p>Duis aute irure dolor in reprehenderit in voluptate velit esse.</p>
+      <p>Excepteur sint occaecat cupidatat non proident.</p>
+    </div>
+    <div class="sticky bottom-4 flex justify-center">
+      <ToolbarFloating aria-label="Reading" scrollBehavior="exit-always">
+        <ButtonIcon icon="share" label="Share" />
+        <ButtonIcon icon="bookmark" label="Save" />
+        <ButtonIcon icon="search" label="Find" />
+        <Fab slot="fab" icon="edit" label="Comment" color="secondary-container" />
+      </ToolbarFloating>
+    </div>
+  </div>
+</Section>
+
+<Section data-testid="toolbar-floating-stays" class="p-4 space-y-4">
+  <Heading level={2}>Stays on scroll (the default)</Heading>
+  <div class="h-64 overflow-y-auto rounded-xl border border-(--theme-color-outline-variant)" tabindex="0" role="region" aria-label="Notes">
+    <div class="space-y-4 p-4">
+      <p>The toolbar stays while the notes scroll.</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      <p>Ut enim ad minim veniam, quis nostrud exercitation.</p>
+      <p>Duis aute irure dolor in reprehenderit in voluptate velit esse.</p>
+      <p>Excepteur sint occaecat cupidatat non proident.</p>
+      <p>Sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    </div>
+    <div class="sticky bottom-4 flex justify-center">
+      <ToolbarFloating aria-label="Note actions">
+        <ButtonIcon icon="share" label="Share" />
+        <ButtonIcon icon="delete" label="Delete" />
+      </ToolbarFloating>
+    </div>
+  </div>
+</Section>
+
+<Section data-testid="toolbar-floating-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <ToolbarFloating aria-label="إجراءات الصورة">
+    <ButtonIcon icon="share" label="مشاركة" />
+    <ButtonIcon icon="favorite" label="تفضيل" />
+    <ButtonIcon icon="delete" label="حذف" />
+    <Fab slot="fab" icon="edit" label="تحرير" color="secondary-container" />
+  </ToolbarFloating>
+</Section>

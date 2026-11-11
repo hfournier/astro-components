@@ -1,0 +1,20 @@
+Use a floating toolbar for contextual actions on the current page or its content, such as editing a photo or formatting text. It floats over the content, so the content can use the whole window behind it. It can also act as tabs between a few related pages under one destination, showing that the selection changes the content beneath.
+
+Pick the color style for the emphasis:
+
+- **Standard** (`color="standard"`, the default) keeps attention on the page's content.
+- **Vibrant** (`color="vibrant"`) draws attention to the controls, or shows a temporary change in the page, such as entering edit mode.
+
+Pick the layout for the window:
+
+- **Horizontal** (the default), near the bottom of the window, in any window.
+- **Vertical** (`orientation="vertical"`), at a side of a medium or larger window, opposite a navigation rail. In a compact window it covers too much of the content, unless the screen is simple and the toolbar has few controls.
+
+In a large window, two toolbars at opposite edges can group different kinds of actions, such as undo and redo in one and editing tools in the other. In a compact window, use one.
+
+### When not to use it
+
+- **Global actions that stay the same across pages:** use a [ToolbarDocked](/components/toolbar-docked), which spans the bottom of the window.
+- **Navigation controls alongside a navigation bar:** don't show both kinds of navigation at once. Show the [NavBar](/components/nav-bar) on top-level pages, and the toolbar on the pages under them.
+- **Moving between the app's top-level destinations:** use a [NavBar](/components/nav-bar) or [NavRail](/components/nav-rail).
+- **A single action:** use a [Fab](/components/fab) on its own.

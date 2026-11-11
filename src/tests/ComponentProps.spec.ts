@@ -161,6 +161,11 @@ const expected: Record<string, string | RegExp> = {
   "toolbar-docked-name":
     "ToolbarDocked: a toolbar needs a name, from an `aria-label` or `aria-labelledby`, but this one has neither.",
   "toolbar-docked-color": `ToolbarDocked: M3's color styles are "standard" and "vibrant", but this one's \`color\` is "tonal".`,
+  "toolbar-floating-name":
+    "ToolbarFloating: a toolbar needs a name, from an `aria-label` or `aria-labelledby`, but this one has neither.",
+  "toolbar-floating-color": `ToolbarFloating: M3's color styles are "standard" and "vibrant", but this one's \`color\` is "tonal".`,
+  "toolbar-floating-orientation": `ToolbarFloating: M3's layouts are "horizontal" and "vertical", but this one's \`orientation\` is "diagonal".`,
+  "toolbar-floating-scroll-behavior": `ToolbarFloating: its scroll behaviors are "none" and "exit-always", but this one's \`scrollBehavior\` is "collapse".`,
   "tooltip-placement": `Tooltip: its placements are "above" and "below", but this one's \`placement\` is "left".`,
   "tooltip-variant": `Tooltip: M3's tooltips are "plain" and "rich", but this one's \`variant\` is "tooltip".`,
 };

@@ -211,6 +211,8 @@ const fill = `motion-safe:transition-[background-color] ${fastEffects}`;
 </BaseWrapper>
 
 <script>
+  import { pinnedOf, scrollerOf } from "../utils";
+
   // Marks each app bar scrolled while content is under it: while it's pinned (it or an ancestor
   // is sticky at the top or fixed) and its scroll container has scrolled. A bar that scrolls with
   // its page has nothing under it, so it stays Surface (ADR-0034).
@@ -223,35 +225,6 @@ const fill = `motion-safe:transition-[background-color] ${fastEffects}`;
   // One listener for the whole page, in the capture phase so it hears every scroll container's
   // scroll as well as the window's, and each bar is found and measured when it runs, so bars added
   // later and containers that start or stop scrolling are covered.
-
-  // The nearest ancestor that scrolls vertically, or null for the window. Overflow alone isn't
-  // enough: overflow-x: hidden makes overflow-y compute to auto on an element that never scrolls,
-  // and a bar fixed inside one still has the window scrolling under it.
-  const scrollerOf = (el: Element): Element | null => {
-    for (let node = el.parentElement; node; node = node.parentElement) {
-      if (node === document.body || node === document.documentElement) break;
-      if (
-        node.scrollHeight > node.clientHeight &&
-        /auto|scroll|overlay/.test(getComputedStyle(node).overflowY)
-      )
-        return node;
-    }
-    return null;
-  };
-
-  // The bar or the ancestor below its scroll container that pins it, with its computed style
-  const pinnedOf = (bar: Element, scroller: Element | null) => {
-    for (
-      let node: Element | null = bar;
-      node && node !== scroller;
-      node = node.parentElement
-    ) {
-      const style = getComputedStyle(node);
-      if (style.position === "sticky" || style.position === "fixed")
-        return { node: node as HTMLElement, style };
-    }
-    return null;
-  };
 
   // Each pinned element's `top` as the page set it, before a flexible bar moved it up
   const pageTops = new WeakMap<HTMLElement, number>();

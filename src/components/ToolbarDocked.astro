@@ -2,6 +2,7 @@
 import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import BaseWrapper from "./BaseWrapper.astro";
+import { toolbarColorClasses } from "../utils";
 
 // M3 Expressive's docked toolbar, which replaces the bottom app bar: a full-width bar of the
 // page's actions at the bottom of the window. It holds icon buttons, buttons, a text field or
@@ -37,20 +38,7 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
 // (on-surface-variant, or on-primary-container) and focus ring. A selected button takes the
 // selected button's container and icon, and an unselected one the toolbar's own: it re-points
 // a tonal toggle icon button's role tokens to them.
-const colorClasses = (
-  {
-    standard: {
-      bg: "surface-container",
-      toggles:
-        "[--theme-color-tonal-toggle:var(--theme-color-surface-container)] [--theme-color-on-tonal-toggle:var(--theme-color-on-surface-variant)] [--theme-color-tonal-toggle-selected:var(--theme-color-secondary-container)] [--theme-color-on-tonal-toggle-selected:var(--theme-color-on-secondary-container)]",
-    },
-    vibrant: {
-      bg: "primary-container",
-      toggles:
-        "[--theme-color-tonal-toggle:var(--theme-color-primary-container)] [--theme-color-on-tonal-toggle:var(--theme-color-on-primary-container)] [--theme-color-tonal-toggle-selected:var(--theme-color-surface-container)] [--theme-color-on-tonal-toggle-selected:var(--theme-color-on-surface)]",
-    },
-  } as const
-)[color];
+const colorClasses = toolbarColorClasses[color];
 ---
 
 {/* M3's Specs: 64dp high with square corners, its items 16dp in from each edge. Each item sits
@@ -74,72 +62,8 @@ const colorClasses = (
 </BaseWrapper>
 
 <script>
-  // M3's Accessibility page: Tab or the arrow keys move between a toolbar's controls. Tab
-  // already does; the left and right arrows move to the previous or next control, in the order
-  // Tab takes, mirrored right to left. They stop at the ends and skip disabled controls.
-  //
-  // A control that uses the arrow keys itself keeps them: a text field moves its caret, a
-  // slider its value, a radio its selection. A group inside the toolbar that moves between its
-  // own items, such as a ButtonGroup or ChipGroup, handles them first, as it listens on the
-  // document; this listens on the window, after it, and moves on only once the group stops.
-  const toolbarSelector = "[data-ac-toolbar-docked]";
-  const tabbableSelector =
-    "a[href], button, input, select, textarea, [tabindex], [contenteditable]";
-  const ownsArrowsSelector = [
-    "input:not([type=button], [type=checkbox], [type=color], [type=file], [type=image], [type=reset], [type=submit])",
-    "textarea",
-    "select",
-    "[contenteditable]:not([contenteditable=false])",
-    "[role=slider]",
-    "[role=spinbutton]",
-    "[role=textbox]",
-    "[role=combobox]",
-    "[role=radio]",
-  ].join(", ");
-  // Popovers and dialogs opened from the toolbar, such as a menu, handle their own keys
-  const layerSelector = "[popover], dialog";
-  // Whether an element is in a popover or dialog opened from this toolbar
-  const inLayerOf = (el: Element, toolbar: Element) =>
-    el.closest(layerSelector)?.closest(toolbarSelector) === toolbar;
+  // M3's Accessibility page: Tab or the arrow keys move between a toolbar's controls (ADR-0036)
+  import { moveFocusWithArrows } from "../utils";
 
-  // The toolbar's controls that Tab stops at, in its order
-  const controlsOf = (toolbar: Element) =>
-    [...toolbar.querySelectorAll<HTMLElement>(tabbableSelector)].filter(
-      (el) =>
-        el.tabIndex >= 0 &&
-        !el.matches(":disabled") &&
-        !inLayerOf(el, toolbar) &&
-        el.getClientRects().length > 0 &&
-        getComputedStyle(el).visibility !== "hidden"
-    );
-
-  window.addEventListener("keydown", (event) => {
-    if (event.defaultPrevented) return;
-    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
-    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
-      return;
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) return;
-    const toolbar = target.closest(toolbarSelector);
-    if (!toolbar || target.matches(ownsArrowsSelector)) return;
-    if (inLayerOf(target, toolbar)) return;
-
-    const isRtl = getComputedStyle(toolbar).direction === "rtl";
-    const forward = (event.key === "ArrowRight") !== isRtl;
-    const controls = controlsOf(toolbar);
-    // the next control after the focused one, or the last before it, in document order, so it
-    // also works from an item that Tab skips, such as a roving one in a group
-    // (neither inside it nor holding it)
-    const position = (el: Element) => target.compareDocumentPosition(el);
-    const follows = (el: Element) =>
-      !!(position(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
-      !target.contains(el);
-    const precedes = (el: Element) =>
-      !!(position(el) & Node.DOCUMENT_POSITION_PRECEDING) &&
-      !el.contains(target);
-    const next = forward ? controls.find(follows) : controls.findLast(precedes);
-    if (!next) return;
-    event.preventDefault();
-    next.focus();
-  });
+  moveFocusWithArrows("[data-ac-toolbar-docked]");
 </script>
