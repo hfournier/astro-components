@@ -52,6 +52,10 @@ _Avoid_: chip base, chip container (the container is what it draws, not its name
 M3's chip set: the [[Pattern component]] that holds a set of chips, spaces them, wraps or scrolls them, and moves between them with the arrow keys; a radiogroup for single-select filter chips (ADR-0024). Named like `ButtonGroup`, noun first.
 _Avoid_: chip set (M3's term for what it is, not the component's name)
 
+**Keyline**:
+A place in a Carousel's row where an item has a set size: the large items first, then a medium and a small one, with a tiny anchor just past each end. As the row scrolls, each item takes the size and place between the two keylines its center is between, and near the ends the keylines shift step by step, so the first and last items can become large (ADR-0038). Compose's term, ported with its layout to `src/carousel.ts`.
+_Avoid_: breakpoint, snap point (a snap point is where the row stops; keylines size the items at every point)
+
 **Primitive component**:
 A component meant to be composed inside a pattern component rather than used directly, supplying either structural or interactive behavior (focus handling, open/close state, positioning) or a piece of M3 styling that several pattern components share (a [[Background role]], the button container). It's still an independently meaningful building block — generic enough that more than one [[Pattern component]] can compose it, and worth documenting on its own terms. `BaseOverlay` supplies behavior, composed by both `Dialog` and `Popover`; [[BaseWrapper]], [[BaseButton]] and [[BaseChip]] supply styling, and `BaseTextField` the text field that `TextField` and `TextFieldChips` put their controls in (ADR-0032). Declared on a component's [[Component documentation file]] as `role: primitive`. Contrast with [[Internal component]], which isn't independently reusable at all.
 _Avoid_: base component, headless component

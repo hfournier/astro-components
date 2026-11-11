@@ -35,7 +35,7 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
     below; the page sets another height with `class`. */}
 <BaseWrapper
   bgColor="surface"
-  class={twMerge("relative h-[221px]", classList)}
+  class={twMerge("relative h-55.25", classList)}
   role="region"
   aria-roledescription="carousel"
   data-ac-carousel="multi-browse"
@@ -51,7 +51,7 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
       which Firefox would otherwise stop at as it scrolls. */}
   <ul
     class:list={[
-      "flex h-full snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain px-4 py-2 [scrollbar-width:none] scroll-px-4 outline-none",
+      "flex h-full snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain px-4 py-2 scrollbar-none scroll-px-4 outline-none",
       "data-ac-carousel-keylines:px-0 data-ac-carousel-keylines:scroll-px-0",
     ]}
     style={`--ac-carousel-item-size: ${preferredItemWidth}px`}

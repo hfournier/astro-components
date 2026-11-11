@@ -1,0 +1,19 @@
+---
+title: Show all
+description: On a page that scrolls vertically, follow the carousel with a Show all button that opens a page of every item, as M3's Accessibility page asks. Its larger `preferredItemWidth` gives fewer, bigger items.
+---
+
+<div class="space-y-1">
+  <Heading level={3} id="albums-heading">Albums</Heading>
+  <Carousel aria-labelledby="albums-heading" preferredItemWidth={240}>
+    <CarouselItem href="#mountains"><img src="/carousel/mountains.svg" alt="" /><span slot="label">Mountains</span></CarouselItem>
+    <CarouselItem href="#sunsets"><img src="/carousel/sunset.svg" alt="" /><span slot="label">Sunsets</span></CarouselItem>
+    <CarouselItem href="#meadows"><img src="/carousel/meadow.svg" alt="" /><span slot="label">Meadows</span></CarouselItem>
+    <CarouselItem href="#lakes"><img src="/carousel/lake.svg" alt="" /><span slot="label">Lakes</span></CarouselItem>
+    <CarouselItem href="#forests"><img src="/carousel/forest.svg" alt="" /><span slot="label">Forests</span></CarouselItem>
+    <CarouselItem href="#deserts"><img src="/carousel/desert.svg" alt="" /><span slot="label">Deserts</span></CarouselItem>
+  </Carousel>
+  <div class="flex justify-end px-1">
+    <Button as="a" variant="text" href="#all-albums">Show all</Button>
+  </div>
+</div>

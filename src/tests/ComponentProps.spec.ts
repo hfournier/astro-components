@@ -59,6 +59,14 @@ const expected: Record<string, string | RegExp> = {
     "Card: a link or button card is named through `aria-label` or `aria-labelledby`, but this one has neither.",
   "card-disabled-link": `Card: only a button card can be disabled, as a link can't be, but this one's \`as\` is "a" with \`disabled\`.`,
   // checked where it's used, in BaseChip (ADR-0021 §5)
+  "carousel-name":
+    "Carousel: a carousel needs a name, from an `aria-label` or `aria-labelledby`, but this one has neither.",
+  "carousel-preferred-item-width":
+    "Carousel: `preferredItemWidth` is the large items' width in px, a number above 0, but this one's is -10.",
+  "carousel-item-as": `CarouselItem: its elements are "a" and "button", but this one's \`as\` is "div".`,
+  "carousel-item-href":
+    'CarouselItem: a link item needs an `href`, or it isn\'t a link and Tab skips it; use `as="button"` for an item that runs a script.',
+  "carousel-item-disabled-link": `CarouselItem: only a button item can be disabled, as a link can't be, but this one's \`as\` is "a" with \`disabled\`.`,
   "checkbox-as": `Checkbox: its elements are "label" and "span", but this one's \`as\` is "div".`,
   "chip-assist-as": `ChipAssist: its elements are "button" and "a", but this one's \`as\` is "div".`,
   "chip-assist-variant": `ChipAssist: M3's chip styles are "flat" and "elevated", but this one's \`variant\` is "tonal".`,

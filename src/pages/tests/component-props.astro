@@ -18,6 +18,8 @@ import ButtonGroupConnected from "../../components/ButtonGroupConnected.astro";
 import ButtonIcon from "../../components/ButtonIcon.astro";
 import ButtonSplit from "../../components/ButtonSplit.astro";
 import Card from "../../components/Card.astro";
+import Carousel from "../../components/Carousel.astro";
+import CarouselItem from "../../components/CarouselItem.astro";
 import Checkbox from "../../components/Checkbox.astro";
 import ChipAssist from "../../components/ChipAssist.astro";
 import ChipFilter from "../../components/ChipFilter.astro";
@@ -166,6 +168,17 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     "card-disabled-link": [
       Card,
       { as: "a", href: "#card", "aria-label": "Lisbon", disabled: true },
+    ],
+    "carousel-name": [Carousel, {}],
+    "carousel-preferred-item-width": [
+      Carousel,
+      { "aria-label": "Photos", preferredItemWidth: -10 },
+    ],
+    "carousel-item-as": [CarouselItem, { as: "div", href: "#a" }],
+    "carousel-item-href": [CarouselItem, {}],
+    "carousel-item-disabled-link": [
+      CarouselItem,
+      { href: "#a", disabled: true },
     ],
     "checkbox-as": [Checkbox, { as: "div" }],
     "chip-assist-as": [ChipAssist, { as: "div" }],

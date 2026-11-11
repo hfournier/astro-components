@@ -1,0 +1,13 @@
+---
+title: CarouselItem
+description: The following example shows items in a Carousel, buttons that pick a filter, each named by its photo's `alt`. The third one is disabled.
+show: both
+---
+
+<Carousel aria-label="Filters">
+  <CarouselItem as="button"><img src="/carousel/sunset.svg" alt="Warm" /></CarouselItem>
+  <CarouselItem as="button"><img src="/carousel/lake.svg" alt="Cool" /></CarouselItem>
+  <CarouselItem as="button" disabled><img src="/carousel/meadow.svg" alt="Vivid" /></CarouselItem>
+  <CarouselItem as="button"><img src="/carousel/mountains.svg" alt="Muted" /></CarouselItem>
+  <CarouselItem as="button"><img src="/carousel/desert.svg" alt="Sepia" /></CarouselItem>
+</Carousel>

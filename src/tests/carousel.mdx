@@ -8,7 +8,7 @@ description: Tests for the Carousel and CarouselItem components
 <Section data-testid="carousel-multi-browse" class="p-4 space-y-4">
   <Heading level={2}>Multi-browse, 412px wide</Heading>
   <Button variant="text">Before the carousel</Button>
-  <div class="w-[412px]">
+  <div class="w-103">
     <Carousel aria-label="Trip photos">
       <CarouselItem href="#lake"><img src="/carousel/lake.svg" alt="Lake at sunrise" /></CarouselItem>
       <CarouselItem href="#forest"><img src="/carousel/forest.svg" alt="Forest trail" /></CarouselItem>
@@ -25,7 +25,7 @@ description: Tests for the Carousel and CarouselItem components
 
 <Section data-testid="carousel-wide" class="p-4 space-y-4">
   <Heading level={2}>Multi-browse, 840px wide</Heading>
-  <div class="w-[840px] max-w-full">
+  <div class="w-210 max-w-full">
     <Carousel aria-label="Albums" preferredItemWidth={240}>
       <CarouselItem href="#a1"><img src="/carousel/mountains.svg" alt="Mountains" /></CarouselItem>
       <CarouselItem href="#a2"><img src="/carousel/sunset.svg" alt="Sunsets" /></CarouselItem>
@@ -43,7 +43,7 @@ description: Tests for the Carousel and CarouselItem components
 
 <Section data-testid="carousel-label" class="p-4 space-y-4">
   <Heading level={2}>Item text</Heading>
-  <div class="w-[412px]">
+  <div class="w-103">
     <Carousel aria-label="Places">
       <CarouselItem href="#p1"><img src="/carousel/lake.svg" alt="" /><span slot="label">Lake Louise</span></CarouselItem>
       <CarouselItem href="#p2"><img src="/carousel/forest.svg" alt="" /><span slot="label">Black Forest</span></CarouselItem>
@@ -56,7 +56,7 @@ description: Tests for the Carousel and CarouselItem components
 
 <Section data-testid="carousel-buttons" class="p-4 space-y-4">
   <Heading level={2}>Button items, one disabled</Heading>
-  <div class="w-[412px]">
+  <div class="w-103">
     <Carousel aria-label="Filters">
       <CarouselItem as="button"><img src="/carousel/sunset.svg" alt="Warm" /></CarouselItem>
       <CarouselItem as="button"><img src="/carousel/lake.svg" alt="Cool" /></CarouselItem>
@@ -69,7 +69,7 @@ description: Tests for the Carousel and CarouselItem components
 
 <Section data-testid="carousel-rtl" class="p-4 space-y-4" dir="rtl" lang="ar">
   <Heading level={2}>من اليمين إلى اليسار</Heading>
-  <div class="w-[412px]">
+  <div class="w-103">
     <Carousel aria-label="صور الرحلة">
       <CarouselItem href="#r1"><img src="/carousel/lake.svg" alt="بحيرة" /></CarouselItem>
       <CarouselItem href="#r2"><img src="/carousel/forest.svg" alt="غابة" /></CarouselItem>
