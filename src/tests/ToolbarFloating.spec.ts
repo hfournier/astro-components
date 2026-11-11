@@ -18,6 +18,7 @@ type ToolbarFloatingCaseId =
   | "selected"
   | "fab"
   | "exit"
+  | "collapse"
   | "stays"
   | "rtl";
 
@@ -52,6 +53,26 @@ const stopped = async (target: Locator) => {
     })
     .toBe(true);
   return box(target);
+};
+
+// An element's box as the page lays it out, even at zero width, where Playwright's has none
+const rect = (target: Locator) =>
+  target.evaluate((el) => {
+    const { x, y, width, height } = el.getBoundingClientRect();
+    return { x, y, width, height };
+  });
+// Waits until an element has stopped changing size or place, such as a toolbar collapsing
+const settledRect = async (target: Locator) => {
+  let last = "";
+  await expect
+    .poll(async () => {
+      const now = JSON.stringify(await rect(target));
+      const same = now === last;
+      last = now;
+      return same;
+    })
+    .toBe(true);
+  return rect(target);
 };
 
 const overlaps = (a: Box, b: Box) =>
@@ -364,6 +385,118 @@ test.describe("ToolbarFloating", () => {
     // and stays while focus is in it, even as the content scrolls on
     await region.evaluate((el) => el.scrollBy(0, 40));
     expect(await inView()).toEqual(rest);
+  });
+
+  // M3's Guidelines: a floating toolbar can collapse into a single, high-emphasis action on
+  // scroll; on Compose, into its FAB. Compose collapses once the content has scrolled 40dp down
+  // since the toolbar last changed, and expands once it's scrolled 40dp back up. Collapsed, the
+  // toolbar shrinks to nothing toward the FAB, which grows into M3's medium FAB in its place:
+  // 80dp, corner large increased (20dp), elevation level 2 and a 28dp icon (M3's Specs).
+  test("with collapse, shrinks into its FAB as the content scrolls down, and back as it scrolls up", async ({
+    page,
+  }) => {
+    const region = section(page, "collapse").getByRole("region", {
+      name: "Gallery",
+    });
+    const photos = toolbar(page, "collapse", "Photo tools");
+    const album = toolbar(page, "collapse", "Album tools");
+    const edit = section(page, "collapse").getByRole("button", {
+      name: "Edit",
+      exact: true,
+    });
+    const add = section(page, "collapse").getByRole("button", {
+      name: "Add photos",
+    });
+    const restPhotos = await settledRect(photos);
+    const restAlbum = await settledRect(album);
+    const restEdit = await settledRect(edit);
+    const restAdd = await settledRect(add);
+    expect(restEdit.width).toBe(56);
+
+    // less than 40px down: it stays expanded
+    await region.evaluate((el) => el.scrollBy(0, 30));
+    expect((await settledRect(photos)).width).toBeCloseTo(restPhotos.width, 0);
+
+    await region.evaluate((el) => el.scrollBy(0, 30));
+    expect((await settledRect(photos)).width).toBeCloseTo(0, 0);
+    expect((await settledRect(album)).height).toBeCloseTo(0, 0);
+    const big = await settledRect(edit);
+    expect(big.width).toBeCloseTo(80, 0);
+    expect(big.height).toBeCloseTo(80, 0);
+    // at the end of the pair, where it was, as Compose keeps the pair's width
+    expect(big.x + big.width).toBeCloseTo(restEdit.x + restEdit.width, 0);
+    const bigAdd = await settledRect(add);
+    expect(bigAdd.height).toBeCloseTo(80, 0);
+    expect(bigAdd.y + bigAdd.height).toBeCloseTo(restAdd.y + restAdd.height, 0);
+    for (const radius of await radii(edit)) expect(radius).toBe("20px");
+    expect(await css(edit, "box-shadow")).toContain(await elevation(page, 2));
+    expect((await rect(edit.locator("svg"))).width).toBeCloseTo(28, 0);
+
+    // less than 40px back up: it stays collapsed; 40px or more: it expands
+    await region.evaluate((el) => el.scrollBy(0, -30));
+    expect((await settledRect(photos)).width).toBeCloseTo(0, 0);
+    await region.evaluate((el) => el.scrollBy(0, -20));
+    expect((await settledRect(photos)).width).toBeCloseTo(restPhotos.width, 0);
+    expect((await settledRect(album)).height).toBeCloseTo(restAlbum.height, 0);
+    expect((await settledRect(edit)).width).toBe(56);
+    expect(await css(edit, "box-shadow")).toContain(await elevation(page, 1));
+  });
+
+  // M3's Accessibility page: people keep access to the toolbar's controls while it's collapsed.
+  // They stay in the tab order, and one taking focus expands the toolbar. The FAB taking focus
+  // doesn't: it's the action the toolbar collapsed into.
+  test("with collapse, expands when one of its controls takes focus", async ({
+    page,
+  }) => {
+    const region = section(page, "collapse").getByRole("region", {
+      name: "Gallery",
+    });
+    const photos = toolbar(page, "collapse", "Photo tools");
+    const rest = await settledRect(photos);
+    await region.evaluate((el) => el.scrollBy(0, 80));
+    expect((await settledRect(photos)).width).toBeCloseTo(0, 0);
+    await section(page, "collapse")
+      .getByRole("button", { name: "Edit", exact: true })
+      .focus();
+    expect((await settledRect(photos)).width).toBeCloseTo(0, 0);
+    await button(photos, "Delete").focus();
+    expect((await settledRect(photos)).width).toBeCloseTo(rest.width, 0);
+    // and stays expanded while focus is in it
+    await region.evaluate((el) => el.scrollBy(0, 80));
+    expect((await settledRect(photos)).width).toBeCloseTo(rest.width, 0);
+  });
+
+  // Compose animates the collapse on its floating toolbar animation spec, fast spatial
+  test("with collapse, moves on the fast spatial spring, at once with reduced motion", async ({
+    page,
+  }) => {
+    const region = section(page, "collapse").getByRole("region", {
+      name: "Gallery",
+    });
+    const photos = toolbar(page, "collapse", "Photo tools");
+    await region.evaluate((el) => el.scrollBy(0, 80));
+    await expect
+      .poll(() =>
+        photos.evaluate((el) =>
+          el.getAnimations().map((a) => {
+            const t = a.effect!.getTiming();
+            return { duration: t.duration, easing: t.easing };
+          })
+        )
+      )
+      .toContainEqual({
+        duration: 350,
+        easing: "cubic-bezier(0.42, 1.67, 0.21, 0.9)",
+      });
+
+    await region.evaluate((el) => el.scrollBy(0, -80));
+    await settledRect(photos);
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await region.evaluate((el) => el.scrollBy(0, 80));
+    await expect
+      .poll(() => photos.evaluate((el) => el.getBoundingClientRect().width))
+      .toBe(0);
+    expect(await photos.evaluate((el) => el.getAnimations().length)).toBe(0);
   });
 
   test("without a scroll behavior, stays while the content scrolls", async ({

@@ -113,6 +113,43 @@ description: Tests for the ToolbarFloating component
   </div>
 </Section>
 
+<Section data-testid="toolbar-floating-collapse" class="p-4 space-y-4">
+  <Heading level={2}>Collapses into its FAB on scroll, horizontal and vertical</Heading>
+  <div class="h-80 overflow-y-auto rounded-xl border border-(--theme-color-outline-variant)" tabindex="0" role="region" aria-label="Gallery">
+    <div class="sticky top-0 flex h-0 justify-end pe-6 pt-6">
+      <ToolbarFloating aria-label="Album tools" orientation="vertical" scrollBehavior="collapse" class="h-max">
+        <ButtonIcon icon="share" label="Share album" />
+        <ButtonIcon icon="delete" label="Delete album" />
+        <Fab slot="fab" icon="add" label="Add photos" color="secondary-container" />
+      </ToolbarFloating>
+    </div>
+    <div class="space-y-4 p-4 pe-28">
+      <p>Scroll down: both toolbars collapse into their FABs. Scroll up: they expand.</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      <p>Ut enim ad minim veniam, quis nostrud exercitation.</p>
+      <p>Duis aute irure dolor in reprehenderit in voluptate velit esse.</p>
+      <p>Excepteur sint occaecat cupidatat non proident.</p>
+      <p>Sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      <p>Ut enim ad minim veniam, quis nostrud exercitation.</p>
+      <p>Duis aute irure dolor in reprehenderit in voluptate velit esse.</p>
+      <p>Excepteur sint occaecat cupidatat non proident.</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+    </div>
+    <div class="sticky bottom-4 flex justify-center">
+      <ToolbarFloating aria-label="Photo tools" scrollBehavior="collapse">
+        <ButtonIcon icon="share" label="Share" />
+        <ButtonIcon icon="favorite" label="Favorite" />
+        <ButtonIcon icon="delete" label="Delete" />
+        <Fab slot="fab" icon="edit" label="Edit" color="secondary-container" />
+      </ToolbarFloating>
+    </div>
+  </div>
+</Section>
+
 <Section data-testid="toolbar-floating-stays" class="p-4 space-y-4">
   <Heading level={2}>Stays on scroll (the default)</Heading>
   <div class="h-64 overflow-y-auto rounded-xl border border-(--theme-color-outline-variant)" tabindex="0" role="region" aria-label="Notes">

@@ -388,6 +388,10 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     ],
     "toolbar-floating-scroll-behavior": [
       ToolbarFloating,
+      { "aria-label": "Actions", scrollBehavior: "shrink" },
+    ],
+    "toolbar-floating-collapse-fab": [
+      ToolbarFloating,
       { "aria-label": "Actions", scrollBehavior: "collapse" },
     ],
     "tooltip-placement": [Tooltip, { placement: "left" }],

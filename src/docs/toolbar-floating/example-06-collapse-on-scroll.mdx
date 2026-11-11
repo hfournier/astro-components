@@ -1,0 +1,26 @@
+---
+title: Collapse on scroll
+description: With `scrollBehavior="collapse"`, the toolbar shrinks into its FAB, which grows into a medium FAB, once the content has scrolled 40px down, and expands once it's scrolled 40px back up, or when one of its controls takes focus. It needs a Fab in the `fab` slot.
+---
+
+<div class="h-80 overflow-y-auto rounded-xl border border-(--theme-color-outline-variant)" tabindex="0" role="region" aria-label="Photo">
+  <div class="space-y-4 p-4">
+    <p>Scroll this box down: the toolbar collapses into its FAB. Scroll back up: it expands.</p>
+    <p>Taken at the lake on the first morning of the trip, just after sunrise.</p>
+    <p>The mist hadn't lifted yet, so the far shore is only an outline.</p>
+    <p>Two herons were fishing near the dock; one is at the left edge.</p>
+    <p>Shot on the old film camera, then scanned at full resolution.</p>
+    <p>The colors are as scanned, with no edits.</p>
+    <p>A print of it is on the wall in the hallway.</p>
+    <p>Ana took the one from the dock, a few minutes later.</p>
+    <p>Both are in the "Lake" album.</p>
+  </div>
+  <div class="sticky bottom-4 flex justify-center">
+    <ToolbarFloating aria-label="Photo actions" scrollBehavior="collapse">
+      <ButtonIcon icon="share" label="Share" />
+      <ButtonIcon icon="favorite" label="Favorite" />
+      <ButtonIcon icon="delete" label="Delete" />
+      <Fab slot="fab" icon="edit" label="Edit photo" color="secondary-container" />
+    </ToolbarFloating>
+  </div>
+</div>
