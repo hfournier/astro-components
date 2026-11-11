@@ -15,8 +15,10 @@ type Props = Omit<HTMLAttributes<"div">, "role"> & {
 const { preferredItemWidth = 186, class: classList, ...attrs } = Astro.props;
 
 // Values outside these fail the build, rather than drawing something other than was asked for
-// (ADR-0021)
-if (!Number.isFinite(preferredItemWidth) || preferredItemWidth <= 0) {
+// (ADR-0021). MDX passes attributes as strings, so `preferredItemWidth="240"` is read as the
+// number it says.
+const preferredWidth = Number(preferredItemWidth);
+if (!Number.isFinite(preferredWidth) || preferredWidth <= 0) {
   throw new Error(
     `Carousel: \`preferredItemWidth\` is the large items' width in px, a number above 0, but this one's is ${JSON.stringify(preferredItemWidth)}.`
   );
@@ -39,7 +41,7 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
   role="region"
   aria-roledescription="carousel"
   data-ac-carousel="multi-browse"
-  data-ac-carousel-preferred-item-width={preferredItemWidth}
+  data-ac-carousel-preferred-item-width={preferredWidth}
   {...attrs}
 >
   {/* The row: every item laid out at the large size, 8dp apart (M3's padding between elements),
@@ -54,7 +56,7 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
       "flex h-full snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain px-4 py-2 scrollbar-none scroll-px-4 outline-none",
       "data-ac-carousel-keylines:px-0 data-ac-carousel-keylines:scroll-px-0",
     ]}
-    style={`--ac-carousel-item-size: ${preferredItemWidth}px`}
+    style={`--ac-carousel-item-size: ${preferredWidth}px`}
     tabindex="-1"
     data-ac-carousel-part="list"
   >
@@ -70,7 +72,7 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
     snapOffset,
     type Strategy,
   } from "../carousel";
-  import { moveFocusWithArrows } from "../utils";
+  import { moveFocusWithArrows, tabbableIn } from "../utils";
 
   // M3's Specs: 8dp between items, 16dp leading and trailing padding, small items 40 to 56dp
   // (Compose's CarouselDefaults)
@@ -121,7 +123,7 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
   };
 
   // Clears what the keylines set, so every item is large
-  const unplace = (list: HTMLElement) => {
+  const clearKeylines = (list: HTMLElement) => {
     strategies.delete(list);
     list.removeAttribute("data-ac-carousel-keylines");
     itemsOf(list).forEach((item) => {
@@ -143,7 +145,7 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
     const items = itemsOf(list);
     const preferred = Number(root.dataset.acCarouselPreferredItemWidth);
     if (reducedMotion.matches) {
-      unplace(list);
+      clearKeylines(list);
       list.style.setProperty(
         "--ac-carousel-item-size",
         `${Math.min(preferred, list.clientWidth - 2 * padding)}px`
@@ -162,7 +164,7 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
       }),
       { available, spacing, before: padding, after: padding }
     );
-    if (!strategy.isValid) return unplace(list);
+    if (!strategy.isValid) return clearKeylines(list);
     strategies.set(list, strategy);
     list.setAttribute("data-ac-carousel-keylines", "");
     list.style.setProperty("--ac-carousel-item-size", `${strategy.itemSize}px`);
@@ -249,10 +251,8 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
   });
 
   // M3's Accessibility page: the up and down arrow keys leave the carousel, to the control
-  // before or after it
-  const tabbableSelector =
-    "a[href], button, input, select, textarea, [tabindex], [contenteditable]";
-  document.addEventListener("keydown", (event) => {
+  // before or after it. On the window, as moveFocusWithArrows listens, after any group inside.
+  window.addEventListener("keydown", (event) => {
     if (event.defaultPrevented) return;
     if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
     if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
@@ -260,16 +260,7 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
     const target = event.target as Element;
     const root = target.closest?.("[data-ac-carousel]");
     if (!root || !target.closest("[data-ac-carousel-item]")) return;
-    const tabbables = [
-      ...document.querySelectorAll<HTMLElement>(tabbableSelector),
-    ].filter(
-      (el) =>
-        el.tabIndex >= 0 &&
-        !el.matches(":disabled") &&
-        !root.contains(el) &&
-        el.getClientRects().length > 0 &&
-        getComputedStyle(el).visibility !== "hidden"
-    );
+    const tabbables = tabbableIn(document).filter((el) => !root.contains(el));
     const position = (el: Element) => root.compareDocumentPosition(el);
     const next =
       event.key === "ArrowDown"

@@ -1,6 +1,12 @@
 import type { Locator, Page } from "@playwright/test";
 import { test, expect } from "./support/a11y-fixture";
-import { css, elevation, radii } from "./support/helpers";
+import {
+  css,
+  elevation,
+  radii,
+  resolvedColor,
+  settled,
+} from "./support/helpers";
 
 // Each case on /tests/carousel is a Section with data-testid="carousel-<caseId>"
 type CarouselCaseId = "multi-browse" | "wide" | "label" | "buttons" | "rtl";
@@ -98,7 +104,8 @@ test.describe("Carousel", () => {
     expect(c.x + c.width).toBeCloseTo(412, 0);
     expect(a.width).toBeCloseTo(b.width, 1);
     expect(a.width).toBeGreaterThan(150);
-    expect(c.width).toBeLessThan(56);
+    expect(c.width).toBeLessThanOrEqual(56);
+    expect(c.width).toBeGreaterThanOrEqual(40);
     for (const box of boxes) {
       expect(box.y).toBe(8);
       expect(box.height).toBe(221 - 16);
@@ -154,7 +161,8 @@ test.describe("Carousel", () => {
     expect(last.x + last.width).toBeCloseTo(412 - 16, 0);
     expect(last.width).toBeGreaterThan(150);
     expect(boxes.at(-2)!.width).toBeCloseTo(last.width, 1);
-    expect(boxes[0].width).toBeLessThan(56);
+    expect(boxes[0].width).toBeLessThanOrEqual(56);
+    expect(boxes[0].width).toBeGreaterThanOrEqual(40);
   });
 
   // M3's Overview: item visuals have a parallax effect. The visual stays at the large size,
@@ -263,6 +271,34 @@ test.describe("Carousel", () => {
     expect(await css(item, "outline-width")).toBe("3px");
     expect(await css(item, "outline-offset")).toBe("2px");
     expect(await css(item, "outline-style")).toBe("solid");
+  });
+
+  // M3's Specs: the container is surface, in light and dark; focused, the state layer is
+  // on-surface at 10%
+  test("is on surface in light and dark, with a 10% state layer when focused", async ({
+    page,
+  }) => {
+    for (const scheme of ["light", "dark"] as const) {
+      await page.emulateMedia({ colorScheme: scheme });
+      await settled(page);
+      expect(
+        await css(carousel(page, "multi-browse"), "background-color")
+      ).toBe(await resolvedColor(page, "var(--theme-color-surface)"));
+      const item = items(page, "buttons").first();
+      expect(
+        await item.evaluate(
+          (el) => getComputedStyle(el, "::before").backgroundColor
+        )
+      ).toBe(await resolvedColor(page, "var(--theme-color-on-surface)"));
+    }
+    await section(page, "buttons").getByRole("heading").click();
+    await page.keyboard.press("Tab");
+    const focused = items(page, "buttons").first();
+    await expect
+      .poll(() =>
+        focused.evaluate((el) => getComputedStyle(el, "::before").opacity)
+      )
+      .toBe("0.1");
   });
 
   // M3's Specs: hovered, an 8% state layer and elevation level 1

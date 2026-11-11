@@ -483,6 +483,24 @@ export const toolbarColorClasses = {
 } as const;
 
 /**
+ * The controls inside `root` that Tab stops at, in its order: focusable, not disabled, not in an
+ * inert part of the page, and shown.
+ */
+export const tabbableIn = (root: ParentNode) =>
+  [
+    ...root.querySelectorAll<HTMLElement>(
+      "a[href], button, input, select, textarea, [tabindex], [contenteditable]"
+    ),
+  ].filter(
+    (el) =>
+      el.tabIndex >= 0 &&
+      !el.matches(":disabled") &&
+      !el.closest("[inert]") &&
+      el.getClientRects().length > 0 &&
+      getComputedStyle(el).visibility !== "hidden"
+  );
+
+/**
  * Lets the arrow keys move between a toolbar's controls, as M3's Accessibility page asks ("Tab or
  * Arrows"), alongside Tab (ADR-0036). Left and right move to the previous or next control in the
  * order Tab takes, mirrored right to left; in a toolbar with `aria-orientation="vertical"`, up and
@@ -497,8 +515,6 @@ export const toolbarColorClasses = {
  * @param toolbarSelector - The toolbars it covers, e.g. `"[data-ac-toolbar-docked]"`.
  */
 export const moveFocusWithArrows = (toolbarSelector: string) => {
-  const tabbableSelector =
-    "a[href], button, input, select, textarea, [tabindex], [contenteditable]";
   const ownsArrowsSelector = [
     "input:not([type=button], [type=checkbox], [type=color], [type=file], [type=image], [type=reset], [type=submit])",
     "textarea",
@@ -517,14 +533,7 @@ export const moveFocusWithArrows = (toolbarSelector: string) => {
 
   // The toolbar's controls that Tab stops at, in its order
   const controlsOf = (toolbar: Element) =>
-    [...toolbar.querySelectorAll<HTMLElement>(tabbableSelector)].filter(
-      (el) =>
-        el.tabIndex >= 0 &&
-        !el.matches(":disabled") &&
-        !inLayerOf(el, toolbar) &&
-        el.getClientRects().length > 0 &&
-        getComputedStyle(el).visibility !== "hidden"
-    );
+    tabbableIn(toolbar).filter((el) => !inLayerOf(el, toolbar));
 
   window.addEventListener("keydown", (event) => {
     if (event.defaultPrevented) return;

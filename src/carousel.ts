@@ -37,7 +37,7 @@ const MEDIUM_ITEM_FLEX = 0.1;
 const lerp = (from: number, to: number, fraction: number) =>
   from + (to - from) * fraction;
 // Compose's lerp(outputMin, outputMax, inputMin, inputMax, value), clamped
-const lerpBetween = (
+const lerpClamped = (
   outputMin: number,
   outputMax: number,
   inputMin: number,
@@ -366,12 +366,19 @@ export const arrangeMultiBrowse = ({
     }
   }
   if (!arrangement) return [];
-  const a = arrangement;
+  const {
+    largeCount,
+    largeSize,
+    mediumCount,
+    mediumSize,
+    smallCount,
+    smallSize,
+  } = arrangement;
   return keylineListOf(available, spacing, "start", [
     [ANCHOR_SIZE, true],
-    ...Array<KeylineEntry>(a.largeCount).fill([a.largeSize]),
-    ...Array<KeylineEntry>(a.mediumCount).fill([a.mediumSize]),
-    ...Array<KeylineEntry>(a.smallCount).fill([a.smallSize]),
+    ...Array<KeylineEntry>(largeCount).fill([largeSize]),
+    ...Array<KeylineEntry>(mediumCount).fill([mediumSize]),
+    ...Array<KeylineEntry>(smallCount).fill([smallSize]),
     [ANCHOR_SIZE, true],
   ]);
 };
@@ -435,13 +442,24 @@ const shiftForContentPadding = (
   pivot: Keyline,
   pivotIndex: number
 ) => {
-  const reduction = padding / from.filter((k) => !k.isAnchor).length;
+  // Compose takes the padding out of every keyline. M3's Specs keep small items 40 to 56dp, so
+  // here it comes out of the items larger than the smallest only (all of them when they're one
+  // size), and the anchors, off screen, keep theirs.
+  const items = from.filter((k) => !k.isAnchor);
+  const smallest = Math.min(...items.map((k) => k.size));
+  const shrinks = (k: Keyline) =>
+    !k.isAnchor &&
+    (k.size > smallest || items.every((item) => item.size === smallest));
+  const reduction = padding / from.filter(shrinks).length;
   const shifted = keylineListWithPivot(
     available,
     spacing,
     pivotIndex,
     pivot.offset - reduction / 2 + padding,
-    from.map((k) => [k.size - Math.abs(reduction), k.isAnchor])
+    from.map((k) => [
+      shrinks(k) ? k.size - Math.abs(reduction) : k.size,
+      k.isAnchor,
+    ])
   );
   return shifted.map((k, i) => ({
     ...k,
@@ -646,11 +664,11 @@ export const keylinesForScroll = (
   const endShiftOffset = Math.max(0, maxScroll - strategy.endShiftDistance);
   if (position >= startShiftOffset && position <= endShiftOffset)
     return strategy.defaultKeylines;
-  let interpolation = lerpBetween(1, 0, 0, startShiftOffset, position);
+  let interpolation = lerpClamped(1, 0, 0, startShiftOffset, position);
   let points = strategy.startShiftPoints;
   let steps = strategy.startSteps;
   if (position > endShiftOffset) {
-    interpolation = lerpBetween(0, 1, endShiftOffset, maxScroll, position);
+    interpolation = lerpClamped(0, 1, endShiftOffset, maxScroll, position);
     points = strategy.endShiftPoints;
     steps = strategy.endSteps;
     if (
@@ -669,7 +687,7 @@ export const keylinesForScroll = (
     if (interpolation <= upper) {
       from = i - 1;
       to = i;
-      stepped = lerpBetween(0, 1, lower, upper, interpolation);
+      stepped = lerpClamped(0, 1, lower, upper, interpolation);
       break;
     }
     lower = upper;

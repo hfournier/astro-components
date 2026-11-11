@@ -274,8 +274,21 @@ test.describe("item placement (Compose's Modifier.carouselItem)", () => {
     const slotStart = 9 * (strategy.itemSize + 8) - max;
     const end = slotStart + (strategy.itemSize + width) / 2 + translation;
     expect(end).toBeCloseTo(380 - 16, 3);
-    // the padding comes out of the three visible items' sizes, as Compose's does
-    expect(width).toBeCloseTo(strategy.itemSize - 16 / 3, 3);
+    // the padding comes out of the large and medium items' sizes, 8px each
+    expect(width).toBeCloseTo(strategy.itemSize - 16 / 2, 3);
+  });
+
+  // M3's Specs: small items are 40 to 56dp. Compose takes the padding out of every item, the
+  // small one too, which takes it under 40dp at the ends; the Specs' range wins.
+  test("keeps the small item 40 to 56px at the ends, padding and all", () => {
+    const tight = multiBrowse(412, 186, 8, 8, 16, 16);
+    const max = 8 * tight.itemSize + 7 * 8 - 412;
+    const smallAt = (i: number, scroll: number) =>
+      itemPlacement(tight, i, scroll, 8).size;
+    expect(smallAt(2, 0)).toBeGreaterThanOrEqual(40);
+    expect(smallAt(2, 0)).toBeLessThanOrEqual(56);
+    expect(smallAt(5, max)).toBeGreaterThanOrEqual(40);
+    expect(smallAt(5, max)).toBeLessThanOrEqual(56);
   });
 
   test("grows an item to large as it scrolls to its snap position", () => {
