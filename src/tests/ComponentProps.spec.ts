@@ -158,6 +158,9 @@ const expected: Record<string, string | RegExp> = {
   "text-field-chips-over-limit-message-no-maxlength": `TextFieldChips: \`overLimitMessage\` words the character counter, which \`maxlength\` shows, but this one has \`overLimitMessage\` "{limit} caractères au plus" and no \`maxlength\`.`,
   "text-field-chips-name":
     "TextFieldChips: its chips are a group named by the field's label, but this one has no label, `aria-label` or `aria-labelledby`.",
+  "toolbar-docked-name":
+    "ToolbarDocked: a toolbar needs a name, from an `aria-label` or `aria-labelledby`, but this one has neither.",
+  "toolbar-docked-color": `ToolbarDocked: M3's color styles are "standard" and "vibrant", but this one's \`color\` is "tonal".`,
   "tooltip-placement": `Tooltip: its placements are "above" and "below", but this one's \`placement\` is "left".`,
   "tooltip-variant": `Tooltip: M3's tooltips are "plain" and "rich", but this one's \`variant\` is "tooltip".`,
 };

@@ -1,0 +1,66 @@
+---
+name: ToolbarDocked
+description: Material 3 Expressive's docked toolbar, the replacement for the bottom app bar. A full-width bar of the page's actions at the bottom of the window, in the standard or vibrant color style, holding icon buttons, buttons, a text field or other controls, one of which can be an embedded primary action. It's a `<div>` with the `toolbar` role, and the arrow keys move between its controls as Tab does.
+category: Interactive elements
+role: pattern
+meta:
+  title: ToolbarDocked | astro-components HenriFournier.dev
+  description: Material 3 Expressive's docked toolbar, a full-width bar of page actions at the bottom of the window, in the standard or vibrant color style.
+extends:
+  kind: element
+  tag: [div]
+mdn: https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Roles/toolbar_role
+props:
+  - name: color
+    type: '"standard" | "vibrant"'
+    required: false
+    default: '"standard"'
+    description: M3's color style. `standard`, on surface container, is low emphasis and keeps attention on the page's content. `vibrant`, on primary container, is high emphasis and draws attention to the controls; it can also show that the page is in a temporary mode, such as editing. Any other value fails the build.
+slots:
+  - name: default
+    description: The toolbar's controls, in one row, from the leading edge. Usually standard ButtonIcons, which take the toolbar's icon color, with at most one emphasized action, such as a filled ButtonIcon. Buttons, a ButtonGroup and a TextField can go here too.
+    kind: any
+---
+
+## Attributes
+
+Every attribute goes on the `<div>`, which has `role="toolbar"`. Name it with `aria-label`, or `aria-labelledby` pointing at a visible heading, after what its actions are for, such as "Message actions". A toolbar without either fails the build.
+
+## Placement
+
+M3 places the docked toolbar only at the bottom of the window, spanning its full width. Pin it there with `class="sticky bottom-0 z-1"` as the last element of the page's layout, or with `class="fixed inset-x-0 bottom-0 z-1"`; inside a scrolling box, the same `sticky` classes keep it at the box's bottom. Don't show it with a [NavBar](/components/nav-bar), which sits at the bottom too: show the navigation bar on top-level pages, and the toolbar on the pages under them that have actions.
+
+Below its 64px, it adds the space a phone keeps clear for its home indicator (`env(safe-area-inset-bottom)`), when the page's viewport meta has `viewport-fit=cover`.
+
+## Layout
+
+Its items sit 16px in from each edge, centered in its height. Each item takes at least 48px, its touch target, so the space between items is between their targets.
+
+- **In a compact window** (below 600px), the items spread evenly across the toolbar, as M3 asks for phones.
+- **From a medium window** (600px), they're centered, with 32px between them.
+
+To lay them out another way, pass classes: `justify-between` keeps them spread at every size, and `ms-auto` on an item pushes it and those after it to the trailing edge, for example to put a key action in the middle and the others at the edges. M3 lets the space between items range from 4px to 32px, and asks for at least 16px at the edges.
+
+On large screens, M3 lets a docked toolbar be rounded and placed elsewhere on the page, such as a text editor's formatting bar, with dividers between groups of actions. Pass a corner class, such as `rounded-xl`, for that. On a phone, keep its square corners: rounded ones suggest it changes on interaction.
+
+## Actions
+
+Use icon buttons for an even set of actions, and emphasize at most one, so people find the action they use most:
+
+- **An embedded primary action:** a filled or tonal ButtonIcon among standard ones, in the default or wide width. It takes the place of the FAB the bottom app bar had.
+- **A selected action:** a tonal toggle ButtonIcon (`variant="tonal" isToggle`) shows which of the toolbar's modes is on. In the toolbar, an unselected one has the toolbar's own colors and a selected one a secondary container (standard) or a surface container (vibrant), as M3's Specs give them.
+
+Don't overwhelm people with too many controls, or mix many kinds of controls. When the actions don't fit, put the rest in a [Menu](/components/menu) opened from a More button at the trailing end.
+
+## Colors
+
+| Part | Standard | Vibrant |
+| --- | --- | --- |
+| Container | Surface container | Primary container |
+| Standard icon button | On surface variant | On primary container |
+| Selected button | Secondary container, on secondary container | Surface container, on surface |
+| Filled icon button | Primary, on primary | Primary, on primary |
+
+## Motion
+
+The toolbar itself doesn't move: it stays on screen as the page scrolls. Its buttons change color on M3's fast effects spring, and their corners morph on fast spatial, as they do anywhere.

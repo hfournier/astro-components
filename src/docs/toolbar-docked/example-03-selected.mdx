@@ -1,0 +1,17 @@
+---
+title: Selected action
+description: Tonal toggle ButtonIcons show which action is on. In the toolbar, an unselected one takes the toolbar's colors, and a selected one a secondary container, or a surface container in a vibrant toolbar.
+---
+
+<div class="space-y-4">
+  <ToolbarDocked aria-label="Standard view">
+    <ButtonIcon icon="favorite" label="Favorite" variant="tonal" isToggle isSelected />
+    <ButtonIcon icon="bookmark" label="Bookmark" variant="tonal" isToggle />
+    <ButtonIcon icon="star" label="Star" variant="tonal" isToggle />
+  </ToolbarDocked>
+  <ToolbarDocked aria-label="Vibrant view" color="vibrant">
+    <ButtonIcon icon="favorite" label="Favorite" variant="tonal" isToggle isSelected />
+    <ButtonIcon icon="bookmark" label="Bookmark" variant="tonal" isToggle />
+    <ButtonIcon icon="star" label="Star" variant="tonal" isToggle />
+  </ToolbarDocked>
+</div>

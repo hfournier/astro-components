@@ -47,6 +47,7 @@ import Tab from "../../components/Tab.astro";
 import Tabs from "../../components/Tabs.astro";
 import TextField from "../../components/TextField.astro";
 import TextFieldChips from "../../components/TextFieldChips.astro";
+import ToolbarDocked from "../../components/ToolbarDocked.astro";
 import Tooltip from "../../components/Tooltip.astro";
 
 const container = await experimental_AstroContainer.create();
@@ -370,6 +371,11 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
       { ...field, overLimitMessage: "{limit} caractères au plus" },
     ],
     "text-field-chips-name": [TextFieldChips, {}],
+    "toolbar-docked-name": [ToolbarDocked, {}],
+    "toolbar-docked-color": [
+      ToolbarDocked,
+      { "aria-label": "Actions", color: "tonal" },
+    ],
     "tooltip-placement": [Tooltip, { placement: "left" }],
     "tooltip-variant": [Tooltip, { variant: "tooltip" }],
   };

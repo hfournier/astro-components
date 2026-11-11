@@ -1,0 +1,105 @@
+---
+title: ToolbarDocked
+description: Tests for the ToolbarDocked component
+---
+
+<Heading level={1}>ToolbarDocked Tests</Heading>
+
+<Section data-testid="toolbar-docked-anatomy" class="p-4 space-y-4">
+  <Heading level={2}>Anatomy</Heading>
+  <ToolbarDocked aria-label="Message actions">
+    <ButtonIcon icon="arrow_back" label="Back" />
+    <ButtonIcon icon="archive" label="Archive" />
+    <ButtonIcon icon="delete" label="Delete" />
+    <ButtonIcon icon="mail" label="Mark unread" />
+    <ButtonIcon icon="more_vert" label="More" />
+  </ToolbarDocked>
+</Section>
+
+<Section data-testid="toolbar-docked-few" class="p-4 space-y-4">
+  <Heading level={2}>Three actions</Heading>
+  <ToolbarDocked aria-label="Photo actions">
+    <ButtonIcon icon="share" label="Share" />
+    <ButtonIcon icon="edit" label="Edit" />
+    <ButtonIcon icon="delete" label="Delete" />
+  </ToolbarDocked>
+</Section>
+
+<Section data-testid="toolbar-docked-vibrant" class="p-4 space-y-4">
+  <Heading level={2}>Vibrant</Heading>
+  <ToolbarDocked aria-label="Editing" color="vibrant">
+    <ButtonIcon icon="arrow_back" label="Back" />
+    <ButtonIcon icon="arrow_forward" label="Forward" />
+    <ButtonIcon icon="add" label="Add" variant="filled" width="wide" />
+    <ButtonIcon icon="edit" label="Edit" />
+    <ButtonIcon icon="delete" label="Delete" />
+  </ToolbarDocked>
+</Section>
+
+<Section data-testid="toolbar-docked-primary-action" class="p-4 space-y-4">
+  <Heading level={2}>Embedded primary action</Heading>
+  <ToolbarDocked aria-label="Draft">
+    <ButtonIcon icon="attach_file" label="Attach" />
+    <ButtonIcon icon="image" label="Insert image" />
+    <ButtonIcon icon="send" label="Send" variant="filled" width="wide" />
+    <ButtonIcon icon="schedule" label="Schedule" />
+    <ButtonIcon icon="delete" label="Discard" />
+  </ToolbarDocked>
+</Section>
+
+<Section data-testid="toolbar-docked-selected" class="p-4 space-y-4">
+  <Heading level={2}>Selected toggles, standard and vibrant</Heading>
+  <ToolbarDocked aria-label="Standard toggles">
+    <ButtonIcon icon="favorite" label="Favorite" variant="tonal" isToggle isSelected />
+    <ButtonIcon icon="bookmark" label="Bookmark" variant="tonal" isToggle />
+    <ButtonIcon icon="star" label="Star" variant="tonal" isToggle />
+  </ToolbarDocked>
+  <ToolbarDocked aria-label="Vibrant toggles" color="vibrant">
+    <ButtonIcon icon="favorite" label="Favorite" variant="tonal" isToggle isSelected />
+    <ButtonIcon icon="bookmark" label="Bookmark" variant="tonal" isToggle />
+    <ButtonIcon icon="star" label="Star" variant="tonal" isToggle />
+  </ToolbarDocked>
+</Section>
+
+<Section data-testid="toolbar-docked-controls" class="p-4 space-y-4">
+  <Heading level={2}>Buttons, a button group, a text field and a disabled button</Heading>
+  <ToolbarDocked aria-label="Mixed controls">
+    <Button variant="text">Reply</Button>
+    <ButtonGroup aria-label="Clipboard">
+      <ButtonIcon icon="content_copy" label="Copy" />
+      <ButtonIcon icon="link" label="Copy link" />
+    </ButtonGroup>
+    <ButtonIcon icon="download" label="Download" disabled />
+    <TextField>Find</TextField>
+    <ButtonIcon icon="search" label="Search" />
+  </ToolbarDocked>
+</Section>
+
+<Section data-testid="toolbar-docked-pinned" class="p-4 space-y-4">
+  <Heading level={2}>Pinned at the bottom of a scrolling box</Heading>
+  <div class="h-64 overflow-y-auto rounded-xl border border-(--theme-color-outline-variant)" tabindex="0" role="region" aria-label="Message">
+    <div class="space-y-4 p-4">
+      <p>The toolbar stays at the bottom while the message scrolls above it.</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      <p>Ut enim ad minim veniam, quis nostrud exercitation.</p>
+      <p>Duis aute irure dolor in reprehenderit in voluptate velit esse.</p>
+      <p>Excepteur sint occaecat cupidatat non proident.</p>
+      <p>Sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    </div>
+    <ToolbarDocked aria-label="Reading" class="sticky bottom-0">
+      <ButtonIcon icon="share" label="Share" />
+      <ButtonIcon icon="archive" label="Archive" />
+      <ButtonIcon icon="delete" label="Delete" />
+    </ToolbarDocked>
+  </div>
+</Section>
+
+<Section data-testid="toolbar-docked-rtl" class="p-4 space-y-4" dir="rtl">
+  <Heading level={2}>Right to left</Heading>
+  <ToolbarDocked aria-label="إجراءات الرسالة">
+    <ButtonIcon icon="arrow_forward" label="رجوع" />
+    <ButtonIcon icon="archive" label="أرشفة" />
+    <ButtonIcon icon="delete" label="حذف" />
+  </ToolbarDocked>
+</Section>
