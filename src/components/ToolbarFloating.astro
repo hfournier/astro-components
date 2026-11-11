@@ -1,0 +1,329 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import BaseWrapper from "./BaseWrapper.astro";
+import { toolbarColorClasses } from "../utils";
+
+// M3 Expressive's floating toolbar: a pill of contextual actions that floats over the page's
+// content, horizontal or vertical, alone or paired with a FAB. It holds icon buttons, buttons,
+// a text field or other controls, one of which can be an embedded primary action. The page
+// places it, usually fixed or sticky near the bottom of the window or, vertical, at a side.
+//
+// It's a `toolbar` (M3's Accessibility page: "On web, the toolbar container should have the
+// toolbar role"), named with `aria-label` or `aria-labelledby`. Tab moves through its controls,
+// and so do the arrow keys (the script below): left and right, or up and down in a vertical one.
+type Props = Omit<HTMLAttributes<"div">, "role" | "aria-orientation"> & {
+  // M3's color styles: standard, low emphasis, keeps attention on the content; vibrant, high
+  // emphasis, draws it to the controls, or shows a mode such as editing
+  color?: "standard" | "vibrant";
+  // M3's layouts: a row, or a column for the side of a larger window. Set as aria-orientation.
+  orientation?: "horizontal" | "vertical";
+  // What it does as its content scrolls (M3's Guidelines), as Compose does it. "exit-always":
+  // it leaves the view as the content scrolls down and comes back as soon as it scrolls up.
+  // "collapse": it shrinks into its FAB, which grows into a medium FAB, as the content scrolls
+  // down, and expands as it scrolls back up.
+  scrollBehavior?: "none" | "exit-always" | "collapse";
+};
+
+const {
+  color = "standard",
+  orientation = "horizontal",
+  scrollBehavior = "none",
+  class: classList,
+  ...attrs
+} = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021)
+if (!["standard", "vibrant"].includes(color)) {
+  throw new Error(
+    `ToolbarFloating: M3's color styles are "standard" and "vibrant", but this one's \`color\` is "${color}".`
+  );
+}
+if (!["horizontal", "vertical"].includes(orientation)) {
+  throw new Error(
+    `ToolbarFloating: M3's layouts are "horizontal" and "vertical", but this one's \`orientation\` is "${orientation}".`
+  );
+}
+if (!["none", "exit-always", "collapse"].includes(scrollBehavior)) {
+  throw new Error(
+    `ToolbarFloating: its scroll behaviors are "none", "exit-always" and "collapse", but this one's \`scrollBehavior\` is "${scrollBehavior}".`
+  );
+}
+// Compose collapses a floating toolbar into its FAB. Without one, it would collapse into nothing.
+if (scrollBehavior === "collapse" && !Astro.slots.has("fab")) {
+  throw new Error(
+    'ToolbarFloating: it collapses into its FAB, so `scrollBehavior="collapse"` needs a Fab in its `fab` slot, but this one has none.'
+  );
+}
+// An unnamed toolbar is announced as just "toolbar", with nothing to say what its actions are for
+if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
+  throw new Error(
+    "ToolbarFloating: a toolbar needs a name, from an `aria-label` or `aria-labelledby`, but this one has neither."
+  );
+}
+
+const isVertical = orientation === "vertical";
+const isCollapsible = scrollBehavior === "collapse";
+
+// M3's Specs, color: the same roles as the docked toolbar's (ADR-0036)
+const colorClasses = toolbarColorClasses[color];
+
+// M3's Specs, FAB: secondary container beside a standard toolbar, tertiary container beside a
+// vibrant one (the page picks it with the Fab's `color`), at elevation level 1, raised a level on
+// hover and back at rest while pressed, as a FAB's states are. ! so it wins over the Fab's own
+// elevation, its states included. Each state adds a selector, so the later state wins on
+// specificity, whatever order Tailwind writes them in.
+const fabClasses =
+  "*:data-ac-fab:shadow-theme-elevation-1! [&>[data-ac-fab]:hover]:shadow-theme-elevation-2! [&>[data-ac-fab]:hover:active]:shadow-theme-elevation-1!";
+
+// Collapsed (the script sets data-ac-toolbar-floating-collapsed), the FAB is M3's medium FAB
+// (the Specs' fab.medium tokens): 80dp, corner large increased (20dp), a 28dp icon, elevation
+// level 2, raised a level on hover. Its size and corners move on fast spatial and its elevation
+// on fast effects, alongside the toolbar (Compose moves them together).
+const collapseFabClasses = isCollapsible && [
+  "[&[data-ac-toolbar-floating-collapsed]>[data-ac-fab]]:h-20! [&[data-ac-toolbar-floating-collapsed]>[data-ac-fab]]:min-w-20! [&[data-ac-toolbar-floating-collapsed]>[data-ac-fab]]:rounded-[20px]! [&[data-ac-toolbar-floating-collapsed]>[data-ac-fab]>svg]:size-7!",
+  "[&[data-ac-toolbar-floating-collapsed]>[data-ac-fab]]:shadow-theme-elevation-2! [&[data-ac-toolbar-floating-collapsed]>[data-ac-fab]:hover]:shadow-theme-elevation-3! [&[data-ac-toolbar-floating-collapsed]>[data-ac-fab]:hover:active]:shadow-theme-elevation-2!",
+  "motion-safe:*:data-ac-fab:[transition:box-shadow_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects),height_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial),min-width_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial),border-radius_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial)]",
+  "motion-safe:[&>[data-ac-fab]>svg]:transition-[width,height] motion-safe:[&>[data-ac-fab]>svg]:duration-(--theme-duration-spring-fast-spatial) motion-safe:[&>[data-ac-fab]>svg]:ease-spring-fast-spatial",
+];
+---
+
+{/* The toolbar and its FAB, side by side 8dp apart (M3's Specs, FAB between space), the FAB
+    centered on the toolbar: after it, at the end of a row or below a column, as Compose puts it.
+    The page places this pair with `class`. Leaving on scroll, the pair moves together, on M3's
+    fast spatial spring (Compose's floating toolbar animation spec). One that collapses is at
+    least 80dp across, a medium FAB's size, and holds its FAB at its end, as Compose's layout
+    does, so the FAB grows in place as the toolbar shrinks toward it. */}
+<div
+  class={twMerge(
+    "inline-flex items-center gap-2",
+    isVertical && "flex-col",
+    isCollapsible && ["justify-end", isVertical ? "min-w-20" : "min-h-20"],
+    fabClasses,
+    collapseFabClasses,
+    "motion-safe:transition-transform motion-safe:duration-(--theme-duration-spring-fast-spatial) motion-safe:ease-spring-fast-spatial",
+    classList
+  )}
+  data-ac-toolbar-floating={color}
+  data-ac-toolbar-floating-orientation={orientation}
+  data-ac-toolbar-floating-scroll-behavior={scrollBehavior}
+>
+  {/* M3's Specs: 64dp across, fully rounded, at elevation level 3, with 8dp leading and
+      trailing space and 4dp between items. Each item sits in a cell at least 48dp long, its
+      touch target, as Compose lays out an icon button, so the spaces are between targets and
+      a 40dp icon button is 8dp from the edge with its target. It's only as long as its items
+      (M3's Guidelines). Collapsed, it's zero long, its controls clipped but still in the tab
+      order, and casts no shadow (Compose's collapsed elevation beside a FAB, level 0). */}
+  <BaseWrapper
+    bgColor={colorClasses.bg}
+    class={twMerge(
+      "grid shrink-0 place-items-center gap-1 rounded-full p-2 shadow-theme-elevation-3",
+      isVertical
+        ? "min-w-16 auto-rows-[minmax(--spacing(12),auto)] grid-flow-row"
+        : "min-h-16 auto-cols-[minmax(--spacing(12),auto)] grid-flow-col",
+      colorClasses.toggles,
+      isCollapsible && [
+        "overflow-hidden motion-safe:transition-shadow",
+        "[[data-ac-toolbar-floating-collapsed]>&]:shadow-none",
+        isVertical
+          ? "[[data-ac-toolbar-floating-collapsed]>&]:h-0 [[data-ac-toolbar-floating-collapsed]>&]:py-0"
+          : "[[data-ac-toolbar-floating-collapsed]>&]:w-0 [[data-ac-toolbar-floating-collapsed]>&]:px-0",
+      ]
+    )}
+    role="toolbar"
+    aria-orientation={isVertical ? "vertical" : undefined}
+    data-ac-toolbar-floating-part="toolbar"
+    {...attrs}
+  >
+    <slot />
+  </BaseWrapper>
+  <slot name="fab" />
+</div>
+
+<script>
+  import {
+    moveFocusWithArrows,
+    pinnedOf,
+    scrollerOf,
+    springTiming,
+  } from "../utils";
+
+  // M3's Accessibility page: Tab or the arrow keys move between a toolbar's controls (ADR-0036)
+  const toolbarSelector = '[data-ac-toolbar-floating-part="toolbar"]';
+  moveFocusWithArrows(toolbarSelector);
+
+  // M3's Guidelines: on scroll, a floating toolbar can stay, animate off screen, or collapse
+  // into a single high-emphasis action. Compose's two behaviors (ADR-0037):
+  //
+  // - exit-always: it leaves its view as its content scrolls down, and comes back as soon as the
+  //   content scrolls up. A row leaves through the nearer of the view's top and bottom edges, a
+  //   column through the nearer side.
+  // - collapse: once the content has scrolled 40dp down since the toolbar last changed, it
+  //   shrinks into its FAB, and once it's scrolled 40dp back up, it expands (Compose's
+  //   floatingToolbarVerticalNestedScroll and its ScrollDistanceThreshold).
+  //
+  // Only a toolbar that's pinned (it or an ancestor below its scroll container is sticky or
+  // fixed) does either, since one that scrolls with the content goes out of view anyway. Either
+  // way, its controls stay in the tab order: one taking focus brings the toolbar back, and it
+  // stays while focus is in it, so its controls are always reachable (M3's Accessibility page).
+  //
+  // One listener for the whole page, in the capture phase so it hears every scroll container's
+  // scroll as well as the window's, as AppBar's does (ADR-0034).
+  const rootSelector =
+    '[data-ac-toolbar-floating-scroll-behavior]:not([data-ac-toolbar-floating-scroll-behavior="none"])';
+  // how far past the view's edge it goes, so its shadow leaves too
+  const clearance = 16;
+  // Compose's ScrollDistanceThreshold
+  const collapseDistance = 40;
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  const lastScrollTops = new WeakMap<HTMLElement, number>();
+  // where the content's scroll last turned, from which a collapsing toolbar measures 40dp
+  const turns = new WeakMap<HTMLElement, number>();
+
+  const isVertical = (root: HTMLElement) =>
+    root.dataset.acToolbarFloatingOrientation === "vertical";
+  const toolbarOf = (root: HTMLElement) =>
+    root.querySelector<HTMLElement>(`:scope > ${toolbarSelector}`)!;
+  const isCollapsed = (root: HTMLElement) =>
+    root.hasAttribute("data-ac-toolbar-floating-collapsed");
+
+  // The move that takes the toolbar out of its scroll container's view, as a transform
+  const exitOffset = (root: HTMLElement, scroller: Element | null) => {
+    const view = scroller
+      ? scroller.getBoundingClientRect()
+      : new DOMRect(0, 0, window.innerWidth, window.innerHeight);
+    // where it rests: its box, less any way it's already moved
+    const transform = getComputedStyle(root).transform;
+    const moved =
+      transform === "none" ? new DOMMatrix() : new DOMMatrix(transform);
+    const rect = root.getBoundingClientRect();
+    const rest = new DOMRect(
+      rect.x - moved.m41,
+      rect.y - moved.m42,
+      rect.width,
+      rect.height
+    );
+    if (isVertical(root)) {
+      const toEnd = rest.x + rest.width / 2 > view.x + view.width / 2;
+      const x = toEnd
+        ? view.right - rest.left + clearance
+        : view.left - rest.right - clearance;
+      return `translate(${x}px, 0)`;
+    }
+    const toBottom = rest.y + rest.height / 2 > view.y + view.height / 2;
+    const y = toBottom
+      ? view.bottom - rest.top + clearance
+      : view.top - rest.bottom - clearance;
+    return `translate(0, ${y}px)`;
+  };
+
+  const leave = (root: HTMLElement, scroller: Element | null) => {
+    if (root.hasAttribute("data-ac-toolbar-floating-exited")) return;
+    root.setAttribute("data-ac-toolbar-floating-exited", "");
+    root.style.transform = exitOffset(root, scroller);
+  };
+  const comeBack = (root: HTMLElement) => {
+    if (!root.hasAttribute("data-ac-toolbar-floating-exited")) return;
+    root.removeAttribute("data-ac-toolbar-floating-exited");
+    root.style.transform = "";
+  };
+
+  // Collapses or expands the toolbar, its length moving on fast spatial from where it is to
+  // where it ends up, which CSS can't transition to or from its natural length. The pair keeps
+  // its expanded length meanwhile, so the FAB stays in place at its end.
+  const setCollapsed = (root: HTMLElement, collapsed: boolean) => {
+    if (isCollapsed(root) === collapsed) return;
+    const toolbar = toolbarOf(root);
+    const length = isVertical(root) ? "height" : "width";
+    const minLength = isVertical(root) ? "minHeight" : "minWidth";
+    const measure = () => {
+      const style = getComputedStyle(toolbar);
+      return { [length]: style[length], padding: style.padding };
+    };
+    const from = measure();
+    if (collapsed && !root.style[minLength])
+      root.style[minLength] = `${root.getBoundingClientRect()[length]}px`;
+    toolbar.getAnimations().forEach((animation) => animation.cancel());
+    root.toggleAttribute("data-ac-toolbar-floating-collapsed", collapsed);
+    const release = () => {
+      if (!isCollapsed(root)) root.style[minLength] = "";
+    };
+    if (reducedMotion.matches) {
+      release();
+      return;
+    }
+    toolbar
+      .animate([from, measure()], springTiming("fast-spatial"))
+      .finished.then(release, () => {});
+  };
+
+  let frame = 0;
+  const update = () => {
+    frame = 0;
+    document.querySelectorAll<HTMLElement>(rootSelector).forEach((root) => {
+      const scroller = scrollerOf(root);
+      const scrollTop = scroller ? scroller.scrollTop : window.scrollY;
+      const last = lastScrollTops.get(root) ?? scrollTop;
+      lastScrollTops.set(root, scrollTop);
+      const pinned = !!pinnedOf(root, scroller);
+
+      if (root.dataset.acToolbarFloatingScrollBehavior === "exit-always") {
+        if (!pinned || root.matches(":focus-within")) comeBack(root);
+        else if (scrollTop > last && scrollTop > 0) leave(root, scroller);
+        else if (scrollTop < last) comeBack(root);
+        return;
+      }
+
+      const turn = turns.get(root) ?? scrollTop;
+      if (!pinned || toolbarOf(root).matches(":focus-within")) {
+        setCollapsed(root, false);
+        turns.set(root, scrollTop);
+      } else if (!isCollapsed(root)) {
+        // collapses 40dp below the highest the content has been since it expanded
+        const highest = Math.min(turn, scrollTop);
+        const collapse = scrollTop - highest >= collapseDistance;
+        if (collapse) setCollapsed(root, true);
+        turns.set(root, collapse ? scrollTop : highest);
+      } else {
+        // and expands 40dp above the lowest since it collapsed
+        const lowest = Math.max(turn, scrollTop);
+        const expand = lowest - scrollTop >= collapseDistance;
+        if (expand) setCollapsed(root, false);
+        turns.set(root, expand ? scrollTop : lowest);
+      }
+    });
+  };
+
+  const schedule = () => {
+    frame ||= requestAnimationFrame(update);
+  };
+
+  update();
+  document.addEventListener("scroll", schedule, {
+    capture: true,
+    passive: true,
+  });
+  // A resize moves the view's edges, so a toolbar that has left moves to stay past them
+  window.addEventListener(
+    "resize",
+    () => {
+      document
+        .querySelectorAll<HTMLElement>("[data-ac-toolbar-floating-exited]")
+        .forEach((root) => {
+          root.style.transform = exitOffset(root, scrollerOf(root));
+        });
+    },
+    { passive: true }
+  );
+  // A control taking focus brings its toolbar back. The FAB taking focus leaves a collapsed one
+  // as it is: it's the action the toolbar collapsed into.
+  document.addEventListener("focusin", (event) => {
+    const target = event.target as Element;
+    const root = target.closest?.<HTMLElement>(rootSelector);
+    if (!root) return;
+    if (root.dataset.acToolbarFloatingScrollBehavior === "exit-always")
+      comeBack(root);
+    else if (target.closest(toolbarSelector)) setCollapsed(root, false);
+  });
+</script>

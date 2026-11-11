@@ -1,0 +1,78 @@
+---
+name: ToolbarFloating
+description: Material 3 Expressive's floating toolbar. A pill of contextual actions that floats over the page's content, horizontal or vertical, in the standard or vibrant color style, alone or paired with a FAB. It can leave the view as the content scrolls down and come back as it scrolls up. It's a `<div>` with the `toolbar` role, and the arrow keys move between its controls as Tab does.
+category: Interactive elements
+role: pattern
+meta:
+  title: ToolbarFloating | astro-components HenriFournier.dev
+  description: Material 3 Expressive's floating toolbar, a pill of contextual actions over the page's content, horizontal or vertical, with an optional FAB.
+extends:
+  kind: element
+  tag: [div]
+mdn: https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Roles/toolbar_role
+props:
+  - name: color
+    type: '"standard" | "vibrant"'
+    required: false
+    default: '"standard"'
+    description: M3's color style. `standard`, on surface container, is low emphasis and keeps attention on the page's content. `vibrant`, on primary container, is high emphasis and draws attention to the controls; it can also show that the page is in a temporary mode, such as editing. Any other value fails the build.
+  - name: orientation
+    type: '"horizontal" | "vertical"'
+    required: false
+    default: '"horizontal"'
+    description: M3's layout. `horizontal` is a row, 64px high; `vertical` is a column, 64px wide, for the side of a medium or larger window. A vertical toolbar has `aria-orientation="vertical"`, and the up and down arrow keys move between its controls. Any other value fails the build.
+  - name: scrollBehavior
+    type: '"none" | "exit-always" | "collapse"'
+    required: false
+    default: '"none"'
+    description: What the toolbar does as its content scrolls, as M3's Guidelines and Compose give it. `none` keeps it in place. `exit-always` moves it out of view, with its FAB, as the content scrolls down, and back as soon as it scrolls up. `collapse` shrinks it into its FAB, which grows into a medium FAB, once the content has scrolled 40px down, and expands it once the content has scrolled 40px back up; it needs a Fab in the `fab` slot, and fails the build without one. Either way, it comes back when one of its controls takes focus, and only moves while it's pinned with `fixed` or `sticky` (see Placement). Any other value fails the build.
+slots:
+  - name: default
+    description: The toolbar's controls, in one row or column. Usually standard ButtonIcons, which take the toolbar's icon color, with at most one emphasized action, such as a filled ButtonIcon. Buttons, a ButtonGroup and a TextField can go in a horizontal one too.
+    kind: any
+  - name: fab
+    description: An optional [Fab](/components/fab), with `slot="fab"`, shown 8px after the toolbar and centered on it. Give it `color="secondary-container"` beside a standard toolbar and `color="tertiary-container"` beside a vibrant one, as M3's Specs do.
+    kind: any
+---
+
+## Attributes
+
+`class` goes on the element that holds the toolbar and its FAB, so classes that place it, such as `fixed bottom-4`, move them together. Every other attribute goes on the `<div>` with `role="toolbar"`. Name it with `aria-label`, or `aria-labelledby` pointing at a visible heading, after what its actions are for, such as "Photo actions". A toolbar without either fails the build.
+
+## Placement
+
+The page places a floating toolbar, as it does a docked one. M3 keeps it fully on screen, at least 16px from the window's edges, or 24px for a vertical one:
+
+- **Horizontal, at the bottom:** `class="fixed bottom-4 left-1/2 z-1 -translate-x-1/2"`. To leave room for a phone's home indicator too, use `bottom-[max(--spacing(4),env(safe-area-inset-bottom))]`.
+- **Vertical, at a side:** `class="fixed inset-e-6 top-1/2 z-1 -translate-y-1/2"`, on the opposite side from a [NavRail](/components/nav-rail).
+- **Inside a scrolling box:** wrap it in `<div class="sticky bottom-4 flex justify-center">` as the box's last child.
+
+It's only as wide as its items. When they don't fit, put the rest in a [Menu](/components/menu) opened from a More button at the trailing end, and show more of them as the window grows.
+
+## Actions
+
+Use icon buttons for an even set of actions, and emphasize at most one, so people find the action they use most:
+
+- **An embedded primary action:** a filled or tonal ButtonIcon among standard ones.
+- **A FAB beside it:** the page's highest-priority action, in the `fab` slot. Don't add a filled button as well.
+- **A selected action:** a tonal toggle ButtonIcon (`variant="tonal" isToggle`) shows which of the toolbar's modes is on. In the toolbar, an unselected one has the toolbar's own colors and a selected one a secondary container (standard) or a surface container (vibrant), as M3's Specs give them.
+
+Use round icon buttons, which match the toolbar's fully rounded shape, not square ones. In a vertical toolbar, use narrow or default icon buttons, not wide ones.
+
+## Colors
+
+| Part | Standard | Vibrant |
+| --- | --- | --- |
+| Container | Surface container | Primary container |
+| Standard icon button | On surface variant | On primary container |
+| Selected button | Secondary container, on secondary container | Surface container, on surface |
+| Filled icon button | Primary, on primary | Primary, on primary |
+| FAB | Secondary container, on secondary container | Tertiary container, on tertiary container |
+
+The toolbar is at elevation level 3, and a FAB beside it at level 1. Over a background that's distinct from it, M3 lets you remove the toolbar's elevation.
+
+## Motion
+
+With `scrollBehavior="exit-always"`, the toolbar and its FAB leave through the nearer edge of their scroll container, the window or a scrolling box: down or up for a horizontal toolbar, to the side for a vertical one. They move on M3's fast spatial spring, and with reduced motion they leave and come back at once.
+
+With `scrollBehavior="collapse"`, the toolbar shrinks toward its FAB and the FAB grows in its place into M3's medium FAB: 80px, with 20px corners, a 28px icon and elevation level 2. Expanding reverses it. The toolbar's length and the FAB's size and corners move on fast spatial, its elevation on fast effects, and with reduced motion it changes at once. M3 asks that a toolbar not both collapse and leave the view, which one `scrollBehavior` can't do. Its buttons change color on M3's fast effects spring, and their corners morph on fast spatial, as they do anywhere.

@@ -461,3 +461,141 @@ export const markPressed = (
     elementOf(event.target)?.removeAttribute(attribute);
   });
 };
+
+/**
+ * A toolbar's classes for M3's standard and vibrant color styles, shared by ToolbarDocked and
+ * ToolbarFloating, whose Specs give both the same roles (ADR-0036). `bg` is the container's
+ * BaseWrapper background, which also gives its standard icon buttons their icon color
+ * (on-surface-variant or on-primary-container). `toggles` re-points a tonal toggle icon button's
+ * role tokens to the toolbar's button and selected-button colors.
+ */
+export const toolbarColorClasses = {
+  standard: {
+    bg: "surface-container",
+    toggles:
+      "[--theme-color-tonal-toggle:var(--theme-color-surface-container)] [--theme-color-on-tonal-toggle:var(--theme-color-on-surface-variant)] [--theme-color-tonal-toggle-selected:var(--theme-color-secondary-container)] [--theme-color-on-tonal-toggle-selected:var(--theme-color-on-secondary-container)]",
+  },
+  vibrant: {
+    bg: "primary-container",
+    toggles:
+      "[--theme-color-tonal-toggle:var(--theme-color-primary-container)] [--theme-color-on-tonal-toggle:var(--theme-color-on-primary-container)] [--theme-color-tonal-toggle-selected:var(--theme-color-surface-container)] [--theme-color-on-tonal-toggle-selected:var(--theme-color-on-surface)]",
+  },
+} as const;
+
+/**
+ * Lets the arrow keys move between a toolbar's controls, as M3's Accessibility page asks ("Tab or
+ * Arrows"), alongside Tab (ADR-0036). Left and right move to the previous or next control in the
+ * order Tab takes, mirrored right to left; in a toolbar with `aria-orientation="vertical"`, up and
+ * down do. They stop at the ends and skip disabled and hidden controls.
+ *
+ * A control that uses the arrow keys itself keeps them: a text field moves its caret, a slider its
+ * value, a radio its selection. A group inside the toolbar that moves between its own items, such
+ * as a ButtonGroup or ChipGroup, handles them first, as it listens on the document; this listens
+ * on the window, after it, and moves on only once the group stops. Keys inside a popover or dialog
+ * opened from the toolbar, such as a menu, are left to it.
+ *
+ * @param toolbarSelector - The toolbars it covers, e.g. `"[data-ac-toolbar-docked]"`.
+ */
+export const moveFocusWithArrows = (toolbarSelector: string) => {
+  const tabbableSelector =
+    "a[href], button, input, select, textarea, [tabindex], [contenteditable]";
+  const ownsArrowsSelector = [
+    "input:not([type=button], [type=checkbox], [type=color], [type=file], [type=image], [type=reset], [type=submit])",
+    "textarea",
+    "select",
+    "[contenteditable]:not([contenteditable=false])",
+    "[role=slider]",
+    "[role=spinbutton]",
+    "[role=textbox]",
+    "[role=combobox]",
+    "[role=radio]",
+  ].join(", ");
+  const layerSelector = "[popover], dialog";
+  // Whether an element is in a popover or dialog opened from this toolbar
+  const inLayerOf = (el: Element, toolbar: Element) =>
+    el.closest(layerSelector)?.closest(toolbarSelector) === toolbar;
+
+  // The toolbar's controls that Tab stops at, in its order
+  const controlsOf = (toolbar: Element) =>
+    [...toolbar.querySelectorAll<HTMLElement>(tabbableSelector)].filter(
+      (el) =>
+        el.tabIndex >= 0 &&
+        !el.matches(":disabled") &&
+        !inLayerOf(el, toolbar) &&
+        el.getClientRects().length > 0 &&
+        getComputedStyle(el).visibility !== "hidden"
+    );
+
+  window.addEventListener("keydown", (event) => {
+    if (event.defaultPrevented) return;
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
+      return;
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    const toolbar = target.closest(toolbarSelector);
+    if (!toolbar || target.matches(ownsArrowsSelector)) return;
+    if (inLayerOf(target, toolbar)) return;
+
+    let forward: boolean;
+    if (toolbar.getAttribute("aria-orientation") === "vertical") {
+      if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+      forward = event.key === "ArrowDown";
+    } else {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      const isRtl = getComputedStyle(toolbar).direction === "rtl";
+      forward = (event.key === "ArrowRight") !== isRtl;
+    }
+    const controls = controlsOf(toolbar);
+    // the next control after the focused one, or the last before it, in document order, so it
+    // also works from an item that Tab skips, such as a roving one in a group
+    // (neither inside it nor holding it)
+    const position = (el: Element) => target.compareDocumentPosition(el);
+    const follows = (el: Element) =>
+      !!(position(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+      !target.contains(el);
+    const precedes = (el: Element) =>
+      !!(position(el) & Node.DOCUMENT_POSITION_PRECEDING) &&
+      !el.contains(target);
+    const next = forward ? controls.find(follows) : controls.findLast(precedes);
+    if (!next) return;
+    event.preventDefault();
+    next.focus();
+  });
+};
+
+/**
+ * The nearest ancestor that scrolls vertically, or null for the window. Overflow alone isn't
+ * enough: overflow-x: hidden makes overflow-y compute to auto on an element that never scrolls,
+ * and an element fixed inside one still has the window scrolling under it.
+ */
+export const scrollerOf = (el: Element): Element | null => {
+  for (let node = el.parentElement; node; node = node.parentElement) {
+    if (node === document.body || node === document.documentElement) break;
+    if (
+      node.scrollHeight > node.clientHeight &&
+      /auto|scroll|overlay/.test(getComputedStyle(node).overflowY)
+    )
+      return node;
+  }
+  return null;
+};
+
+/**
+ * The element, or its ancestor below its scroll container, that pins it there with `sticky` or
+ * `fixed`, with its computed style; null when it scrolls with its container.
+ *
+ * @param el - The pinned component, e.g. an app bar.
+ * @param scroller - Its scroll container, from `scrollerOf`, or null for the window.
+ */
+export const pinnedOf = (el: Element, scroller: Element | null) => {
+  for (
+    let node: Element | null = el;
+    node && node !== scroller;
+    node = node.parentElement
+  ) {
+    const style = getComputedStyle(node);
+    if (style.position === "sticky" || style.position === "fixed")
+      return { node: node as HTMLElement, style };
+  }
+  return null;
+};

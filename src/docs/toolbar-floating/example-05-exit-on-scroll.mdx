@@ -1,0 +1,26 @@
+---
+title: Exit on scroll
+description: With `scrollBehavior="exit-always"`, the toolbar and its FAB leave as the content scrolls down, and come back as it scrolls up or when one of its controls takes focus. Here it's pinned with `sticky` at the bottom of a scrolling box; on a page, pin it to the window with `fixed`.
+---
+
+<div class="h-80 overflow-y-auto rounded-xl border border-(--theme-color-outline-variant)" tabindex="0" role="region" aria-label="Message">
+  <div class="space-y-4 p-4">
+    <p>Scroll this box down: the toolbar leaves. Scroll up: it comes back.</p>
+    <p>Hi Ana, here are the notes from Friday's meeting.</p>
+    <p>We agreed to move the launch to the second week of June.</p>
+    <p>Ben will update the schedule and share it on Monday.</p>
+    <p>The design review is now on Wednesday at ten.</p>
+    <p>Marketing needs the final screenshots by the end of May.</p>
+    <p>Support will get a walkthrough the week before launch.</p>
+    <p>Let me know if I missed anything.</p>
+    <p>Thanks, Sam</p>
+  </div>
+  <div class="sticky bottom-4 flex justify-center">
+    <ToolbarFloating aria-label="Message actions" scrollBehavior="exit-always">
+      <ButtonIcon icon="share" label="Share" />
+      <ButtonIcon icon="archive" label="Archive" />
+      <ButtonIcon icon="delete" label="Delete" />
+      <Fab slot="fab" icon="edit" label="Reply" color="secondary-container" />
+    </ToolbarFloating>
+  </div>
+</div>

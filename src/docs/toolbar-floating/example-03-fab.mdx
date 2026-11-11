@@ -1,0 +1,27 @@
+---
+title: With a FAB
+description: A Fab in the `fab` slot sits beside the toolbar for the page's highest-priority action, after a horizontal toolbar and below a vertical one. It's secondary container beside a standard toolbar and tertiary container beside a vibrant one.
+---
+
+<div class="flex flex-wrap items-start gap-8">
+  <div class="space-y-6">
+    <ToolbarFloating aria-label="Photo actions">
+      <ButtonIcon icon="share" label="Share" />
+      <ButtonIcon icon="favorite" label="Favorite" />
+      <ButtonIcon icon="delete" label="Delete" />
+      <Fab slot="fab" icon="edit" label="Edit photo" color="secondary-container" />
+    </ToolbarFloating>
+    <ToolbarFloating aria-label="Vibrant photo actions" color="vibrant">
+      <ButtonIcon icon="share" label="Share" />
+      <ButtonIcon icon="favorite" label="Favorite" />
+      <ButtonIcon icon="delete" label="Delete" />
+      <Fab slot="fab" icon="edit" label="Edit photo" color="tertiary-container" />
+    </ToolbarFloating>
+  </div>
+  <ToolbarFloating aria-label="Vertical photo actions" orientation="vertical">
+    <ButtonIcon icon="share" label="Share" />
+    <ButtonIcon icon="favorite" label="Favorite" />
+    <ButtonIcon icon="delete" label="Delete" />
+    <Fab slot="fab" icon="edit" label="Edit photo" color="secondary-container" />
+  </ToolbarFloating>
+</div>

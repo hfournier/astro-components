@@ -48,6 +48,7 @@ import Tabs from "../../components/Tabs.astro";
 import TextField from "../../components/TextField.astro";
 import TextFieldChips from "../../components/TextFieldChips.astro";
 import ToolbarDocked from "../../components/ToolbarDocked.astro";
+import ToolbarFloating from "../../components/ToolbarFloating.astro";
 import Tooltip from "../../components/Tooltip.astro";
 
 const container = await experimental_AstroContainer.create();
@@ -375,6 +376,23 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
     "toolbar-docked-color": [
       ToolbarDocked,
       { "aria-label": "Actions", color: "tonal" },
+    ],
+    "toolbar-floating-name": [ToolbarFloating, {}],
+    "toolbar-floating-color": [
+      ToolbarFloating,
+      { "aria-label": "Actions", color: "tonal" },
+    ],
+    "toolbar-floating-orientation": [
+      ToolbarFloating,
+      { "aria-label": "Actions", orientation: "diagonal" },
+    ],
+    "toolbar-floating-scroll-behavior": [
+      ToolbarFloating,
+      { "aria-label": "Actions", scrollBehavior: "shrink" },
+    ],
+    "toolbar-floating-collapse-fab": [
+      ToolbarFloating,
+      { "aria-label": "Actions", scrollBehavior: "collapse" },
     ],
     "tooltip-placement": [Tooltip, { placement: "left" }],
     "tooltip-variant": [Tooltip, { variant: "tooltip" }],
