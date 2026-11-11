@@ -1,11 +1,11 @@
 ---
 name: AppBar
-description: Material 3 Expressive's small app bar, at the top of the page. It holds an optional leading button for navigation, a headline with an optional subtitle, aligned to the leading edge or centered, and up to two trailing actions. It goes in the page's header landmark. While content scrolls under it, it fills with surface container.
+description: Material 3 Expressive's small, medium flexible and large flexible app bars, at the top of the page. Each holds an optional leading button for navigation, a headline with an optional subtitle, aligned to the leading edge or centered, and up to two trailing actions. It goes in the page's header landmark. While content scrolls under it, it fills with surface container, and a flexible one collapses into a small one.
 category: Content sectioning
 role: pattern
 meta:
   title: AppBar | astro-components HenriFournier.dev
-  description: Material 3 Expressive's small app bar, with a leading button, a headline and subtitle and trailing actions, filling with color as content scrolls under it.
+  description: Material 3 Expressive's small, medium flexible and large flexible app bars, with a leading button, a headline and trailing actions, collapsing on scroll.
 extends:
   kind: element
   tag: [div]
@@ -14,16 +14,21 @@ props:
   - name: headline
     type: string
     required: true
-    description: M3's headline, naming the current page, its section or the product. It's Material 3 Title Large on one line. A small app bar never wraps it, so a headline too long for the bar is cut short with an ellipsis. Keep it short.
+    description: M3's headline, naming the current page, its section or the product. In a small app bar it's Material 3 Title Large on one line, never wrapped, so a headline too long for the bar is cut short with an ellipsis. In a medium flexible app bar it's Headline Medium, and in a large flexible one Display Small, in a row of its own below the buttons, where it wraps rather than being cut short. Keep it to two lines at most.
   - name: subtitle
     type: string
     required: false
-    description: Optional context below the headline, in Material 3 Label Medium on one line.
+    description: Optional context below the headline. In a small app bar it's Material 3 Label Medium on one line; in a medium flexible one Label Large, and in a large flexible one Title Medium, which wrap. A flexible bar is taller with a subtitle.
   - name: align
     type: '"start" | "center"'
     required: false
     default: '"start"'
     description: Where the headline and subtitle sit. `start` puts them at the leading edge, after the leading button. `center` centers them in the whole bar, not just between the buttons, unless they'd run into the buttons. Any other value fails the build.
+  - name: size
+    type: '"sm" | "md" | "lg"'
+    required: false
+    default: '"sm"'
+    description: M3's variant. `sm` is the small app bar, 64px high. `md` is the medium flexible app bar, 112px high or 136px with a subtitle, and `lg` the large flexible one, 120px or 152px with a subtitle. A flexible bar grows to hold a headline that wraps. Pinned, it collapses into a small app bar as content scrolls under it. Any other value fails the build.
 slots:
   - name: navigation
     description: Optional leading button that navigates, such as a back arrow or a menu that opens a navigation drawer. Use a standard ButtonIcon, which takes M3's on-surface color here.
@@ -39,10 +44,12 @@ Put the app bar in the page's `<Header>`, outside `<main>`, so it's in the page'
 
 To keep it at the top while the page scrolls, pin the header with `class="sticky top-0 z-1"`. The app bar fills with surface container while content is under it, so it stands apart from the content. An app bar that scrolls with its page has nothing under it, so it stays on surface. Inside a scrolling box instead of the page, pin the app bar itself with the same classes. It fills while that box is scrolled.
 
+A pinned medium or large flexible app bar collapses into a small one as content scrolls under it. Its headline's row passes under the row of buttons, which stays where you pinned the bar, and the headline shows there in small. It stays small until scrolled back to the top. To do this, its script moves the pinned element up by the headline row's height, setting its `top`. Pin it with `sticky`: with `fixed`, it fills but doesn't collapse.
+
 ## Actions
 
-M3 asks for one action, two if you need them. They should change or leave the whole page, such as Send, Save or Edit. If a page has more, put them in a toolbar. Avoid an overflow menu in the app bar where you can.
+M3 asks for one action, two if you need them. They should change or leave the whole page, such as Send, Save or Edit. If a page has more, put them in a toolbar. Don't use an action to open a menu of more actions, such as an overflow menu.
 
 ## Headline
 
-The headline can name the current page, its section or the product. So it isn't a heading: the page's own `<h1>` stays in `<main>`. Keep the headline short enough to fit. Don't wrap it or make it larger. If it's long, a medium or large flexible app bar has room for two lines.
+The headline can name the current page, its section or the product. So it isn't a heading: the page's own `<h1>` stays in `<main>`. Keep the headline short enough to fit. In a small app bar, don't wrap it or make it larger. If it's long, or you want to emphasize it, use a medium (`size="md"`) or large (`size="lg"`) flexible app bar, which wraps it to a second line.
