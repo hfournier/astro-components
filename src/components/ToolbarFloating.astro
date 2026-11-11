@@ -75,7 +75,7 @@ const colorClasses = toolbarColorClasses[color];
 // elevation, its states included. Each state adds a selector, so the later state wins on
 // specificity, whatever order Tailwind writes them in.
 const fabClasses =
-  "[&>[data-ac-fab]]:shadow-theme-elevation-1! [&>[data-ac-fab]:hover]:shadow-theme-elevation-2! [&>[data-ac-fab]:hover:active]:shadow-theme-elevation-1!";
+  "*:data-ac-fab:shadow-theme-elevation-1! [&>[data-ac-fab]:hover]:shadow-theme-elevation-2! [&>[data-ac-fab]:hover:active]:shadow-theme-elevation-1!";
 
 // Collapsed (the script sets data-ac-toolbar-floating-collapsed), the FAB is M3's medium FAB
 // (the Specs' fab.medium tokens): 80dp, corner large increased (20dp), a 28dp icon, elevation
@@ -84,7 +84,7 @@ const fabClasses =
 const collapseFabClasses = isCollapsible && [
   "[&[data-ac-toolbar-floating-collapsed]>[data-ac-fab]]:h-20! [&[data-ac-toolbar-floating-collapsed]>[data-ac-fab]]:min-w-20! [&[data-ac-toolbar-floating-collapsed]>[data-ac-fab]]:rounded-[20px]! [&[data-ac-toolbar-floating-collapsed]>[data-ac-fab]>svg]:size-7!",
   "[&[data-ac-toolbar-floating-collapsed]>[data-ac-fab]]:shadow-theme-elevation-2! [&[data-ac-toolbar-floating-collapsed]>[data-ac-fab]:hover]:shadow-theme-elevation-3! [&[data-ac-toolbar-floating-collapsed]>[data-ac-fab]:hover:active]:shadow-theme-elevation-2!",
-  "motion-safe:[&>[data-ac-fab]]:[transition:box-shadow_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects),height_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial),min-width_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial),border-radius_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial)]",
+  "motion-safe:*:data-ac-fab:[transition:box-shadow_var(--theme-duration-spring-fast-effects)_var(--ease-spring-fast-effects),height_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial),min-width_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial),border-radius_var(--theme-duration-spring-fast-spatial)_var(--ease-spring-fast-spatial)]",
   "motion-safe:[&>[data-ac-fab]>svg]:transition-[width,height] motion-safe:[&>[data-ac-fab]>svg]:duration-(--theme-duration-spring-fast-spatial) motion-safe:[&>[data-ac-fab]>svg]:ease-spring-fast-spatial",
 ];
 ---
