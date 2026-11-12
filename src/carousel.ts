@@ -319,7 +319,7 @@ export const arrangeMultiBrowse = ({
 }): KeylineList => {
   if (available <= 0 || preferred <= 0) return [];
   let smallCounts = [1];
-  const mediumCounts = [1, 0];
+  const mediumCounts = [1];
   const targetLarge = Math.min(preferred, available);
   const targetSmall = clamp(targetLarge / 3, minSmall, maxSmall);
   const targetMedium = (targetLarge + targetSmall) / 2;
@@ -350,7 +350,15 @@ export const arrangeMultiBrowse = ({
       targetLarge,
       largeCounts
     );
-  let arrangement = arrange(smallCounts, mediumCounts);
+  // M3's Specs: multi-browse "shows at least one large, medium, and small carousel item".
+  // Compose tries no medium item too, and keeps whichever brings the large size nearer the
+  // preferred one, often two large items and a small one. Here the row goes without a medium
+  // item only where the three sizes don't fit.
+  const withMedium = smallCounts[0] > 0 ? arrange(smallCounts, mediumCounts) : null;
+  let arrangement =
+    withMedium && arrangementCost(withMedium, targetLarge) < Infinity
+      ? withMedium
+      : arrange(smallCounts, [0]);
   if (arrangement) {
     const total =
       arrangement.largeCount + arrangement.mediumCount + arrangement.smallCount;
@@ -782,7 +790,8 @@ export const snapScroll = (strategy: Strategy, index: number, count: number) =>
 /**
  * Where the row scrolls to show an item large: of the snap positions where it's large, the
  * nearest to `scroll`, so an item at the end of the row goes to the last large place, as one at
- * the start goes to the first. Where it's already large, `scroll` itself.
+ * the start goes to the first. Where it's already large, `scroll` itself. Large is the largest
+ * size at that scroll: near the ends, the padding takes the large items under `itemSize`.
  */
 export const scrollToShow = (
   strategy: Strategy,
@@ -790,8 +799,13 @@ export const scrollToShow = (
   count: number,
   scroll: number
 ) => {
-  const isLarge = (at: number) =>
-    itemPlacement(strategy, index, at, count).size >= strategy.itemSize - 1;
+  const sizeAt = (i: number, at: number) =>
+    itemPlacement(strategy, i, at, count).size;
+  const isLarge = (at: number) => {
+    let largest = 0;
+    for (let i = 0; i < count; i++) largest = Math.max(largest, sizeAt(i, at));
+    return sizeAt(index, at) >= largest - 1;
+  };
   if (isLarge(scroll)) return scroll;
   const snaps = Array.from({ length: count }, (_, i) =>
     snapScroll(strategy, i, count)

@@ -292,18 +292,33 @@ test.describe("item placement (Compose's Modifier.carouselItem)", () => {
     expect(smallAt(5, max)).toBeLessThanOrEqual(56);
   });
 
-  // A small item brought into view goes to the nearest place it's large: on the right, one item
-  // on, to the second large place, as on the left it goes one item back, to the first
-  test("scrolls a small item the least way to a place it's large", () => {
+  // A medium or small item brought into view goes to the nearest place it's large: from the
+  // start, to the large place at the row's start; from the end, back to it
+  test("scrolls a medium or small item the least way to a place it's large", () => {
     const row = multiBrowse(412, 186, 8, 8, 16, 16);
     const step = row.itemSize + 8;
     const max = 8 * row.itemSize + 7 * 8 - 412;
-    expect(scrollToShow(row, 2, 8, 0)).toBe(step);
-    expect(scrollToShow(row, 3, 8, step)).toBe(2 * step);
-    expect(itemPlacement(row, 2, step, 8).size).toBeCloseTo(row.itemSize, 3);
-    expect(scrollToShow(row, 5, 8, max)).toBe(5 * step);
-    // a large item stays where it is
+    expect(scrollToShow(row, 1, 8, 0)).toBeCloseTo(step, 3);
+    expect(scrollToShow(row, 2, 8, 0)).toBeCloseTo(2 * step, 3);
+    expect(scrollToShow(row, 3, 8, step)).toBeCloseTo(3 * step, 3);
+    expect(itemPlacement(row, 2, 2 * step, 8).size).toBeCloseTo(row.itemSize, 3);
+    expect(scrollToShow(row, 5, 8, max)).toBeCloseTo(5 * step, 3);
+    expect(scrollToShow(row, 6, 8, max)).toBeLessThan(max);
+    // a large item stays where it is, at the ends too, where the padding shrinks it
     expect(scrollToShow(row, 0, 8, 0)).toBe(0);
+    expect(scrollToShow(row, 7, 8, max)).toBe(max);
+  });
+
+  // M3's Specs: multi-browse "shows at least one large, medium, and small carousel item".
+  // Compose would arrange two large items and a small one here.
+  test("keeps a medium item where Compose would drop it", () => {
+    const sizes = nonAnchors(multiBrowse(412, 186, 8, 8).defaultKeylines).map(
+      (k) => k.size
+    );
+    expect(sizes).toHaveLength(3);
+    expect(sizes[0]).toBeGreaterThan(sizes[1]);
+    expect(sizes[1]).toBeGreaterThan(sizes[2]);
+    expect(sizes[2]).toBeLessThanOrEqual(56);
   });
 
   test("grows an item to large as it scrolls to its snap position", () => {

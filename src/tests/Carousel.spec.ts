@@ -88,11 +88,12 @@ test.describe("Carousel", () => {
     ).toHaveCount(5);
   });
 
-  // M3's Specs: the multi-browse layout shows large, medium and small items, 8dp apart, 16dp
-  // from the container's ends and 8dp from its top and bottom, with 28dp corners. Compose's
-  // arrangement fits two large items and a small one in 412dp. At the start, the leading padding
-  // comes out of the three items' sizes, and the small one reaches the carousel's end.
-  test("lays its items out large, large and small, 8px apart, 16px in", async ({
+  // M3's Specs: the multi-browse layout "shows at least one large, medium, and small carousel
+  // item", 8dp apart, 16dp from the container's ends and 8dp from its top and bottom, with 28dp
+  // corners. Compose's arrangement would fit two large items and a small one in 412dp; the
+  // Specs keep the medium one. At the start, the leading padding comes out of the large and
+  // medium items' sizes, and the small one reaches the carousel's end.
+  test("lays its items out large, medium and small, 8px apart, 16px in", async ({
     page,
   }) => {
     const boxes = await visibleBoxes(page, "multi-browse");
@@ -102,8 +103,9 @@ test.describe("Carousel", () => {
     expect(b.x - (a.x + a.width)).toBeCloseTo(8, 0);
     expect(c.x - (b.x + b.width)).toBeCloseTo(8, 0);
     expect(c.x + c.width).toBeCloseTo(412, 0);
-    expect(a.width).toBeCloseTo(b.width, 1);
     expect(a.width).toBeGreaterThan(150);
+    expect(b.width).toBeLessThan(a.width - 20);
+    expect(b.width).toBeGreaterThan(c.width + 20);
     expect(c.width).toBeLessThanOrEqual(56);
     expect(c.width).toBeGreaterThanOrEqual(40);
     for (const box of boxes) {
@@ -134,7 +136,8 @@ test.describe("Carousel", () => {
     await list.evaluate((el) => el.scrollTo({ left: 30, behavior: "instant" }));
     await settle(list);
     expect(await list.evaluate((el) => el.scrollLeft)).toBe(0);
-    // one item's worth moves the next large one to the start, flush with the edge mid-scroll
+    // one item's worth moves the medium one to the start, large, flush with the edge
+    // mid-scroll, and the small one to medium
     await list.evaluate(
       (el, by) => el.scrollBy({ left: by, behavior: "instant" }),
       large + 8
@@ -143,12 +146,15 @@ test.describe("Carousel", () => {
     const [a, b, c] = await visibleBoxes(page, "multi-browse");
     expect(a.x).toBeCloseTo(0, 0);
     expect(a.width).toBeCloseTo(large, 0);
-    expect(b.width).toBeCloseTo(large, 0);
+    expect(b.width).toBeLessThan(large - 20);
+    expect(b.width).toBeGreaterThan(c.width + 20);
     expect(c.width).toBeGreaterThanOrEqual(40);
-    expect(c.width).toBeLessThanOrEqual(56);
+    // the large size, 194.8px here, puts the items' edges between pixels
+    expect(c.width).toBeLessThanOrEqual(56.5);
   });
 
-  test("ends with its last items large, 16px from its end", async ({
+  // At the end, the keylines shift so the last item is large, the one before it medium
+  test("ends with its last item large, 16px from its end", async ({
     page,
   }) => {
     const list = listOf(page, "multi-browse");
@@ -157,10 +163,12 @@ test.describe("Carousel", () => {
     );
     await settle(list);
     const boxes = await visibleBoxes(page, "multi-browse");
+    expect(boxes).toHaveLength(3);
     const last = boxes.at(-1)!;
     expect(last.x + last.width).toBeCloseTo(412 - 16, 0);
     expect(last.width).toBeGreaterThan(150);
-    expect(boxes.at(-2)!.width).toBeCloseTo(last.width, 1);
+    expect(boxes[1].width).toBeLessThan(last.width - 20);
+    expect(boxes[1].width).toBeGreaterThan(boxes[0].width + 20);
     expect(boxes[0].width).toBeLessThanOrEqual(56);
     expect(boxes[0].width).toBeGreaterThanOrEqual(40);
   });
@@ -300,37 +308,35 @@ test.describe("Carousel", () => {
     const desert = carousel(page, "multi-browse").getByRole("link", {
       name: "Desert dunes",
     });
-    expect((await boxIn(desert)).width).toBeLessThan(56);
+    expect((await boxIn(desert)).width).toBeLessThanOrEqual(56);
     await desert.focus();
     await settle(list);
     expect((await boxIn(desert)).width).toBeCloseTo(large, 0);
-    expect((await boxIn(desert)).x).toBeGreaterThanOrEqual(0);
+    expect((await boxIn(desert)).x).toBeGreaterThanOrEqual(-0.5);
   });
 
-  // Clicked, a small item scrolls the least way to a place it's large: one item on at the
-  // row's end, to its last large place, as one item back at its start, to its first
-  test("moves one item on or back for a clicked small item", async ({
+  // Clicked, a medium or small item scrolls the least way to a place it's large: from the
+  // start, the medium one moves one item on, to the large place; from the end, the small one
+  // moves back. The large one, shrunk a little by the padding at the start, stays put.
+  test("scrolls a clicked medium or small item to a large place", async ({
     page,
   }) => {
     const list = listOf(page, "multi-browse");
     const large = await itemSize(list);
-    const visible = async () =>
-      (await visibleBoxes(page, "multi-browse")).map((b) => b.width);
     const all = items(page, "multi-browse");
-    for (const index of [2, 3]) {
+    await all.nth(0).click();
+    await settle(list);
+    expect(await list.evaluate((el) => el.scrollLeft)).toBe(0);
+    for (const index of [1, 2, 3]) {
       await all.nth(index).click();
       await settle(list);
-      // one item on, the clicked one second of the large ones, the small one after it
       expect(await list.evaluate((el) => el.scrollLeft)).toBeCloseTo(
-        (index - 1) * (large + 8),
+        index * (large + 8),
         0
       );
-      const [first, second, small] = await visible();
-      expect(first).toBeCloseTo(large, 0);
       const clicked = await boxIn(all.nth(index));
-      expect(clicked.x).toBeCloseTo(large + 8, 0);
-      expect(clicked.width).toBeCloseTo(second, 0);
-      expect(small).toBeLessThanOrEqual(56);
+      expect(clicked.x).toBeCloseTo(0, 0);
+      expect(clicked.width).toBeCloseTo(large, 0);
     }
     await list.evaluate((el) =>
       el.scrollTo({ left: 1e5, behavior: "instant" })
@@ -435,7 +441,8 @@ test.describe("Carousel", () => {
     const [a, b, c] = boxes;
     expect(a.x + a.width).toBeCloseTo(412 - 16, 0);
     expect(a.x - (b.x + b.width)).toBeCloseTo(8, 0);
-    expect(c.width).toBeLessThan(56);
+    expect(b.width).toBeLessThan(a.width - 20);
+    expect(c.width).toBeLessThanOrEqual(56);
     expect(c.x).toBeCloseTo(0, 0);
     await region.getByRole("link", { name: "بحيرة" }).focus();
     await page.keyboard.press("ArrowLeft");

@@ -30,7 +30,7 @@ Name the carousel with `aria-label`, or `aria-labelledby` pointing at a visible 
 
 M3's multi-browse layout shows at least one large item, and a medium and a small one when there's room. Every item is laid out at the large size and scrolls natively, and a script, Compose's own layout ported to the web, sizes each item for where it is in the row:
 
-- **At rest:** the large items, then a medium one, then a small one, 40 to 56px wide. In a 412px carousel that's two large items and a small one; a wider one fits more large items, and a medium one.
+- **At rest:** the large items, then a medium one, then a small one, 40 to 56px wide. There's always at least one of each, as M3's Specs ask: in a 412px carousel, one large item, a medium one and a small one; a wider one fits more large items.
 - **Scrolling:** each item grows or shrinks as it moves between those places, and snaps into place when the row stops. Its visual stays at the large size, so the item's edges move over it: M3's parallax.
 - **Spacing:** 8px between items and above and below them. The row is padded 16px at the start before it scrolls, and at the end once it's scrolled to the end; in between, items reach its edges.
 
