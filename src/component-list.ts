@@ -12,6 +12,8 @@ export { default as ButtonGroupConnected } from "./components/ButtonGroupConnect
 export { default as ButtonIcon } from "./components/ButtonIcon.astro";
 export { default as ButtonSplit } from "./components/ButtonSplit.astro";
 export { default as Card } from "./components/Card.astro";
+export { default as Carousel } from "./components/Carousel.astro";
+export { default as CarouselItem } from "./components/CarouselItem.astro";
 export { default as Checkbox } from "./components/Checkbox.astro";
 export { default as ChipAssist } from "./components/ChipAssist.astro";
 export { default as ChipFilter } from "./components/ChipFilter.astro";

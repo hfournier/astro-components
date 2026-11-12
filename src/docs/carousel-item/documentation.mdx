@@ -1,0 +1,41 @@
+---
+name: CarouselItem
+description: An item in a Material 3 Expressive Carousel. A visual, such as a photo or a video, with optional brief text, that's a link or a button, with 28px corners. It renders a `<li>` that keeps the large size in the carousel's row, holding the `<a>` or `<button>` the carousel's script sizes and moves as the row scrolls. It shows M3's state layer when hovered, focused and pressed, and rises to elevation level 1 when hovered.
+category: Interactive elements
+role: pattern
+meta:
+  title: CarouselItem | astro-components HenriFournier.dev
+  description: An item in a Material 3 Expressive Carousel, a visual with optional text that's a link or button, changing size and shape as the carousel scrolls.
+extends:
+  kind: element
+  tag: [a, button]
+mdn: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/a
+parents: [Carousel]
+props:
+  - name: as
+    type: '"a" | "button"'
+    required: false
+    default: '"a"'
+    description: "Which element the item is. `a`, with `href`, opens what the item shows, such as a photo's page; `button` does something on the page, such as applying a filter. A link without `href` fails the build, as it wouldn't be a link and Tab would skip it, and so does any other value."
+slots:
+  - name: default
+    description: The item's visual, usually an `<img>`, or a `<picture>` or `<video>`. It fills the item, cropped to cover it, at the carousel's large item size, so it shows its middle when the item is smaller. Give an image an `alt` that names the item, or an empty one when the `label` text does.
+    kind: any
+  - name: label
+    description: Optional brief text, such as a title, shown over the visual at the item's start, in Title Medium, light on a scrim. Wrap it in an element with `slot="label"`. It fades out as the item shrinks, so keep it short; M3 asks for two lines at most on a phone.
+    kind: any
+---
+
+## Attributes
+
+Every attribute, `class` too, goes on the item's `<a>` or `<button>`, such as `href`, `disabled` on a button, and `aria-*`. The `<li>` around it takes none.
+
+## Anatomy
+
+- **Item:** the visual, cropped to M3's extra-large corners (28px), with no container color of its own. Its width is set by the carousel: large, medium or small, depending on its place in the row.
+- **Visual:** stays at the large size, centered on where the item is laid out, so the item's edges move over it as it changes size, M3's parallax.
+- **Text (optional):** at the item's bottom start, light on a scrim that fades up from the bottom, so it reads over any visual.
+
+## States
+
+Hovered, focused and pressed, an item shows M3's state layer over its visual, `on-surface` at 8% hovered and 10% focused or pressed, and hovered it rises to elevation level 1. Focused, it shows a 3px focus ring 2px outside its edges. A disabled button item is at 38% opacity and can't be focused.

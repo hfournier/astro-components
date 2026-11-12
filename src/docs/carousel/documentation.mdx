@@ -1,0 +1,45 @@
+---
+name: Carousel
+description: Material 3 Expressive's carousel, in the multi-browse layout. A row of CarouselItems, visuals such as photos with optional text, that scrolls and snaps natively. The row starts with its large items, then a medium and a small one, and each item changes size and shape as it moves through the row, its visual moving at another speed. It's a region described as a carousel, holding a list of its items.
+category: Interactive elements
+role: pattern
+meta:
+  title: Carousel | astro-components HenriFournier.dev
+  description: Material 3 Expressive's multi-browse carousel, a row of visual items that scrolls and snaps, its items changing size as they move, with a parallax effect.
+extends:
+  kind: element
+  tag: [div]
+mdn: https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Roles/region_role
+props:
+  - name: preferredItemWidth
+    type: number
+    required: false
+    default: "186"
+    description: The large items' width, in px, as M3's "user-set" large item width and Compose's `preferredItemWidth`. The carousel fits as many large items as it can near this width, then a medium and a small one, so the large items end up a little narrower or wider than it. Keep it big enough for the visuals to be easy to recognize. Anything but a number above 0 fails the build.
+slots:
+  - name: default
+    description: The carousel's items, each a [CarouselItem](/components/carousel-item).
+    kind: any
+---
+
+## Attributes
+
+Name the carousel with `aria-label`, or `aria-labelledby` pointing at a visible heading, after what its items are, such as "Trip photos". A carousel without either fails the build. `class` and every other attribute go on its `<div>`. Its height is 221px, which gives its items 205px, as in Compose's sample; set another with a class such as `h-80`.
+
+## Layout
+
+M3's multi-browse layout shows at least one large item, and a medium and a small one when there's room. Every item is laid out at the large size and scrolls natively, and a script, Compose's own layout ported to the web, sizes each item for where it is in the row:
+
+- **At rest:** the large items, then a medium one, then a small one, 40 to 56px wide. There's always at least one of each, as M3's Specs ask: in a 412px carousel, one large item, a medium one and a small one; a wider one fits more large items.
+- **Scrolling:** each item grows or shrinks as it moves between those places, and snaps into place when the row stops. Its visual stays at the large size, so the item's edges move over it: M3's parallax.
+- **Spacing:** 8px between items and above and below them. The row is padded 16px at the start before it scrolls, and at the end once it's scrolled to the end; in between, items reach its edges.
+
+Give the carousel the full width of its column, and at least room for one large and one small item.
+
+## Show all
+
+On a page that scrolls vertically, M3 asks for a way to see every item without scrolling the carousel sideways. Put a **Show all** button below the carousel, or an arrow icon button beside its heading, that opens a page listing every item. Don't put buttons inside the carousel, beside it or over it.
+
+## Motion
+
+The items change size and place as the row scrolls, under the pointer or the finger, so they move at the scroll's own speed. With reduced motion, there's no parallax and the items don't change size: every one is large, and the row scrolls to its edges, padded 16px at its ends. An item that takes focus or is clicked while it's small scrolls into place, large, and does so at once with reduced motion.

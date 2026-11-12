@@ -1,0 +1,272 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { twMerge } from "tailwind-merge";
+import BaseWrapper from "./BaseWrapper.astro";
+
+// M3's carousel, in the multi-browse layout: a row of CarouselItems that scrolls natively and
+// snaps, its items large at the start, then a medium and a small one, each changing size and
+// shape as it moves through the row, its visual moving at another speed (the parallax). Compose's
+// HorizontalMultiBrowseCarousel lays it out; the script runs its keylines (src/carousel.ts) as the
+// row scrolls (ADR-0038).
+type Props = Omit<HTMLAttributes<"div">, "role"> & {
+  preferredItemWidth?: number;
+};
+
+const { preferredItemWidth = 186, class: classList, ...attrs } = Astro.props;
+
+// Values outside these fail the build, rather than drawing something other than was asked for
+// (ADR-0021). MDX passes attributes as strings, so `preferredItemWidth="240"` is read as the
+// number it says.
+const preferredWidth = Number(preferredItemWidth);
+if (!Number.isFinite(preferredWidth) || preferredWidth <= 0) {
+  throw new Error(
+    `Carousel: \`preferredItemWidth\` is the large items' width in px, a number above 0, but this one's is ${JSON.stringify(preferredItemWidth)}.`
+  );
+}
+// M3's Accessibility page: the carousel's container is labelled. It's a region, which needs a name.
+if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
+  throw new Error(
+    "Carousel: a carousel needs a name, from an `aria-label` or `aria-labelledby`, but this one has neither."
+  );
+}
+---
+
+{/* M3's container, on surface, holding the items. It's a region, described as a carousel, as the
+    WAI-ARIA carousel pattern has it; its list says how many items it has and which one has focus,
+    as M3's Accessibility page asks. Compose's sample is 221dp high, items 205dp with 8dp above and
+    below; the page sets another height with `class`. */}
+<BaseWrapper
+  bgColor="surface"
+  class={twMerge("relative h-55.25", classList)}
+  role="region"
+  aria-roledescription="carousel"
+  data-ac-carousel="multi-browse"
+  data-ac-carousel-preferred-item-width={preferredWidth}
+  {...attrs}
+>
+  {/* The row: every item laid out at the large size, 8dp apart (M3's padding between elements),
+      8dp above and below, scrolling and snapping natively. The script sizes the items and their
+      snap positions from Compose's keylines, which hold the 16dp leading and trailing padding.
+      Without the script, or with reduced motion, every item stays large, the row padded 16dp at
+      its ends (M3's Accessibility page: with reduced motion, all items are the same size). Its
+      items are the tab stops, not the row (M3's Accessibility page: don't focus the container),
+      which Firefox would otherwise stop at as it scrolls. */}
+  <ul
+    class:list={[
+      "flex h-full snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain px-4 py-2 scrollbar-none scroll-px-4 outline-none",
+      "data-ac-carousel-keylines:px-0 data-ac-carousel-keylines:scroll-px-0",
+    ]}
+    style={`--ac-carousel-item-size: ${preferredWidth}px`}
+    tabindex="-1"
+    data-ac-carousel-part="list"
+  >
+    <slot />
+  </ul>
+</BaseWrapper>
+
+<script>
+  import {
+    arrangeMultiBrowse,
+    createStrategy,
+    itemPlacement,
+    scrollToShow,
+    snapOffset,
+    type Strategy,
+  } from "../carousel";
+  import { moveFocusWithArrows, tabbableIn } from "../utils";
+
+  // M3's Specs: 8dp between items, 16dp leading and trailing padding, small items 40 to 56dp
+  // (Compose's CarouselDefaults)
+  const spacing = 8;
+  const padding = 16;
+  const minSmall = 40;
+  const maxSmall = 56;
+  // MDC's carousel fades an item's text out over the first 80dp it's masked
+  const labelFadeDistance = 80;
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  const strategies = new WeakMap<HTMLElement, Strategy>();
+
+  const listOf = (root: HTMLElement) =>
+    root.querySelector<HTMLElement>(':scope > [data-ac-carousel-part="list"]')!;
+  const itemsOf = (list: HTMLElement) =>
+    [...list.children].filter(
+      (el): el is HTMLElement =>
+        el instanceof HTMLElement && el.hasAttribute("data-ac-carousel-item")
+    );
+  // How far the row has scrolled from its start, in either direction
+  const scrollOf = (list: HTMLElement) => Math.abs(list.scrollLeft);
+
+  // Sizes and places each item for where the row is scrolled
+  const place = (list: HTMLElement) => {
+    const strategy = strategies.get(list);
+    if (!strategy) return;
+    const items = itemsOf(list);
+    const scroll = scrollOf(list);
+    items.forEach((item, i) => {
+      const { size, translation } = itemPlacement(
+        strategy,
+        i,
+        scroll,
+        items.length
+      );
+      const masked = (strategy.itemSize - size) / 2;
+      item.style.setProperty("--ac-carousel-mask-size", `${size}px`);
+      item.style.setProperty(
+        "--ac-carousel-mask-start",
+        `${masked + translation}px`
+      );
+      item.style.setProperty("--ac-carousel-visual-start", `${-masked}px`);
+      item.style.setProperty(
+        "--ac-carousel-label-opacity",
+        `${Math.max(0, 1 - masked / labelFadeDistance)}`
+      );
+    });
+  };
+
+  // Clears what the keylines set, so every item is large
+  const clearKeylines = (list: HTMLElement) => {
+    strategies.delete(list);
+    list.removeAttribute("data-ac-carousel-keylines");
+    itemsOf(list).forEach((item) => {
+      for (const name of [
+        "--ac-carousel-mask-size",
+        "--ac-carousel-mask-start",
+        "--ac-carousel-visual-start",
+        "--ac-carousel-label-opacity",
+        "scroll-margin-inline-start",
+      ])
+        item.style.removeProperty(name);
+    });
+  };
+
+  // Works out the keylines for the row's width and the items' count: the large size every item
+  // is laid out at, and where each one snaps
+  const layout = (root: HTMLElement) => {
+    const list = listOf(root);
+    const items = itemsOf(list);
+    const preferred = Number(root.dataset.acCarouselPreferredItemWidth);
+    if (reducedMotion.matches) {
+      clearKeylines(list);
+      list.style.setProperty(
+        "--ac-carousel-item-size",
+        `${Math.min(preferred, list.clientWidth - 2 * padding)}px`
+      );
+      return;
+    }
+    const available = list.clientWidth;
+    const strategy = createStrategy(
+      arrangeMultiBrowse({
+        available,
+        preferred,
+        spacing,
+        count: items.length,
+        minSmall,
+        maxSmall,
+      }),
+      { available, spacing, before: padding, after: padding }
+    );
+    if (!strategy.isValid) return clearKeylines(list);
+    strategies.set(list, strategy);
+    list.setAttribute("data-ac-carousel-keylines", "");
+    list.style.setProperty("--ac-carousel-item-size", `${strategy.itemSize}px`);
+    items.forEach((item, i) =>
+      item.style.setProperty(
+        "scroll-margin-inline-start",
+        `${snapOffset(strategy, i, items.length)}px`
+      )
+    );
+    place(list);
+  };
+
+  // Scrolls the row the least way to a snap position where an item is large, unless it is already
+  const scrollToItem = (list: HTMLElement, index: number) => {
+    const strategy = strategies.get(list);
+    if (!strategy) return;
+    const scroll = scrollOf(list);
+    const target = scrollToShow(strategy, index, itemsOf(list).length, scroll);
+    // unchanged, it would stop a smooth scroll already under way to show the item
+    if (Math.abs(target - scroll) < 1) return;
+    const direction = getComputedStyle(list).direction === "rtl" ? -1 : 1;
+    list.scrollTo({
+      left: direction * target,
+      behavior: reducedMotion.matches ? "instant" : "smooth",
+    });
+  };
+
+  const roots = () =>
+    document.querySelectorAll<HTMLElement>("[data-ac-carousel]");
+
+  const resizes = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      const root = (entry.target as HTMLElement).closest<HTMLElement>(
+        "[data-ac-carousel]"
+      );
+      if (root) layout(root);
+    }
+  });
+
+  const frames = new WeakMap<HTMLElement, number>();
+  roots().forEach((root) => {
+    const list = listOf(root);
+    resizes.observe(list);
+    layout(root);
+    list.addEventListener(
+      "scroll",
+      () => {
+        if (frames.get(list)) return;
+        frames.set(
+          list,
+          requestAnimationFrame(() => {
+            frames.delete(list);
+            place(list);
+          })
+        );
+      },
+      { passive: true }
+    );
+  });
+  reducedMotion.addEventListener("change", () => roots().forEach(layout));
+
+  // M3's Accessibility page: Tab or the arrow keys move between the items
+  moveFocusWithArrows("[data-ac-carousel]");
+
+  // An item taking focus or clicked scrolls into a large place when it isn't large there yet,
+  // after the browser's own scroll to show it. Clicked too, as Safari doesn't focus a clicked
+  // link or button.
+  const showItem = (event: Event) => {
+    const target = event.target as Element;
+    const item = target.closest?.<HTMLElement>("[data-ac-carousel-item]");
+    const list = item?.parentElement;
+    if (!item || !list) return;
+    requestAnimationFrame(() =>
+      scrollToItem(list, itemsOf(list).indexOf(item))
+    );
+  };
+  document.addEventListener("focusin", showItem);
+  document.addEventListener("click", showItem);
+
+  // M3's Accessibility page: the up and down arrow keys leave the carousel, to the control
+  // before or after it. On the window, as moveFocusWithArrows listens, after any group inside.
+  window.addEventListener("keydown", (event) => {
+    if (event.defaultPrevented) return;
+    if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
+      return;
+    const target = event.target as Element;
+    const root = target.closest?.("[data-ac-carousel]");
+    if (!root || !target.closest("[data-ac-carousel-item]")) return;
+    const tabbables = tabbableIn(document).filter((el) => !root.contains(el));
+    const position = (el: Element) => root.compareDocumentPosition(el);
+    const next =
+      event.key === "ArrowDown"
+        ? tabbables.find(
+            (el) => position(el) & Node.DOCUMENT_POSITION_FOLLOWING
+          )
+        : tabbables.findLast(
+            (el) => position(el) & Node.DOCUMENT_POSITION_PRECEDING
+          );
+    if (!next) return;
+    event.preventDefault();
+    next.focus();
+  });
+</script>
