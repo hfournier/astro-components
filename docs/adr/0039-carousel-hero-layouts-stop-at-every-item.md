@@ -11,6 +11,8 @@ We rejected a separate component per layout. They share the row, the items, the 
 
 ## Consequences
 
+- At rest, a center-aligned hero starts with its first item large at the row's start and the next two small after it, as Compose's documentation draws it ("item 1 selected: [1][2][3]"); it shows a small item, a centered large one and a small one from the second item on. M3's Specs draw the centered arrangement only, but a centered first item would leave its leading small place empty, so we follow Compose.
+- As in multi-browse, the trailing small item reaches the container's edge at rest, and the 16px trailing padding shows once the row is scrolled to its end, as Compose's content padding does.
 - At rest in a 412px carousel, a hero carousel's small item is 40px: Compose's arrangement shrinks it to the minimum to keep the large item nearest the carousel's width. With reduced motion, the next item shows about 24px past the padding.
 - A swipe over a hero carousel stops at the next item even when it's flicked hard, which is M3's behavior but means a long carousel takes many swipes; the Show all button (ADR-0038) is still the way to reach every item.
 - Without the script, or with reduced motion, a center-aligned hero's items snap to the center whatever their count, where the keylines would start-align fewer than three. With one or two items, the row can barely scroll, so they stay near its ends anyway.

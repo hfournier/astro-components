@@ -28,7 +28,13 @@ const {
 // number it says.
 if (!layouts.includes(layout)) {
   throw new Error(
-    `Carousel: its layouts are "multi-browse", "hero" and "center-aligned-hero", but this one's \`layout\` is ${JSON.stringify(layout)}.`
+    `Carousel: its layouts are ${layouts
+      .map((name) => `"${name}"`)
+      .join(", ")
+      .replace(
+        /, (?=[^,]*$)/,
+        " and "
+      )}, but this one's \`layout\` is ${JSON.stringify(layout)}.`
   );
 }
 const isHero = layout !== "multi-browse";
@@ -78,23 +84,28 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
       which Firefox would otherwise stop at as it scrolls.
       A hero carousel stops at every item, so a swipe moves it one item (M3's Overview: hero
       carousels "swipe through one item at a time"). Without its keylines, a center-aligned one
-      snaps its items to the center, and a hero carousel's items leave room for the small ones,
-      56px each, before the script sizes them. */}
+      snaps its items to the center. Before the script sizes them, a hero carousel's items are
+      the large size its keylines give without a preferred width: the row, its 16px padding
+      included, less 8px and a 40px small item for each small one. */}
   <ul
     class:list={[
       "flex h-full snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain px-4 py-2 scrollbar-none scroll-px-4 outline-none",
       "data-ac-carousel-keylines:px-0 data-ac-carousel-keylines:scroll-px-0",
       isHero && "*:snap-always",
+      preferredWidth === null &&
+        layout === "hero" &&
+        "[--ac-carousel-item-size:calc(100%-16px)]",
+      preferredWidth === null &&
+        layout === "center-aligned-hero" &&
+        "[--ac-carousel-item-size:calc(100%-64px)]",
       layout === "center-aligned-hero" &&
         "not-data-ac-carousel-keylines:*:snap-center",
     ]}
-    style={`--ac-carousel-item-size: ${
+    style={
       preferredWidth !== null
-        ? `${preferredWidth}px`
-        : layout === "hero"
-          ? "calc(100% - 64px)"
-          : "calc(100% - 128px)"
-    }`}
+        ? `--ac-carousel-item-size: ${preferredWidth}px`
+        : undefined
+    }
     tabindex="-1"
     data-ac-carousel-part="list"
   >
@@ -180,15 +191,15 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
 
   // The keylines of a carousel's layout, for the row's width and the items' count
   const keylinesOf = (root: HTMLElement, available: number, count: number) => {
-    const { acCarousel: layout, acCarouselPreferredItemWidth: preferred } =
+    const { acCarousel: layoutName, acCarouselPreferredItemWidth: preferred } =
       root.dataset;
-    if (layout === "hero" || layout === "center-aligned-hero")
+    if (layoutName !== "multi-browse")
       return arrangeHero({
         available,
         preferred: preferred ? Number(preferred) : null,
         spacing,
         count,
-        centered: layout === "center-aligned-hero",
+        centered: layoutName === "center-aligned-hero",
         minSmall,
         maxSmall,
       });
