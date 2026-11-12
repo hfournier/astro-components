@@ -36,14 +36,16 @@ const Tag = as;
 const hasLabel = Astro.slots.has("label");
 ---
 
+<!-- The `<li>` takes no clicks: a small item moves toward the view, over the next `<li>`, and
+the clicks there are its item's. The row under it still scrolls. -->
 <li
-  class="relative w-(--ac-carousel-item-size) max-w-full flex-none snap-start"
+  class="pointer-events-none relative w-(--ac-carousel-item-size) max-w-full flex-none snap-start"
   data-ac-carousel-item
 >
   <Tag
     class={twMerge(
       // M3's Specs: corner extra large (28dp), the visual cropped to the item's shape
-      "absolute inset-y-0 inset-s-(--ac-carousel-mask-start,0px) w-(--ac-carousel-mask-size,100%) overflow-hidden rounded-[28px] text-start",
+      "pointer-events-auto absolute inset-y-0 inset-s-(--ac-carousel-mask-start,0px) w-(--ac-carousel-mask-size,100%) overflow-hidden rounded-[28px] text-start",
       "cursor-pointer disabled:cursor-default",
       // M3's state layer (the tokens leave its color open; on-surface, as a card's): 8% hovered,
       // 10% focused or pressed. It covers the visual and takes no clicks.

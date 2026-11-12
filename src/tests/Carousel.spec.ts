@@ -165,6 +165,50 @@ test.describe("Carousel", () => {
     expect(boxes[0].width).toBeGreaterThanOrEqual(40);
   });
 
+  // A small item moves toward the view, over the next item's large `<li>`, which mustn't take
+  // its clicks
+  test("takes clicks on every item it shows, small ones too", async ({
+    page,
+  }) => {
+    for (const caseId of ["multi-browse", "wide"] as const) {
+      const list = listOf(page, caseId);
+      await list.scrollIntoViewIfNeeded();
+      for (const left of [0, 1e5]) {
+        await list.evaluate(
+          (el, left) => el.scrollTo({ left, behavior: "instant" }),
+          left
+        );
+        await settle(list);
+        const hits = await list.evaluate((el) => {
+          const row = el.getBoundingClientRect();
+          return [
+            ...el.querySelectorAll('[data-ac-carousel-item-part="item"]'),
+          ].flatMap((item) => {
+            const { x, y, width, height } = item.getBoundingClientRect();
+            const cx = x + width / 2;
+            if (cx < row.left || cx > row.right) return [];
+            return [
+              item.contains(document.elementFromPoint(cx, y + height / 2)),
+            ];
+          });
+        });
+        expect(hits.length).toBeGreaterThanOrEqual(3);
+        expect(hits, `${caseId} scrolled to ${left}`).not.toContain(false);
+      }
+    }
+    // the small first item at the end, clicked, scrolls into place, large, Safari too, which
+    // doesn't focus it
+    const list = listOf(page, "wide");
+    const small = items(page, "wide").nth(6);
+    expect((await small.boundingBox())!.width).toBeLessThanOrEqual(56);
+    await small.click();
+    await settle(list);
+    expect((await small.boundingBox())!.width).toBeCloseTo(
+      await itemSize(list),
+      0
+    );
+  });
+
   // M3's Overview: item visuals have a parallax effect. The visual stays at the large size,
   // centered on the item, so the item's edges move over it as it changes size.
   test("keeps its visuals large, moving at another speed than the items' edges", async ({

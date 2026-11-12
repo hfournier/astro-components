@@ -230,9 +230,10 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
   // M3's Accessibility page: Tab or the arrow keys move between the items
   moveFocusWithArrows("[data-ac-carousel]");
 
-  // An item taking focus scrolls to its snap position when it isn't large there yet, after the
-  // browser's own scroll to show it
-  document.addEventListener("focusin", (event) => {
+  // An item taking focus or clicked scrolls to its snap position when it isn't large there yet,
+  // after the browser's own scroll to show it. Clicked too, as Safari doesn't focus a clicked
+  // link or button.
+  const showItem = (event: Event) => {
     const target = event.target as Element;
     const item = target.closest?.<HTMLElement>("[data-ac-carousel-item]");
     const list = item?.parentElement;
@@ -248,7 +249,9 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
       );
       if (size < strategy.itemSize - 1) scrollToItem(list, index);
     });
-  });
+  };
+  document.addEventListener("focusin", showItem);
+  document.addEventListener("click", showItem);
 
   // M3's Accessibility page: the up and down arrow keys leave the carousel, to the control
   // before or after it. On the window, as moveFocusWithArrows listens, after any group inside.
