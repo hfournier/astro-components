@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test";
 import {
+  ANCHOR_SIZE,
   arrangeHero,
   arrangeMultiBrowse,
+  arrangeUncontained,
   createStrategy,
   itemPlacement,
   keylineListOf,
@@ -201,6 +203,80 @@ test.describe("hero keylines", () => {
 });
 
 // Compose's StrategyTest sizes
+test.describe("uncontained keylines (Compose's UncontainedTest)", () => {
+  const uncontained = (available: number, itemSize: number, spacing = 0) =>
+    createStrategy(arrangeUncontained({ available, itemSize, spacing }), {
+      available,
+      spacing,
+      before: 0,
+      after: 0,
+    }).defaultKeylines;
+
+  test("an item as wide as the carousel fills it, between two anchors outside it", () => {
+    const keylines = uncontained(500, 500);
+    expect(keylines).toHaveLength(3);
+    expect(keylines[0].offset).toBe(-ANCHOR_SIZE / 2);
+    expect(keylines[1].size).toBe(500);
+    expect(keylines[2].offset).toBe(500 + ANCHOR_SIZE / 2);
+  });
+
+  test("an item wider than the carousel is the carousel's width", () => {
+    const keylines = uncontained(400, 500);
+    expect(keylines).toHaveLength(3);
+    expect(keylines[0].offset).toBe(-ANCHOR_SIZE / 2);
+    expect(keylines[1].size).toBe(400);
+    expect(keylines[2].offset).toBe(400 + ANCHOR_SIZE / 2);
+  });
+
+  test("one item over half the carousel's width leaves a cut-off item as large", () => {
+    const keylines = uncontained(1000, 501);
+    expect(keylines).toHaveLength(4);
+    expect(keylines[0].offset).toBe(-125.25);
+    expect(keylines[1].size).toBe(501);
+    expect(keylines[2].size).toBe(501);
+    expect(keylines[3].size).toBe(ANCHOR_SIZE);
+    expect(keylines[3].offset).toBe(501 * 2 + ANCHOR_SIZE / 2);
+  });
+
+  test("the cut-off item is the remaining space and a half, so a third is cut off", () => {
+    const keylines = uncontained(400, 125);
+    expect(keylines).toHaveLength(6);
+    expect(sizes(keylines).slice(1, 4)).toEqual([125, 125, 125]);
+    expect(keylines[4].size).toBe(25 * 1.5);
+    expect(keylines[4].offset).toBe(393.75);
+    expect(keylines[0].size).toBe(18.75);
+    expect(keylines[0].offset).toBe(-9.375);
+    expect(keylines[5].size).toBe(ANCHOR_SIZE);
+    expect(keylines[5].offset).toBe(125 * 3 + 25 * 1.5 + ANCHOR_SIZE / 2);
+  });
+
+  test("a cut-off item near the large size is capped, so a fifth is cut off", () => {
+    const keylines = uncontained(400, 105);
+    expect(keylines).toHaveLength(6);
+    expect(sizes(keylines).slice(1, 4)).toEqual([105, 105, 105]);
+    expect(keylines[4].size).toBeCloseTo(85 * 1.2, 4);
+    expect(keylines[0].size).toBeCloseTo(85 * 1.2 * 0.5, 4);
+    expect(keylines[5].size).toBe(ANCHOR_SIZE);
+    expect(keylines[0].offset).toBeCloseTo(-(85 * 1.2 * 0.5) / 2, 4);
+    expect(keylines[5].offset).toBeCloseTo(
+      105 * 3 + 85 * 1.2 + ANCHOR_SIZE / 2,
+      4
+    );
+  });
+
+  test("a carousel with no width has no keylines", () => {
+    expect(
+      arrangeUncontained({ available: -10, itemSize: 100, spacing: 0 })
+    ).toEqual([]);
+  });
+
+  test("a full-screen item fills the carousel, between two anchors", () => {
+    const keylines = uncontained(800, 800, 16);
+    expect(sizes(keylines)).toEqual([ANCHOR_SIZE, 800, ANCHOR_SIZE]);
+    expect(offsets(keylines)).toEqual([-21, 400, 821]);
+  });
+});
+
 const large = 100;
 const small = 20;
 const medium = (large + small) / 2;

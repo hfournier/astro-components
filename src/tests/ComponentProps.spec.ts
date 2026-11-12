@@ -61,9 +61,12 @@ const expected: Record<string, string | RegExp> = {
   // checked where it's used, in BaseChip (ADR-0021 §5)
   "carousel-name":
     "Carousel: a carousel needs a name, from an `aria-label` or `aria-labelledby`, but this one has neither.",
-  "carousel-layout": `Carousel: its layouts are "multi-browse", "hero" and "center-aligned-hero", but this one's \`layout\` is "grid".`,
+  "carousel-layout": `Carousel: its layouts are "multi-browse", "hero", "center-aligned-hero", "uncontained", "uncontained-multi-aspect-ratio" and "full-screen", but this one's \`layout\` is "grid".`,
   "carousel-preferred-item-width":
     "Carousel: `preferredItemWidth` is the large items' width in px, a number above 0, but this one's is -10.",
+  "carousel-full-screen-width":
+    "Carousel: a full-screen carousel's item fills it, so it takes no `preferredItemWidth`.",
+  "carousel-item-aspect-ratio": `CarouselItem: \`aspectRatio\` is the item's width to height, such as "16:9", from 9:16 to 16:9, but this one's is "21:9".`,
   "carousel-item-as": `CarouselItem: its elements are "a" and "button", but this one's \`as\` is "div".`,
   "carousel-item-href":
     'CarouselItem: a link item needs an `href`, or it isn\'t a link and Tab skips it; use `as="button"` for an item that runs a script.',

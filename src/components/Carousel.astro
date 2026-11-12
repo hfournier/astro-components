@@ -3,14 +3,24 @@ import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import BaseWrapper from "./BaseWrapper.astro";
 
-// M3's carousel: a row of CarouselItems that scrolls natively and snaps, each item changing size
-// and shape as it moves through the row, its visual moving at another speed (the parallax). In
-// the multi-browse layout, its items are large at the start, then a medium and a small one. In
-// the hero layouts, there's one large item, or more on a wide screen, then a small one, or,
-// center-aligned, a small one either side, and the row swipes one item at a time. Compose's
-// HorizontalMultiBrowseCarousel and HorizontalCenteredHeroCarousel lay it out; the script runs
-// their keylines (src/carousel.ts) as the row scrolls (ADR-0038, ADR-0039).
-const layouts = ["multi-browse", "hero", "center-aligned-hero"] as const;
+// M3's carousel: a row of CarouselItems that scrolls natively, each item changing size and shape
+// as it moves through the row, its visual moving at another speed (the parallax). In the
+// multi-browse layout, its items are large at the start, then a medium and a small one. In the
+// hero layouts, there's one large item, or more on a wide screen, then a small one, or,
+// center-aligned, a small one either side, and the row swipes one item at a time. In the
+// uncontained layouts, its items keep their size and flow past the row's edges, one width for all
+// or each item its own. The full-screen layout scrolls vertically through one item at a time,
+// filling the carousel. Compose's HorizontalMultiBrowseCarousel, HorizontalCenteredHeroCarousel and
+// uncontained keylines lay it out; the script runs them (src/carousel.ts) as the row scrolls
+// (ADR-0038, ADR-0039, ADR-0040).
+const layouts = [
+  "multi-browse",
+  "hero",
+  "center-aligned-hero",
+  "uncontained",
+  "uncontained-multi-aspect-ratio",
+  "full-screen",
+] as const;
 type Props = Omit<HTMLAttributes<"div">, "role"> & {
   layout?: (typeof layouts)[number];
   preferredItemWidth?: number;
@@ -37,12 +47,21 @@ if (!layouts.includes(layout)) {
       )}, but this one's \`layout\` is ${JSON.stringify(layout)}.`
   );
 }
-const isHero = layout !== "multi-browse";
-// Compose's multi-browse sample asks for 186dp large items. A hero carousel's large item fills
-// the carousel but for its small items unless it's given a width, as Compose's does.
+const isHero = layout === "hero" || layout === "center-aligned-hero";
+const isUncontained =
+  layout === "uncontained" || layout === "uncontained-multi-aspect-ratio";
+const isFullScreen = layout === "full-screen";
+// M3's Specs: a full-screen carousel's one item fills it
+if (isFullScreen && preferredItemWidth !== undefined) {
+  throw new Error(
+    "Carousel: a full-screen carousel's item fills it, so it takes no `preferredItemWidth`."
+  );
+}
+// Compose's multi-browse and uncontained samples ask for 186dp items. A hero carousel's large item
+// fills the carousel but for its small items unless it's given a width, as Compose's does.
 const preferredWidth =
   preferredItemWidth === undefined
-    ? isHero
+    ? isHero || isFullScreen
       ? null
       : 186
     : Number(preferredItemWidth);
@@ -65,10 +84,11 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
 {/* M3's container, on surface, holding the items. It's a region, described as a carousel, as the
     WAI-ARIA carousel pattern has it; its list says how many items it has and which one has focus,
     as M3's Accessibility page asks. Compose's sample is 221dp high, items 205dp with 8dp above and
-    below; the page sets another height with `class`. */}
+    below; the page sets another height with `class`. A full-screen carousel fills the window
+    (M3's Specs), or whatever height the page gives it. */}
 <BaseWrapper
   bgColor="surface"
-  class={twMerge("relative h-55.25", classList)}
+  class={twMerge("relative", isFullScreen ? "h-dvh" : "h-55.25", classList)}
   role="region"
   aria-roledescription="carousel"
   data-ac-carousel={layout}
@@ -76,21 +96,37 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
   {...attrs}
 >
   {/* The row: every item laid out at the large size, 8dp apart (M3's padding between elements),
-      8dp above and below, scrolling and snapping natively. The script sizes the items and their
-      snap positions from Compose's keylines, which hold the 16dp leading and trailing padding.
-      Without the script, or with reduced motion, every item stays large, the row padded 16dp at
-      its ends (M3's Accessibility page: with reduced motion, all items are the same size). Its
-      items are the tab stops, not the row (M3's Accessibility page: don't focus the container),
-      which Firefox would otherwise stop at as it scrolls.
-      A hero carousel stops at every item, so a swipe moves it one item (M3's Overview: hero
-      carousels "swipe through one item at a time"). Without its keylines, a center-aligned one
-      snaps its items to the center. Before the script sizes them, a hero carousel's items are
-      the large size its keylines give without a preferred width: the row, its 16px padding
-      included, less 8px and a 40px small item for each small one. */}
+      8dp above and below, scrolling natively. The script sizes the items and their snap positions
+      from Compose's keylines, which hold the 16dp leading and trailing padding. Without the
+      script, or with reduced motion, every item stays large, the row padded 16dp at its ends
+      (M3's Accessibility page: with reduced motion, all items are the same size). Its items are
+      the tab stops, not the row (M3's Accessibility page: don't focus the container), which
+      Firefox would otherwise stop at as it scrolls.
+      Multi-browse and hero carousels snap (M3's Guidelines: snap-scrolling is "recommended for
+      multi-browse, hero, and full-screen layouts"). A hero carousel stops at every item, so a
+      swipe moves it one item (M3's Overview: hero carousels "swipe through one item at a time").
+      Without its keylines, a center-aligned one snaps its items to the center. Before the script
+      sizes them, a hero carousel's items are the large size its keylines give without a preferred
+      width: the row, its 16px padding included, less 8px and a 40px small item for each small one.
+      The uncontained layouts have no keylines: their items keep their size and flow past the
+      row's edges (M3's Guidelines), scrolling freely, as M3's Guidelines recommend, padded at the
+      start only (M3's Specs), so their last item reaches the row's end. An uncontained
+      multi-aspect ratio carousel's items are each as wide as their aspect ratio makes them, at the
+      row's height.
+      A full-screen carousel scrolls vertically, its items filling it edge to edge, 16dp apart, and
+      stops at every one (M3's Guidelines: "make sure the carousel items snap to the edges of the
+      carousel container"). */}
   <ul
     class:list={[
-      "flex h-full snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain px-4 py-2 scrollbar-none scroll-px-4 outline-none",
-      "data-ac-carousel-keylines:px-0 data-ac-carousel-keylines:scroll-px-0",
+      "flex h-full scrollbar-none outline-none",
+      isFullScreen
+        ? "flex-col snap-y snap-mandatory gap-4 overflow-y-auto overscroll-y-contain *:h-full *:snap-always [--ac-carousel-item-size:100%]"
+        : "gap-2 overflow-x-auto overscroll-x-contain py-2 ps-4 scroll-ps-4 data-ac-carousel-keylines:ps-0 data-ac-carousel-keylines:scroll-ps-0",
+      !isFullScreen && !isUncontained && "snap-x snap-mandatory",
+      !isFullScreen &&
+        (isUncontained
+          ? "pe-0"
+          : "pe-4 scroll-pe-4 data-ac-carousel-keylines:pe-0 data-ac-carousel-keylines:scroll-pe-0"),
       isHero && "*:snap-always",
       preferredWidth === null &&
         layout === "hero" &&
@@ -100,6 +136,8 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
         "[--ac-carousel-item-size:calc(100%-64px)]",
       layout === "center-aligned-hero" &&
         "not-data-ac-carousel-keylines:*:snap-center",
+      layout === "uncontained-multi-aspect-ratio" &&
+        "*:h-full *:data-ac-carousel-item-aspect-ratio:w-auto *:data-ac-carousel-item-aspect-ratio:aspect-(--ac-carousel-item-aspect-ratio)",
     ]}
     style={
       preferredWidth !== null
@@ -117,17 +155,20 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
   import {
     arrangeHero,
     arrangeMultiBrowse,
+    arrangeUncontained,
     createStrategy,
     itemPlacement,
     scrollToShow,
     snapOffset,
+    type KeylineList,
     type Strategy,
   } from "../carousel";
   import { moveFocusWithArrows, tabbableIn } from "../utils";
 
   // M3's Specs: 8dp between items, 16dp leading and trailing padding, small items 40 to 56dp
-  // (Compose's CarouselDefaults)
+  // (Compose's CarouselDefaults). A full-screen carousel's items are 16dp apart, unpadded.
   const spacing = 8;
+  const fullScreenSpacing = 16;
   const padding = 16;
   const minSmall = 40;
   const maxSmall = 56;
@@ -143,8 +184,18 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
       (el): el is HTMLElement =>
         el instanceof HTMLElement && el.hasAttribute("data-ac-carousel-item")
     );
+  const rootOf = (list: HTMLElement) =>
+    list.closest<HTMLElement>("[data-ac-carousel]")!;
+  // A full-screen carousel scrolls vertically; the others, horizontally
+  const isVertical = (root: Element) =>
+    root.getAttribute("data-ac-carousel") === "full-screen";
   // How far the row has scrolled from its start, in either direction
-  const scrollOf = (list: HTMLElement) => Math.abs(list.scrollLeft);
+  const scrollOf = (list: HTMLElement) =>
+    isVertical(rootOf(list)) ? list.scrollTop : Math.abs(list.scrollLeft);
+  const scrollMargin = (list: HTMLElement) =>
+    isVertical(rootOf(list))
+      ? "scroll-margin-block-start"
+      : "scroll-margin-inline-start";
 
   // Sizes and places each item for where the row is scrolled
   const place = (list: HTMLElement) => {
@@ -177,6 +228,7 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
   const clearKeylines = (list: HTMLElement) => {
     strategies.delete(list);
     list.removeAttribute("data-ac-carousel-keylines");
+    list.style.removeProperty("--ac-carousel-visual-size");
     itemsOf(list).forEach((item) => {
       for (const name of [
         "--ac-carousel-mask-size",
@@ -184,60 +236,92 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
         "--ac-carousel-visual-start",
         "--ac-carousel-label-opacity",
         "scroll-margin-inline-start",
+        "scroll-margin-block-start",
       ])
         item.style.removeProperty(name);
     });
   };
 
-  // The keylines of a carousel's layout, for the row's width and the items' count
-  const keylinesOf = (root: HTMLElement, available: number, count: number) => {
+  // The keylines of a carousel's layout, for the row's size and the items' count. A full-screen
+  // carousel's are Compose's uncontained ones for an item the carousel's size: one large item
+  // between two anchors. The uncontained layouts have none: their items keep their size.
+  const keylinesOf = (
+    root: HTMLElement,
+    available: number,
+    count: number
+  ): KeylineList => {
     const { acCarousel: layoutName, acCarouselPreferredItemWidth: preferred } =
       root.dataset;
-    if (layoutName !== "multi-browse")
-      return arrangeHero({
-        available,
-        preferred: preferred ? Number(preferred) : null,
-        spacing,
-        count,
-        centered: layoutName === "center-aligned-hero",
-        minSmall,
-        maxSmall,
-      });
-    return arrangeMultiBrowse({
-      available,
-      preferred: Number(preferred),
-      spacing,
-      count,
-      minSmall,
-      maxSmall,
-    });
+    switch (layoutName) {
+      case "hero":
+      case "center-aligned-hero":
+        return arrangeHero({
+          available,
+          preferred: preferred ? Number(preferred) : null,
+          spacing,
+          count,
+          centered: layoutName === "center-aligned-hero",
+          minSmall,
+          maxSmall,
+        });
+      case "full-screen":
+        return arrangeUncontained({
+          available,
+          itemSize: available,
+          spacing: fullScreenSpacing,
+        });
+      case "multi-browse":
+        return arrangeMultiBrowse({
+          available,
+          preferred: Number(preferred),
+          spacing,
+          count,
+          minSmall,
+          maxSmall,
+        });
+      default:
+        return [];
+    }
   };
 
-  // Works out the keylines for the row's width and the items' count: the large size every item
+  // The row's padding at its start and end, and the space between its items
+  const spacingOf = (root: HTMLElement) =>
+    isVertical(root)
+      ? { spacing: fullScreenSpacing, before: 0, after: 0 }
+      : { spacing, before: padding, after: padding };
+
+  // Works out the keylines for the row's size and the items' count: the large size every item
   // is laid out at, and where each one snaps
   const layout = (root: HTMLElement) => {
     const list = listOf(root);
     const items = itemsOf(list);
-    const available = list.clientWidth;
+    const vertical = isVertical(root);
+    const available = vertical ? list.clientHeight : list.clientWidth;
+    const space = spacingOf(root);
     const strategy = createStrategy(keylinesOf(root, available, items.length), {
       available,
-      spacing,
-      before: padding,
-      after: padding,
+      ...space,
     });
     if (reducedMotion.matches) {
-      // Every item at one size, the row padded. Multi-browse's is the preferred width; a hero
-      // carousel's is its large items', so the next item shows in part (M3's Accessibility
-      // page: with reduced motion, a hero carousel's small item "is only partially shown").
+      // Every item at one size, the row padded. Multi-browse's are the preferred width; a hero
+      // carousel's are its large items', so the next item shows in part (M3's Accessibility page:
+      // with reduced motion, a hero carousel's small item "is only partially shown"); a
+      // full-screen carousel's fill it.
       clearKeylines(list);
+      const {
+        acCarousel: layoutName,
+        acCarouselPreferredItemWidth: preferred,
+      } = root.dataset;
       const large =
-        root.dataset.acCarousel === "multi-browse"
-          ? Number(root.dataset.acCarouselPreferredItemWidth)
-          : strategy.itemSize;
+        layoutName === "hero" || layoutName === "center-aligned-hero"
+          ? strategy.itemSize
+          : layoutName === "multi-browse"
+            ? Number(preferred)
+            : 0;
       if (large > 0)
         list.style.setProperty(
           "--ac-carousel-item-size",
-          `${Math.min(large, available - 2 * padding)}px`
+          `${Math.min(large, available - space.before - space.after)}px`
         );
       return;
     }
@@ -245,9 +329,14 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
     strategies.set(list, strategy);
     list.setAttribute("data-ac-carousel-keylines", "");
     list.style.setProperty("--ac-carousel-item-size", `${strategy.itemSize}px`);
+    list.style.setProperty(
+      "--ac-carousel-visual-size",
+      `${strategy.itemSize}px`
+    );
+    const margin = scrollMargin(list);
     items.forEach((item, i) =>
       item.style.setProperty(
-        "scroll-margin-inline-start",
+        margin,
         `${snapOffset(strategy, i, items.length)}px`
       )
     );
@@ -257,16 +346,25 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
   // Scrolls the row the least way to a snap position where an item is large, unless it is already
   const scrollToItem = (list: HTMLElement, index: number) => {
     const strategy = strategies.get(list);
-    if (!strategy) return;
+    const behavior = reducedMotion.matches ? "instant" : "smooth";
+    // An uncontained item, which keeps its size, scrolls the least way to show all of it, past
+    // the 16px leading padding; the browser leaves one that's in part in view where it is.
+    if (!strategy) {
+      const item = itemsOf(list)[index];
+      const row = list.getBoundingClientRect();
+      const box = item?.getBoundingClientRect();
+      if (box && (box.left < row.left - 0.5 || box.right > row.right + 0.5))
+        item.scrollIntoView({ block: "nearest", inline: "nearest", behavior });
+      return;
+    }
     const scroll = scrollOf(list);
     const target = scrollToShow(strategy, index, itemsOf(list).length, scroll);
     // unchanged, it would stop a smooth scroll already under way to show the item
     if (Math.abs(target - scroll) < 1) return;
+    if (isVertical(rootOf(list)))
+      return list.scrollTo({ top: target, behavior });
     const direction = getComputedStyle(list).direction === "rtl" ? -1 : 1;
-    list.scrollTo({
-      left: direction * target,
-      behavior: reducedMotion.matches ? "instant" : "smooth",
-    });
+    list.scrollTo({ left: direction * target, behavior });
   };
 
   const roots = () =>
@@ -303,8 +401,9 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
   });
   reducedMotion.addEventListener("change", () => roots().forEach(layout));
 
-  // M3's Accessibility page: Tab or the arrow keys move between the items
-  moveFocusWithArrows("[data-ac-carousel]");
+  // M3's Accessibility page: Tab or the arrow keys move between the items; up and down in a
+  // full-screen carousel, which scrolls vertically
+  moveFocusWithArrows("[data-ac-carousel]", { isVertical });
 
   // An item taking focus or clicked scrolls into a large place when it isn't large there yet,
   // after the browser's own scroll to show it. Clicked too, as Safari doesn't focus a clicked
@@ -321,8 +420,9 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
   document.addEventListener("focusin", showItem);
   document.addEventListener("click", showItem);
 
-  // M3's Accessibility page: the up and down arrow keys leave the carousel, to the control
-  // before or after it. On the window, as moveFocusWithArrows listens, after any group inside.
+  // M3's Accessibility page: the up and down arrow keys leave a horizontal carousel, to the
+  // control before or after it. On the window, as moveFocusWithArrows listens, after any group
+  // inside.
   window.addEventListener("keydown", (event) => {
     if (event.defaultPrevented) return;
     if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
@@ -330,7 +430,8 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
       return;
     const target = event.target as Element;
     const root = target.closest?.("[data-ac-carousel]");
-    if (!root || !target.closest("[data-ac-carousel-item]")) return;
+    if (!root || isVertical(root) || !target.closest("[data-ac-carousel-item]"))
+      return;
     const tabbables = tabbableIn(document).filter((el) => !root.contains(el));
     const position = (el: Element) => root.compareDocumentPosition(el);
     const next =

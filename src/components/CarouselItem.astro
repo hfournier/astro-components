@@ -5,13 +5,19 @@ import { twMerge } from "tailwind-merge";
 // M3's carousel item, in a Carousel: a visual, such as a photo, with optional text, that's a link
 // or button. The `<li>` keeps the large size in the row; the item inside it is as large as the
 // Carousel's script makes it, centered on the `<li>` and moved by its keyline, with its visual
-// staying at the large size so it moves at another speed (ADR-0038).
+// staying at the large size so it moves at another speed (ADR-0038). In a full-screen carousel,
+// which scrolls vertically, it's masked and moved up and down (ADR-0040).
 type Props = (
   | (Omit<HTMLAttributes<"a">, "type"> & { as?: "a" })
   | (HTMLAttributes<"button"> & { as: "button" })
-) & { class?: string };
+) & {
+  class?: string;
+  // M3's Specs: an uncontained multi-aspect ratio carousel's items are 16:9, 9:16, 1:1, 3:4 and
+  // so on, width to height
+  aspectRatio?: `${number}:${number}`;
+};
 
-const { as = "a", class: classList, ...attrs } = Astro.props;
+const { as = "a", aspectRatio, class: classList, ...attrs } = Astro.props;
 
 // Values outside these fail the build, rather than drawing something other than was asked for
 // (ADR-0021)
@@ -31,21 +37,43 @@ if (as === "a" && "disabled" in attrs && attrs.disabled) {
     "CarouselItem: only a button item can be disabled, as a link can't be, but this one's `as` is \"a\" with `disabled`."
   );
 }
+// M3's Guidelines: "Item widths can range anywhere between 9:16 for min width size to 16:9 for
+// max width"
+let ratio: string | undefined;
+if (aspectRatio !== undefined) {
+  const [width, height] = String(aspectRatio).split(":").map(Number);
+  const value = width / height;
+  if (
+    !(width > 0 && height > 0) ||
+    value < 9 / 16 - 1e-9 ||
+    value > 16 / 9 + 1e-9
+  ) {
+    throw new Error(
+      `CarouselItem: \`aspectRatio\` is the item's width to height, such as "16:9", from 9:16 to 16:9, but this one's is ${JSON.stringify(aspectRatio)}.`
+    );
+  }
+  ratio = `${width} / ${height}`;
+}
 
 const Tag = as;
 const hasLabel = Astro.slots.has("label");
 ---
 
 <!-- The `<li>` takes no clicks: a small item moves toward the view, over the next `<li>`, and
-the clicks there are its item's. The row under it still scrolls. -->
+the clicks there are its item's. The row under it still scrolls. Its aspect ratio sizes it only
+in an uncontained multi-aspect ratio carousel, whose row sets its width from it. -->
 <li
-  class="pointer-events-none relative w-(--ac-carousel-item-size) max-w-full flex-none snap-start"
+  class="pointer-events-none relative w-(--ac-carousel-item-size) max-w-full flex-none snap-start in-data-[ac-carousel=full-screen]:w-full"
+  style={ratio ? `--ac-carousel-item-aspect-ratio: ${ratio}` : undefined}
   data-ac-carousel-item
+  data-ac-carousel-item-aspect-ratio={ratio ? "" : undefined}
 >
   <Tag
     class={twMerge(
       // M3's Specs: corner extra large (28dp), the visual cropped to the item's shape
       "pointer-events-auto absolute inset-y-0 inset-s-(--ac-carousel-mask-start,0px) w-(--ac-carousel-mask-size,100%) overflow-hidden rounded-[28px] text-start",
+      // Masked and moved along the block axis in a full-screen carousel
+      "in-data-[ac-carousel=full-screen]:inset-x-0 in-data-[ac-carousel=full-screen]:top-(--ac-carousel-mask-start,0px) in-data-[ac-carousel=full-screen]:bottom-auto in-data-[ac-carousel=full-screen]:h-(--ac-carousel-mask-size,100%) in-data-[ac-carousel=full-screen]:w-auto",
       "cursor-pointer disabled:cursor-default",
       // M3's state layer (the tokens leave its color open; on-surface, as a card's): 8% hovered,
       // 10% focused or pressed. It covers the visual and takes no clicks.
@@ -66,7 +94,7 @@ the clicks there are its item's. The row under it still scrolls. -->
     {/* The visual stays at the large size, centered where the item is laid out, so the item's
         edges move over it as it changes size: M3's parallax */}
     <span
-      class="absolute inset-y-0 inset-s-(--ac-carousel-visual-start,0px) block w-(--ac-carousel-item-size) *:size-full *:object-cover"
+      class="absolute inset-y-0 inset-s-(--ac-carousel-visual-start,0px) block w-(--ac-carousel-visual-size,100%) *:size-full *:object-cover in-data-[ac-carousel=full-screen]:inset-x-0 in-data-[ac-carousel=full-screen]:top-(--ac-carousel-visual-start,0px) in-data-[ac-carousel=full-screen]:bottom-auto in-data-[ac-carousel=full-screen]:h-(--ac-carousel-visual-size,100%) in-data-[ac-carousel=full-screen]:w-auto"
       data-ac-carousel-item-part="visual"
     >
       <slot />
@@ -76,7 +104,7 @@ the clicks there are its item's. The row under it still scrolls. -->
       // size. It stays at the item's starting edge and fades out over the first 80dp the item
       // shrinks, as MDC's carousel does, and is light on a scrim so it reads on any visual.
       <span
-        class="absolute inset-s-0 bottom-0 z-2 block w-(--ac-carousel-item-size) bg-linear-to-t from-(--theme-color-scrim)/60 to-transparent px-4 pt-8 pb-4 text-base leading-6 font-medium tracking-[0.15px] text-white opacity-(--ac-carousel-label-opacity,1)"
+        class="absolute inset-s-0 bottom-0 z-2 block w-(--ac-carousel-visual-size,100%) bg-linear-to-t from-(--theme-color-scrim)/60 to-transparent px-4 pt-8 pb-4 text-base leading-6 font-medium tracking-[0.15px] text-white opacity-(--ac-carousel-label-opacity,1) in-data-[ac-carousel=full-screen]:w-full"
         data-ac-carousel-item-part="label"
       >
         <slot name="label" />

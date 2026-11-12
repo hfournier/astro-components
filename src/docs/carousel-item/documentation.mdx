@@ -17,6 +17,11 @@ props:
     required: false
     default: '"a"'
     description: "Which element the item is. `a`, with `href`, opens what the item shows, such as a photo's page; `button` does something on the page, such as applying a filter. A link without `href` fails the build, as it wouldn't be a link and Tab would skip it, and so does any other value."
+  - name: aspectRatio
+    type: string
+    required: false
+    default: undefined
+    description: 'The item''s width to its height, such as "16:9", "1:1" or "3:4", in a Carousel with `layout="uncontained-multi-aspect-ratio"`, which makes the item that wide at the carousel''s height. M3 asks for 9:16 to 16:9; a ratio outside that fails the build. Other layouts size their items themselves and ignore it.'
 slots:
   - name: default
     description: The item's visual, usually an `<img>`, or a `<picture>` or `<video>`. It fills the item, cropped to cover it, at the carousel's large item size, so it shows its middle when the item is smaller. Give an image an `alt` that names the item, or an empty one when the `label` text does.
@@ -32,7 +37,7 @@ Every attribute, `class` too, goes on the item's `<a>` or `<button>`, such as `h
 
 ## Anatomy
 
-- **Item:** the visual, cropped to M3's extra-large corners (28px), with no container color of its own. Its width is set by the carousel: large, medium or small, depending on its place in the row.
+- **Item:** the visual, cropped to M3's extra-large corners (28px), with no container color of its own. Its width is set by the carousel: large, medium or small, depending on its place in the row, or, in an uncontained multi-aspect ratio carousel, by its `aspectRatio`. In a full-screen carousel, it fills the carousel, and its height changes as it scrolls out.
 - **Visual:** stays at the large size, centered on where the item is laid out, so the item's edges move over it as it changes size, M3's parallax.
 - **Text (optional):** at the item's bottom start, light on a scrim that fades up from the bottom, so it reads over any visual.
 
