@@ -773,3 +773,31 @@ export const itemPlacement = (
     translation += (center - keyline.unadjustedOffset) / keyline.size;
   return { size: keyline.size, translation };
 };
+
+/** The scroll position where an item snaps: at its snap offset from the row's view's start */
+export const snapScroll = (strategy: Strategy, index: number, count: number) =>
+  index * (strategy.itemSize + strategy.spacing) -
+  snapOffset(strategy, index, count);
+
+/**
+ * Where the row scrolls to show an item large: of the snap positions where it's large, the
+ * nearest to `scroll`, so an item at the end of the row goes to the last large place, as one at
+ * the start goes to the first. Where it's already large, `scroll` itself.
+ */
+export const scrollToShow = (
+  strategy: Strategy,
+  index: number,
+  count: number,
+  scroll: number
+) => {
+  const isLarge = (at: number) =>
+    itemPlacement(strategy, index, at, count).size >= strategy.itemSize - 1;
+  if (isLarge(scroll)) return scroll;
+  const snaps = Array.from({ length: count }, (_, i) =>
+    snapScroll(strategy, i, count)
+  ).filter(isLarge);
+  if (snaps.length === 0) return snapScroll(strategy, index, count);
+  return snaps.reduce((nearest, at) =>
+    Math.abs(at - scroll) < Math.abs(nearest - scroll) ? at : nearest
+  );
+};

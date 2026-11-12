@@ -69,6 +69,7 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
     arrangeMultiBrowse,
     createStrategy,
     itemPlacement,
+    scrollToShow,
     snapOffset,
     type Strategy,
   } from "../carousel";
@@ -177,15 +178,14 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
     place(list);
   };
 
-  // Where the row snaps with an item at its first focal (large) place
+  // Scrolls the row the least way to a snap position where an item is large, unless it is already
   const scrollToItem = (list: HTMLElement, index: number) => {
     const strategy = strategies.get(list);
-    const items = itemsOf(list);
-    const target = strategy
-      ? index * (strategy.itemSize + strategy.spacing) -
-        snapOffset(strategy, index, items.length)
-      : null;
-    if (target === null) return;
+    if (!strategy) return;
+    const scroll = scrollOf(list);
+    const target = scrollToShow(strategy, index, itemsOf(list).length, scroll);
+    // unchanged, it would stop a smooth scroll already under way to show the item
+    if (Math.abs(target - scroll) < 1) return;
     const direction = getComputedStyle(list).direction === "rtl" ? -1 : 1;
     list.scrollTo({
       left: direction * target,
@@ -230,25 +230,17 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
   // M3's Accessibility page: Tab or the arrow keys move between the items
   moveFocusWithArrows("[data-ac-carousel]");
 
-  // An item taking focus or clicked scrolls to its snap position when it isn't large there yet,
+  // An item taking focus or clicked scrolls into a large place when it isn't large there yet,
   // after the browser's own scroll to show it. Clicked too, as Safari doesn't focus a clicked
   // link or button.
   const showItem = (event: Event) => {
     const target = event.target as Element;
     const item = target.closest?.<HTMLElement>("[data-ac-carousel-item]");
     const list = item?.parentElement;
-    const strategy = list && strategies.get(list);
-    if (!item || !list || !strategy) return;
-    const index = itemsOf(list).indexOf(item);
-    requestAnimationFrame(() => {
-      const { size } = itemPlacement(
-        strategy,
-        index,
-        scrollOf(list),
-        itemsOf(list).length
-      );
-      if (size < strategy.itemSize - 1) scrollToItem(list, index);
-    });
+    if (!item || !list) return;
+    requestAnimationFrame(() =>
+      scrollToItem(list, itemsOf(list).indexOf(item))
+    );
   };
   document.addEventListener("focusin", showItem);
   document.addEventListener("click", showItem);

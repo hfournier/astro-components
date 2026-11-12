@@ -307,6 +307,43 @@ test.describe("Carousel", () => {
     expect((await boxIn(desert)).x).toBeGreaterThanOrEqual(0);
   });
 
+  // Clicked, a small item scrolls the least way to a place it's large: one item on at the
+  // row's end, to its last large place, as one item back at its start, to its first
+  test("moves one item on or back for a clicked small item", async ({
+    page,
+  }) => {
+    const list = listOf(page, "multi-browse");
+    const large = await itemSize(list);
+    const visible = async () =>
+      (await visibleBoxes(page, "multi-browse")).map((b) => b.width);
+    const all = items(page, "multi-browse");
+    for (const index of [2, 3]) {
+      await all.nth(index).click();
+      await settle(list);
+      // one item on, the clicked one second of the large ones, the small one after it
+      expect(await list.evaluate((el) => el.scrollLeft)).toBeCloseTo(
+        (index - 1) * (large + 8),
+        0
+      );
+      const [first, second, small] = await visible();
+      expect(first).toBeCloseTo(large, 0);
+      const clicked = await boxIn(all.nth(index));
+      expect(clicked.x).toBeCloseTo(large + 8, 0);
+      expect(clicked.width).toBeCloseTo(second, 0);
+      expect(small).toBeLessThanOrEqual(56);
+    }
+    await list.evaluate((el) =>
+      el.scrollTo({ left: 1e5, behavior: "instant" })
+    );
+    await settle(list);
+    const before = await list.evaluate((el) => el.scrollLeft);
+    await all.nth(5).click();
+    await settle(list);
+    expect((await boxIn(all.nth(5))).x).toBeCloseTo(0, 0);
+    expect((await boxIn(all.nth(5))).width).toBeCloseTo(large, 0);
+    expect(await list.evaluate((el) => el.scrollLeft)).toBeLessThan(before);
+  });
+
   // M3's Specs: a 3dp focus indicator 2dp outside the item
   test("shows a focus ring on the focused item", async ({ page }) => {
     await section(page, "buttons").getByRole("heading").click();

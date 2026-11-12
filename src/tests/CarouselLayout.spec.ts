@@ -5,6 +5,7 @@ import {
   itemPlacement,
   keylineListOf,
   keylinesForScroll,
+  scrollToShow,
   snapOffset,
   type KeylineList,
 } from "../carousel";
@@ -289,6 +290,20 @@ test.describe("item placement (Compose's Modifier.carouselItem)", () => {
     expect(smallAt(2, 0)).toBeLessThanOrEqual(56);
     expect(smallAt(5, max)).toBeGreaterThanOrEqual(40);
     expect(smallAt(5, max)).toBeLessThanOrEqual(56);
+  });
+
+  // A small item brought into view goes to the nearest place it's large: on the right, one item
+  // on, to the second large place, as on the left it goes one item back, to the first
+  test("scrolls a small item the least way to a place it's large", () => {
+    const row = multiBrowse(412, 186, 8, 8, 16, 16);
+    const step = row.itemSize + 8;
+    const max = 8 * row.itemSize + 7 * 8 - 412;
+    expect(scrollToShow(row, 2, 8, 0)).toBe(step);
+    expect(scrollToShow(row, 3, 8, step)).toBe(2 * step);
+    expect(itemPlacement(row, 2, step, 8).size).toBeCloseTo(row.itemSize, 3);
+    expect(scrollToShow(row, 5, 8, max)).toBe(5 * step);
+    // a large item stays where it is
+    expect(scrollToShow(row, 0, 8, 0)).toBe(0);
   });
 
   test("grows an item to large as it scrolls to its snap position", () => {
