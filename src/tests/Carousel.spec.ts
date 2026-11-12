@@ -9,7 +9,16 @@ import {
 } from "./support/helpers";
 
 // Each case on /tests/carousel is a Section with data-testid="carousel-<caseId>"
-type CarouselCaseId = "multi-browse" | "wide" | "label" | "buttons" | "rtl";
+type CarouselCaseId =
+  | "multi-browse"
+  | "wide"
+  | "label"
+  | "buttons"
+  | "rtl"
+  | "hero"
+  | "hero-wide"
+  | "centered"
+  | "centered-rtl";
 
 const section = (page: Page, caseId: CarouselCaseId) =>
   page.getByTestId(`carousel-${caseId}`);
@@ -454,5 +463,171 @@ test.describe("Carousel", () => {
     const end = await visibleBoxes(page, "rtl");
     expect(end.at(-1)!.x).toBeCloseTo(16, 0);
     expect(end.at(-1)!.width).toBeGreaterThan(150);
+  });
+});
+
+// Focuses a case's item, which scrolls it to a large place, and waits for the row to settle
+const focusItem = async (page: Page, caseId: CarouselCaseId, index: number) => {
+  await items(page, caseId).nth(index).focus();
+  await settle(listOf(page, caseId));
+};
+
+// The edges of an item at the large size can fall between pixels
+const isSmall = (box: Box) => box.width >= 40 && box.width <= 56.5;
+
+test.describe("Carousel, hero layouts", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/tests/carousel");
+  });
+
+  // M3's Specs: the hero layout "shows at least one large item and one small item", 16dp in,
+  // 8dp apart, with 28dp corners. M3's Guidelines: at a compact size, one large item and one
+  // small one. Without a preferred width, the large item fills the rest.
+  test("shows one large item and a small one", async ({ page }) => {
+    const boxes = await visibleBoxes(page, "hero");
+    expect(boxes).toHaveLength(2);
+    const [large, small] = boxes;
+    expect(large.x).toBeCloseTo(16, 0);
+    expect(small.x - (large.x + large.width)).toBeCloseTo(8, 0);
+    expect(small.x + small.width).toBeCloseTo(412, 0);
+    expect(isSmall(small)).toBe(true);
+    expect(large.width).toBeGreaterThan(300);
+    for (const box of boxes) {
+      expect(box.y).toBe(8);
+      expect(box.height).toBe(221 - 16);
+    }
+    for (const radius of await radii(items(page, "hero").first()))
+      expect(radius).toBe("28px");
+  });
+
+  // M3's Guidelines: "On larger screens, more large items are visible"
+  test("shows more large items when it's wider", async ({ page }) => {
+    const boxes = await visibleBoxes(page, "hero-wide");
+    const large = await itemSize(listOf(page, "hero-wide"));
+    expect(boxes.filter((b) => b.width > large - 20).length).toBeGreaterThan(1);
+    expect(isSmall(boxes.at(-1)!)).toBe(true);
+  });
+
+  // M3's Specs: center-aligned hero "shows at least one large item and two small items". At the
+  // start, its first item is large at the start, as Compose's: item 1 selected, [1][2][3].
+  test("centers the large item between two small ones", async ({ page }) => {
+    const start = await visibleBoxes(page, "centered");
+    expect(start).toHaveLength(3);
+    expect(start[0].x).toBeCloseTo(16, 0);
+    expect(start[0].width).toBeGreaterThan(200);
+    expect(isSmall(start[1])).toBe(true);
+    expect(isSmall(start[2])).toBe(true);
+    expect(start[2].x + start[2].width).toBeCloseTo(412, 0);
+
+    const large = await itemSize(listOf(page, "centered"));
+    await focusItem(page, "centered", 2);
+    const [before, centered, after] = await visibleBoxes(page, "centered");
+    expect(centered.width).toBeCloseTo(large, 0);
+    expect(centered.x + centered.width / 2).toBeCloseTo(412 / 2, 0);
+    expect(isSmall(before)).toBe(true);
+    expect(isSmall(after)).toBe(true);
+    expect(centered.x - (before.x + before.width)).toBeCloseTo(8, 0);
+    expect(after.x - (centered.x + centered.width)).toBeCloseTo(8, 0);
+    expect(before.x).toBeCloseTo(0, 0);
+    expect(after.x + after.width).toBeCloseTo(412, 0);
+  });
+
+  // At the end, the last item is large, 16dp from the end, as Compose's: [3][4][5]
+  test("ends with its last item large, 16px from its end", async ({ page }) => {
+    for (const caseId of ["hero", "centered"] as const) {
+      const list = listOf(page, caseId);
+      await list.evaluate((el) =>
+        el.scrollTo({ left: 1e5, behavior: "instant" })
+      );
+      await settle(list);
+      const last = (await visibleBoxes(page, caseId)).at(-1)!;
+      expect(last.x + last.width, caseId).toBeCloseTo(412 - 16, 0);
+      expect(last.width, caseId).toBeGreaterThan(200);
+    }
+  });
+
+  // M3's Overview: "Hero carousels swipe through one item at a time". Each item is a snap stop
+  // the row doesn't scroll past; multi-browse's scroll through many at once.
+  test("stops at every item, so a swipe moves it one item", async ({
+    page,
+  }) => {
+    const li = (caseId: CarouselCaseId) =>
+      listOf(page, caseId).getByRole("listitem").first();
+    expect(await css(li("hero"), "scroll-snap-stop")).toBe("always");
+    expect(await css(li("centered"), "scroll-snap-stop")).toBe("always");
+    expect(await css(li("multi-browse"), "scroll-snap-stop")).toBe("normal");
+  });
+
+  // Each step on, the next item takes the large place, one item at a time
+  test("moves one item at a time with the arrow keys", async ({ page }) => {
+    const large = await itemSize(listOf(page, "hero"));
+    const all = items(page, "hero");
+    await all.first().focus();
+    for (const index of [1, 2, 3]) {
+      await page.keyboard.press("ArrowRight");
+      await expect(all.nth(index)).toBeFocused();
+      await settle(listOf(page, "hero"));
+      const box = await boxIn(all.nth(index));
+      expect(box.width).toBeCloseTo(large, 0);
+      expect(box.x).toBeCloseTo(0, 0);
+    }
+  });
+
+  // A small item, clicked, scrolls one item on, to the large place
+  test("scrolls a clicked small item to the large place", async ({ page }) => {
+    const large = await itemSize(listOf(page, "centered"));
+    const all = items(page, "centered");
+    await all.nth(1).click();
+    await settle(listOf(page, "centered"));
+    expect((await boxIn(all.nth(1))).width).toBeCloseTo(large, 0);
+    await focusItem(page, "centered", 2);
+    await all.nth(3).click();
+    await settle(listOf(page, "centered"));
+    const box = await boxIn(all.nth(3));
+    expect(box.width).toBeCloseTo(large, 0);
+    expect(box.x + box.width / 2).toBeCloseTo(412 / 2, 0);
+  });
+
+  // M3's Accessibility page: with reduced motion, items are all the same size, and "for hero
+  // carousels ... the small carousel item is only partially shown on screen"
+  test("keeps the items one size with reduced motion, the next shown in part", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.reload();
+    const [first, next] = await visibleBoxes(page, "hero");
+    expect(first.x).toBeCloseTo(16, 0);
+    expect(next.width).toBeCloseTo(first.width, 0);
+    // the large item at its arranged size, so the next shows past the 16px padding
+    expect(next.x).toBeLessThan(412 - 16);
+    expect(next.x + next.width).toBeGreaterThan(412);
+
+    // a center-aligned one snaps its items to the center
+    await focusItem(page, "centered", 2);
+    const centered = await boxIn(items(page, "centered").nth(2));
+    expect(centered.x + centered.width / 2).toBeCloseTo(412 / 2, 0);
+    const boxes = await visibleBoxes(page, "centered");
+    expect(boxes).toHaveLength(3);
+    for (const box of boxes) expect(box.width).toBeCloseTo(centered.width, 0);
+  });
+
+  // Right to left, the row starts at the right, and the large item is centered as it moves
+  test("mirrors right to left", async ({ page }) => {
+    const start = await visibleBoxes(page, "centered-rtl");
+    expect(start).toHaveLength(3);
+    const first = start.find((b) => b.width > 200)!;
+    expect(first.x + first.width).toBeCloseTo(412 - 16, 0);
+    expect(start.find((b) => b.x < 1)).toBeDefined();
+
+    const region = carousel(page, "centered-rtl");
+    await region.getByRole("link").first().focus();
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("ArrowLeft");
+    const third = region.getByRole("link").nth(2);
+    await expect(third).toBeFocused();
+    await settle(listOf(page, "centered-rtl"));
+    const box = await boxIn(third);
+    expect(box.width).toBeGreaterThan(200);
+    expect(box.x + box.width / 2).toBeCloseTo(412 / 2, 0);
   });
 });

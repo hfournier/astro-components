@@ -392,6 +392,81 @@ export const arrangeMultiBrowse = ({
   ]);
 };
 
+/**
+ * Hero: one large item, or more where they fit near the preferred width, and a small one after
+ * them, start-aligned; or, centered, between two small ones (Compose's heroKeylineList). Without a
+ * preferred width, the large item fills the carousel but for the small items.
+ */
+export const arrangeHero = ({
+  available,
+  preferred,
+  spacing,
+  count,
+  centered,
+  minSmall,
+  maxSmall,
+}: {
+  available: number;
+  preferred: number | null;
+  spacing: number;
+  count: number;
+  centered: boolean;
+  minSmall: number;
+  maxSmall: number;
+}): KeylineList => {
+  if (available <= 0 || (preferred !== null && preferred <= 0)) return [];
+  // Fewer than three items can't be centered, so they're start-aligned
+  const shouldCenter = centered && count >= 3;
+  let smallCounts = count <= 1 ? [0] : shouldCenter ? [2] : [1];
+  const targetLarge = Math.min(preferred ?? available, available);
+  const targetSmall = clamp(targetLarge / 3, minSmall, maxSmall);
+  // Room for the small items and a large item at least 25% larger than them, or the large item
+  // fills the carousel
+  if (available < minSmall * Math.max(...smallCounts) + minSmall * 1.25)
+    smallCounts = [0];
+  const minAvailableLarge = available - minSmall * Math.max(...smallCounts);
+  const minLargeCount = Math.max(
+    1,
+    Math.floor(minAvailableLarge / targetLarge)
+  );
+  const maxLargeCount = Math.ceil(available / targetLarge);
+  const largeCounts = Array.from(
+    { length: maxLargeCount - minLargeCount + 1 },
+    (_, i) => maxLargeCount - i
+  );
+  const arrangement = findLowestCostArrangement(
+    available,
+    spacing,
+    targetSmall,
+    minSmall,
+    maxSmall,
+    smallCounts,
+    0,
+    [0],
+    targetLarge,
+    largeCounts
+  );
+  if (!arrangement) return [];
+  const { largeCount, largeSize, smallCount, smallSize } = arrangement;
+  const larges = Array<KeylineEntry>(largeCount).fill([largeSize]);
+  if (shouldCenter && count >= largeCount + smallCount) {
+    const smalls = Array<KeylineEntry>(smallCount / 2).fill([smallSize]);
+    return keylineListOf(available, spacing, "center", [
+      [ANCHOR_SIZE, true],
+      ...smalls,
+      ...larges,
+      ...smalls,
+      [ANCHOR_SIZE, true],
+    ]);
+  }
+  return keylineListOf(available, spacing, "start", [
+    [ANCHOR_SIZE, true],
+    ...larges,
+    ...Array<KeylineEntry>(smallCount).fill([smallSize]),
+    [ANCHOR_SIZE, true],
+  ]);
+};
+
 // --- Strategy: the keylines at each scroll position ---
 
 export type Strategy = {

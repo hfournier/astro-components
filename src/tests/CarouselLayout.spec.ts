@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import {
+  arrangeHero,
   arrangeMultiBrowse,
   createStrategy,
   itemPlacement,
@@ -11,8 +12,8 @@ import {
 } from "../carousel";
 
 // The carousel's layout math, ported from Compose's (androidx.compose.material3.carousel), checked
-// against the cases in Compose's own unit tests: MultiBrowseTest, StrategyTest and
-// KeylineSnapPositionTest. It's pure, so it runs once, outside a browser.
+// against the cases in Compose's own unit tests: MultiBrowseTest, CenteredHeroTest, StrategyTest
+// and KeylineSnapPositionTest. It's pure, so it runs once, outside a browser.
 test.skip(
   ({ browserName }) => browserName !== "chromium",
   "pure functions, the same in every browser"
@@ -39,6 +40,28 @@ const multiBrowse = (
       preferred,
       spacing,
       count,
+      minSmall: 40,
+      maxSmall: 56,
+    }),
+    { available, spacing, before, after }
+  );
+
+const hero = (
+  available: number,
+  preferred: number | null,
+  spacing: number,
+  count: number,
+  centered: boolean,
+  before = 0,
+  after = 0
+) =>
+  createStrategy(
+    arrangeHero({
+      available,
+      preferred,
+      spacing,
+      count,
+      centered,
       minSmall: 40,
       maxSmall: 56,
     }),
@@ -105,6 +128,75 @@ test.describe("multi-browse keylines (Compose's MultiBrowseTest)", () => {
     expect(unadjusted(keylinesForScroll(strategy, 0, max))).toEqual([
       -101, 93, 287, 481, 675,
     ]);
+  });
+});
+
+test.describe("center-aligned hero keylines (Compose's CenteredHeroTest)", () => {
+  test("fits one large item between two small ones", () => {
+    expect(hero(100 + 40 + 40, null, 0, 6, true).itemSize).toBe(100);
+  });
+
+  test("is start-aligned with fewer than three items", () => {
+    const strategy = hero(100 + 40 + 40, null, 0, 2, true);
+    expect(strategy.itemSize).toBeGreaterThan(100);
+    expect(strategy.defaultKeylines.findIndex((k) => k.isFocal)).toBe(1);
+  });
+
+  test("fills the carousel with one item only", () => {
+    expect(hero(40 + 40 + 40, null, 0, 1, true).itemSize).toBe(120);
+  });
+
+  test("fills the carousel where two small items and a large one don't fit", () => {
+    expect(hero(40 + 40 + 40, null, 0, 6, true).itemSize).toBe(120);
+  });
+
+  for (const [spacing, count] of [
+    [0, 7],
+    [12, 7],
+    [12, 10],
+  ])
+    test(`puts the small items flush with the ends, ${spacing}px apart, ${count} items`, () => {
+      const available = 300 + 300 + 300 + 40 + 40;
+      const keylines = nonAnchors(
+        hero(available, 300, spacing, count, true).defaultKeylines
+      );
+      expect(keylines[0].offset).toBeCloseTo(20, 3);
+      expect(keylines.at(-1)!.offset).toBeCloseTo(available - 20, 3);
+    });
+
+  test("has no keylines in no space", () => {
+    expect(hero(-10, 100, 0, 5, true).isValid).toBe(false);
+    expect(hero(0, 100, 0, 5, true).isValid).toBe(false);
+  });
+});
+
+test.describe("hero keylines", () => {
+  // M3's Guidelines: "A hero carousel at a compact breakpoint should show one large item and one
+  // small item"
+  test("shows one large item and one small one at the end", () => {
+    const keylines = nonAnchors(hero(412, null, 8, 6, false).defaultKeylines);
+    expect(sizes(keylines)).toHaveLength(2);
+    expect(keylines[0].isFocal).toBe(true);
+    expect(keylines[1].size).toBeGreaterThanOrEqual(40);
+    expect(keylines[1].size).toBeLessThanOrEqual(56);
+    expect(keylines[0].size + 8 + keylines[1].size).toBeCloseTo(412, 3);
+    expect(keylines[1].offset + keylines[1].size / 2).toBeCloseTo(412, 3);
+  });
+
+  // M3's Specs: center-aligned hero "shows at least one large item and two small items"
+  test("centers one large item between two small ones", () => {
+    const keylines = nonAnchors(hero(412, null, 8, 6, true).defaultKeylines);
+    expect(keylines).toHaveLength(3);
+    expect(keylines[1].isFocal).toBe(true);
+    expect(keylines[1].offset).toBeCloseTo(412 / 2, 3);
+    expect(keylines[0].size).toBe(keylines[2].size);
+    expect(keylines[0].size).toBeLessThanOrEqual(56);
+  });
+
+  // M3's Guidelines: "On larger screens, more large items are visible"
+  test("fits more large items near a preferred width", () => {
+    const keylines = nonAnchors(hero(1000, 300, 8, 10, false).defaultKeylines);
+    expect(keylines.filter((k) => k.isFocal).length).toBeGreaterThan(1);
   });
 });
 
@@ -238,6 +330,54 @@ test.describe("snap positions (Compose's KeylineSnapPositionTest)", () => {
     ).toEqual([0, 0, 400, 75 + 400, 75 + 125 + 400]);
   });
 
+  test("center-aligned with one large item", () => {
+    const strategy = strategyOf(
+      keylineListOf(1000, 0, "center", [
+        [5, true],
+        [100],
+        [200],
+        [400],
+        [200],
+        [100],
+        [5, true],
+      ])
+    );
+    expect([0, 1, 2, 3, 4, 5].map((i) => snapOffset(strategy, i, 6))).toEqual([
+      0, 200, 300, 300, 400, 600,
+    ]);
+  });
+
+  test("center-aligned with two large items", () => {
+    const available = 10 + 40 + 100 + 100 + 40 + 10;
+    const strategy = createStrategy(
+      keylineListOf(available, 0, "center", [
+        [5, true],
+        [10],
+        [40],
+        [100],
+        [100],
+        [40],
+        [10],
+        [5, true],
+      ]),
+      { available, spacing: 0, before: 0, after: 0 }
+    );
+    expect(
+      Array.from({ length: 10 }, (_, i) => snapOffset(strategy, i, 10))
+    ).toEqual([
+      0,
+      40,
+      50,
+      50,
+      50,
+      50,
+      50,
+      10 + 40 + 100,
+      10 + 10 + 40 + 100,
+      10 + 10 + 40 + 40 + 100,
+    ]);
+  });
+
   test("start-aligned with fewer items than keylines", () => {
     expect([0, 1, 2, 3].map((i) => snapOffset(multipleFocal(), i, 4))).toEqual([
       0,
@@ -329,5 +469,65 @@ test.describe("item placement (Compose's Modifier.carouselItem)", () => {
       i * (strategy.itemSize + 8) - snapOffset(strategy, i, 10);
     expect(size(3, at(3))).toBeCloseTo(strategy.itemSize, 3);
     expect(size(3, at(2))).toBeLessThan(strategy.itemSize);
+  });
+});
+
+test.describe("hero item placement", () => {
+  const placed = (
+    strategy: ReturnType<typeof hero>,
+    i: number,
+    scroll: number,
+    count: number
+  ) => {
+    const { size, translation } = itemPlacement(strategy, i, scroll, count);
+    const start =
+      i * (strategy.itemSize + 8) -
+      scroll +
+      (strategy.itemSize - size) / 2 +
+      translation;
+    return { size, start, end: start + size };
+  };
+
+  // The small item reaches the carousel's end, as multi-browse's does: the padding shows at the
+  // start, and at the end once the row is scrolled there
+  test("starts with the large item after the padding and a small one at the end", () => {
+    const row = hero(412, null, 8, 6, false, 16, 16);
+    const first = placed(row, 0, 0, 6);
+    const second = placed(row, 1, 0, 6);
+    expect(first.start).toBeCloseTo(16, 3);
+    expect(second.size).toBeGreaterThanOrEqual(40);
+    expect(second.size).toBeLessThanOrEqual(56);
+    expect(second.end).toBeCloseTo(412, 3);
+  });
+
+  test("centers the large item between two small ones away from the ends", () => {
+    const row = hero(412, null, 8, 6, true, 16, 16);
+    const at = (i: number) => i * (row.itemSize + 8) - snapOffset(row, i, 6);
+    const centered = placed(row, 2, at(2), 6);
+    expect(centered.size).toBeCloseTo(row.itemSize, 3);
+    expect((centered.start + centered.end) / 2).toBeCloseTo(412 / 2, 3);
+    for (const i of [1, 3]) {
+      const side = placed(row, i, at(2), 6);
+      expect(side.size).toBeGreaterThanOrEqual(40);
+      expect(side.size).toBeLessThanOrEqual(56);
+    }
+  });
+
+  test("puts the first item large at the start and the last at the end", () => {
+    const row = hero(412, null, 8, 6, true, 16, 16);
+    const max = 6 * row.itemSize + 5 * 8 - 412;
+    const sizesAt = (scroll: number) =>
+      [0, 1, 2, 3, 4, 5].map((i) => placed(row, i, scroll, 6).size);
+    expect(placed(row, 0, 0, 6).start).toBeCloseTo(16, 3);
+    expect(Math.max(...sizesAt(0))).toBe(sizesAt(0)[0]);
+    expect(placed(row, 5, max, 6).end).toBeCloseTo(412 - 16, 3);
+    expect(Math.max(...sizesAt(max))).toBe(sizesAt(max)[5]);
+  });
+
+  test("scrolls a small item to its place as the large one, one item on", () => {
+    const row = hero(412, null, 8, 6, true, 16, 16);
+    const at = (i: number) => i * (row.itemSize + 8) - snapOffset(row, i, 6);
+    expect(scrollToShow(row, 3, 6, at(2))).toBeCloseTo(at(3), 3);
+    expect(scrollToShow(row, 1, 6, at(2))).toBeCloseTo(at(1), 3);
   });
 });

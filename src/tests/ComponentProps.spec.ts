@@ -61,6 +61,7 @@ const expected: Record<string, string | RegExp> = {
   // checked where it's used, in BaseChip (ADR-0021 §5)
   "carousel-name":
     "Carousel: a carousel needs a name, from an `aria-label` or `aria-labelledby`, but this one has neither.",
+  "carousel-layout": `Carousel: its layouts are "multi-browse", "hero" and "center-aligned-hero", but this one's \`layout\` is "grid".`,
   "carousel-preferred-item-width":
     "Carousel: `preferredItemWidth` is the large items' width in px, a number above 0, but this one's is -10.",
   "carousel-item-as": `CarouselItem: its elements are "a" and "button", but this one's \`as\` is "div".`,

@@ -3,22 +3,47 @@ import type { HTMLAttributes } from "astro/types";
 import { twMerge } from "tailwind-merge";
 import BaseWrapper from "./BaseWrapper.astro";
 
-// M3's carousel, in the multi-browse layout: a row of CarouselItems that scrolls natively and
-// snaps, its items large at the start, then a medium and a small one, each changing size and
-// shape as it moves through the row, its visual moving at another speed (the parallax). Compose's
-// HorizontalMultiBrowseCarousel lays it out; the script runs its keylines (src/carousel.ts) as the
-// row scrolls (ADR-0038).
+// M3's carousel: a row of CarouselItems that scrolls natively and snaps, each item changing size
+// and shape as it moves through the row, its visual moving at another speed (the parallax). In
+// the multi-browse layout, its items are large at the start, then a medium and a small one. In
+// the hero layouts, there's one large item, or more on a wide screen, then a small one, or,
+// center-aligned, a small one either side, and the row swipes one item at a time. Compose's
+// HorizontalMultiBrowseCarousel and HorizontalCenteredHeroCarousel lay it out; the script runs
+// their keylines (src/carousel.ts) as the row scrolls (ADR-0038, ADR-0039).
+const layouts = ["multi-browse", "hero", "center-aligned-hero"] as const;
 type Props = Omit<HTMLAttributes<"div">, "role"> & {
+  layout?: (typeof layouts)[number];
   preferredItemWidth?: number;
 };
 
-const { preferredItemWidth = 186, class: classList, ...attrs } = Astro.props;
+const {
+  layout = "multi-browse",
+  preferredItemWidth,
+  class: classList,
+  ...attrs
+} = Astro.props;
 
 // Values outside these fail the build, rather than drawing something other than was asked for
 // (ADR-0021). MDX passes attributes as strings, so `preferredItemWidth="240"` is read as the
 // number it says.
-const preferredWidth = Number(preferredItemWidth);
-if (!Number.isFinite(preferredWidth) || preferredWidth <= 0) {
+if (!layouts.includes(layout)) {
+  throw new Error(
+    `Carousel: its layouts are "multi-browse", "hero" and "center-aligned-hero", but this one's \`layout\` is ${JSON.stringify(layout)}.`
+  );
+}
+const isHero = layout !== "multi-browse";
+// Compose's multi-browse sample asks for 186dp large items. A hero carousel's large item fills
+// the carousel but for its small items unless it's given a width, as Compose's does.
+const preferredWidth =
+  preferredItemWidth === undefined
+    ? isHero
+      ? null
+      : 186
+    : Number(preferredItemWidth);
+if (
+  preferredWidth !== null &&
+  (!Number.isFinite(preferredWidth) || preferredWidth <= 0)
+) {
   throw new Error(
     `Carousel: \`preferredItemWidth\` is the large items' width in px, a number above 0, but this one's is ${JSON.stringify(preferredItemWidth)}.`
   );
@@ -40,8 +65,8 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
   class={twMerge("relative h-55.25", classList)}
   role="region"
   aria-roledescription="carousel"
-  data-ac-carousel="multi-browse"
-  data-ac-carousel-preferred-item-width={preferredWidth}
+  data-ac-carousel={layout}
+  data-ac-carousel-preferred-item-width={preferredWidth ?? undefined}
   {...attrs}
 >
   {/* The row: every item laid out at the large size, 8dp apart (M3's padding between elements),
@@ -50,13 +75,26 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
       Without the script, or with reduced motion, every item stays large, the row padded 16dp at
       its ends (M3's Accessibility page: with reduced motion, all items are the same size). Its
       items are the tab stops, not the row (M3's Accessibility page: don't focus the container),
-      which Firefox would otherwise stop at as it scrolls. */}
+      which Firefox would otherwise stop at as it scrolls.
+      A hero carousel stops at every item, so a swipe moves it one item (M3's Overview: hero
+      carousels "swipe through one item at a time"). Without its keylines, a center-aligned one
+      snaps its items to the center, and a hero carousel's items leave room for the small ones,
+      56px each, before the script sizes them. */}
   <ul
     class:list={[
       "flex h-full snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain px-4 py-2 scrollbar-none scroll-px-4 outline-none",
       "data-ac-carousel-keylines:px-0 data-ac-carousel-keylines:scroll-px-0",
+      isHero && "*:snap-always",
+      layout === "center-aligned-hero" &&
+        "not-data-ac-carousel-keylines:*:snap-center",
     ]}
-    style={`--ac-carousel-item-size: ${preferredWidth}px`}
+    style={`--ac-carousel-item-size: ${
+      preferredWidth !== null
+        ? `${preferredWidth}px`
+        : layout === "hero"
+          ? "calc(100% - 64px)"
+          : "calc(100% - 128px)"
+    }`}
     tabindex="-1"
     data-ac-carousel-part="list"
   >
@@ -66,6 +104,7 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
 
 <script>
   import {
+    arrangeHero,
     arrangeMultiBrowse,
     createStrategy,
     itemPlacement,
@@ -139,32 +178,58 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
     });
   };
 
+  // The keylines of a carousel's layout, for the row's width and the items' count
+  const keylinesOf = (root: HTMLElement, available: number, count: number) => {
+    const { acCarousel: layout, acCarouselPreferredItemWidth: preferred } =
+      root.dataset;
+    if (layout === "hero" || layout === "center-aligned-hero")
+      return arrangeHero({
+        available,
+        preferred: preferred ? Number(preferred) : null,
+        spacing,
+        count,
+        centered: layout === "center-aligned-hero",
+        minSmall,
+        maxSmall,
+      });
+    return arrangeMultiBrowse({
+      available,
+      preferred: Number(preferred),
+      spacing,
+      count,
+      minSmall,
+      maxSmall,
+    });
+  };
+
   // Works out the keylines for the row's width and the items' count: the large size every item
   // is laid out at, and where each one snaps
   const layout = (root: HTMLElement) => {
     const list = listOf(root);
     const items = itemsOf(list);
-    const preferred = Number(root.dataset.acCarouselPreferredItemWidth);
+    const available = list.clientWidth;
+    const strategy = createStrategy(keylinesOf(root, available, items.length), {
+      available,
+      spacing,
+      before: padding,
+      after: padding,
+    });
     if (reducedMotion.matches) {
+      // Every item at one size, the row padded. Multi-browse's is the preferred width; a hero
+      // carousel's is its large items', so the next item shows in part (M3's Accessibility
+      // page: with reduced motion, a hero carousel's small item "is only partially shown").
       clearKeylines(list);
-      list.style.setProperty(
-        "--ac-carousel-item-size",
-        `${Math.min(preferred, list.clientWidth - 2 * padding)}px`
-      );
+      const large =
+        root.dataset.acCarousel === "multi-browse"
+          ? Number(root.dataset.acCarouselPreferredItemWidth)
+          : strategy.itemSize;
+      if (large > 0)
+        list.style.setProperty(
+          "--ac-carousel-item-size",
+          `${Math.min(large, available - 2 * padding)}px`
+        );
       return;
     }
-    const available = list.clientWidth;
-    const strategy = createStrategy(
-      arrangeMultiBrowse({
-        available,
-        preferred,
-        spacing,
-        count: items.length,
-        minSmall,
-        maxSmall,
-      }),
-      { available, spacing, before: padding, after: padding }
-    );
     if (!strategy.isValid) return clearKeylines(list);
     strategies.set(list, strategy);
     list.setAttribute("data-ac-carousel-keylines", "");

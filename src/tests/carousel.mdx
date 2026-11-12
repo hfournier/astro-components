@@ -80,3 +80,58 @@ description: Tests for the Carousel and CarouselItem components
     </Carousel>
   </div>
 </Section>
+
+<Section data-testid="carousel-hero" class="p-4 space-y-4">
+  <Heading level={2}>Hero, 412px wide</Heading>
+  <div class="w-103">
+    <Carousel aria-label="Featured films" layout="hero">
+      <CarouselItem href="#h1"><img src="/carousel/mountains.svg" alt="" /><span slot="label">High Ridge</span></CarouselItem>
+      <CarouselItem href="#h2"><img src="/carousel/sunset.svg" alt="" /><span slot="label">Last Light</span></CarouselItem>
+      <CarouselItem href="#h3"><img src="/carousel/lake.svg" alt="" /><span slot="label">Still Water</span></CarouselItem>
+      <CarouselItem href="#h4"><img src="/carousel/forest.svg" alt="" /><span slot="label">Deep Woods</span></CarouselItem>
+      <CarouselItem href="#h5"><img src="/carousel/desert.svg" alt="" /><span slot="label">Dune Sea</span></CarouselItem>
+      <CarouselItem href="#h6"><img src="/carousel/meadow.svg" alt="" /><span slot="label">Green Fields</span></CarouselItem>
+    </Carousel>
+  </div>
+</Section>
+
+<Section data-testid="carousel-hero-wide" class="p-4 space-y-4">
+  <Heading level={2}>Hero, 840px wide, 300px items</Heading>
+  <div class="w-210 max-w-full">
+    <Carousel aria-label="Featured apps" layout="hero" preferredItemWidth={300}>
+      <CarouselItem href="#w1"><img src="/carousel/lake.svg" alt="Lakes" /></CarouselItem>
+      <CarouselItem href="#w2"><img src="/carousel/forest.svg" alt="Forests" /></CarouselItem>
+      <CarouselItem href="#w3"><img src="/carousel/desert.svg" alt="Deserts" /></CarouselItem>
+      <CarouselItem href="#w4"><img src="/carousel/mountains.svg" alt="Mountains" /></CarouselItem>
+      <CarouselItem href="#w5"><img src="/carousel/sunset.svg" alt="Sunsets" /></CarouselItem>
+      <CarouselItem href="#w6"><img src="/carousel/meadow.svg" alt="Meadows" /></CarouselItem>
+    </Carousel>
+  </div>
+</Section>
+
+<Section data-testid="carousel-centered" class="p-4 space-y-4">
+  <Heading level={2}>Center-aligned hero, 412px wide</Heading>
+  <div class="w-103">
+    <Carousel aria-label="Featured shows" layout="center-aligned-hero">
+      <CarouselItem href="#c1"><img src="/carousel/sunset.svg" alt="Sunset over the bay" /></CarouselItem>
+      <CarouselItem href="#c2"><img src="/carousel/lake.svg" alt="Lake at sunrise" /></CarouselItem>
+      <CarouselItem href="#c3"><img src="/carousel/forest.svg" alt="Forest trail" /></CarouselItem>
+      <CarouselItem href="#c4"><img src="/carousel/desert.svg" alt="Desert dunes" /></CarouselItem>
+      <CarouselItem href="#c5"><img src="/carousel/mountains.svg" alt="Mountain ridge" /></CarouselItem>
+      <CarouselItem href="#c6"><img src="/carousel/meadow.svg" alt="Meadow in spring" /></CarouselItem>
+    </Carousel>
+  </div>
+</Section>
+
+<Section data-testid="carousel-centered-rtl" class="p-4 space-y-4" dir="rtl" lang="ar">
+  <Heading level={2}>بطل في الوسط</Heading>
+  <div class="w-103">
+    <Carousel aria-label="عروض مميزة" layout="center-aligned-hero">
+      <CarouselItem href="#cr1"><img src="/carousel/lake.svg" alt="بحيرة" /></CarouselItem>
+      <CarouselItem href="#cr2"><img src="/carousel/forest.svg" alt="غابة" /></CarouselItem>
+      <CarouselItem href="#cr3"><img src="/carousel/desert.svg" alt="صحراء" /></CarouselItem>
+      <CarouselItem href="#cr4"><img src="/carousel/mountains.svg" alt="جبال" /></CarouselItem>
+      <CarouselItem href="#cr5"><img src="/carousel/sunset.svg" alt="غروب" /></CarouselItem>
+    </Carousel>
+  </div>
+</Section>
