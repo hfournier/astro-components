@@ -301,7 +301,10 @@ test.describe("item placement (Compose's Modifier.carouselItem)", () => {
     expect(scrollToShow(row, 1, 8, 0)).toBeCloseTo(step, 3);
     expect(scrollToShow(row, 2, 8, 0)).toBeCloseTo(2 * step, 3);
     expect(scrollToShow(row, 3, 8, step)).toBeCloseTo(3 * step, 3);
-    expect(itemPlacement(row, 2, 2 * step, 8).size).toBeCloseTo(row.itemSize, 3);
+    expect(itemPlacement(row, 2, 2 * step, 8).size).toBeCloseTo(
+      row.itemSize,
+      3
+    );
     expect(scrollToShow(row, 5, 8, max)).toBeCloseTo(5 * step, 3);
     expect(scrollToShow(row, 6, 8, max)).toBeLessThan(max);
     // a large item stays where it is, at the ends too, where the padding shrinks it

@@ -354,7 +354,8 @@ export const arrangeMultiBrowse = ({
   // Compose tries no medium item too, and keeps whichever brings the large size nearer the
   // preferred one, often two large items and a small one. Here the row goes without a medium
   // item only where the three sizes don't fit.
-  const withMedium = smallCounts[0] > 0 ? arrange(smallCounts, mediumCounts) : null;
+  const withMedium =
+    smallCounts[0] > 0 ? arrange(smallCounts, mediumCounts) : null;
   let arrangement =
     withMedium && arrangementCost(withMedium, targetLarge) < Infinity
       ? withMedium

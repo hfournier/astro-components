@@ -154,9 +154,7 @@ test.describe("Carousel", () => {
   });
 
   // At the end, the keylines shift so the last item is large, the one before it medium
-  test("ends with its last item large, 16px from its end", async ({
-    page,
-  }) => {
+  test("ends with its last item large, 16px from its end", async ({ page }) => {
     const list = listOf(page, "multi-browse");
     await list.evaluate((el) =>
       el.scrollTo({ left: 1e5, behavior: "instant" })
