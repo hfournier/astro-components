@@ -53,7 +53,7 @@ M3's chip set: the [[Pattern component]] that holds a set of chips, spaces them,
 _Avoid_: chip set (M3's term for what it is, not the component's name)
 
 **Keyline**:
-A place in a Carousel's row where an item has a set size: the large items first, then a medium and a small one, with a tiny anchor just past each end. As the row scrolls, each item takes the size and place between the two keylines its center is between, and near the ends the keylines shift step by step, so the first and last items can become large (ADR-0038). Compose's term, ported with its layout to `src/carousel.ts`.
+A place in a Carousel's row where an item has a set size, in the order of its layout (multi-browse: the large items, then a medium and a small one; hero: the large items, then a small one; center-aligned hero: a small one either side of the large ones), with a tiny anchor just past each end. As the row scrolls, each item takes the size and place between the two keylines its center is between, and near the ends the keylines shift step by step, so the first and last items can become large (ADR-0038, ADR-0039). Compose's term, ported with its layout to `src/carousel.ts`.
 _Avoid_: breakpoint, snap point (a snap point is where the row stops; keylines size the items at every point)
 
 **Primitive component**:

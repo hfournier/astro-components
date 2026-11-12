@@ -1,21 +1,26 @@
 ---
 name: Carousel
-description: Material 3 Expressive's carousel, in the multi-browse layout. A row of CarouselItems, visuals such as photos with optional text, that scrolls and snaps natively. The row starts with its large items, then a medium and a small one, and each item changes size and shape as it moves through the row, its visual moving at another speed. It's a region described as a carousel, holding a list of its items.
+description: Material 3 Expressive's carousel, in the multi-browse, hero or center-aligned hero layout. A row of CarouselItems, visuals such as photos with optional text, that scrolls and snaps natively, each item changing size and shape as it moves through the row, its visual moving at another speed. Multi-browse starts with its large items, then a medium and a small one, and scrolls through many at once. Hero shows one large item with a small one after it, or centered between two, and swipes one item at a time. It's a region described as a carousel, holding a list of its items.
 category: Interactive elements
 role: pattern
 meta:
   title: Carousel | astro-components HenriFournier.dev
-  description: Material 3 Expressive's multi-browse carousel, a row of visual items that scrolls and snaps, its items changing size as they move, with a parallax effect.
+  description: Material 3 Expressive's multi-browse and hero carousels, rows of visual items that scroll and snap, changing size as they move, with a parallax effect.
 extends:
   kind: element
   tag: [div]
 mdn: https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Roles/region_role
 props:
+  - name: layout
+    type: '"multi-browse" | "hero" | "center-aligned-hero"'
+    required: false
+    default: '"multi-browse"'
+    description: "M3's layout. `multi-browse` shows large, medium and small items and scrolls through many at once, for browsing. `hero` spotlights one large item, with a small one after it that previews the next, and `center-aligned-hero` centers the large item between two small ones; both swipe one item at a time. Any other value fails the build."
   - name: preferredItemWidth
     type: number
     required: false
-    default: "186"
-    description: The large items' width, in px, as M3's "user-set" large item width and Compose's `preferredItemWidth`. The carousel fits as many large items as it can near this width, then a medium and a small one, so the large items end up a little narrower or wider than it. Keep it big enough for the visuals to be easy to recognize. Anything but a number above 0 fails the build.
+    default: '186 for multi-browse; none for hero'
+    description: The large items' width, in px, as M3's "user-set" large item width and Compose's `preferredItemWidth`. The carousel fits as many large items as it can near this width, then its smaller ones, so the large items end up a little narrower or wider than it. Without it, a multi-browse carousel's large items aim for 186px, and a hero carousel's large item fills the carousel but for its small items; with it, a wide hero carousel shows several large items. Keep it big enough for the visuals to be easy to recognize. Anything but a number above 0 fails the build.
 slots:
   - name: default
     description: The carousel's items, each a [CarouselItem](/components/carousel-item).
@@ -28,13 +33,18 @@ Name the carousel with `aria-label`, or `aria-labelledby` pointing at a visible 
 
 ## Layout
 
-M3's multi-browse layout shows at least one large item, and a medium and a small one when there's room. Every item is laid out at the large size and scrolls natively, and a script, Compose's own layout ported to the web, sizes each item for where it is in the row:
+Every item is laid out at the large size and scrolls natively, and a script, Compose's own layout ported to the web, sizes each item for where it is in the row. Each item grows or shrinks as it moves between its places, and snaps into place when the row stops. Its visual stays at the large size, so the item's edges move over it: M3's parallax.
 
-- **At rest:** the large items, then a medium one, then a small one, 40 to 56px wide. There's always at least one of each, as M3's Specs ask: in a 412px carousel, one large item, a medium one and a small one; a wider one fits more large items.
-- **Scrolling:** each item grows or shrinks as it moves between those places, and snaps into place when the row stops. Its visual stays at the large size, so the item's edges move over it: M3's parallax.
+- **Multi-browse:** the large items, then a medium one, then a small one, 40 to 56px wide. There's always at least one of each, as M3's Specs ask: in a 412px carousel, one large item, a medium one and a small one; a wider one fits more large items.
+- **Hero:** one large item, then a small one, 40 to 56px wide, that previews the next. A wider carousel with a `preferredItemWidth` fits more large items.
+- **Center-aligned hero:** one large item, centered, between two small ones. At the row's start, the first item is large at the start, with the next two small after it; at its end, the last item is large at the end. With fewer than three items, it's start-aligned, as a hero carousel.
 - **Spacing:** 8px between items and above and below them. The row is padded 16px at the start before it scrolls, and at the end once it's scrolled to the end; in between, items reach its edges.
 
 Give the carousel the full width of its column, and at least room for one large and one small item.
+
+## Scrolling
+
+A multi-browse carousel scrolls through many items at once: a long swipe carries it on, and it snaps where it stops. A hero carousel stops at every item, so a swipe moves it one item, as M3's Overview asks.
 
 ## Show all
 
@@ -42,4 +52,4 @@ On a page that scrolls vertically, M3 asks for a way to see every item without s
 
 ## Motion
 
-The items change size and place as the row scrolls, under the pointer or the finger, so they move at the scroll's own speed. With reduced motion, there's no parallax and the items don't change size: every one is large, and the row scrolls to its edges, padded 16px at its ends. An item that takes focus or is clicked while it's small scrolls into place, large, and does so at once with reduced motion.
+The items change size and place as the row scrolls, under the pointer or the finger, so they move at the scroll's own speed. With reduced motion, there's no parallax and the items don't change size: every one is the same size, and the row scrolls to its edges, padded 16px at its ends. A multi-browse carousel's items are all at the preferred width. A hero carousel's are at its large size, so the next item shows in part, as M3's Accessibility page asks; a center-aligned one snaps each to the center. An item that takes focus or is clicked while it's small scrolls into place, large, and does so at once with reduced motion.
