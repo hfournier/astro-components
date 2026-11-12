@@ -18,7 +18,7 @@ props:
     default: '"a"'
     description: "Which element the item is. `a`, with `href`, opens what the item shows, such as a photo's page; `button` does something on the page, such as applying a filter. A link without `href` fails the build, as it wouldn't be a link and Tab would skip it, and so does any other value."
   - name: aspectRatio
-    type: string
+    type: '`${number}:${number}`'
     required: false
     default: undefined
     description: 'The item''s width to its height, such as "16:9", "1:1" or "3:4", in a Carousel with `layout="uncontained-multi-aspect-ratio"`, which makes the item that wide at the carousel''s height. M3 asks for 9:16 to 16:9; a ratio outside that fails the build. Other layouts size their items themselves and ignore it.'

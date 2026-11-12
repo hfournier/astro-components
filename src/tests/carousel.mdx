@@ -176,6 +176,17 @@ description: Tests for the Carousel and CarouselItem components
   </div>
 </Section>
 
+<Section data-testid="carousel-multi-aspect-rtl" class="p-4 space-y-4" dir="rtl" lang="ar">
+  <Heading level={2}>نسب أبعاد متعددة</Heading>
+  <div class="w-103">
+    <Carousel aria-label="معرض" layout="uncontained-multi-aspect-ratio">
+      <CarouselItem href="#mr1" aspectRatio="16:9"><img src="/carousel/mountains.svg" alt="جبال" /></CarouselItem>
+      <CarouselItem href="#mr2" aspectRatio="9:16"><img src="/carousel/forest.svg" alt="غابة" /></CarouselItem>
+      <CarouselItem href="#mr3" aspectRatio="1:1"><img src="/carousel/lake.svg" alt="بحيرة" /></CarouselItem>
+    </Carousel>
+  </div>
+</Section>
+
 <Section data-testid="carousel-full-screen" class="p-4 space-y-4">
   <Heading level={2}>Full-screen, 360 by 640px</Heading>
   <Button variant="text">Before the full-screen carousel</Button>

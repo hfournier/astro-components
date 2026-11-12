@@ -22,6 +22,7 @@ type CarouselCaseId =
   | "uncontained"
   | "uncontained-rtl"
   | "multi-aspect"
+  | "multi-aspect-rtl"
   | "full-screen";
 
 const section = (page: Page, caseId: CarouselCaseId) =>
@@ -755,6 +756,15 @@ test.describe("Carousel, uncontained and full-screen layouts", () => {
     expect(Math.abs(last.x + last.width - 412)).toBeLessThan(1);
   });
 
+  test("mirrors multi-aspect ratio items right to left", async ({ page }) => {
+    const [first, second] = await allBoxes(page, "multi-aspect-rtl");
+    const height = 221 - 16;
+    expect(first.x + first.width).toBeCloseTo(412 - 16, 0);
+    expect(first.width).toBeCloseTo((height * 16) / 9, 0);
+    expect(second.width).toBeCloseTo((height * 9) / 16, 0);
+    expect(first.x - (second.x + second.width)).toBeCloseTo(8, 0);
+  });
+
   // M3's Specs: "The full-screen layout shows one edge-to-edge large item", no padding, 16dp
   // between items. M3's Guidelines: it scrolls vertically and only ever shows one item at once.
   test("fills a full-screen carousel with one item, the next 16px below", async ({
@@ -809,17 +819,30 @@ test.describe("Carousel, uncontained and full-screen layouts", () => {
   });
 
   // In a full-screen carousel, which scrolls vertically, up and down move between its items
-  test("moves between full-screen items with up and down", async ({ page }) => {
+  test("moves between full-screen items with up and down, and leaves with left and right", async ({
+    page,
+  }) => {
     const all = items(page, "full-screen");
     await all.first().focus();
     await page.keyboard.press("ArrowDown");
     await expect(all.nth(1)).toBeFocused();
-    await settle(listOf(page, "full-screen"));
-    expect(await boxIn(all.nth(1))).toEqual(filling);
+    // WebKit can start the smooth scroll a few frames late
+    await expect.poll(() => boxIn(all.nth(1))).toEqual(filling);
     await page.keyboard.press("ArrowUp");
     await expect(all.first()).toBeFocused();
-    await settle(listOf(page, "full-screen"));
-    expect(await boxIn(all.first())).toEqual(filling);
+    await expect.poll(() => boxIn(all.first())).toEqual(filling);
+    // across it, left and right leave it, as up and down leave a horizontal carousel
+    const before = section(page, "full-screen").getByRole("button", {
+      name: "Before the full-screen carousel",
+    });
+    const after = section(page, "full-screen").getByRole("button", {
+      name: "After the full-screen carousel",
+    });
+    await page.keyboard.press("ArrowRight");
+    await expect(after).toBeFocused();
+    await all.nth(1).focus();
+    await page.keyboard.press("ArrowLeft");
+    await expect(before).toBeFocused();
   });
 
   // M3's Accessibility page: with reduced motion, the items don't change size

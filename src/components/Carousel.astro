@@ -54,7 +54,7 @@ const isFullScreen = layout === "full-screen";
 // M3's Specs: a full-screen carousel's one item fills it
 if (isFullScreen && preferredItemWidth !== undefined) {
   throw new Error(
-    "Carousel: a full-screen carousel's item fills it, so it takes no `preferredItemWidth`."
+    `Carousel: a full-screen carousel's item fills it, so it takes no \`preferredItemWidth\`, but this one's is ${JSON.stringify(preferredItemWidth)}.`
   );
 }
 // Compose's multi-browse and uncontained samples ask for 186dp items. A hero carousel's large item
@@ -184,18 +184,14 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
       (el): el is HTMLElement =>
         el instanceof HTMLElement && el.hasAttribute("data-ac-carousel-item")
     );
-  const rootOf = (list: HTMLElement) =>
-    list.closest<HTMLElement>("[data-ac-carousel]")!;
   // A full-screen carousel scrolls vertically; the others, horizontally
   const isVertical = (root: Element) =>
     root.getAttribute("data-ac-carousel") === "full-screen";
+  // The row is the carousel's own child
+  const isVerticalList = (list: HTMLElement) => isVertical(list.parentElement!);
   // How far the row has scrolled from its start, in either direction
   const scrollOf = (list: HTMLElement) =>
-    isVertical(rootOf(list)) ? list.scrollTop : Math.abs(list.scrollLeft);
-  const scrollMargin = (list: HTMLElement) =>
-    isVertical(rootOf(list))
-      ? "scroll-margin-block-start"
-      : "scroll-margin-inline-start";
+    isVerticalList(list) ? list.scrollTop : Math.abs(list.scrollLeft);
 
   // Sizes and places each item for where the row is scrolled
   const place = (list: HTMLElement) => {
@@ -246,12 +242,13 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
   // carousel's are Compose's uncontained ones for an item the carousel's size: one large item
   // between two anchors. The uncontained layouts have none: their items keep their size.
   const keylinesOf = (
-    root: HTMLElement,
+    {
+      acCarousel: layoutName,
+      acCarouselPreferredItemWidth: preferred,
+    }: DOMStringMap,
     available: number,
     count: number
   ): KeylineList => {
-    const { acCarousel: layoutName, acCarouselPreferredItemWidth: preferred } =
-      root.dataset;
     switch (layoutName) {
       case "hero":
       case "center-aligned-hero":
@@ -298,20 +295,18 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
     const vertical = isVertical(root);
     const available = vertical ? list.clientHeight : list.clientWidth;
     const space = spacingOf(root);
-    const strategy = createStrategy(keylinesOf(root, available, items.length), {
-      available,
-      ...space,
-    });
+    const { acCarousel: layoutName, acCarouselPreferredItemWidth: preferred } =
+      root.dataset;
+    const strategy = createStrategy(
+      keylinesOf(root.dataset, available, items.length),
+      { available, ...space }
+    );
     if (reducedMotion.matches) {
       // Every item at one size, the row padded. Multi-browse's are the preferred width; a hero
       // carousel's are its large items', so the next item shows in part (M3's Accessibility page:
       // with reduced motion, a hero carousel's small item "is only partially shown"); a
       // full-screen carousel's fill it.
       clearKeylines(list);
-      const {
-        acCarousel: layoutName,
-        acCarouselPreferredItemWidth: preferred,
-      } = root.dataset;
       const large =
         layoutName === "hero" || layoutName === "center-aligned-hero"
           ? strategy.itemSize
@@ -333,7 +328,9 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
       "--ac-carousel-visual-size",
       `${strategy.itemSize}px`
     );
-    const margin = scrollMargin(list);
+    const margin = vertical
+      ? "scroll-margin-block-start"
+      : "scroll-margin-inline-start";
     items.forEach((item, i) =>
       item.style.setProperty(
         margin,
@@ -361,8 +358,7 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
     const target = scrollToShow(strategy, index, itemsOf(list).length, scroll);
     // unchanged, it would stop a smooth scroll already under way to show the item
     if (Math.abs(target - scroll) < 1) return;
-    if (isVertical(rootOf(list)))
-      return list.scrollTo({ top: target, behavior });
+    if (isVerticalList(list)) return list.scrollTo({ top: target, behavior });
     const direction = getComputedStyle(list).direction === "rtl" ? -1 : 1;
     list.scrollTo({ left: direction * target, behavior });
   };
@@ -402,46 +398,58 @@ if (!attrs["aria-label"] && !attrs["aria-labelledby"]) {
   reducedMotion.addEventListener("change", () => roots().forEach(layout));
 
   // M3's Accessibility page: Tab or the arrow keys move between the items; up and down in a
-  // full-screen carousel, which scrolls vertically
+  // full-screen carousel, which scrolls vertically (ADR-0040)
   moveFocusWithArrows("[data-ac-carousel]", { isVertical });
 
   // An item taking focus or clicked scrolls into a large place when it isn't large there yet,
   // after the browser's own scroll to show it. Clicked too, as Safari doesn't focus a clicked
   // link or button.
+  // Only the latest item asked for in a row scrolls, so an item that had focus a frame before
+  // doesn't scroll the row back to it.
+  const pendingShows = new WeakMap<HTMLElement, number>();
   const showItem = (event: Event) => {
     const target = event.target as Element;
     const item = target.closest?.<HTMLElement>("[data-ac-carousel-item]");
     const list = item?.parentElement;
     if (!item || !list) return;
-    requestAnimationFrame(() =>
-      scrollToItem(list, itemsOf(list).indexOf(item))
+    cancelAnimationFrame(pendingShows.get(list) ?? 0);
+    pendingShows.set(
+      list,
+      requestAnimationFrame(() => {
+        pendingShows.delete(list);
+        scrollToItem(list, itemsOf(list).indexOf(item));
+      })
     );
   };
   document.addEventListener("focusin", showItem);
   document.addEventListener("click", showItem);
 
-  // M3's Accessibility page: the up and down arrow keys leave a horizontal carousel, to the
-  // control before or after it. On the window, as moveFocusWithArrows listens, after any group
-  // inside.
+  // M3's Accessibility page: the up and down arrow keys leave a carousel, to the control before
+  // or after it; across a full-screen one, which scrolls vertically, left and right do, mirrored
+  // right to left. On the window, as moveFocusWithArrows listens, after any group inside.
   window.addEventListener("keydown", (event) => {
     if (event.defaultPrevented) return;
-    if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
     if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
       return;
     const target = event.target as Element;
     const root = target.closest?.("[data-ac-carousel]");
-    if (!root || isVertical(root) || !target.closest("[data-ac-carousel-item]"))
-      return;
+    if (!root || !target.closest("[data-ac-carousel-item]")) return;
+    let forward: boolean;
+    if (isVertical(root)) {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      const isRtl = getComputedStyle(root).direction === "rtl";
+      forward = (event.key === "ArrowRight") !== isRtl;
+    } else {
+      if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+      forward = event.key === "ArrowDown";
+    }
     const tabbables = tabbableIn(document).filter((el) => !root.contains(el));
     const position = (el: Element) => root.compareDocumentPosition(el);
-    const next =
-      event.key === "ArrowDown"
-        ? tabbables.find(
-            (el) => position(el) & Node.DOCUMENT_POSITION_FOLLOWING
-          )
-        : tabbables.findLast(
-            (el) => position(el) & Node.DOCUMENT_POSITION_PRECEDING
-          );
+    const next = forward
+      ? tabbables.find((el) => position(el) & Node.DOCUMENT_POSITION_FOLLOWING)
+      : tabbables.findLast(
+          (el) => position(el) & Node.DOCUMENT_POSITION_PRECEDING
+        );
     if (!next) return;
     event.preventDefault();
     next.focus();

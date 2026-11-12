@@ -65,7 +65,7 @@ const expected: Record<string, string | RegExp> = {
   "carousel-preferred-item-width":
     "Carousel: `preferredItemWidth` is the large items' width in px, a number above 0, but this one's is -10.",
   "carousel-full-screen-width":
-    "Carousel: a full-screen carousel's item fills it, so it takes no `preferredItemWidth`.",
+    "Carousel: a full-screen carousel's item fills it, so it takes no `preferredItemWidth`, but this one's is 300.",
   "carousel-item-aspect-ratio": `CarouselItem: \`aspectRatio\` is the item's width to height, such as "16:9", from 9:16 to 16:9, but this one's is "21:9".`,
   "carousel-item-as": `CarouselItem: its elements are "a" and "button", but this one's \`as\` is "div".`,
   "carousel-item-href":
