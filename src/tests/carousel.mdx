@@ -135,3 +135,68 @@ description: Tests for the Carousel and CarouselItem components
     </Carousel>
   </div>
 </Section>
+
+<Section data-testid="carousel-uncontained" class="p-4 space-y-4">
+  <Heading level={2}>Uncontained, 412px wide</Heading>
+  <Button variant="text">Before the uncontained carousel</Button>
+  <div class="w-103">
+    <Carousel aria-label="Recipes" layout="uncontained">
+      <CarouselItem href="#u1"><img src="/carousel/meadow.svg" alt="" /><span slot="label">Spring salad</span></CarouselItem>
+      <CarouselItem href="#u2"><img src="/carousel/desert.svg" alt="" /><span slot="label">Spiced lentils</span></CarouselItem>
+      <CarouselItem href="#u3"><img src="/carousel/lake.svg" alt="" /><span slot="label">Grilled trout</span></CarouselItem>
+      <CarouselItem href="#u4"><img src="/carousel/forest.svg" alt="" /><span slot="label">Mushroom risotto</span></CarouselItem>
+      <CarouselItem href="#u5"><img src="/carousel/sunset.svg" alt="" /><span slot="label">Peach tart</span></CarouselItem>
+    </Carousel>
+  </div>
+  <Button variant="text">After the uncontained carousel</Button>
+</Section>
+
+<Section data-testid="carousel-uncontained-rtl" class="p-4 space-y-4" dir="rtl" lang="ar">
+  <Heading level={2}>غير محصور</Heading>
+  <div class="w-103">
+    <Carousel aria-label="وصفات" layout="uncontained">
+      <CarouselItem href="#ur1"><img src="/carousel/meadow.svg" alt="سلطة" /></CarouselItem>
+      <CarouselItem href="#ur2"><img src="/carousel/desert.svg" alt="عدس" /></CarouselItem>
+      <CarouselItem href="#ur3"><img src="/carousel/lake.svg" alt="سمك" /></CarouselItem>
+      <CarouselItem href="#ur4"><img src="/carousel/forest.svg" alt="أرز" /></CarouselItem>
+    </Carousel>
+  </div>
+</Section>
+
+<Section data-testid="carousel-multi-aspect" class="p-4 space-y-4">
+  <Heading level={2}>Uncontained multi-aspect ratio, 412px wide</Heading>
+  <div class="w-103">
+    <Carousel aria-label="Gallery" layout="uncontained-multi-aspect-ratio">
+      <CarouselItem href="#m1" aspectRatio="16:9"><img src="/carousel/mountains.svg" alt="Mountain ridge" /></CarouselItem>
+      <CarouselItem href="#m2" aspectRatio="9:16"><img src="/carousel/forest.svg" alt="Forest trail" /></CarouselItem>
+      <CarouselItem href="#m3" aspectRatio="1:1"><img src="/carousel/lake.svg" alt="Lake at sunrise" /></CarouselItem>
+      <CarouselItem href="#m4" aspectRatio="3:4"><img src="/carousel/desert.svg" alt="Desert dunes" /></CarouselItem>
+      <CarouselItem href="#m5"><img src="/carousel/sunset.svg" alt="Sunset over the bay" /></CarouselItem>
+    </Carousel>
+  </div>
+</Section>
+
+<Section data-testid="carousel-multi-aspect-rtl" class="p-4 space-y-4" dir="rtl" lang="ar">
+  <Heading level={2}>نسب أبعاد متعددة</Heading>
+  <div class="w-103">
+    <Carousel aria-label="معرض" layout="uncontained-multi-aspect-ratio">
+      <CarouselItem href="#mr1" aspectRatio="16:9"><img src="/carousel/mountains.svg" alt="جبال" /></CarouselItem>
+      <CarouselItem href="#mr2" aspectRatio="9:16"><img src="/carousel/forest.svg" alt="غابة" /></CarouselItem>
+      <CarouselItem href="#mr3" aspectRatio="1:1"><img src="/carousel/lake.svg" alt="بحيرة" /></CarouselItem>
+    </Carousel>
+  </div>
+</Section>
+
+<Section data-testid="carousel-full-screen" class="p-4 space-y-4">
+  <Heading level={2}>Full-screen, 360 by 640px</Heading>
+  <Button variant="text">Before the full-screen carousel</Button>
+  <div class="w-90">
+    <Carousel aria-label="Stories" layout="full-screen" class="h-160">
+      <CarouselItem href="#f1"><img src="/carousel/mountains.svg" alt="" /><span slot="label">Climbing the ridge</span></CarouselItem>
+      <CarouselItem href="#f2"><img src="/carousel/sunset.svg" alt="" /><span slot="label">An evening by the bay</span></CarouselItem>
+      <CarouselItem href="#f3"><img src="/carousel/lake.svg" alt="" /><span slot="label">Morning on the lake</span></CarouselItem>
+      <CarouselItem href="#f4"><img src="/carousel/forest.svg" alt="" /><span slot="label">Into the woods</span></CarouselItem>
+    </Carousel>
+  </div>
+  <Button variant="text">After the full-screen carousel</Button>
+</Section>

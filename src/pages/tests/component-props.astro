@@ -175,6 +175,18 @@ const cases: Record<string, [AstroComponentFactory, Record<string, unknown>]> =
       Carousel,
       { "aria-label": "Photos", preferredItemWidth: -10 },
     ],
+    "carousel-full-screen-width": [
+      Carousel,
+      {
+        "aria-label": "Stories",
+        layout: "full-screen",
+        preferredItemWidth: 300,
+      },
+    ],
+    "carousel-item-aspect-ratio": [
+      CarouselItem,
+      { href: "#a", aspectRatio: "21:9" },
+    ],
     "carousel-item-as": [CarouselItem, { as: "div", href: "#a" }],
     "carousel-item-href": [CarouselItem, {}],
     "carousel-item-disabled-link": [

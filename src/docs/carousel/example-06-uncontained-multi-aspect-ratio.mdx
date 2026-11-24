@@ -1,0 +1,13 @@
+---
+title: Uncontained multi-aspect ratio
+description: With `layout="uncontained-multi-aspect-ratio"`, each CarouselItem's `aspectRatio`, from 9:16 to 16:9, sets its width at the carousel's height.
+---
+
+<Carousel aria-label="Gallery" layout="uncontained-multi-aspect-ratio">
+  <CarouselItem href="#ridge" aspectRatio="16:9"><img src="/carousel/mountains.svg" alt="Mountain ridge" /></CarouselItem>
+  <CarouselItem href="#trail" aspectRatio="9:16"><img src="/carousel/forest.svg" alt="Forest trail" /></CarouselItem>
+  <CarouselItem href="#lake" aspectRatio="1:1"><img src="/carousel/lake.svg" alt="Lake at sunrise" /></CarouselItem>
+  <CarouselItem href="#dunes" aspectRatio="3:4"><img src="/carousel/desert.svg" alt="Desert dunes" /></CarouselItem>
+  <CarouselItem href="#bay" aspectRatio="4:3"><img src="/carousel/sunset.svg" alt="Sunset over the bay" /></CarouselItem>
+  <CarouselItem href="#meadow" aspectRatio="9:16"><img src="/carousel/meadow.svg" alt="Meadow in spring" /></CarouselItem>
+</Carousel>

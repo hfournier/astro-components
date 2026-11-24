@@ -467,6 +467,49 @@ export const arrangeHero = ({
   ]);
 };
 
+// Compose's CarouselDefaults.MediumLargeItemDiffThreshold
+const MEDIUM_LARGE_DIFF_THRESHOLD = 0.85;
+
+/**
+ * Uncontained: as many items as fit at their size, start-aligned, and one after them cut off by
+ * the carousel's end, large enough to move as it scrolls out (Compose's uncontainedKeylineList).
+ * An item as large as the carousel fills it, between two anchors: the full-screen layout, which is
+ * what the Carousel uses it for. Its uncontained layouts have no keylines (ADR-0040).
+ */
+export const arrangeUncontained = ({
+  available,
+  itemSize,
+  spacing,
+}: {
+  available: number;
+  itemSize: number;
+  spacing: number;
+}): KeylineList => {
+  if (available <= 0 || itemSize <= 0) return [];
+  // Compose's large keyline is the item and the spacing after it
+  const largeSize = Math.min(itemSize + spacing, available);
+  const largeCount = Math.max(1, Math.floor(available / largeSize));
+  const remaining = available - largeCount * largeSize;
+  // The cut-off item, a third of it past the end; or, where that's too near the large size to
+  // move, a fifth, no larger than the large size
+  let mediumSize = Math.max(remaining * 1.5, ANCHOR_SIZE);
+  const threshold = largeSize * MEDIUM_LARGE_DIFF_THRESHOLD;
+  if (mediumSize > threshold)
+    mediumSize = Math.min(Math.max(threshold, remaining * 1.2), largeSize);
+  const mediumCount = remaining > 0 ? 1 : 0;
+  // The start anchor half the cut-off item, so items move out at the start as they do at the end
+  const startAnchor = Math.max(
+    Math.min(ANCHOR_SIZE, itemSize),
+    mediumSize * 0.5
+  );
+  return keylineListOf(available, spacing, "start", [
+    [startAnchor, true],
+    ...Array<KeylineEntry>(largeCount).fill([largeSize]),
+    ...Array<KeylineEntry>(mediumCount).fill([mediumSize]),
+    [ANCHOR_SIZE, true],
+  ]);
+};
+
 // --- Strategy: the keylines at each scroll position ---
 
 export type Strategy = {

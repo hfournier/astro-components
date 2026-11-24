@@ -513,8 +513,16 @@ export const tabbableIn = (root: ParentNode) =>
  * opened from the toolbar, such as a menu, are left to it.
  *
  * @param toolbarSelector - The toolbars it covers, e.g. `"[data-ac-toolbar-docked]"`.
+ * @param options.isVertical - Whether one of them runs vertically, for a container whose role
+ *   doesn't take `aria-orientation`, such as a full-screen Carousel's region.
  */
-export const moveFocusWithArrows = (toolbarSelector: string) => {
+export const moveFocusWithArrows = (
+  toolbarSelector: string,
+  {
+    isVertical = (toolbar: Element) =>
+      toolbar.getAttribute("aria-orientation") === "vertical",
+  }: { isVertical?: (toolbar: Element) => boolean } = {}
+) => {
   const ownsArrowsSelector = [
     "input:not([type=button], [type=checkbox], [type=color], [type=file], [type=image], [type=reset], [type=submit])",
     "textarea",
@@ -546,7 +554,7 @@ export const moveFocusWithArrows = (toolbarSelector: string) => {
     if (inLayerOf(target, toolbar)) return;
 
     let forward: boolean;
-    if (toolbar.getAttribute("aria-orientation") === "vertical") {
+    if (isVertical(toolbar)) {
       if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
       forward = event.key === "ArrowDown";
     } else {
